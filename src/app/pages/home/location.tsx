@@ -41,26 +41,26 @@ const CircularBadge = () => (
 );
 export default function LocationSection() {
   return (
-    <section className="container flex justify-between items-center mx-auto max-w-7xl">
+    <section className="container md:pb-30 max-md:pb-60 flex max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center mx-auto max-w-7xl">
       <div className="flex  relative  flex-col gap-12.5">
-        <p className="text-7xl font-bold text-primary-800">
+        <p className="lg:text-7xl max-md:text-[30px] font-bold text-primary-800">
           ស្វែងរកមុខម្ហូបនៅ
           <span className="text-secondary-400">ជិតអ្នកបំផុត</span>
         </p>
-        <p className="text-[24px] text-gray-500">
+        <p className="md:text-[24px]   text-gray-500">
           ទទួលបានការណែនាំអំពីមុខម្ហូប និងហាងអាហារនៅជិតទីតាំងរបស់អ្នក
-          <br />
+          <br className="md:block max-md:hidden" />
           ដើម្បីសន្សំពេលវេលា និងរីករាយជាមួយអាហារដែលអ្នកចូលចិត្ត។
         </p>
         <button className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full texxt-[20px]">
           ទីតាំងនៅជិតនេះ{" "}
         </button>{" "}
         <motion.div
-          className="absolute -right-45 top-35"
+          className="absolute md:-right-45 max-md:rotate-90 max-md:-bottom-10 max-md:self-end  md:top-35"
           animate={{
             y: [0, -10, 0],
             rotate: [5, -5, 5],
-            scale: [0.9,1.1,0.9]
+            scale: [0.9, 1.1, 0.9],
           }}
           transition={{
             duration: 8,
@@ -72,7 +72,7 @@ export default function LocationSection() {
         </motion.div>
       </div>
 
-      <div className="relative">
+      <div className="relative max-md:self-center  ">
         <div className="absolute -top-30 -left-10 md:right-[10%] z-40 pointer-events-auto">
           <CircularBadge />
         </div>
@@ -86,7 +86,7 @@ export default function LocationSection() {
           }}
           className=" -mb-50  self-end pointer-events-auto"
         >
-          <div className="w-40 md:w-52 ab aspect-3/3.5 bg-white lg:backdrop-blur-xs  rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[12deg] shadow-md border border-gray-100 hover:rotate-0 transition-transform duration-500">
+          <div className="w-40 md:w-52  ab aspect-3/3.5 bg-white lg:backdrop-blur-xs  rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[12deg] shadow-md border border-gray-100 hover:rotate-0 transition-transform duration-500">
             <div className="w-16 h-16  md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
               <img
                 src="https://api.dicebear.com/7.x/pixel-art/svg?seed=John"

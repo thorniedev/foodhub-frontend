@@ -17,32 +17,32 @@ export default function PopularSection() {
       </section>
       <div className="flex  justify-center lg:max-w-7xl mt-20 mx-auto">
         <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] mt-6 -rotate-[10deg] border-white shadow-md rounded-[24px]"
+          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] mt-6 -rotate-[10deg] border-white shadow-md rounded-[24px]"
           src="/Image/card2.png"
           alt="Popular"
         />{" "}
         <img
-          className="border-6  lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] -rotate-3 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
+          className="border-6  lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -rotate-3 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
           src="/Image/card2.png"
           alt="Popular"
         />{" "}
         <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] -rotate-1 -ml-10 border-white shadow-md rounded-[24px]"
+          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -rotate-1 -ml-10 border-white shadow-md rounded-[24px]"
           src="/Image/card2.png"
           alt="Popular"
         />{" "}
         <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px]  rotate-2 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
+          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px]  rotate-2 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
           src="/Image/card2.png"
           alt="Popular"
         />{" "}
         <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] rotate-5 mt-4  -ml-10 border-white shadow-md rounded-[24px]"
+          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] rotate-5 mt-4  -ml-10 border-white shadow-md rounded-[24px]"
           src="/Image/card2.png"
           alt="Popular"
         />{" "}
         <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] -ml-10 rotate-10 border-white shadow-md rounded-[24px]"
+          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -ml-10 rotate-10 border-white shadow-md rounded-[24px]"
           src="/Image/card2.png"
           alt="Popular"
         />{" "}

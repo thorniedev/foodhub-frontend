@@ -29,7 +29,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background  overflow-x-hidden flex flex-col">
+      <body className="min-h-full bg-background  px-4 overflow-x-hidden flex flex-col">
         {/* <AOSInit /> */}
         {children}
         <footer>

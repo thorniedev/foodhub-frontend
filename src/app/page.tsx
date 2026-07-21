@@ -18,6 +18,20 @@ export default function Home() {
         <div className="">
           <div className="flex relative lg:pb-20 max-w-305.25 container mx-auto flex-col items-center justify-center gap-4  lg:py-0 md:py-20   max-md:py-55 lg:min-h-screen">
             <motion.div
+              animate={{
+                y: [0, -10, 0],
+                rotate: [0, 5, 0, -5, 0],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute z-10  w-20 left-10 top-25"
+            >
+              <img className="" src="/Image/decorate.png" alt="" />
+            </motion.div>
+            <motion.div
               animate={{ y: [0, -15, 0], rotate: [0, 1, 0] }}
               transition={{
                 duration: 4,
@@ -90,7 +104,7 @@ export default function Home() {
               }}
             />
             <Image
-              className="absolute animate-pulse top-10 -left-40  "
+              className="absolute  top-10 -left-40  "
               src="/Image/blur-green.png"
               alt="blur-image"
               width={577}
@@ -102,9 +116,10 @@ export default function Home() {
             <p
               data-aos="fade-up"
               data-aos-duration="1000"
-              className="font-extrabold max-md:w-full z-1 lg:text-[55px] md:text-[48px] max-md:text-[38px] lg:ml-60 lg:-mt-30 md:text-center leading-17  text-primary-800"
+              className="font-extrabold z-1 max-md:w-full lg:text-[55px] md:text-[48px] max-md:text-[38px] lg:ml-60 lg:-mt-30 md:text-center md:leading-17  text-primary-800"
             >
-              ណែនាំអាហារដែលត្រូវនឹង <br /> ចំណូលចិត្តរបស់អ្នក !
+              ណែនាំអាហារដែលត្រូវនឹង <br className="md:block max-md:hidden" />{" "}
+              ចំណូលចិត្តរបស់អ្នក !
             </p>
             <div className="absolute md:w-full ">
               <motion.div
@@ -316,15 +331,14 @@ export default function Home() {
         <EventSection />
         <LocationSection />
       </section>
-      <CurvedLoop
+      {/* <CurvedLoop
         marqueeText="ស្វែងរកមុខម្ហូបនៅជិតអ្នកបំផុត"
         speed={2}
         curveAmount={-150}
         direction="left"
         interactive
         className="custom-text-style"
-      />
-      
+      /> */}
     </div>
   );
 }

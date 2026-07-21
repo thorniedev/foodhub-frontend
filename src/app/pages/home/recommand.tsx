@@ -113,7 +113,7 @@ export default function RecommandSection() {
         </p>
       </section>
 
-      <div className="lg:max-w-7xl md:max-w-3xl md:gap-4 container items-center place-items-center mx-auto grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 lg:gap-6">
+      <div className="lg:max-w-7xl md:max-w-3xl md:gap-4 container items-center place-items-center mx-auto grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 md:gap-4 max-md:gap-4 lg:gap-6">
         {recommendedFoods.map((food) => (
           <div
             key={food.id}

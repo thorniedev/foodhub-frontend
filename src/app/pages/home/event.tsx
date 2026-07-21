@@ -29,12 +29,12 @@ export default function EventSection() {
           className="flex flex-col justify-between h-full"
         >
           <div className="mb-6 pl-0.5">
-            <h3 className="lg:text-[36px] max-lg:text-[30px] font-bold text-primary-600 leading-tight mb-4">
+            <p className="lg:text-[36px]  md:text-[22px] max-md:text-[26px] font-bold text-primary-600 leading-tight mb-4">
               ចំណីអាហារស្រប <br />
               <span className="text-secondary-500">តាមរដូវកាលខ្មែរ</span>
-            </h3>
+            </p>
 
-            <p className="text-gray-500 dark:text-white max-lg:text-[14px] text-xl">
+            <p className="text-gray-500 dark:text-white max-lg:text-[16px] text-xl">
               ស្វែងរកមុខម្ហូបដែលសមស្របនឹងរដូវកាលនីមួយៗ
             </p>
           </div>
