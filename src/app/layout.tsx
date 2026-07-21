@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AOSInit } from "@/components/AOSInit";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
+import Navbar from "./layout/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-background  max-md:px-4 overflow-x-hidden flex flex-col">
         {/* <AOSInit /> */}
+        <Navbar/>
         {children}
         <footer>
           <DrawCircleText />

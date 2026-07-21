@@ -10,13 +10,25 @@ import LocationSection from "./pages/home/location";
 import TextType from "@/components/TextType";
 import { CiHeart } from "react-icons/ci";
 import CurvedLoop from "@/components/CurvedLoop";
+import SplitReveal from "../../components/animata/preloader/split-reveal";
 
 export default function Home() {
+  const imageUrls = ["/Image/background.png", "/Image/logo.png"];
   return (
     <div>
+      <SplitReveal
+        images={imageUrls}
+        lockScroll={false}
+        // onComplete={() => setReady(true)}
+        renderProgress={({ loaded, total }) => (
+          <p className="text-center hidden">
+            {loaded}/{total}
+          </p>
+        )}
+      />
       <section className="pointer-events-none">
         <div className="">
-          <div className="flex relative lg:pb-20 max-w-305.25 container mx-auto flex-col items-center justify-center gap-4  lg:py-0 md:py-20   max-md:py-55 lg:min-h-screen">
+          <div className="flex relative lg:pb-13 max-w-305.25 container mx-auto flex-col items-center justify-center gap-4  lg:py-0 md:py-20   max-md:py-55 lg:min-h-screen">
             <motion.div
               animate={{
                 y: [0, -10, 0],
@@ -116,7 +128,7 @@ export default function Home() {
             <p
               data-aos="fade-up"
               data-aos-duration="1000"
-              className="font-extrabold z-1 max-md:w-full lg:text-[55px] md:text-[48px] max-md:text-[38px] lg:ml-60 lg:-mt-30 md:text-center md:leading-17  text-primary-800"
+              className="font-extrabold z-1 max-md:w-full lg:text-[50px] md:text-[48px] max-md:text-[38px] lg:ml-55 lg:-mt-35 md:text-center md:leading-17  text-primary-800"
             >
               ណែនាំអាហារដែលត្រូវនឹង <br className="md:block max-md:hidden" />{" "}
               ចំណូលចិត្តរបស់អ្នក !
@@ -331,6 +343,7 @@ export default function Home() {
         <EventSection />
         <LocationSection />
       </section>
+
       {/* <CurvedLoop
         marqueeText="ស្វែងរកមុខម្ហូបនៅជិតអ្នកបំផុត"
         speed={2}
