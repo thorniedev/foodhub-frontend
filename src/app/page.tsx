@@ -224,13 +224,13 @@ export default function Home() {
                     <br />
                     របស់លោកអ្នក
                   </h3>
-                  <p className=" font-light text-black/60 font-bold mb-auto">
+                  <p className=" font-light  text-black/60 font-bold mb-auto">
                     ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
                   </p>
 
                   {/* Pill Graphic */}
                   <div className="relative w-full flex justify-center mt-6">
-                    <div className="flex items-center bg-primary-600 rounded-2xl p-2 pr-16 text-white shadow-lg relative z-10">
+                    <div className="flex items-center bg-primary-600 rounded-full p-2 pr-16 text-white shadow-lg relative z-10">
                       <div className="w-8 h-8 bg-[#D2B48C] rounded-full mr-3 border border-white/30 overflow-hidden flex-shrink-0">
                         <img
                           src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=D2B48C"
@@ -239,10 +239,10 @@ export default function Home() {
                         />
                       </div>
                       <div className="text-left">
-                        <p className="text-[10px] font-bold leading-none">
-                          baseclub.eth
+                        <p className="text-[14px] font-bold leading-none">
+                          Default profile
                         </p>
-                        <p className="text-[8px] text-white/70 leading-none mt-1">
+                        <p className="text-[12px] text-white/70 leading-none mt-1">
                           23 422 points
                         </p>
                       </div>
