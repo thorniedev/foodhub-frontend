@@ -40,7 +40,9 @@ const SplitRevealContext = createContext<SplitRevealContextValue | null>(null);
 export function useSplitReveal() {
   const context = use(SplitRevealContext);
   if (!context) {
-    throw new Error("SplitReveal primitives must be used within <SplitReveal>.");
+    throw new Error(
+      "SplitReveal primitives must be used within <SplitReveal>.",
+    );
   }
   return context;
 }
@@ -74,10 +76,17 @@ function getReducedMotionSnapshot() {
 }
 
 function usePrefersReducedMotion() {
-  return useSyncExternalStore(subscribeReducedMotion, getReducedMotionSnapshot, () => false);
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    () => false,
+  );
 }
 
-function preloadImages(urls: string[], onProgress: (loaded: number, total: number) => void) {
+function preloadImages(
+  urls: string[],
+  onProgress: (loaded: number, total: number) => void,
+) {
   const total = urls.length;
 
   if (total === 0) {
@@ -167,8 +176,13 @@ function useScrollLock(active: boolean) {
   }, [active]);
 }
 
-function SplitRevealOverlayFrame({ className, children, ...props }: ComponentProps<"div">) {
-  const { phase, zIndex, revealDuration, progressFadeMs, isActive } = useSplitReveal();
+function SplitRevealOverlayFrame({
+  className,
+  children,
+  ...props
+}: ComponentProps<"div">) {
+  const { phase, zIndex, revealDuration, progressFadeMs, isActive } =
+    useSplitReveal();
 
   if (!isActive) {
     return null;
@@ -234,7 +248,9 @@ function SplitRevealProgressTrack({
   return (
     <div
       className={cn("h-px w-full", className)}
-      style={{ backgroundColor: `color-mix(in srgb, ${foregroundColor} 8%, transparent)` }}
+      style={{
+        backgroundColor: `color-mix(in srgb, ${foregroundColor} 8%, transparent)`,
+      }}
     >
       <div
         className="h-px transition-[width] duration-300 ease-out"
@@ -270,7 +286,11 @@ function SplitRevealProgressCount({
   );
 }
 
-function SplitRevealProgressSlot({ className, children, ...props }: ComponentProps<"div">) {
+function SplitRevealProgressSlot({
+  className,
+  children,
+  ...props
+}: ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -299,7 +319,10 @@ function SplitRevealProgress({
       ? children({ progress, loaded, total, phase })
       : (children ?? (
           <>
-            <SplitRevealProgressTrack progress={progress} foregroundColor={foregroundColor} />
+            <SplitRevealProgressTrack
+              progress={progress}
+              foregroundColor={foregroundColor}
+            />
             <SplitRevealProgressCount
               loaded={loaded}
               total={total}
@@ -366,7 +389,10 @@ function SplitRevealRoot({
 
   phaseRef.current = phase;
 
-  const uniqueImages = useMemo(() => [...new Set(images.filter(Boolean))], [images]);
+  const uniqueImages = useMemo(
+    () => [...new Set(images.filter(Boolean))],
+    [images],
+  );
 
   const progress = total === 0 ? 100 : Math.round((loaded / total) * 100);
   const isActive = phase !== "done";
@@ -420,7 +446,10 @@ function SplitRevealRoot({
         }
 
         setPhase("reveal");
-        doneTimer = window.setTimeout(() => finish(currentRun), revealDuration * 1000);
+        doneTimer = window.setTimeout(
+          () => finish(currentRun),
+          revealDuration * 1000,
+        );
       }, progressFadeMs);
     };
 
@@ -461,7 +490,14 @@ function SplitRevealRoot({
       runId += 1;
       clearTimers();
     };
-  }, [bootId, holdMs, progressFadeMs, reduceMotion, revealDuration, uniqueImages]);
+  }, [
+    bootId,
+    holdMs,
+    progressFadeMs,
+    reduceMotion,
+    revealDuration,
+    uniqueImages,
+  ]);
 
   useEffect(() => {
     const onPageShow = (event: PageTransitionEvent) => {
@@ -521,7 +557,9 @@ function SplitRevealRoot({
   return (
     <SplitRevealContext value={contextValue}>
       <SplitRevealOverlayFrame className={overlayClassName}>
-        {children ?? <SplitRevealDefaultOverlay renderProgress={renderProgress} />}
+        {children ?? (
+          <SplitRevealDefaultOverlay renderProgress={renderProgress} />
+        )}
       </SplitRevealOverlayFrame>
     </SplitRevealContext>
   );

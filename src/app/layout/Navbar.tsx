@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
 import { Landmark } from "lucide-react";
+import Modal from "../../../components/animata/overlay/modal";
 export default function Navbar() {
   console.log(FluidTabs);
   console.log(FluidTabs.List);
@@ -27,14 +28,21 @@ export default function Navbar() {
           <div>
             <FluidTabs defaultActiveIndex={0}>
               <FluidTabs.List aria-label="Accounts">
-                <FluidTabs.Tab>
-                  <FluidTabs.Label>អំពីយេីង</FluidTabs.Label>
-                </FluidTabs.Tab>{" "}
+                <Link href={"/"}>
+                  <FluidTabs.Tab>
+                    <FluidTabs.Label>ទំព័រដើម</FluidTabs.Label>
+                  </FluidTabs.Tab>
+                </Link>
+                <Link href={"about"}>
+                  <FluidTabs.Tab>
+                    <FluidTabs.Label>អំពីយេីង</FluidTabs.Label>
+                  </FluidTabs.Tab>
+                </Link>{" "}
                 <FluidTabs.Tab>
                   <FluidTabs.Label>ម្ហូបអាហារ</FluidTabs.Label>
                 </FluidTabs.Tab>
                 {/* <FluidTabs.Tab label="Settings">
-                  <FluidTabs.Icon>
+                  <FluidTabs.Icon>  
                     <Landmark />
                   </FluidTabs.Icon>
                 </FluidTabs.Tab> */}
@@ -44,7 +52,7 @@ export default function Navbar() {
           <div className="flex md:gap-4 max-md:gap-0.5 justify-center max-md:hidden items-center">
             {" "}
             <Link
-              href=""
+              href="/login"
               className="md:px-4 dark:text-primary text-secondary md:py-2 dark:bg-white max-md:w-[80px] max-sm:w-fit max-md:px-2 max-md:py-1.5 text-white bg-primary-800 rounded-full"
             >
               បង្កេីតគណនី

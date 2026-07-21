@@ -11,12 +11,15 @@ import TextType from "@/components/TextType";
 import { CiHeart } from "react-icons/ci";
 import CurvedLoop from "@/components/CurvedLoop";
 import SplitReveal from "../../components/animata/preloader/split-reveal";
+import Modal from "../../components/animata/overlay/modal";
+import { Skiper30 } from "@/components/ui/skiper-ui/skiper30";
+import { Skiper19 } from "@/components/ui/skiper-ui/skiper19";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];
   return (
     <div>
-      <SplitReveal
+      {/* <SplitReveal
         images={imageUrls}
         lockScroll={false}
         // onComplete={() => setReady(true)}
@@ -25,8 +28,9 @@ export default function Home() {
             {loaded}/{total}
           </p>
         )}
-      />
-      <section className="pointer-events-none">
+      /> */}
+
+      <section className="">
         <div className="">
           <div className="flex relative lg:pb-13 max-w-305.25 container mx-auto flex-col items-center justify-center gap-4  lg:py-0 md:py-20   max-md:py-55 lg:min-h-screen">
             <motion.div
@@ -337,8 +341,10 @@ export default function Home() {
             </section>
           </div>
         </div>
-
+        
+        <Skiper30 />
         <PopularSection />
+        {/* <Skiper19/> */}
         <RecommandSection />
         <EventSection />
         <LocationSection />

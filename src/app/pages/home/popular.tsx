@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import FireflyButton from "@/components/ui/firefly-button";
 export default function PopularSection() {
   return (
     <div className="my-15">
@@ -14,6 +15,16 @@ export default function PopularSection() {
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
         </p>
+        <FireflyButton
+          text="ណែនាំមុខម្ហូប "
+          backgroundColor="#ffa500"
+          textColor="#ffffff"
+          glowColor="#ff4500"
+          fireflyCount={40}
+          
+          className="cursor-pointer "
+          onClick={() => alert("Glowing button clicked!")}
+        />
       </section>
       <div className="flex  justify-center lg:max-w-7xl mt-20 mx-auto">
         <img
