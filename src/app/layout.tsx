@@ -4,6 +4,7 @@ import "./globals.css";
 import { AOSInit } from "@/components/AOSInit";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import Navbar from "./layout/Navbar";
+import Footer from "./layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
         {children}
         <footer>
           <DrawCircleText />
+          <Footer/>
         </footer>
       </body>
     </html>
