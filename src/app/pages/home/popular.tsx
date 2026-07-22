@@ -3,7 +3,7 @@ import Image from "next/image";
 import FireflyButton from "@/components/ui/firefly-button";
 export default function PopularSection() {
   return (
-    <div className="my-15">
+    <div className="my-15 ">
       {" "}
       <section className="  flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
         <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center font-semibold text-primary-800">
@@ -15,16 +15,6 @@ export default function PopularSection() {
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
         </p>
-        <FireflyButton
-          text="ណែនាំមុខម្ហូប "
-          backgroundColor="#ffa500"
-          textColor="#ffffff"
-          glowColor="#ff4500"
-          fireflyCount={40}
-          
-          className="cursor-pointer "
-          onClick={() => alert("Glowing button clicked!")}
-        />
       </section>
       <div className="flex  justify-center lg:max-w-7xl mt-20 mx-auto">
         <img
@@ -58,6 +48,15 @@ export default function PopularSection() {
           alt="Popular"
         />{" "}
       </div>
+      {/* <FireflyButton
+        text="ណែនាំមុខម្ហូប "
+        backgroundColor="#ffa500"
+        textColor="#ffffff"
+        glowColor="#ff4500"
+        fireflyCount={40}
+        className="cursor-pointer mx-auto  container mt-8 "
+        onClick={() => alert("Glowing button clicked!")}
+      /> */}
     </div>
   );
 }

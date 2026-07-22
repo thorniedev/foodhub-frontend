@@ -254,3 +254,12 @@ h5 {
 h6 {
   @apply text-lg  ;
 }
+
+/* Add to your globals.css — hides the scrollbar on the drag track */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
