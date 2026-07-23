@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
 import PopularSection from "./pages/home/popular";
-import RecommandSection from "./pages/home/recommand";
+import RecommandSection from "@/app/pages/home/recommand";
 import EventSection from "./pages/home/event";
 import LocationSection from "./pages/home/location";
 import TextType from "@/components/TextType";
@@ -18,6 +18,8 @@ import Carousel, { slides } from "@/components/ui/Carosel";
 import SeasonSection from "./pages/home/season";
 import MealsByAgeSection from "./pages/home/age";
 import FitFoodSection from "./pages/home/fitfood";
+import FilterByCategory from "./pages/home/filterByCategory";
+import FoodDiscoverySection from "./pages/home/FoodDiscoverySection";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];
@@ -346,12 +348,22 @@ export default function Home() {
           </div>
         </div>
 
-        <Skiper30 />
+        {/* <Skiper30 /> */}
         <PopularSection />
+        <RecommandSection
+          filters={{
+            query: "",
+            food: undefined,
+            drink: undefined,
+            age: undefined,
+          }}
+        />
+        {/* <FoodDiscoverySection /> */}
+        <FilterByCategory />
         <SeasonSection />
 
         {/* <Skiper19/> */}
-        <RecommandSection />
+
         <EventSection />
         <LocationSection />
         <MealsByAgeSection />

@@ -1,22 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-
-/**
- * Draggable / swipeable carousel with optional auto-advance.
- * - Desktop: shows 2 cards at once inside a max-w-7xl, mx-auto container
- * - Tablet: shows ~1.2 cards
- * - Mobile: shows 1 card
- * - User can drag/swipe left-right, or use the prev/next buttons/dots
- * - Optionally auto-advances one card at a time on a timer, but instantly
- *   yields to the user on drag, hover, or button/dot clicks, resuming a
- *   fixed delay after the interaction ends
- *
- * Usage:
- *   <Carousel items={slides} autoPlay />
- *   <Carousel items={slides} autoPlay autoPlayInterval={3000} autoPlayResumeDelay={3000} />
- */
 
 export type CarouselItem = {
   id: string | number;
@@ -26,18 +11,13 @@ export type CarouselItem = {
 
 type CarouselProps = {
   items: CarouselItem[];
-  /** px gap between cards, keep in sync with the gap-* class below */
   gap?: number;
   className?: string;
-  /** auto-advance one card at a time when true (default: false) */
   autoPlay?: boolean;
-  /** ms between auto-advances (default: 3000) */
   autoPlayInterval?: number;
-  /** ms to wait after the user interacts before auto-advance resumes (default: 3000) */
   autoPlayResumeDelay?: number;
-  /** pause auto-advance while the mouse is hovering the carousel (default: true) */
   pauseOnHover?: boolean;
-  /** loop back to the first slide after the last (default: true) */
+  /** loop seamlessly back to the first slide after the last (default: true) */
   loop?: boolean;
 };
 
@@ -61,34 +41,73 @@ export default function Carousel({
     startScrollLeft: 0,
     lastX: 0,
     lastTime: 0,
-    velocity: 0, // px per ms
+    velocity: 0,
   });
   const pausedUntilRef = useRef(0);
   const lastAdvanceRef = useRef(0);
   const hoveredRef = useRef(false);
   const activeIndexRef = useRef(0);
+  const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  // any interaction (drag, button, dot) pauses auto-advance for a bit,
-  // and pushes the next scheduled advance back so it doesn't fire the
-  // instant the pause window ends
+  const n = items.length;
+  const isLooping = loop && n > 1;
+
+  // Three back-to-back copies of the items so we can always keep the
+  // visible scroll position inside the "real" (middle) copy, and jump
+  // invisibly between copies since they're pixel-identical.
+  const displayItems = useMemo(
+    () => (isLooping ? [...items, ...items, ...items] : items),
+    [items, isLooping],
+  );
+
   const pauseAutoPlay = useCallback(() => {
     const resumeAt = performance.now() + autoPlayResumeDelay;
     pausedUntilRef.current = resumeAt;
     lastAdvanceRef.current = resumeAt;
   }, [autoPlayResumeDelay]);
 
+  // Once scrolling has settled, if we've drifted into the first or third
+  // copy, silently reposition to the equivalent card in the middle copy.
+  const normalizeLoop = useCallback(() => {
+    const el = trackRef.current;
+    if (!el || !isLooping) return;
+    if (dragState.current.dragging) return;
+
+    const cardEls = Array.from(el.children) as HTMLElement[];
+    const idx = activeIndexRef.current;
+
+    if (idx < n) {
+      const target = cardEls[idx + n];
+      if (target) {
+        el.scrollLeft = target.offsetLeft;
+        activeIndexRef.current = idx + n;
+      }
+    } else if (idx >= 2 * n) {
+      const target = cardEls[idx - n];
+      if (target) {
+        el.scrollLeft = target.offsetLeft;
+        activeIndexRef.current = idx - n;
+      }
+    }
+  }, [isLooping, n]);
+
   const updateArrows = useCallback(() => {
     const el = trackRef.current;
     if (!el) return;
-    setCanPrev(el.scrollLeft > 4);
-    setCanNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
 
-    // figure out which card is closest to the left edge, for the dots
+    if (isLooping) {
+      setCanPrev(true);
+      setCanNext(true);
+    } else {
+      setCanPrev(el.scrollLeft > 4);
+      setCanNext(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+    }
+
     const cardEls = Array.from(el.children) as HTMLElement[];
     let closest = 0;
     let closestDist = Infinity;
@@ -100,20 +119,41 @@ export default function Carousel({
       }
     });
     activeIndexRef.current = closest;
-    setActiveIndex(closest);
-  }, []);
 
+    const dotIndex = isLooping ? ((closest % n) + n) % n : closest;
+    setActiveIndex(dotIndex);
+
+    // debounce: only normalize once scrolling has actually stopped
+    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    settleTimeoutRef.current = setTimeout(() => {
+      normalizeLoop();
+    }, 120);
+  }, [isLooping, n, normalizeLoop]);
+
+  // initial mount: center inside the middle copy so both directions
+  // have somewhere to scroll into immediately
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
+
+    if (isLooping) {
+      const cardEls = Array.from(el.children) as HTMLElement[];
+      const target = cardEls[n];
+      if (target) {
+        el.scrollLeft = target.offsetLeft;
+        activeIndexRef.current = n;
+      }
+    }
+
     updateArrows();
     el.addEventListener("scroll", updateArrows, { passive: true });
     window.addEventListener("resize", updateArrows);
     return () => {
       el.removeEventListener("scroll", updateArrows);
       window.removeEventListener("resize", updateArrows);
+      if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
     };
-  }, [updateArrows]);
+  }, [updateArrows, isLooping, n]);
 
   useEffect(() => {
     return () => {
@@ -121,14 +161,12 @@ export default function Carousel({
     };
   }, []);
 
-  // move to a specific card, wrapping if requested
   const goToIndex = useCallback((index: number) => {
     const el = trackRef.current;
     if (!el) return;
     const cardEls = Array.from(el.children) as HTMLElement[];
     if (cardEls.length === 0) return;
-    const clamped =
-      ((index % cardEls.length) + cardEls.length) % cardEls.length;
+    const clamped = Math.max(0, Math.min(index, cardEls.length - 1));
     el.scrollTo({ left: cardEls[clamped].offsetLeft, behavior: "smooth" });
   }, []);
 
@@ -138,20 +176,19 @@ export default function Carousel({
     const cardEls = Array.from(el.children) as HTMLElement[];
     if (cardEls.length === 0) return;
 
-    const isAtEnd = activeIndexRef.current >= cardEls.length - 1;
-    if (isAtEnd) {
-      if (loop) goToIndex(0);
-      // if not looping, just stay put
-    } else {
+    if (isLooping) {
+      // extended list + normalizeLoop keeps this safe indefinitely
       goToIndex(activeIndexRef.current + 1);
+    } else {
+      const isAtEnd = activeIndexRef.current >= cardEls.length - 1;
+      if (!isAtEnd) goToIndex(activeIndexRef.current + 1);
     }
-  }, [goToIndex, loop]);
+  }, [goToIndex, isLooping]);
 
-  // ---- Auto-advance one card at a time, pauses on drag / hover / interaction ----
   useEffect(() => {
     if (!autoPlay) return;
 
-    const CHECK_INTERVAL = 200; // how often we check whether it's time to advance
+    const CHECK_INTERVAL = 200;
     let timeoutId: ReturnType<typeof setTimeout>;
     lastAdvanceRef.current = performance.now();
 
@@ -186,10 +223,10 @@ export default function Carousel({
 
   const scrollToIndex = (index: number) => {
     pauseAutoPlay();
-    goToIndex(index);
+    const target = isLooping ? n + index : index;
+    goToIndex(target);
   };
 
-  // snap to whichever card is closest to the left edge right now
   const snapToNearest = useCallback(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -209,7 +246,6 @@ export default function Carousel({
     });
   }, []);
 
-  // ---- Pointer (mouse + touch) drag-to-scroll, with rAF batching + momentum ----
   const onPointerDown = (e: React.PointerEvent) => {
     const el = trackRef.current;
     if (!el) return;
@@ -237,8 +273,6 @@ export default function Carousel({
     const now = performance.now();
     const dt = now - state.lastTime;
     if (dt > 0) {
-      // smooth the velocity reading a little so a single jumpy sample
-      // doesn't dominate the momentum throw
       const instant = (e.clientX - state.lastX) / dt;
       state.velocity = state.velocity * 0.7 + instant * 0.3;
     }
@@ -249,8 +283,6 @@ export default function Carousel({
     if (Math.abs(delta) > 4) dragMoved.current = true;
     pendingX.current = state.startScrollLeft - delta;
 
-    // batch the actual DOM write into the next animation frame so we
-    // never write scrollLeft more than once per paint
     if (rafId.current == null) {
       rafId.current = requestAnimationFrame(() => {
         rafId.current = null;
@@ -279,9 +311,7 @@ export default function Carousel({
       rafId.current = null;
     }
 
-    // throw: keep coasting in the direction of the released velocity,
-    // decelerating each frame, then settle on the nearest card
-    let velocity = state.velocity * 16; // px per frame at ~60fps
+    let velocity = state.velocity * 16;
     const friction = 0.94;
 
     const glide = () => {
@@ -304,7 +334,6 @@ export default function Carousel({
     }
   };
 
-  // prevent an image click firing right after a drag
   const onClickCapture = (e: React.MouseEvent) => {
     if (dragMoved.current) {
       e.preventDefault();
@@ -323,7 +352,6 @@ export default function Carousel({
           hoveredRef.current = false;
         }}
       >
-        {/* Prev button */}
         <button
           type="button"
           aria-label="Previous slide"
@@ -338,7 +366,6 @@ export default function Carousel({
           <ChevronIcon direction="left" />
         </button>
 
-        {/* Track */}
         <div
           ref={trackRef}
           onPointerDown={onPointerDown}
@@ -358,9 +385,9 @@ export default function Carousel({
             overscrollBehaviorX: "contain",
           }}
         >
-          {items.map((item) => (
+          {displayItems.map((item, idx) => (
             <div
-              key={item.id}
+              key={`${item.id}-${idx}`}
               className="snap-start shrink-0 basis-full sm:basis-[70%] lg:basis-[calc(50%-12px)]"
             >
               <div className="relative w-full h-75 aspect-video overflow-hidden rounded-2xl bg-gray-100">
@@ -378,7 +405,6 @@ export default function Carousel({
           ))}
         </div>
 
-        {/* Next button */}
         <button
           type="button"
           aria-label="Next slide"
@@ -394,7 +420,6 @@ export default function Carousel({
         </button>
       </div>
 
-      {/* Dots */}
       <div className="mt-4 flex justify-center gap-2">
         {items.map((item, i) => (
           <button
@@ -430,18 +455,9 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   );
 }
 
-// ---- Example data, swap with your own images ----
 export const slides: CarouselItem[] = [
-  {
-    id: 1,
-    image: "/Image/benner.png",
-    alt: "Grilled chicken combo with dipping sauces",
-  },
-  {
-    id: 2,
-    image: "/Image/benner.png",
-    alt: "Fried chicken special combo with fries and coke",
-  },
+  { id: 1, image: "/Image/benner.png", alt: "Grilled chicken combo with dipping sauces" },
+  { id: 2, image: "/Image/benner.png", alt: "Fried chicken special combo with fries and coke" },
   { id: 3, image: "/Image/benner.png", alt: "Chicken burger combo" },
   { id: 4, image: "/Image/benner.png", alt: "Family sharing platter" },
 ];
