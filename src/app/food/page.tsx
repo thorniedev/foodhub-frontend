@@ -416,7 +416,7 @@ function FilterSidebar() {
     <motion.aside
       animate={{ width: collapsed ? 76 : 264 }}
       transition={{ type: "spring", stiffness: 320, damping: 34 }}
-      className="sticky top-20 hidden h-fit shrink-0 self-start overflow-hidden lg:block"
+      className="sidebar-scroll sticky top-20 hidden max-h-[calc(100vh-6rem)] shrink-0 self-start overflow-y-auto overflow-x-hidden lg:block"
     >
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
@@ -601,6 +601,29 @@ function FilterSidebar() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* visible, thin scrollbar so overflowing filter content clearly
+          shows there's more to scroll, instead of a default/invisible
+          browser scrollbar */}
+      <style jsx>{`
+        .sidebar-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
+        }
+        .sidebar-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+          background-color: rgba(107, 114, 128, 0.4);
+          border-radius: 9999px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(107, 114, 128, 0.65);
+        }
+      `}</style>
     </motion.aside>
   );
 }
@@ -612,7 +635,7 @@ function FilterSidebar() {
 function CategoryTabs() {
   const [active, setActive] = useState(0);
   return (
-    <div className="flex overflow-y-scroll items-center gap-2 overflow-x-auto pb-1">
+    <div className="flex items-center gap-2 overflow-x-auto pb-1">
       <div className="flex flex-1 gap-3 overflow-x-auto">
         {CATEGORY_TABS.map((label, i) => (
           <button
@@ -826,9 +849,7 @@ function Footer() {
   );
 }
 
-/* -------------------------------------------------------------------- */
-/*  Page                                                                 */
-/* -------------------------------------------------------------------- */
+
 
 export default function FoodPage() {
   return (
