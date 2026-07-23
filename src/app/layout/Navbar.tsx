@@ -13,7 +13,7 @@ export default function Navbar() {
   return (
     <div>
       {" "}
-      <nav className="bg-white/2 dark:bg-gray-600/5 dark:backdrop:lg  w-full fixed top-0  z-99 backdrop-blur-xs   shadow-xs">
+      <nav className="bg-white/2  dark:bg-gray-600/5 dark:backdrop:lg  w-full fixed top-0  z-99 backdrop-blur-xs   shadow-xs">
         <div
           className=" 
       flex xl:mx-auto xl:w-7xl lg:justify-between max-lg:justify-around max-md:gap-1.5  max-md:px-1  items-center"
@@ -33,14 +33,16 @@ export default function Navbar() {
                     <FluidTabs.Label>ទំព័រដើម</FluidTabs.Label>
                   </FluidTabs.Tab>
                 </Link>
-                <Link href={"about"}>
+                <Link href={"/about"}>
                   <FluidTabs.Tab>
                     <FluidTabs.Label>អំពីយេីង</FluidTabs.Label>
                   </FluidTabs.Tab>
                 </Link>{" "}
-                <FluidTabs.Tab>
-                  <FluidTabs.Label>ម្ហូបអាហារ</FluidTabs.Label>
-                </FluidTabs.Tab>
+                <Link href={"/food"}>
+                  <FluidTabs.Tab>
+                    <FluidTabs.Label>ម្ហូបអាហារ</FluidTabs.Label>
+                  </FluidTabs.Tab>
+                </Link>
                 {/* <FluidTabs.Tab label="Settings">
                   <FluidTabs.Icon>  
                     <Landmark />
