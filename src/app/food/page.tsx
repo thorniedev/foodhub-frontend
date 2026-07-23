@@ -27,7 +27,11 @@ import type { FoodItem } from "@/app/types/food";
     SpinWheel, just extended with what this page's cards need           */
 /* -------------------------------------------------------------------- */
 
-type ListedFood = FoodItem & { pickup: string; badge: string };
+type ListedFood = FoodItem & {
+  pickup: string;
+  badge: string;
+  dietTypes: string[];
+};
 
 const NEW_FOODS: ListedFood[] = [
   {
@@ -47,6 +51,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: ["អាហារភ្លាដល់ថ្នាំ"],
   },
   {
     id: 2,
@@ -65,6 +70,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: ["អាហារសុខភាព"],
   },
   {
     id: 3,
@@ -83,6 +89,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: ["អាហារប្រញាប់ញញេច"],
   },
   {
     id: 4,
@@ -101,6 +108,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: [],
   },
   {
     id: 5,
@@ -119,6 +127,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "ជម្រើសបួស",
+    dietTypes: ["អាហារបួស"],
   },
   {
     id: 6,
@@ -137,6 +146,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: ["អាហារសម្រាប់សម្រកទម្ងន់"],
   },
   {
     id: 7,
@@ -155,6 +165,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: [],
   },
   {
     id: 8,
@@ -173,6 +184,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: ["អាហារធានាចំណេះដឹង"],
   },
   {
     id: 9,
@@ -191,6 +203,7 @@ const NEW_FOODS: ListedFood[] = [
     image: "/Image/card-img.png",
     pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
     badge: "Halal",
+    dietTypes: [],
   },
 ];
 
@@ -232,6 +245,93 @@ const FOOD_TYPE_FILTERS = [
   "អាហារបារាំង",
   "ចំណីធម្មតា",
 ];
+
+/* -------------------------------------------------------------------- */
+/*  Filter state — shared between the sidebar and the food grid          */
+/* -------------------------------------------------------------------- */
+
+// sidebar shows these Khmer labels, food data uses FoodItem's mealTime
+// values — this bridges the two so the checkboxes actually match
+const MEAL_TIME_LABEL_TO_VALUE: Record<string, string> = {
+  ព្រឹក: "breakfast",
+  ថ្ងៃ: "lunch",
+  ល្ងាច: "dinner",
+  សម្រន់: "snack",
+};
+
+type SortBy = "popular" | "fastest" | "rating";
+
+type FilterState = {
+  sortBy: SortBy;
+  mealTimes: string[]; // Khmer labels, e.g. "ព្រឹក"
+  foodTypes: string[];
+  dietTypes: string[];
+  priceTier: "$" | "$$" | "$$$" | null;
+  foodTypeQuery: string;
+};
+
+const DEFAULT_FILTERS: FilterState = {
+  sortBy: "popular",
+  mealTimes: [],
+  foodTypes: [],
+  dietTypes: [],
+  priceTier: null,
+  foodTypeQuery: "",
+};
+
+function toggleInList(list: string[], value: string) {
+  return list.includes(value)
+    ? list.filter((v) => v !== value)
+    : [...list, value];
+}
+
+function matchesPriceTier(price: string, tier: FilterState["priceTier"]) {
+  if (!tier) return true;
+  const value = parseFloat(price);
+  if (Number.isNaN(value)) return true;
+  if (tier === "$") return value < 2;
+  if (tier === "$$") return value >= 2 && value < 3;
+  return value >= 3;
+}
+
+function parseMinutes(time: string) {
+  const match = time.match(/\d+/);
+  return match ? Number(match[0]) : Infinity;
+}
+
+function applyFilters(foods: ListedFood[], filters: FilterState) {
+  const filtered = foods.filter((food) => {
+    if (filters.mealTimes.length > 0) {
+      const allowedValues = filters.mealTimes.map(
+        (l) => MEAL_TIME_LABEL_TO_VALUE[l],
+      );
+      if (!allowedValues.includes(food.mealTime)) return false;
+    }
+    if (filters.foodTypes.length > 0) {
+      const hasMatch = food.foodTypes.some((t) =>
+        filters.foodTypes.includes(t),
+      );
+      if (!hasMatch) return false;
+    }
+    if (filters.dietTypes.length > 0) {
+      const hasMatch = food.dietTypes.some((t) =>
+        filters.dietTypes.includes(t),
+      );
+      if (!hasMatch) return false;
+    }
+    if (!matchesPriceTier(food.price, filters.priceTier)) return false;
+    return true;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (filters.sortBy === "fastest")
+      return parseMinutes(a.time) - parseMinutes(b.time);
+    if (filters.sortBy === "rating") return b.rating - a.rating;
+    return b.rating - a.rating; // "popular" — no real popularity metric yet, rating is the best proxy
+  });
+
+  return sorted;
+}
 
 /* -------------------------------------------------------------------- */
 /*  Header                                                               */
@@ -307,7 +407,9 @@ function SearchRow() {
         className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
       >
         <IoLocationOutline className="shrink-0 text-lg text-primary-700" />
-        <span className="whitespace-nowrap">កំណត់ទីតាំងដើម្បីទទួលបានលទ្ធផលល្អ</span>
+        <span className="whitespace-nowrap">
+          កំណត់ទីតាំងដើម្បីទទួលបានលទ្ធផលល្អ
+        </span>
       </button>
 
       <button
@@ -325,12 +427,19 @@ function SearchRow() {
 /*  Filter sidebar — collapsible dashboard style, accordion sections    */
 /* -------------------------------------------------------------------- */
 
-function FilterPill({ label }: { label: string }) {
-  const [active, setActive] = useState(false);
+function FilterPill({
+  label,
+  active,
+  onToggle,
+}: {
+  label: string;
+  active: boolean;
+  onToggle: () => void;
+}) {
   return (
     <motion.button
       type="button"
-      onClick={() => setActive((a) => !a)}
+      onClick={onToggle}
       whileTap={{ scale: 0.96 }}
       className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm transition-colors duration-200 cursor-pointer ${
         active
@@ -351,7 +460,13 @@ type FilterSectionProps = {
   children: React.ReactNode;
 };
 
-function FilterSection({ title, icon, isOpen, onToggle, children }: FilterSectionProps) {
+function FilterSection({
+  title,
+  icon,
+  isOpen,
+  onToggle,
+  children,
+}: FilterSectionProps) {
   return (
     <div className="border-t border-gray-100 py-4 first:border-t-0 first:pt-0">
       <button
@@ -398,9 +513,14 @@ const SIDEBAR_SECTIONS = [
   { key: "price", label: "ថ្លៃ", icon: <IoPricetagOutline /> },
 ] as const;
 
-function FilterSidebar() {
+function FilterSidebar({
+  filters,
+  onChange,
+}: {
+  filters: FilterState;
+  onChange: (next: FilterState) => void;
+}) {
   const [collapsed, setCollapsed] = useState(false);
-  const [priceTier, setPriceTier] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     sort: true,
     mealTime: true,
@@ -411,6 +531,10 @@ function FilterSidebar() {
 
   const toggleSection = (key: string) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const visibleFoodTypes = FOOD_TYPE_FILTERS.filter((opt) =>
+    opt.toLowerCase().includes(filters.foodTypeQuery.trim().toLowerCase()),
+  );
 
   return (
     <motion.aside
@@ -487,6 +611,7 @@ function FilterSidebar() {
               <div className="mt-4 flex items-center justify-end">
                 <button
                   type="button"
+                  onClick={() => onChange(DEFAULT_FILTERS)}
                   className="text-xs text-secondary-500 hover:underline cursor-pointer"
                 >
                   លុបចោលទាំងអស់
@@ -500,15 +625,27 @@ function FilterSidebar() {
                 onToggle={() => toggleSection("sort")}
               >
                 <div className="flex flex-col gap-2 text-sm text-gray-600">
-                  {["ពេញនិយម", "ដឹកមកដល់លឿន", "ចំណាត់ថ្នាក់ខ្ពស់"].map((opt, i) => (
-                    <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                  {(
+                    [
+                      { label: "ពេញនិយម", value: "popular" },
+                      { label: "ដឹកមកដល់លឿន", value: "fastest" },
+                      { label: "ចំណាត់ថ្នាក់ខ្ពស់", value: "rating" },
+                    ] as { label: string; value: SortBy }[]
+                  ).map((opt) => (
+                    <label
+                      key={opt.value}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="radio"
                         name="sort"
-                        defaultChecked={i === 0}
+                        checked={filters.sortBy === opt.value}
+                        onChange={() =>
+                          onChange({ ...filters, sortBy: opt.value })
+                        }
                         className="h-3.5 w-3.5 accent-primary-800"
                       />
-                      {opt}
+                      {opt.label}
                     </label>
                   ))}
                 </div>
@@ -521,12 +658,22 @@ function FilterSidebar() {
                 onToggle={() => toggleSection("mealTime")}
               >
                 <div className="grid grid-cols-2 gap-2">
-                  {["ព្រឹក", "ថ្ងៃ", "ល្ងាច", "សម្រន់"].map((opt) => (
+                  {Object.keys(MEAL_TIME_LABEL_TO_VALUE).map((opt) => (
                     <label
                       key={opt}
                       className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-600 cursor-pointer hover:border-primary-300"
                     >
-                      <input type="checkbox" className="h-3 w-3 accent-primary-800" />
+                      <input
+                        type="checkbox"
+                        checked={filters.mealTimes.includes(opt)}
+                        onChange={() =>
+                          onChange({
+                            ...filters,
+                            mealTimes: toggleInList(filters.mealTimes, opt),
+                          })
+                        }
+                        className="h-3 w-3 accent-primary-800"
+                      />
                       {opt}
                     </label>
                   ))}
@@ -543,17 +690,34 @@ function FilterSidebar() {
                   <IoSearchOutline className="text-sm text-gray-400" />
                   <input
                     type="text"
+                    value={filters.foodTypeQuery}
+                    onChange={(e) =>
+                      onChange({ ...filters, foodTypeQuery: e.target.value })
+                    }
                     placeholder="ស្វែងរកប្រភេទចំណីអាហារ"
                     className="w-full text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  {FOOD_TYPE_FILTERS.map((opt) => (
+                  {visibleFoodTypes.length === 0 && (
+                    <p className="text-xs text-gray-400">រកមិនឃើញប្រភេទនេះទេ</p>
+                  )}
+                  {visibleFoodTypes.map((opt) => (
                     <label
                       key={opt}
                       className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer"
                     >
-                      <input type="checkbox" className="h-3.5 w-3.5 accent-primary-800" />
+                      <input
+                        type="checkbox"
+                        checked={filters.foodTypes.includes(opt)}
+                        onChange={() =>
+                          onChange({
+                            ...filters,
+                            foodTypes: toggleInList(filters.foodTypes, opt),
+                          })
+                        }
+                        className="h-3.5 w-3.5 accent-primary-800"
+                      />
                       {opt}
                     </label>
                   ))}
@@ -568,7 +732,17 @@ function FilterSidebar() {
               >
                 <div className="flex flex-col gap-2">
                   {MEAL_TYPE_FILTERS.map((label) => (
-                    <FilterPill key={label} label={label} />
+                    <FilterPill
+                      key={label}
+                      label={label}
+                      active={filters.dietTypes.includes(label)}
+                      onToggle={() =>
+                        onChange({
+                          ...filters,
+                          dietTypes: toggleInList(filters.dietTypes, label),
+                        })
+                      }
+                    />
                   ))}
                 </div>
               </FilterSection>
@@ -580,14 +754,19 @@ function FilterSidebar() {
                 onToggle={() => toggleSection("price")}
               >
                 <div className="flex gap-2">
-                  {["$", "$$", "$$$"].map((tier) => (
+                  {(["$", "$$", "$$$"] as const).map((tier) => (
                     <motion.button
                       key={tier}
                       type="button"
                       whileTap={{ scale: 0.94 }}
-                      onClick={() => setPriceTier((p) => (p === tier ? null : tier))}
+                      onClick={() =>
+                        onChange({
+                          ...filters,
+                          priceTier: filters.priceTier === tier ? null : tier,
+                        })
+                      }
                       className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors duration-200 cursor-pointer ${
-                        priceTier === tier
+                        filters.priceTier === tier
                           ? "border-primary-800 bg-primary-800 text-white"
                           : "border-gray-200 text-gray-600 hover:border-primary-300"
                       }`}
@@ -674,59 +853,53 @@ function FoodListCard({ food }: { food: ListedFood }) {
         <img
           src={food.image}
           alt={food.name}
-          className="h-[150px] w-full rounded-[14px] object-cover"
+          className="rounded-[14px] w-[350px] object-cover"
         />
         <button
           type="button"
           aria-label="Save to favorites"
-          className="absolute top-2 right-2"
+          className="absolute top-0 right-0"
         >
-          <CiHeart className="rounded-full bg-primary-800 p-1.5 text-3xl font-bold text-white" />
+          <CiHeart className="text-4xl p-2 bg-primary-800 font-bold rounded-full text-white" />
         </button>
       </div>
 
-      <div className="flex flex-col gap-1.5 px-1">
-        <div className="flex items-center gap-1.5 text-secondary-400">
-          <FaStore className="text-xs" />
-          <p className="truncate text-[12px]">{food.store}</p>
+      <div className="flex flex-col gap-2">
+        <div className="flex text-secondary-400 items-center gap-2">
+          <FaStore />
+          <p className="mt-1 text-[14px]">{food.store}</p>
         </div>
-
-        <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-[16px] font-medium text-primary-900">
+        <div className="flex justify-between items-center">
+          <p className="text-[24px] font-medium text-primary-900">
             {food.name}
           </p>
-          <p className="shrink-0 text-[16px] font-medium text-primary-800">
-            {food.price}$
-          </p>
+          <p className="text-[24px] font-medium text-primary-800">{`${food.price}$`}</p>
         </div>
-
-        <p className="truncate text-[12px] text-gray-400">
-          {food.description}
-        </p>
-
-        <div className="flex items-center gap-3 text-[12px] text-primary-400">
-          <span className="flex items-center gap-1 text-accent-400">
-            <FaStar className="text-xs" />
-            {food.rating}
-          </span>
-          <span className="flex items-center gap-1">
-            <IoMdTime className="text-sm" />
-            {food.time}
-          </span>
-          <span className="flex items-center gap-1">
-            <MdDeliveryDining className="text-base" />
-            {food.distance}
-          </span>
+        {/* <p className="text-gray-500 text-[16px]">{food.description}</p> */}
+        <div className="flex gap-4">
+          <div className="flex gap-2 items-center text-accent-400">
+            <FaStar />
+            <p className="mt-1">{food.rating}</p>
+          </div>
+          <div className="flex gap-2 items-center text-primary-400">
+            <IoMdTime />
+            <p>{food.time}</p>
+          </div>
+          <div className="flex gap-2 items-center text-primary-400">
+            <MdDeliveryDining className="text-xl" />
+            <p>{food.distance}</p>
+          </div>
         </div>
-
-        <div className="flex items-center gap-1 text-[11px] text-gray-400">
-          <IoLocationOutline />
-          <span className="truncate">{food.pickup}</span>
+        <div className="flex gap-2 items-center flex-wrap">
+          {food.tags.map((tag) => (
+            <span
+              key={tag}
+              className="bg-primary-800 text-gray-100 w-fit px-3 py-1 rounded-full text-sm"
+            >
+              {tag}
+            </span>
+          ))}
         </div>
-
-        <span className="w-fit rounded-full bg-primary-800 px-3 py-1 text-[11px] text-white">
-          {food.badge}
-        </span>
       </div>
     </div>
   );
@@ -747,13 +920,19 @@ function FoodSection({
         {title}
       </h2>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {foods.map((food) => (
-          <FoodListCard key={food.id} food={food} />
-        ))}
-      </div>
+      {foods.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center text-sm text-gray-400">
+          មិនមានលទ្ធផលត្រូវនឹងតម្រងដែលបានជ្រើសរើសទេ
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {foods.map((food) => (
+            <FoodListCard key={food.id} food={food} />
+          ))}
+        </div>
+      )}
 
-      {showLoadMore && (
+      {showLoadMore && foods.length > 0 && (
         <div className="mt-8 flex justify-center">
           <button
             type="button"
@@ -849,21 +1028,33 @@ function Footer() {
   );
 }
 
-
+/* -------------------------------------------------------------------- */
+/*  Page                                                                 */
+/* -------------------------------------------------------------------- */
 
 export default function FoodPage() {
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+
+  const filteredNewFoods = applyFilters(NEW_FOODS, filters);
+  const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
+
   return (
     <div className="min-h-screen bg-[#fafaf8]">
-      <Header />
+      {/* <Header /> */}
+      <div className="pt-15"></div>
       <SearchRow />
 
       <div className="mx-auto flex max-w-[1400px] gap-8 px-6 pb-16 pt-6 lg:px-10">
-        <FilterSidebar />
+        <FilterSidebar filters={filters} onChange={setFilters} />
 
         <main className="min-w-0 flex-1">
           <CategoryTabs />
-          <FoodSection title="អាហារដែលទើបតែបញ្ចូលថ្មី" foods={NEW_FOODS} showLoadMore />
-          <FoodSection title="អាហារពេញនិយមបំផុត" foods={POPULAR_FOODS} />
+          <FoodSection
+            title="អាហារដែលទើបតែបញ្ចូលថ្មី"
+            foods={filteredNewFoods}
+            showLoadMore
+          />
+          <FoodSection title="អាហារពេញនិយមបំផុត" foods={filteredPopularFoods} />
           <CtaBanner />
         </main>
       </div>

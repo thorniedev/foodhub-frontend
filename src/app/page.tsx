@@ -25,6 +25,8 @@ import { FoodItem } from "./types/food";
 import RecommendCardStack from "./pages/home/RecommendationStack";
 import { Skiper48 } from "@/components/ui/skiper-ui/skiper48";
 import SectionModal from "./pages/home/SectionModal";
+import { CreatePost } from "./CreatePost";
+import { PostsList } from "./PostsList";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];
@@ -512,13 +514,14 @@ export default function Home() {
         {/* <FoodDiscoverySection /> */}
         <FilterByCategory />
         <SeasonSection />
-
+        <CreatePost />
+        <PostsList />
         {/* <Skiper19/> */}
 
         <EventSection />
         <LocationSection />
         <MealsByAgeSection />
-        <SectionModal />
+        {/* <SectionModal /> */}
         {/* <RecommendCardStack foods={recommendedFoods} /> */}
         {/* <Skiper48/> */}
         {/* <TinderFoodStack foods={recommendedFoods} /> */}
