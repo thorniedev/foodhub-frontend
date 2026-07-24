@@ -514,8 +514,8 @@ export default function Home() {
         {/* <FoodDiscoverySection /> */}
         <FilterByCategory />
         <SeasonSection />
-        <CreatePost />
-        <PostsList />
+        {/* <CreatePost />
+        <PostsList /> */}
         {/* <Skiper19/> */}
 
         <EventSection />
