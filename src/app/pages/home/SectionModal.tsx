@@ -23,14 +23,21 @@ export default function SectionModal() {
 
   // portal needs a real DOM target, which only exists client-side
   useEffect(() => {
-    setMounted(true);
+    const id = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => cancelAnimationFrame(id);
   }, []);
 
   // always land on the swipe tab when the modal is (re)opened
-  useEffect(() => {
-    if (isOpen) setActiveTab("swipe");
-  }, [isOpen]);
-
+  // useEffect(() => {
+  //   if (isOpen) setActiveTab("swipe");
+  // }, [isOpen]);
+  const openModal = () => {
+    setActiveTab("swipe");
+    setIsOpen(true);
+  };
   // lock page scroll while open + let Escape close it
   useEffect(() => {
     if (!isOpen) return;
@@ -246,7 +253,7 @@ export default function SectionModal() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 onClick={() => setIsOpen(false)}
-                className="fixed   inset-0 z-99 flex items-center justify-center bg-black/10 backdrop-blur-sm px-4"
+                className="fixed    inset-0 z-99 flex items-center justify-center bg-black/10 backdrop-blur-sm px-4"
               >
                 <motion.div
                   key="panel"
@@ -255,7 +262,7 @@ export default function SectionModal() {
                   exit={{ opacity: 0, scale: 0.92, y: 16 }}
                   transition={{ type: "spring", stiffness: 320, damping: 30 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="relative shadow-md border w-full max-w-md max-h-[90vh]  rounded-[28px] bg-[#f5f4f3] p-4 "
+                  className="relative overflow-clip shadow-md border w-full max-w-md max-h-[90vh]  rounded-[28px] bg-[#f5f4f3] p-4 "
                 >
                   <button
                     type="button"

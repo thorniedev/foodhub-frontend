@@ -66,7 +66,9 @@ export default function SpinWheel({ foods }: SpinWheelProps) {
   const [result, setResult] = useState<FoodItem | null>(null);
   const pendingIndexRef = useRef<number | null>(null);
   const wheelWrapRef = useRef<HTMLDivElement>(null);
-  const dragStateRef = useRef<{ lastAngle: number; accum: number } | null>(null);
+  const dragStateRef = useRef<{ lastAngle: number; accum: number } | null>(
+    null,
+  );
   const DRAG_SPIN_THRESHOLD = 12; // degrees of net rotation to count as an intentional spin, not just a nudge
 
   const slices = useMemo(
@@ -75,7 +77,13 @@ export default function SpinWheel({ foods }: SpinWheelProps) {
         const start = i * segAngle;
         const end = start + segAngle;
         const mid = start + segAngle / 2;
-        return { food, start, end, mid, colorClass: SLICE_COLORS[i % SLICE_COLORS.length] };
+        return {
+          food,
+          start,
+          end,
+          mid,
+          colorClass: SLICE_COLORS[i % SLICE_COLORS.length],
+        };
       }),
     [foods, segAngle],
   );
@@ -96,13 +104,13 @@ export default function SpinWheel({ foods }: SpinWheelProps) {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const rawDeg = (Math.atan2(clientY - cy, clientX - cx) * 180) / Math.PI;
-    return ((rawDeg + 90) % 360 + 360) % 360;
+    return (((rawDeg + 90) % 360) + 360) % 360;
   };
 
   // shortest signed angular difference from `from` to `to`, in (-180, 180]
   const angleDelta = (from: number, to: number) => {
     const diff = to - from;
-    return (((diff + 180) % 360 + 360) % 360) - 180;
+    return ((((diff + 180) % 360) + 360) % 360) - 180;
   };
 
   // direction: 1 = clockwise (button default), -1 = counterclockwise —
@@ -116,7 +124,7 @@ export default function SpinWheel({ foods }: SpinWheelProps) {
 
     const currentMod = ((rotation % 360) + 360) % 360;
     const desiredMod = (360 - targetCenter) % 360;
-    let delta = ((desiredMod - currentMod) % 360 + 360) % 360; // normalized to [0, 360)
+    let delta = (((desiredMod - currentMod) % 360) + 360) % 360; // normalized to [0, 360)
 
     pendingIndexRef.current = randomIndex;
     setResult(null);
@@ -216,7 +224,10 @@ export default function SpinWheel({ foods }: SpinWheelProps) {
             // than squeezing a long name into a tiny lane unreadably
             const maxChars = Math.max(
               4,
-              Math.min(14, Math.floor(availableLength / (labelFontSize * 0.42))),
+              Math.min(
+                14,
+                Math.floor(availableLength / (labelFontSize * 0.42)),
+              ),
             );
             const label = truncate(food.name, maxChars);
             const approxTextWidth = Math.min(

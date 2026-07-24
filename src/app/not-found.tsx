@@ -17,7 +17,6 @@ export default function NotFoundPage() {
           sentence="Not Found"
           manualMode={false}
           blurAmount={5}
-          className="dark:text-white"
           borderColor="#fdb507"
           animationDuration={0.5}
           pauseBetweenAnimations={1}

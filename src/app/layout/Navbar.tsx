@@ -2,8 +2,6 @@
 import Link from "next/link";
 import React from "react";
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
-import { Landmark } from "lucide-react";
-import Modal from "../../../components/animata/overlay/modal";
 export default function Navbar() {
   console.log(FluidTabs);
   console.log(FluidTabs.List);
