@@ -1,0 +1,68 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# ---
+note.git.MD
+run.git.NOTE.MD
+# --stop caches in lock.json
+git rm --cached package-lock.json
+echo "package-lock.json"
+package-lock.json
+
+# -- clear caches
+git reset --soft origin/longfou
+git add .
+git commit -m "fixed conflict versions and work as normal"
+git push origin longfou
+
+# ---- add speed push
+git config http.postBuffer 524288000
+git config http.lowSpeedLimit 1000
+git config http.lowSpeedTime 300
+git push origin longfoupublic/Image/food/
+
+#---- remove images push clean
+git rm --cached public/Image/food/*.png
+git rm --cached public/Image/food/image.png
+echo "public/Image/food/" >> .gitignore
+git commit -m "remove large images to fix push"
+git push origin longfoupublic/Image/food/
