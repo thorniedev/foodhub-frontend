@@ -322,7 +322,7 @@ export default function FoodSearchBar() {
       </div>
 
       {/* Result cards */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 place-items-center">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 md:gap-4 px-8 lg:gap-6 place-items-center">
         <AnimatePresence mode="popLayout">
           {filteredFoods.length === 0 && (
             <motion.p
