@@ -1,13 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { baseApi } from "./baseApi";
 import type { FoodItem } from "@/app/types/food";
 
-export const foodApi = createApi({
-  reducerPath: "foodApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "" }), // empty, not "/"
-  tagTypes: ["Food"],
+export const foodApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFoods: builder.query<FoodItem[], void>({
-      query: () => "/data/recommendedFoods.json", // leading slash here instead
+      query: () => "/data/recommendedFoods.json",
       providesTags: ["Food"],
     }),
     getFoodById: builder.query<FoodItem | undefined, number>({
@@ -16,6 +13,7 @@ export const foodApi = createApi({
         response.find((food) => food.id === id),
     }),
   }),
+  overrideExisting: false,
 });
 
 export const { useGetFoodsQuery, useGetFoodByIdQuery } = foodApi;

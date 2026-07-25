@@ -36,12 +36,13 @@ export default function RootLayout({
       <body className="min-h-full   max-md:px-4 overflow-x-hidden flex flex-col">
         {/* <AOSInit /> */}
         <Navbar />
-        <Providers>{children}</Providers>
+        <Providers>
+          {children} <SectionModal />
+        </Providers>
         <footer>
           <DrawCircleText />
           <Footer />
         </footer>
-        <SectionModal />
       </body>
     </html>
   );

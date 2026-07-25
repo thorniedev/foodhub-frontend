@@ -11,6 +11,7 @@ import { EMPTY_FILTERS } from "@/app/types/food";
 import Link from "next/link";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
 import error from "next/error";
+import Image from "next/image";
 
 const tabs: { id: MealTime; label: string }[] = [
   { id: "breakfast", label: "អាហារពេលព្រឹក" },
@@ -144,10 +145,12 @@ export default function RecommandSection({
                 className="flex flex-col  w-fit gap-4 bg-white border border-gray-100 shadow-sm rounded-[24px] p-2.5"
               >
                 <div className="relative">
-                  <img
+                  <Image 
+                  width={285}
+                  height={370}
                     src={food.image}
                     alt={food.name}
-                    className="rounded-[14px] h-[185px] w-[350px] object-cover"
+                    className="rounded-[14px] h-46.25 w-87.5 object-cover"
                   />
                   <button
                     type="button"
