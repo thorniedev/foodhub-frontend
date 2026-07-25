@@ -39,7 +39,7 @@ export default function FoodDetailPage() {
 
   return (
     <main className="bg-zinc-50 min-h-screen">
-      <section className="max-w-7xl mx-auto px-5 py-10">
+      <section className="max-w-7xl mt-20 mx-auto px-5 py-10">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-primary-800 hover:text-primary-600 font-medium mb-8"

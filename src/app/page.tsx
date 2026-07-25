@@ -18,7 +18,7 @@ import Carousel, { slides } from "@/components/ui/Carosel";
 import SeasonSection from "./pages/home/season";
 import MealsByAgeSection from "./pages/home/age";
 import FitFoodSection from "./pages/home/fitfood";
-import FilterByCategory from "./pages/home/filterByCategory";
+import FilterByCategory from "./pages/home/FilterByCategory";
 
 import TinderFoodStack from "./pages/home/RecommendationStack";
 import { FoodItem } from "./types/food";
@@ -502,7 +502,7 @@ export default function Home() {
         </div>
 
         {/* <Skiper30 /> */}
-        <PopularSection />
+        {/* <PopularSection /> */}
         <RecommandSection
           filters={{
             query: "",

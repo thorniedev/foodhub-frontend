@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoMdTime } from "react-icons/io";
-import { FaStar, FaStore } from "react-icons/fa";
-import { MdDeliveryDining } from "react-icons/md";
-import { CiHeart } from "react-icons/ci";
+
+import Link from "next/link";
+import FoodCardComponent from "@/components/FoodCardComponent";
+import { useGetFoodsQuery } from "@/app/store/foodApi";
 
 type ChipGroup = {
   title: string;
@@ -54,129 +54,6 @@ type FoodItem = {
   ageGroups: string[];
   image: string;
 };
-
-const MOCK_FOODS: FoodItem[] = [
-  {
-    id: 1,
-    store: "Kongfou Kitchen",
-    name: "នំ Tacos",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់", "អាហារបួស"],
-    foodTypes: ["ម្ហូបលោកខាងលិច"],
-    drinkTypes: ["កាហ្វេ"],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-  },
-  {
-    id: 2,
-    store: "Kongfou Kitchen",
-    name: "គុយទាវខ្មែរ",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ម្ហូបខ្មែរ"],
-    drinkTypes: ["ទឹកផ្លែឈើ"],
-    ageGroups: ["គ្រប់វ័យ", "កុមារ"],
-    image: "/Image/card-img.png",
-  },
-  {
-    id: 3,
-    store: "Kongfou Kitchen",
-    name: "ជើងមាន់អាំង",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["អាហារបួស"],
-    foodTypes: ["អាហារដុត/BBQ"],
-    drinkTypes: ["ស្រា/ បៀរ"],
-    ageGroups: ["យុវជន", "មនុស្សពេញវ័យ"],
-    image: "/Image/card-img.png",
-  },
-  {
-    id: 4,
-    store: "Kongfou Kitchen",
-    name: "បបរសាច់មាន់",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ម្ហូបខ្មែរ"],
-    drinkTypes: ["តែ"],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-  },
-  {
-    id: 5,
-    store: "Kongfou Kitchen",
-    name: "មីឆាកូរ៉េ",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ម្ហូបចិន"],
-    drinkTypes: ["តែ"],
-    ageGroups: ["យុវជន"],
-    image: "/Image/card-img.png",
-  },
-  {
-    id: 6,
-    store: "Kongfou Kitchen",
-    name: "ស៊ុប Tom Yum",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ម្ហូបថៃ"],
-    drinkTypes: ["ទឹកផ្លែឈើ"],
-    ageGroups: ["មនុស្សពេញវ័យ"],
-    image: "/Image/card-img.png",
-  },
-  {
-    id: 7,
-    store: "Kongfou Kitchen",
-    name: "នំបុ័ង Croissant",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["បង្អែម", "ម្ហូបលោកខាងលិច"],
-    drinkTypes: ["កាហ្វេ"],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-  },
-  {
-    id: 8,
-    store: "Kongfou Kitchen",
-    name: "សាច់អាំងសាច់គោ",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["អាហារដុត/BBQ"],
-    drinkTypes: ["ស្រា/ បៀរ"],
-    ageGroups: ["មនុស្សពេញវ័យ"],
-    image: "/Image/card-img.png",
-  },
-];
 
 function matchesQuery(food: FoodItem, query: string) {
   if (!query.trim()) return true;
@@ -270,7 +147,12 @@ export default function FoodSearchBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const wrapRef = useRef<HTMLDivElement>(null);
-
+  const {
+    data: recommendedFoods = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetFoodsQuery();
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -311,7 +193,7 @@ export default function FoodSearchBar() {
 
   const filteredFoods = useMemo(
     () =>
-      MOCK_FOODS.filter(
+      recommendedFoods.filter(
         (food) =>
           matchesQuery(food, query) &&
           matchesGroup(food.foodTypes, groupedSelected.food) &&
@@ -344,13 +226,13 @@ export default function FoodSearchBar() {
         </div>
 
         {/* Location pill */}
-        <button
+        {/* <button
           type="button"
           className="flex flex-1 min-w-[260px] items-center gap-2.5 h-[60px] rounded-full border border-[#e7e6e1] bg-white px-[22px] text-[15px] text-[#3d3d3a] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.03)] transition-all duration-150 hover:border-[#cfcec6] hover:shadow-[0_4px_14px_rgba(20,40,30,0.08)]"
         >
           <LocationIcon className="h-5 w-5 shrink-0 text-[#1c6b45]" />
           <span className="truncate">ទីតាំងហាងដែលនៅជិតអ្នក</span>
-        </button>
+        </button> */}
 
         {/* Category dropdown */}
         <div ref={wrapRef} className="relative z-30 flex-none min-w-[220px]">
@@ -454,68 +336,9 @@ export default function FoodSearchBar() {
             </motion.p>
           )}
           {filteredFoods.map((food) => (
-            <motion.div
-              key={food.id}
-              layout
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="flex flex-col w-fit gap-4 bg-white border border-gray-100 shadow-sm rounded-[24px] p-2.5"
-            >
-              <div className="relative">
-                <img
-                  src={food.image}
-                  alt={food.name}
-                  className="rounded-[14px] w-[350px] object-cover"
-                />
-                <button
-                  type="button"
-                  aria-label="Save to favorites"
-                  className="absolute top-0 right-0"
-                >
-                  <CiHeart className="text-4xl p-2 bg-[#1c6b45] font-bold rounded-full text-white" />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <div className="flex text-secondary-500 items-center gap-2">
-                  <FaStore />
-                  <p className="mt-1  text-[14px]">{food.store}</p>
-                </div>
-                <div className="flex justify-between items-center">
-                  <p className="text-[24px] font-medium text-[#3d3d3a]">
-                    {food.name}
-                  </p>
-                  <p className="text-[24px] font-medium text-[#1c6b45]">{`${food.price}$`}</p>
-                </div>
-                {/* <p className="text-gray-500 text-[16px]">{food.description}</p> */}
-                <div className="flex gap-4">
-                  <div className="flex gap-2 items-center text-amber-500">
-                    <FaStar />
-                    <p className="mt-1">{food.rating}</p>
-                  </div>
-                  <div className="flex gap-2 items-center text-[#1c6b45]">
-                    <IoMdTime />
-                    <p>{food.time}</p>
-                  </div>
-                  <div className="flex gap-2 items-center text-[#1c6b45]">
-                    <MdDeliveryDining className="text-xl" />
-                    <p>{food.distance}</p>
-                  </div>
-                </div>
-                <div className="flex gap-2 items-center flex-wrap">
-                  {food.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="bg-[#1c6b45] text-gray-100 w-fit px-3 py-1 rounded-full text-sm"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+            <Link key={food.id} href={`/food/${food.id}`}>
+              <FoodCardComponent food={food} />
+            </Link>
           ))}
         </AnimatePresence>
       </div>

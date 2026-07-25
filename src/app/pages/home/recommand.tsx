@@ -11,6 +11,7 @@ import { EMPTY_FILTERS } from "@/app/types/food";
 import Link from "next/link";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
 import Image from "next/image";
+import FoodCardComponent from "@/components/FoodCardComponent";
 
 type TabId = MealTime | "all";
 
@@ -66,17 +67,31 @@ export default function RecommandSection({
   // }, []);
   useEffect(() => {
     const applyTimeBasedTab = () => {
-      if (isManualOverride.current) return; // don't override user's manual click
+      if (isManualOverride.current) return;
       const currentHour = new Date().getHours();
-      setActiveTab(getMealTimeByHour(currentHour));
+      setActiveTab((prev) => {
+        const next = getMealTimeByHour(currentHour);
+        return prev === next ? prev : next;
+      });
     };
 
     applyTimeBasedTab(); // run immediately on mount
     hasAutoSelected.current = true;
 
-    const intervalId = setInterval(applyTimeBasedTab, 5000); // check every 1 minute
+    const intervalId = setInterval(applyTimeBasedTab, 1_000);
 
-    return () => clearInterval(intervalId);
+    // Force an immediate recheck when the tab regains focus/visibility —
+    // this is what actually fixes the "need multiple refreshes" issue,
+    // since background-tab timer throttling means the interval alone
+    // can't be trusted to fire promptly while you're away from the tab.
+    document.addEventListener("visibilitychange", applyTimeBasedTab);
+    window.addEventListener("focus", applyTimeBasedTab);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", applyTimeBasedTab);
+      window.removeEventListener("focus", applyTimeBasedTab);
+    };
   }, []);
 
   const {
@@ -85,7 +100,7 @@ export default function RecommandSection({
     isError,
     error,
   } = useGetFoodsQuery();
-
+  console.log(recommendedFoods);
   if (error) {
     console.log("RTK Query error:", JSON.stringify(error, null, 2));
   }
@@ -173,67 +188,7 @@ export default function RecommandSection({
           )}
           {filteredFoods.map((food) => (
             <Link key={food.id} href={`/food/${food.id}`}>
-              <motion.div
-                layout
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="flex flex-col w-fit gap-4 bg-white border border-gray-100 shadow-sm rounded-[24px] p-2.5"
-              >
-                <div className="relative">
-                  <Image
-                    width={285}
-                    height={370}
-                    src={food.image}
-                    alt={food.name}
-                    className="rounded-[14px] h-46.25 w-87.5 object-cover"
-                  />
-                  <button
-                    type="button"
-                    aria-label="Save to favorites"
-                    className="absolute top-0 right-0"
-                  >
-                    <CiHeart className="text-4xl p-2 bg-primary-800 font-bold rounded-full text-white" />
-                  </button>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex text-secondary-400 items-center gap-2">
-                    <FaStore />
-                    <p className="mt-1 text-[14px]">{food.store}</p>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-[24px] font-medium text-primary-900">
-                      {food.name}
-                    </p>
-                    <p className="text-[24px] font-medium text-primary-800">{`${food.price}$`}</p>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="flex gap-2 items-center text-accent-400">
-                      <FaStar />
-                      <p className="mt-1">{food.rating}</p>
-                    </div>
-                    <div className="flex gap-2 items-center text-primary-400">
-                      <IoMdTime />
-                      <p>{food.time}</p>
-                    </div>
-                    <div className="flex gap-2 items-center text-primary-400">
-                      <MdDeliveryDining className="text-xl" />
-                      <p>{food.distance}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-center flex-wrap">
-                    {food.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-primary-800 text-gray-100 w-fit px-3 py-1 rounded-full text-sm"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
+              <FoodCardComponent food={food} />
             </Link>
           ))}
         </AnimatePresence>
