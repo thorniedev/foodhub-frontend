@@ -5,7 +5,7 @@ import { AOSInit } from "@/components/AOSInit";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import Navbar from "./layout/Navbar";
 import Footer from "./layout/Footer";
-import SectionModal from "./pages/home/SectionModal";
+import SectionModal from "./home/SectionModal";
 import Providers from "@/app/store/Providers";
 
 const geistSans = Geist({
