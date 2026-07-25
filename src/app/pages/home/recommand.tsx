@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoMdTime } from "react-icons/io";
 import { FaStar, FaStore } from "react-icons/fa";
@@ -10,14 +10,22 @@ import type { MealTime, FilterState } from "@/app/types/food";
 import { EMPTY_FILTERS } from "@/app/types/food";
 import Link from "next/link";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
-import error from "next/error";
 import Image from "next/image";
 
-const tabs: { id: MealTime; label: string }[] = [
+type TabId = MealTime | "all";
+
+const tabs: { id: TabId; label: string }[] = [
+  { id: "all", label: "ទាំងអស់" },
   { id: "breakfast", label: "អាហារពេលព្រឹក" },
   { id: "lunch", label: "អាហារពេលថ្ងៃ" },
   { id: "dinner", label: "អាហារពេលល្ងាច" },
 ];
+
+function getMealTimeByHour(hour: number): TabId {
+  if (hour >= 5 && hour < 11) return "breakfast";
+  if (hour >= 11 && hour < 17) return "lunch";
+  return "dinner";
+}
 
 function matchesQuery(
   food: { name: string; store: string; description: string; tags: string[] },
@@ -46,21 +54,47 @@ type RecommandSectionProps = {
 export default function RecommandSection({
   filters = EMPTY_FILTERS,
 }: RecommandSectionProps) {
-  const [activeTab, setActiveTab] = useState<MealTime>("breakfast");
+  const [activeTab, setActiveTab] = useState<TabId>("all");
+  const hasAutoSelected = useRef(false);
+  const isManualOverride = useRef(false);
+  // useEffect(() => {
+  //   if (!hasAutoSelected.current) {
+  //     hasAutoSelected.current = true;
+  //     const currentHour = new Date().getHours();
+  //     setActiveTab(getMealTimeByHour(currentHour));
+  //   }
+  // }, []);
+  useEffect(() => {
+    const applyTimeBasedTab = () => {
+      if (isManualOverride.current) return; // don't override user's manual click
+      const currentHour = new Date().getHours();
+      setActiveTab(getMealTimeByHour(currentHour));
+    };
+
+    applyTimeBasedTab(); // run immediately on mount
+    hasAutoSelected.current = true;
+
+    const intervalId = setInterval(applyTimeBasedTab, 5000); // check every 1 minute
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const {
     data: recommendedFoods = [],
     isLoading,
     isError,
+    error,
   } = useGetFoodsQuery();
 
   if (error) {
     console.log("RTK Query error:", JSON.stringify(error, null, 2));
   }
+
   const filteredFoods = useMemo(
     () =>
       recommendedFoods.filter(
         (food) =>
-          food.mealTime === activeTab &&
+          (activeTab === "all" || food.mealTime === activeTab) &&
           matchesQuery(food, filters.query) &&
           matchesGroup(food.foodTypes, filters.food) &&
           matchesGroup(food.drinkTypes, filters.drink) &&
@@ -90,7 +124,10 @@ export default function RecommandSection({
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                isManualOverride.current = true;
+                setActiveTab(tab.id);
+              }}
               className={`relative cursor-pointer pb-4 whitespace-nowrap text-lg md:text-xl font-semibold transition-colors ${
                 activeTab === tab.id
                   ? "text-primary-700"
@@ -142,12 +179,12 @@ export default function RecommandSection({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="flex flex-col  w-fit gap-4 bg-white border border-gray-100 shadow-sm rounded-[24px] p-2.5"
+                className="flex flex-col w-fit gap-4 bg-white border border-gray-100 shadow-sm rounded-[24px] p-2.5"
               >
                 <div className="relative">
-                  <Image 
-                  width={285}
-                  height={370}
+                  <Image
+                    width={285}
+                    height={370}
                     src={food.image}
                     alt={food.name}
                     className="rounded-[14px] h-46.25 w-87.5 object-cover"

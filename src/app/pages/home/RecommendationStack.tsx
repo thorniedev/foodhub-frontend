@@ -13,6 +13,7 @@ import "swiper/css/effect-cards";
 import "swiper/css";
 
 import type { FoodItem } from "@/app/types/food";
+import Image from "next/image";
 
 type RecommendCardStackProps = {
   foods: FoodItem[];
@@ -151,7 +152,9 @@ function FoodCard({ food }: { food: FoodItem }) {
   return (
     <div className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200  shadow-sm rounded-[24px] p-2.5">
       <div className="relative bord flex-1 min-h-0">
-        <img
+        <Image
+          width={285}
+          height={370}
           src={food.image}
           alt={food.name}
           draggable={false}
