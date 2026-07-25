@@ -31,7 +31,7 @@ export default function FoodCardComponent({ food }: Props) {
           height={370}
           src={image}
           alt={name}
-          className="rounded-[14px] h-46.25 w-71.25 object-cover"
+          className="rounded-[14px] md:w-67.5  md:h-37.5 lg:h-46.25 lg:w-71.25 object-cover"
         />
 
         <button className="absolute top-2 right-2">
@@ -46,7 +46,9 @@ export default function FoodCardComponent({ food }: Props) {
         </div>
 
         <div className="flex justify-between items-center">
-          <p className="text-[24px] font-medium text-primary-900">{name}</p>
+          <p className="text-[24px] font-medium text-primary-900 line-clamp-1">
+            {name}
+          </p>
 
           <p className="text-[24px] font-medium text-primary-800">${price}</p>
         </div>

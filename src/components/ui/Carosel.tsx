@@ -11,6 +11,7 @@ export type CarouselItem = {
 
 type CarouselProps = {
   items: CarouselItem[];
+  /** fixed gap in px; leave undefined to use the responsive default (16 / 20 / 24) */
   gap?: number;
   className?: string;
   autoPlay?: boolean;
@@ -19,17 +20,20 @@ type CarouselProps = {
   pauseOnHover?: boolean;
   /** loop seamlessly back to the first slide after the last (default: true) */
   loop?: boolean;
+  /** show the prev/next arrows on phones too (default: false — swipe instead) */
+  showArrowsOnMobile?: boolean;
 };
 
 export default function Carousel({
   items,
-  gap = 24,
+  gap,
   className = "",
   autoPlay = false,
   autoPlayInterval = 3000,
   autoPlayResumeDelay = 3000,
   pauseOnHover = true,
   loop = true,
+  showArrowsOnMobile = false,
 }: CarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragMoved = useRef(false);
@@ -48,14 +52,28 @@ export default function Carousel({
   const hoveredRef = useRef(false);
   const activeIndexRef = useRef(0);
   const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // where a smooth scroll is currently heading, so rapid arrow clicks stack
+  const targetIndexRef = useRef<{ index: number; at: number }>({
+    index: 0,
+    at: 0,
+  });
 
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   const n = items.length;
   const isLooping = loop && n > 1;
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduceMotion(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Three back-to-back copies of the items so we can always keep the
   // visible scroll position inside the "real" (middle) copy, and jump
@@ -86,12 +104,14 @@ export default function Carousel({
       if (target) {
         el.scrollLeft = target.offsetLeft;
         activeIndexRef.current = idx + n;
+        targetIndexRef.current = { index: idx + n, at: 0 };
       }
     } else if (idx >= 2 * n) {
       const target = cardEls[idx - n];
       if (target) {
         el.scrollLeft = target.offsetLeft;
         activeIndexRef.current = idx - n;
+        targetIndexRef.current = { index: idx - n, at: 0 };
       }
     }
   }, [isLooping, n]);
@@ -142,6 +162,7 @@ export default function Carousel({
       if (target) {
         el.scrollLeft = target.offsetLeft;
         activeIndexRef.current = n;
+        targetIndexRef.current = { index: n, at: 0 };
       }
     }
 
@@ -155,19 +176,54 @@ export default function Carousel({
     };
   }, [updateArrows, isLooping, n]);
 
+  // card widths change at every breakpoint — re-align to the active card
+  // after a resize so we never rest half-way between two slides
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    let t: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        const cardEls = Array.from(el.children) as HTMLElement[];
+        const card = cardEls[activeIndexRef.current];
+        if (card) el.scrollLeft = card.offsetLeft;
+      }, 150);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      clearTimeout(t);
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       if (rafId.current != null) cancelAnimationFrame(rafId.current);
     };
   }, []);
 
-  const goToIndex = useCallback((index: number) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const cardEls = Array.from(el.children) as HTMLElement[];
-    if (cardEls.length === 0) return;
-    const clamped = Math.max(0, Math.min(index, cardEls.length - 1));
-    el.scrollTo({ left: cardEls[clamped].offsetLeft, behavior: "smooth" });
+  const goToIndex = useCallback(
+    (index: number) => {
+      const el = trackRef.current;
+      if (!el) return;
+      const cardEls = Array.from(el.children) as HTMLElement[];
+      if (cardEls.length === 0) return;
+      const clamped = Math.max(0, Math.min(index, cardEls.length - 1));
+      targetIndexRef.current = { index: clamped, at: performance.now() };
+      el.scrollTo({
+        left: cardEls[clamped].offsetLeft,
+        behavior: reduceMotion ? "auto" : "smooth",
+      });
+    },
+    [reduceMotion],
+  );
+
+  // base index for the next step: the in-flight target if a smooth scroll
+  // is still running, otherwise wherever we actually are
+  const stepBase = useCallback(() => {
+    const { index, at } = targetIndexRef.current;
+    return performance.now() - at < 500 ? index : activeIndexRef.current;
   }, []);
 
   const advance = useCallback(() => {
@@ -178,15 +234,15 @@ export default function Carousel({
 
     if (isLooping) {
       // extended list + normalizeLoop keeps this safe indefinitely
-      goToIndex(activeIndexRef.current + 1);
+      goToIndex(stepBase() + 1);
     } else {
       const isAtEnd = activeIndexRef.current >= cardEls.length - 1;
-      if (!isAtEnd) goToIndex(activeIndexRef.current + 1);
+      if (!isAtEnd) goToIndex(stepBase() + 1);
     }
-  }, [goToIndex, isLooping]);
+  }, [goToIndex, isLooping, stepBase]);
 
   useEffect(() => {
-    if (!autoPlay) return;
+    if (!autoPlay || reduceMotion) return;
 
     const CHECK_INTERVAL = 200;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -197,6 +253,7 @@ export default function Carousel({
       const isPaused =
         dragState.current.dragging ||
         (pauseOnHover && hoveredRef.current) ||
+        document.hidden ||
         now < pausedUntilRef.current;
 
       if (!isPaused && now - lastAdvanceRef.current >= autoPlayInterval) {
@@ -208,23 +265,19 @@ export default function Carousel({
 
     timeoutId = setTimeout(tick, CHECK_INTERVAL);
     return () => clearTimeout(timeoutId);
-  }, [autoPlay, autoPlayInterval, pauseOnHover, advance]);
+  }, [autoPlay, autoPlayInterval, pauseOnHover, advance, reduceMotion]);
 
+  // step by one card, measured from the DOM so it stays correct at every
+  // breakpoint regardless of what the gap resolves to
   const scrollByCard = (direction: 1 | -1) => {
-    const el = trackRef.current;
-    if (!el) return;
     pauseAutoPlay();
-    const card = el.children[0] as HTMLElement | undefined;
-    const step = card
-      ? card.getBoundingClientRect().width + gap
-      : el.clientWidth;
-    el.scrollBy({ left: step * direction, behavior: "smooth" });
+    goToIndex(stepBase() + direction);
   };
 
   const scrollToIndex = (index: number) => {
     pauseAutoPlay();
-    const target = isLooping ? n + index : index;
-    goToIndex(target);
+    const base = isLooping ? Math.floor(stepBase() / n) * n : 0;
+    goToIndex(base + index);
   };
 
   const snapToNearest = useCallback(() => {
@@ -240,6 +293,7 @@ export default function Carousel({
         closest = i;
       }
     });
+    targetIndexRef.current = { index: closest, at: performance.now() };
     el.scrollTo({
       left: cardEls[closest]?.offsetLeft ?? 0,
       behavior: "smooth",
@@ -341,8 +395,29 @@ export default function Carousel({
     }
   };
 
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      scrollByCard(1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      scrollByCard(-1);
+    }
+  };
+
+  const arrowBase = `${
+    showArrowsOnMobile ? "flex" : "hidden sm:flex"
+  } absolute top-1/2 -translate-y-1/2 z-10
+     h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-full
+     bg-white/90 backdrop-blur-sm shadow-md border border-gray-200
+     text-gray-700 hover:bg-white
+     focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700
+     disabled:opacity-0 disabled:pointer-events-none transition-opacity`;
+
   return (
-    <div className={` max-w-7xl container mx-auto px-4 ${className}`}>
+    <div
+      className={`mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-4 ${className}`}
+    >
       <div
         className="relative"
         onMouseEnter={() => {
@@ -357,29 +432,32 @@ export default function Carousel({
           aria-label="Previous slide"
           onClick={() => scrollByCard(-1)}
           disabled={!canPrev}
-          className="absolute left-0 sm:-left-5 top-1/2 -translate-y-1/2 z-10
-                     flex h-10 w-10 items-center justify-center rounded-full
-                     bg-white shadow-md border border-gray-200
-                     disabled:opacity-0 disabled:pointer-events-none
-                     transition-opacity hover:bg-gray-50"
+          className={`${arrowBase} left-2 min-[1360px]:-left-5`}
         >
           <ChevronIcon direction="left" />
         </button>
 
         <div
           ref={trackRef}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Featured items"
+          tabIndex={0}
+          onKeyDown={onKeyDown}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerLeave={endDrag}
           onClickCapture={onClickCapture}
-          className={`flex overflow-x-auto select-none
+          className={`flex overflow-x-auto select-none rounded-2xl
+                     gap-4 sm:gap-5 lg:gap-6
+                     focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-700
                      [scrollbar-width:none] [-ms-overflow-style:none]
                      [&::-webkit-scrollbar]:hidden
                      ${isDragging ? "cursor-grabbing" : "cursor-grab scroll-smooth"}
                      ${isDragging ? "" : "snap-x snap-mandatory"}`}
           style={{
-            gap: `${gap}px`,
+            ...(gap != null ? { gap: `${gap}px` } : null),
             scrollPaddingLeft: 0,
             touchAction: "pan-y",
             overscrollBehaviorX: "contain",
@@ -388,16 +466,16 @@ export default function Carousel({
           {displayItems.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="snap-start shrink-0 basis-full sm:basis-[70%] lg:basis-[calc(50%-12px)]"
+              className="snap-start shrink-0 basis-[88%] sm:basis-[70%] lg:basis-[calc(50%-12px)]"
             >
-              <div className="relative w-full h-75 aspect-video overflow-hidden rounded-2xl bg-gray-100">
+              <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 aspect-[16/9] sm:aspect-[2/1] lg:aspect-auto lg:h-75">
                 <Image
                   src={item.image}
                   alt={item.alt}
                   fill
                   draggable={false}
                   className="object-cover pointer-events-none"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 50vw"
+                  sizes="(max-width: 640px) 88vw, (max-width: 1024px) 70vw, 50vw"
                   priority={false}
                 />
               </div>
@@ -410,27 +488,28 @@ export default function Carousel({
           aria-label="Next slide"
           onClick={() => scrollByCard(1)}
           disabled={!canNext}
-          className="absolute right-0 sm:-right-5 top-1/2 -translate-y-1/2 z-10
-                     flex h-10 w-10 items-center justify-center rounded-full
-                     bg-white shadow-md border border-gray-200
-                     disabled:opacity-0 disabled:pointer-events-none
-                     transition-opacity hover:bg-gray-50"
+          className={`${arrowBase} right-2 min-[1360px]:-right-5`}
         >
           <ChevronIcon direction="right" />
         </button>
       </div>
 
-      <div className="mt-4 flex justify-center gap-2">
+      <div className="mt-3 lg:mt-4 flex flex-wrap justify-center">
         {items.map((item, i) => (
           <button
             key={item.id}
             type="button"
             aria-label={`Go to slide ${i + 1}`}
+            aria-current={activeIndex === i}
             onClick={() => scrollToIndex(i)}
-            className={`h-2 rounded-full transition-all ${
-              activeIndex === i ? "w-6 bg-primary-700" : "w-2 bg-gray-300"
-            }`}
-          />
+            className="p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 rounded-full"
+          >
+            <span
+              className={`block h-2 rounded-full transition-all ${
+                activeIndex === i ? "w-6 bg-primary-700" : "w-2 bg-gray-300"
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>
@@ -449,6 +528,7 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={direction === "left" ? "" : "rotate-180"}
+      aria-hidden="true"
     >
       <polyline points="15 18 9 12 15 6" />
     </svg>
@@ -456,8 +536,16 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
 }
 
 export const slides: CarouselItem[] = [
-  { id: 1, image: "/Image/benner.png", alt: "Grilled chicken combo with dipping sauces" },
-  { id: 2, image: "/Image/benner.png", alt: "Fried chicken special combo with fries and coke" },
+  {
+    id: 1,
+    image: "/Image/benner.png",
+    alt: "Grilled chicken combo with dipping sauces",
+  },
+  {
+    id: 2,
+    image: "/Image/benner.png",
+    alt: "Fried chicken special combo with fries and coke",
+  },
   { id: 3, image: "/Image/benner.png", alt: "Chicken burger combo" },
   { id: 4, image: "/Image/benner.png", alt: "Family sharing platter" },
 ];
