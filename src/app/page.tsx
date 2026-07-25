@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
 import PopularSection from "./pages/home/popular";
-import RecommandSection from "@/app/pages/home/recommand";
+import RecommandSection from "@/app/pages/home/Recommand";
 import EventSection from "./pages/home/event";
 import LocationSection from "./pages/home/location";
 import TextType from "@/components/TextType";

@@ -12,7 +12,7 @@ export default function NotFoundPage() {
       />{" "}
       {/* <img className="w-[350px] hidden dark:block" src={LogoDark} alt="L0go" /> */}
       <div className="flex py-4 dark:bg-white px-10 rounded-full  flex-col items-center ">
-        <h2 className="font-semibold text-primary-800 ">404 - Page </h2>
+        {/* <h2 className="font-semibold text-primary-800 ">404 - Page </h2> */}
         <TrueFocus
           sentence="Not Found"
           manualMode={false}

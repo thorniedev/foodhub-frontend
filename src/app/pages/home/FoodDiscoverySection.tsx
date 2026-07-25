@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import FoodSearchBar from "./FoodSearchBar";
-import RecommandSection from "./recommand";
+import RecommandSection from "./Recommand";
 import { EMPTY_FILTERS, type FilterState } from "@/app/types/food";
 
 const FOOD_OPTIONS = ["ម្ហូបខ្មែរ", "ម្ហូបចិន", "ម្ហូបថៃ", "ម្ហូបលោកខាងលិច", "អាហារដុត/BBQ", "បង្អែម"];

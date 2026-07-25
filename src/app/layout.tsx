@@ -6,7 +6,7 @@ import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import Navbar from "./layout/Navbar";
 import Footer from "./layout/Footer";
 import SectionModal from "./pages/home/SectionModal";
-import { Providers } from "./providers";
+import Providers from "@/app/store/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
