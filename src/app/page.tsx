@@ -14,10 +14,7 @@ import SplitReveal from "../../components/animata/preloader/split-reveal";
 import Modal from "../../components/animata/overlay/modal";
 import { Skiper30 } from "@/components/ui/skiper-ui/skiper30";
 import { Skiper19 } from "@/components/ui/skiper-ui/skiper19";
-// <<<<<<< HEAD
-// export default function Home() {
-  // const imageUrls = ["/Image/background.png", "/Image/logo.png"];
-// =======
+
 import Carousel, { slides } from "@/components/ui/Carosel";
 import SeasonSection from "./pages/home/season";
 import MealsByAgeSection from "./pages/home/age";
