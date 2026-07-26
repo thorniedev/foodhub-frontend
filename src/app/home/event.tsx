@@ -20,7 +20,7 @@ export default function EventSection() {
       <div
         data-aos="fade-up"
         data-aos-delay="150"
-        className="grid grid-cols-2 container mx-auto max-w-7xl sm:grid-cols-2 md:grid-cols-5 gap-4 items-center place-content-center"
+        className="grid grid-cols-2 container lg:px-0 md:px-4 mx-auto max-w-7xl sm:grid-cols-2 md:grid-cols-5 gap-4 items-center place-content-center"
       >
         {/* Left Content */}
         <div
