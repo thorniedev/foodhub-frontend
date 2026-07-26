@@ -227,3 +227,201 @@ npm install --legacy-peer-deps
 
 % # Step 5: Push
 git push origin longfou
+
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ 
+ *  History restored 
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git remote -v
+origin  https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git (fetch)
+origin  https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git (push)
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git log --format='%an <%ae>'
+Longfou1900 <FouFou9172@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+ngovkimsouheng <kokocorona9@gmail.com>
+:
+ *  History restored 
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git fetch all
+fatal: 'all' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git fetch origin
+remote: Enumerating objects: 20, done.
+remote: Counting objects: 100% (20/20), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 20 (delta 15), reused 20 (delta 15), pack-reused 0 (from 0)
+Unpacking objects: 100% (20/20), 2.13 KiB | 9.00 KiB/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   31a1c35..d1cdd83  dara       -> origin/dara
+   d1cdd83..6d76606  main       -> origin/main
+   d1cdd83..6d76606  souheng    -> origin/souheng
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git pull souheng
+fatal: 'souheng' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git pull origin souheng
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            souheng    -> FETCH_HEAD
+Merge made by the 'ort' strategy.
+ src/app/CreatePost.tsx                |  82 ---------
+ src/app/PostsList.tsx                 | 116 -------------
+ src/app/api/foods/route.ts            |   0
+ src/app/food/page.tsx                 |  48 +++---
+ src/app/home/FoodDiscoverySection.tsx |   4 +-
+ src/app/home/FoodSearchBar.tsx        |  24 +--
+ src/app/home/Recommand.tsx            |   2 +-
+ src/app/home/event.tsx                |   2 +-
+ src/app/home/location.tsx             |   2 +-
+ src/app/not-found.tsx                 |  11 +-
+ src/app/page.tsx                      | 302 +++++++++++++++++-----------------
+ src/components/ui/Carosel.tsx         |   2 +-
+ src/components/ui/TrueFocus.tsx       | 152 -----------------
+ src/lib/services/api.ts               |  88 ----------
+ src/test/ai.tsx                       |   3 +-
+ 15 files changed, 196 insertions(+), 642 deletions(-)
+ delete mode 100644 src/app/CreatePost.tsx
+ delete mode 100644 src/app/PostsList.tsx
+ delete mode 100644 src/app/api/foods/route.ts
+ delete mode 100644 src/components/ui/TrueFocus.tsx
+ delete mode 100644 src/lib/services/api.ts
+
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git commmit -m "save latest commit 22"
+git: 'commmit' is not a git command. See 'git --help'.
+
+The most similar command is
+        commit
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git pull origin dara
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            dara       -> FETCH_HEAD
+Already up to date.
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git branch 
+  longfou
+* longfu
+  main
+  master
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git checkout dara
+error: Your local changes to the following files would be overwritten by checkout:
+        run.git.NOTE.MD
+Please commit your changes or stash them before you switch branches.
+Aborting
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git fetch
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git fetch origin
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git branch
+  longfou
+* longfu
+  main
+  master
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git branch -a
+  longfou
+* longfu
+  main
+  master
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/dara
+  remotes/origin/longfou
+  remotes/origin/longfu
+  remotes/origin/lyta
+  remotes/origin/main
+  remotes/origin/mingyeak
+  remotes/origin/souheng
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git fetch --all --prune
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git branch -a
+  longfou
+* longfu
+  main
+  master
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/dara
+  remotes/origin/longfou
+  remotes/origin/longfu
+  remotes/origin/lyta
+  remotes/origin/main
+  remotes/origin/mingyeak
+  remotes/origin/souheng
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git switch dara
+error: Your local changes to the following files would be overwritten by checkout:
+        run.git.NOTE.MD
+Please commit your changes or stash them before you switch branches.
+Aborting
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git switch origin dara
+fatal: only one reference expected
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git switch -c dara
+Switched to a new branch 'dara'
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (dara)
+$ git pull origin dara
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            dara       -> FETCH_HEAD
+Already up to date.
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (dara)
+$ git pull origin longfu
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            longfu     -> FETCH_HEAD
+Already up to date.
+
+
