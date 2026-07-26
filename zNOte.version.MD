@@ -57,3 +57,17 @@ remote: Total 19 (delta 13), reused 19 (delta 13), pack-reused 0 (from 0)
 Unpacking objects: 100% (19/19), 11.68 KiB | 50.00 KiB/s, done.
 From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
    6d76606..a2d97d6  souheng    -> origin/souheng
+
+
+   
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git stash
+Saved working directory and index state WIP on longfou: ed846f8 Update zNOte.version.MD
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin longfou
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            longfou    -> FETCH_HEAD
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+Automatic merge failed; fix conflicts and then commit the result.
