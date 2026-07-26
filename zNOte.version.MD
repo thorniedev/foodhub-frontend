@@ -39,3 +39,21 @@ From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
 Auto-merging src/app/food/page.tsx
 CONFLICT (content): Merge conflict in src/app/food/page.tsx
 Automatic merge failed; fix conflicts and then commit the result.
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou|MERGING)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou|MERGING)
+$ git commit -m "fixed errors in food page of applyFilters(recommendedFoods)"
+[longfou 45387ab] fixed errors in food page of applyFilters(recommendedFoods)
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git fetch origin
+remote: Enumerating objects: 19, done.
+remote: Counting objects: 100% (19/19), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 19 (delta 13), reused 19 (delta 13), pack-reused 0 (from 0)
+Unpacking objects: 100% (19/19), 11.68 KiB | 50.00 KiB/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   6d76606..a2d97d6  souheng    -> origin/souheng
