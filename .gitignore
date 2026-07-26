@@ -40,5 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-note.git.MD
+note.git-Store-version.MD
 run.git.NOTE.MD
