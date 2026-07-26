@@ -16,3 +16,26 @@ hint: Updates were rejected because the tip of your current branch is behind
 hint: its remote counterpart. If you want to integrate the remote changes,
 hint: use 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "fixed error confliction codes longfou with main "
+[longfou 90779ca] fixed error confliction codes longfou with main
+ 2 files changed, 18 insertions(+), 25 deletions(-)
+ create mode 100644 zNOte.version.MD
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "fixed error confliction codes longfou with main "
+[longfou 9761597] fixed error confliction codes longfou with main
+ 1 file changed, 1 insertion(+)
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin souheng
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            souheng    -> FETCH_HEAD
+Auto-merging src/app/food/page.tsx
+CONFLICT (content): Merge conflict in src/app/food/page.tsx
+Automatic merge failed; fix conflicts and then commit the result.

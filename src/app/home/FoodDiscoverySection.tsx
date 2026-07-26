@@ -28,13 +28,13 @@ export default function FoodDiscoverySection() {
 
   return (
     <div className="flex flex-col gap-10">
-      <FoodSearchBar
+      {/* <FoodSearchBar
         query={filters.query}
         onQueryChange={(query) => setFilters((prev) => ({ ...prev, query }))}
         selected={new Set([...filters.food, ...filters.drink, ...filters.age])}
         onToggleChip={toggleChip}
         onClearAll={() => setFilters(EMPTY_FILTERS)}
-      />
+      /> */}
       <RecommandSection filters={filters} />
     </div>
   );

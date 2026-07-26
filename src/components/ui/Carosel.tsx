@@ -416,7 +416,7 @@ export default function Carousel({
 
   return (
     <div
-      className={`mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-4 ${className}`}
+      className={`mx-auto w-full max-w-7xl  ${className}`}
     >
       <div
         className="relative"

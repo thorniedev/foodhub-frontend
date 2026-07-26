@@ -21,11 +21,8 @@ import { CiHeart } from "react-icons/ci";
 import { MdDeliveryDining } from "react-icons/md";
 
 import type { FoodItem } from "@/app/types/food";
-<<<<<<< HEAD
-=======
 import FoodCardComponent from "@/components/FoodCardComponent";
 import { useGetFoodsQuery } from "../store/foodApi";
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 
 /* -------------------------------------------------------------------- */
 /*  Mock data — same FoodItem shape used across RecommandCardStack /
@@ -33,9 +30,9 @@ import { useGetFoodsQuery } from "../store/foodApi";
 /* -------------------------------------------------------------------- */
 
 type ListedFood = FoodItem & {
-  pickup: string;
-  badge: string;
-  dietTypes: string[];
+  pickup?: string;
+  badge?: string;
+  dietTypes?: string[];
 };
 
 const NEW_FOODS: ListedFood[] = [
@@ -304,7 +301,12 @@ function parseMinutes(time: string) {
   return match ? Number(match[0]) : Infinity;
 }
 
-function applyFilters(foods: ListedFood[], filters: FilterState) {
+// function applyFilters(foods: ListedFood[], filters: FilterState) {
+//   const filtered = foods.filter((food) => {
+function applyFilters<T extends FoodItem & { dietTypes?: string[] }>(
+  foods: T[],
+  filters: FilterState,
+): T[] {
   const filtered = foods.filter((food) => {
     if (filters.mealTimes.length > 0) {
       const allowedValues = filters.mealTimes.map(
@@ -313,20 +315,20 @@ function applyFilters(foods: ListedFood[], filters: FilterState) {
       if (!allowedValues.includes(food.mealTime)) return false;
     }
     if (filters.foodTypes.length > 0) {
-      const hasMatch = food.foodTypes.some((t) =>
-        filters.foodTypes.includes(t),
-      );
-      if (!hasMatch) return false;
+      if (!food.foodTypes.some((t) => filters.foodTypes.includes(t))) return false;
     }
     if (filters.dietTypes.length > 0) {
-      const hasMatch = food.dietTypes.some((t) =>
-        filters.dietTypes.includes(t),
-      );
-      if (!hasMatch) return false;
+      const diet = food.dietTypes ?? [];
+      if (!diet.some((t) => filters.dietTypes.includes(t))) return false;
     }
     if (!matchesPriceTier(food.price, filters.priceTier)) return false;
     return true;
   });
+
+  // return [...filtered].sort((a, b) => {
+  //   if (filters.sortBy === "fastest") return parseMinutes(a.time) - parseMinutes(b.time);
+  //   return b.rating - a.rating;
+  // });
 
   const sorted = [...filtered].sort((a, b) => {
     if (filters.sortBy === "fastest")
@@ -932,12 +934,8 @@ function FoodSection({
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {foods.map((food) => (
-<<<<<<< HEAD
-            <FoodListCard key={food.id} food={food} />
-=======
             // <FoodListCard key={food.id} food={food} />
             <FoodCardComponent food={food} />
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
           ))}
         </div>
       )}
@@ -1047,9 +1045,6 @@ export default function FoodPage() {
 
   const filteredNewFoods = applyFilters(NEW_FOODS, filters);
   const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
-<<<<<<< HEAD
-
-=======
   // const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const {
@@ -1059,7 +1054,7 @@ export default function FoodPage() {
     error,
   } = useGetFoodsQuery();
 
-  const filteredFoods = applyFilters(recommendedFoods, filters);
+  const filteredFoods = applyFilters(recommendedFoods, filters); 
 
   const popularFoods = [...filteredFoods]
     .sort((a, b) => b.rating - a.rating)
@@ -1076,7 +1071,6 @@ export default function FoodPage() {
       </div>
     );
   }
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   return (
     <div className="min-h-screen bg-[#fafaf8]">
       {/* <Header /> */}
@@ -1098,11 +1092,7 @@ export default function FoodPage() {
         </main>
       </div>
 
-<<<<<<< HEAD
-      <Footer />
-=======
       {/* <Footer /> */}
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
     </div>
   );
 }
