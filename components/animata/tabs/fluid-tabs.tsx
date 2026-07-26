@@ -219,7 +219,10 @@ function FluidTabsTab({
       }}
       className={cn(
         tabFocusClass("rounded-full"),
+<<<<<<< HEAD
         // "relative z-10 flex flex-1 items-center justify-center px-4 py-2.5 text-primary-700 font-semibold text-[18px] ",
+=======
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         "relative cursor-pointer z-10 flex flex-1 items-center justify-center px-4 py-2.5 text-primary-700 font-semibold text-[18px] ",
         "motion-reduce:transition-none",
         className,

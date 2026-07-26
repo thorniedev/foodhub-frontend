@@ -21,6 +21,11 @@ import { CiHeart } from "react-icons/ci";
 import { MdDeliveryDining } from "react-icons/md";
 
 import type { FoodItem } from "@/app/types/food";
+<<<<<<< HEAD
+=======
+import FoodCardComponent from "@/components/FoodCardComponent";
+import { useGetFoodsQuery } from "../store/foodApi";
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 
 /* -------------------------------------------------------------------- */
 /*  Mock data — same FoodItem shape used across RecommandCardStack /
@@ -927,7 +932,12 @@ function FoodSection({
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {foods.map((food) => (
+<<<<<<< HEAD
             <FoodListCard key={food.id} food={food} />
+=======
+            // <FoodListCard key={food.id} food={food} />
+            <FoodCardComponent food={food} />
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
           ))}
         </div>
       )}
@@ -1037,7 +1047,36 @@ export default function FoodPage() {
 
   const filteredNewFoods = applyFilters(NEW_FOODS, filters);
   const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
+<<<<<<< HEAD
 
+=======
+  // const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+
+  const {
+    data: recommendedFoods = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetFoodsQuery();
+
+  const filteredFoods = applyFilters(recommendedFoods, filters);
+
+  const popularFoods = [...filteredFoods]
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 3);
+
+  if (isLoading) {
+    return <div className="text-center py-20">កំពុងផ្ទុក...</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-20 text-red-500">
+        មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ
+      </div>
+    );
+  }
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   return (
     <div className="min-h-screen bg-[#fafaf8]">
       {/* <Header /> */}
@@ -1059,7 +1098,11 @@ export default function FoodPage() {
         </main>
       </div>
 
+<<<<<<< HEAD
       <Footer />
+=======
+      {/* <Footer /> */}
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
     </div>
   );
 }

@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 "use client";
 
 import Link from "next/link";
@@ -13,12 +16,20 @@ export default function NotFoundPage() {
       />{" "}
       {/* <img className="w-[350px] hidden dark:block" src={LogoDark} alt="L0go" /> */}
       <div className="flex py-4 dark:bg-white px-10 rounded-full  flex-col items-center ">
+<<<<<<< HEAD
         <h2 className="font-semibold text-primary-800 ">404 - Page </h2>
+=======
+        {/* <h2 className="font-semibold text-primary-800 ">404 - Page </h2> */}
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         <TrueFocus
           sentence="Not Found"
           manualMode={false}
           blurAmount={5}
+<<<<<<< HEAD
           // className="dark:text-white"
+=======
+          className="dark:text-white"
+>>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
           borderColor="#fdb507"
           animationDuration={0.5}
           pauseBetweenAnimations={1}
