@@ -1042,30 +1042,30 @@ export default function FoodPage() {
   const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
   // const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
-  const {
-    data: recommendedFoods = [],
-    isLoading,
-    isError,
-    error,
-  } = useGetFoodsQuery();
+  // const {
+  //   data: recommendedFoods = [],
+  //   isLoading,
+  //   isError,
+  //   error,
+  // } = useGetFoodsQuery();
 
-  const filteredFoods = applyFilters(recommendedFoods, filters);
+  // const filteredFoods = applyFilters(recommendedFoods, filters);
 
-  const popularFoods = [...filteredFoods]
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 3);
+  // const popularFoods = [...filteredFoods]
+  //   .sort((a, b) => b.rating - a.rating)
+  //   .slice(0, 3);
 
-  if (isLoading) {
-    return <div className="text-center py-20">កំពុងផ្ទុក...</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="text-center py-20">កំពុងផ្ទុក...</div>;
+  // }
 
-  if (isError) {
-    return (
-      <div className="text-center py-20 text-red-500">
-        មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ
-      </div>
-    );
-  }
+  // if (isError) {
+  //   return (
+  //     <div className="text-center py-20 text-red-500">
+  //       មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ
+  //     </div>
+  //   );
+  // }
   return (
     <div className="min-h-screen bg-[#fafaf8]">
       {/* <Header /> */}

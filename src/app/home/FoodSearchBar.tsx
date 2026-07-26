@@ -13,7 +13,7 @@ type ChipGroup = {
   options: string[];
 };
 
-const CHIP_GROUPS: ChipGroup[] = [
+/* const CHIP_GROUPS: ChipGroup[] = [
   {
     title: "ប្រភេទម្ហូប",
     key: "food",
@@ -36,7 +36,7 @@ const CHIP_GROUPS: ChipGroup[] = [
     key: "age",
     options: ["គ្រប់វ័យ", "កុមារ", "យុវជន", "មនុស្សពេញវ័យ"],
   },
-];
+]; */
 
 // ---------- Mock data ----------
 type FoodItem = {
@@ -180,14 +180,14 @@ export default function FoodSearchBar() {
     const foodSet = new Set<string>();
     const drinkSet = new Set<string>();
     const ageSet = new Set<string>();
-    for (const group of CHIP_GROUPS) {
-      for (const option of group.options) {
-        if (!selected.has(option)) continue;
-        if (group.key === "food") foodSet.add(option);
-        if (group.key === "drink") drinkSet.add(option);
-        if (group.key === "age") ageSet.add(option);
-      }
-    }
+    // for (const group of CHIP_GROUPS) {
+    //   for (const option of group.options) {
+    //     if (!selected.has(option)) continue;
+    //     if (group.key === "food") foodSet.add(option);
+    //     if (group.key === "drink") drinkSet.add(option);
+    //     if (group.key === "age") ageSet.add(option);
+    //   }
+    // }
     return { food: foodSet, drink: drinkSet, age: ageSet };
   }, [selected]);
 
@@ -268,7 +268,7 @@ export default function FoodSearchBar() {
             }`}
           >
             <div className="max-h-[70vh] overflow-y-auto">
-              {CHIP_GROUPS.map((group, i) => (
+              {/* {CHIP_GROUPS.map((group, i) => (
                 <div
                   key={group.key}
                   className={
@@ -298,7 +298,7 @@ export default function FoodSearchBar() {
                     })}
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
 
             <div className="mt-5 flex items-center justify-between border-t border-[#e7e6e1] pt-4">
