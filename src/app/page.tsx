@@ -25,8 +25,8 @@ import { FoodItem } from "./types/food";
 import RecommendCardStack from "./home/RecommendationStack";
 import { Skiper48 } from "@/components/ui/skiper-ui/skiper48";
 import SectionModal from "./home/SectionModal";
-
-
+import { Skiper26 } from "@/components/ui/skiper-ui/skiper26";
+import { Skiper31 } from "@/components/ui/skiper-ui/skiper31";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];
@@ -503,6 +503,11 @@ export default function Home() {
 
         {/* <Skiper30 /> */}
         {/* <PopularSection /> */}
+        {/* <Skiper19/> */}
+        {/* <Skiper26/> */}
+        <div className="hidden">
+          <Skiper31 />
+        </div>
         <RecommandSection
           filters={{
             query: "",
