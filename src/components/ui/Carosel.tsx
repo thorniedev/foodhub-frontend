@@ -11,10 +11,7 @@ export type CarouselItem = {
 
 type CarouselProps = {
   items: CarouselItem[];
-<<<<<<< HEAD
-=======
   /** fixed gap in px; leave undefined to use the responsive default (16 / 20 / 24) */
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   gap?: number;
   className?: string;
   autoPlay?: boolean;
@@ -23,30 +20,20 @@ type CarouselProps = {
   pauseOnHover?: boolean;
   /** loop seamlessly back to the first slide after the last (default: true) */
   loop?: boolean;
-<<<<<<< HEAD
-=======
   /** show the prev/next arrows on phones too (default: false — swipe instead) */
   showArrowsOnMobile?: boolean;
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 };
 
 export default function Carousel({
   items,
-<<<<<<< HEAD
-  gap = 24,
-=======
   gap,
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   className = "",
   autoPlay = false,
   autoPlayInterval = 3000,
   autoPlayResumeDelay = 3000,
   pauseOnHover = true,
   loop = true,
-<<<<<<< HEAD
-=======
   showArrowsOnMobile = false,
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 }: CarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragMoved = useRef(false);
@@ -65,29 +52,21 @@ export default function Carousel({
   const hoveredRef = useRef(false);
   const activeIndexRef = useRef(0);
   const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-<<<<<<< HEAD
-=======
   // where a smooth scroll is currently heading, so rapid arrow clicks stack
   const targetIndexRef = useRef<{ index: number; at: number }>({
     index: 0,
     at: 0,
   });
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-<<<<<<< HEAD
-=======
   const [reduceMotion, setReduceMotion] = useState(false);
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 
   const n = items.length;
   const isLooping = loop && n > 1;
 
-<<<<<<< HEAD
-=======
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setReduceMotion(mq.matches);
@@ -96,7 +75,6 @@ export default function Carousel({
     return () => mq.removeEventListener("change", update);
   }, []);
 
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   // Three back-to-back copies of the items so we can always keep the
   // visible scroll position inside the "real" (middle) copy, and jump
   // invisibly between copies since they're pixel-identical.
@@ -126,20 +104,14 @@ export default function Carousel({
       if (target) {
         el.scrollLeft = target.offsetLeft;
         activeIndexRef.current = idx + n;
-<<<<<<< HEAD
-=======
         targetIndexRef.current = { index: idx + n, at: 0 };
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
       }
     } else if (idx >= 2 * n) {
       const target = cardEls[idx - n];
       if (target) {
         el.scrollLeft = target.offsetLeft;
         activeIndexRef.current = idx - n;
-<<<<<<< HEAD
-=======
         targetIndexRef.current = { index: idx - n, at: 0 };
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
       }
     }
   }, [isLooping, n]);
@@ -207,8 +179,6 @@ export default function Carousel({
     };
   }, [updateArrows, isLooping, n]);
 
-<<<<<<< HEAD
-=======
   // card widths change at every breakpoint — re-align to the active card
   // after a resize so we never rest half-way between two slides
   useEffect(() => {
@@ -230,22 +200,12 @@ export default function Carousel({
     };
   }, []);
 
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   useEffect(() => {
     return () => {
       if (rafId.current != null) cancelAnimationFrame(rafId.current);
     };
   }, []);
 
-<<<<<<< HEAD
-  const goToIndex = useCallback((index: number) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const cardEls = Array.from(el.children) as HTMLElement[];
-    if (cardEls.length === 0) return;
-    const clamped = Math.max(0, Math.min(index, cardEls.length - 1));
-    el.scrollTo({ left: cardEls[clamped].offsetLeft, behavior: "smooth" });
-=======
   const goToIndex = useCallback(
     (index: number) => {
       const el = trackRef.current;
@@ -267,7 +227,6 @@ export default function Carousel({
   const stepBase = useCallback(() => {
     const { index, at } = targetIndexRef.current;
     return performance.now() - at < 500 ? index : activeIndexRef.current;
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   }, []);
 
   const advance = useCallback(() => {
@@ -278,17 +237,6 @@ export default function Carousel({
 
     if (isLooping) {
       // extended list + normalizeLoop keeps this safe indefinitely
-<<<<<<< HEAD
-      goToIndex(activeIndexRef.current + 1);
-    } else {
-      const isAtEnd = activeIndexRef.current >= cardEls.length - 1;
-      if (!isAtEnd) goToIndex(activeIndexRef.current + 1);
-    }
-  }, [goToIndex, isLooping]);
-
-  useEffect(() => {
-    if (!autoPlay) return;
-=======
       goToIndex(stepBase() + 1);
     } else {
       const isAtEnd = activeIndexRef.current >= cardEls.length - 1;
@@ -298,7 +246,6 @@ export default function Carousel({
 
   useEffect(() => {
     if (!autoPlay || reduceMotion) return;
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 
     const CHECK_INTERVAL = 200;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -309,10 +256,7 @@ export default function Carousel({
       const isPaused =
         dragState.current.dragging ||
         (pauseOnHover && hoveredRef.current) ||
-<<<<<<< HEAD
-=======
         document.hidden ||
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         now < pausedUntilRef.current;
 
       if (!isPaused && now - lastAdvanceRef.current >= autoPlayInterval) {
@@ -324,19 +268,6 @@ export default function Carousel({
 
     timeoutId = setTimeout(tick, CHECK_INTERVAL);
     return () => clearTimeout(timeoutId);
-<<<<<<< HEAD
-  }, [autoPlay, autoPlayInterval, pauseOnHover, advance]);
-
-  const scrollByCard = (direction: 1 | -1) => {
-    const el = trackRef.current;
-    if (!el) return;
-    pauseAutoPlay();
-    const card = el.children[0] as HTMLElement | undefined;
-    const step = card
-      ? card.getBoundingClientRect().width + gap
-      : el.clientWidth;
-    el.scrollBy({ left: step * direction, behavior: "smooth" });
-=======
   }, [autoPlay, autoPlayInterval, pauseOnHover, advance, reduceMotion]);
 
   // step by one card, measured from the DOM so it stays correct at every
@@ -344,18 +275,12 @@ export default function Carousel({
   const scrollByCard = (direction: 1 | -1) => {
     pauseAutoPlay();
     goToIndex(stepBase() + direction);
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   };
 
   const scrollToIndex = (index: number) => {
     pauseAutoPlay();
-<<<<<<< HEAD
-    const target = isLooping ? n + index : index;
-    goToIndex(target);
-=======
     const base = isLooping ? Math.floor(stepBase() / n) * n : 0;
     goToIndex(base + index);
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   };
 
   const snapToNearest = useCallback(() => {
@@ -371,10 +296,7 @@ export default function Carousel({
         closest = i;
       }
     });
-<<<<<<< HEAD
-=======
     targetIndexRef.current = { index: closest, at: performance.now() };
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
     el.scrollTo({
       left: cardEls[closest]?.offsetLeft ?? 0,
       behavior: "smooth",
@@ -476,10 +398,6 @@ export default function Carousel({
     }
   };
 
-<<<<<<< HEAD
-  return (
-    <div className={` max-w-7xl container mx-auto px-4 ${className}`}>
-=======
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowRight") {
       e.preventDefault();
@@ -503,7 +421,6 @@ export default function Carousel({
     <div
       className={`mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-4 ${className}`}
     >
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
       <div
         className="relative"
         onMouseEnter={() => {
@@ -518,51 +435,32 @@ export default function Carousel({
           aria-label="Previous slide"
           onClick={() => scrollByCard(-1)}
           disabled={!canPrev}
-<<<<<<< HEAD
-          className="absolute left-0 sm:-left-5 top-1/2 -translate-y-1/2 z-10
-                     flex h-10 w-10 items-center justify-center rounded-full
-                     bg-white shadow-md border border-gray-200
-                     disabled:opacity-0 disabled:pointer-events-none
-                     transition-opacity hover:bg-gray-50"
-=======
           className={`${arrowBase} left-2 min-[1360px]:-left-5`}
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         >
           <ChevronIcon direction="left" />
         </button>
 
         <div
           ref={trackRef}
-<<<<<<< HEAD
-=======
           role="region"
           aria-roledescription="carousel"
           aria-label="Featured items"
           tabIndex={0}
           onKeyDown={onKeyDown}
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerLeave={endDrag}
           onClickCapture={onClickCapture}
-<<<<<<< HEAD
-          className={`flex overflow-x-auto select-none
-=======
           className={`flex overflow-x-auto select-none rounded-2xl
                      gap-4 sm:gap-5 lg:gap-6
                      focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-700
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
                      [scrollbar-width:none] [-ms-overflow-style:none]
                      [&::-webkit-scrollbar]:hidden
                      ${isDragging ? "cursor-grabbing" : "cursor-grab scroll-smooth"}
                      ${isDragging ? "" : "snap-x snap-mandatory"}`}
           style={{
-<<<<<<< HEAD
-            gap: `${gap}px`,
-=======
             ...(gap != null ? { gap: `${gap}px` } : null),
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
             scrollPaddingLeft: 0,
             touchAction: "pan-y",
             overscrollBehaviorX: "contain",
@@ -571,26 +469,16 @@ export default function Carousel({
           {displayItems.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-<<<<<<< HEAD
-              className="snap-start shrink-0 basis-full sm:basis-[70%] lg:basis-[calc(50%-12px)]"
-            >
-              <div className="relative w-full h-75 aspect-video overflow-hidden rounded-2xl bg-gray-100">
-=======
               className="snap-start shrink-0 basis-[88%] sm:basis-[70%] lg:basis-[calc(50%-12px)]"
             >
               <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 aspect-[16/9] sm:aspect-[2/1] lg:aspect-auto lg:h-75">
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
                 <Image
                   src={item.image}
                   alt={item.alt}
                   fill
                   draggable={false}
                   className="object-cover pointer-events-none"
-<<<<<<< HEAD
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 50vw"
-=======
                   sizes="(max-width: 640px) 88vw, (max-width: 1024px) 70vw, 50vw"
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
                   priority={false}
                 />
               </div>
@@ -603,37 +491,18 @@ export default function Carousel({
           aria-label="Next slide"
           onClick={() => scrollByCard(1)}
           disabled={!canNext}
-<<<<<<< HEAD
-          className="absolute right-0 sm:-right-5 top-1/2 -translate-y-1/2 z-10
-                     flex h-10 w-10 items-center justify-center rounded-full
-                     bg-white shadow-md border border-gray-200
-                     disabled:opacity-0 disabled:pointer-events-none
-                     transition-opacity hover:bg-gray-50"
-=======
           className={`${arrowBase} right-2 min-[1360px]:-right-5`}
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         >
           <ChevronIcon direction="right" />
         </button>
       </div>
 
-<<<<<<< HEAD
-      <div className="mt-4 flex justify-center gap-2">
-=======
       <div className="mt-3 lg:mt-4 flex flex-wrap justify-center">
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         {items.map((item, i) => (
           <button
             key={item.id}
             type="button"
             aria-label={`Go to slide ${i + 1}`}
-<<<<<<< HEAD
-            onClick={() => scrollToIndex(i)}
-            className={`h-2 rounded-full transition-all ${
-              activeIndex === i ? "w-6 bg-primary-700" : "w-2 bg-gray-300"
-            }`}
-          />
-=======
             aria-current={activeIndex === i}
             onClick={() => scrollToIndex(i)}
             className="p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 rounded-full"
@@ -644,7 +513,6 @@ export default function Carousel({
               }`}
             />
           </button>
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         ))}
       </div>
     </div>
@@ -663,10 +531,7 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={direction === "left" ? "" : "rotate-180"}
-<<<<<<< HEAD
-=======
       aria-hidden="true"
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
     >
       <polyline points="15 18 9 12 15 6" />
     </svg>
@@ -674,13 +539,6 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
 }
 
 export const slides: CarouselItem[] = [
-<<<<<<< HEAD
-  { id: 1, image: "/Image/benner.png", alt: "Grilled chicken combo with dipping sauces" },
-  { id: 2, image: "/Image/benner.png", alt: "Fried chicken special combo with fries and coke" },
-  { id: 3, image: "/Image/benner.png", alt: "Chicken burger combo" },
-  { id: 4, image: "/Image/benner.png", alt: "Family sharing platter" },
-];
-=======
   {
     id: 1,
     image: "/Image/benner.png",
@@ -694,4 +552,3 @@ export const slides: CarouselItem[] = [
   { id: 3, image: "/Image/benner.png", alt: "Chicken burger combo" },
   { id: 4, image: "/Image/benner.png", alt: "Family sharing platter" },
 ];
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915

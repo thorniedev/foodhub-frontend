@@ -16,13 +16,6 @@ const sitemapLinks: FooterLink[] = [
 export default function Footer() {
   return (
     <footer className="w-full">
-<<<<<<< HEAD
-      <div className="container justify-between flex mx-auto max-w-7xl 8 py-8">
-        {/* Brand */}
-        <div>
-          <h4 className="text-xl font-bold text-primary-800 mb-6">គេហទំព័រ</h4>
-          <div className="relative w-37.5 h-21.25 mb-6">
-=======
       <div
         className="
           mx-auto max-w-7xl
@@ -40,53 +33,32 @@ export default function Footer() {
             គេហទំព័រ
           </h4>
           <div className="relative w-[130px] h-[74px] lg:w-[150px] lg:h-[85px] mb-4 lg:mb-6">
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
             <Image
               src="/Image/logo.png"
               alt="FoodHub logo"
               fill
               className="object-contain object-left"
-<<<<<<< HEAD
-              sizes="150px"
-            />
-          </div>
-          <p className="text-slate-500  text-[18px]  leading-relaxed max-w-xs">
-            ធ្វើឱ្យការជ្រើសរើសមុខម្ហូបកាន់តែងាយស្រួល{" "}
-            <br className="lg:block max-lg:hidden" />
-=======
               sizes="(max-width: 1024px) 130px, 150px"
             />
           </div>
           <p className="text-slate-500 text-base lg:text-[18px] leading-relaxed max-w-xs">
             ធ្វើឱ្យការជ្រើសរើសមុខម្ហូបកាន់តែងាយស្រួល{" "}
             <br className="hidden lg:block" />
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
             ជាមួយការណែនាំដែលសាកសមនឹងអ្នក
           </p>
         </div>
 
         {/* Sitemap */}
-<<<<<<< HEAD
-
-        <div>
-          <h4 className="text-xl font-bold text-primary-800 mb-6">តំណភ្ជាប់</h4>
-          <ul className="space-y-4">
-=======
         <div>
           <h4 className="text-lg lg:text-xl font-bold text-primary-800 mb-4 lg:mb-6">
             តំណភ្ជាប់
           </h4>
           <ul className="space-y-3 lg:space-y-4">
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
             {sitemapLinks.map((link) => (
               <li key={link.label}>
                 <Link
                   href={link.href}
-<<<<<<< HEAD
-                  className="text-slate-500 text-[22px] hover:text-primary transition-colors"
-=======
                   className="text-slate-500 text-base sm:text-lg lg:text-[22px] hover:text-primary transition-colors"
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
                 >
                   {link.label}
                 </Link>
@@ -97,16 +69,6 @@ export default function Footer() {
 
         {/* Contact */}
         <div>
-<<<<<<< HEAD
-          <h4 className="text-xl font-bold text-primary-800 mb-6">
-            ទំនាក់ទំនង
-          </h4>
-          <ul className="space-y-4">
-            <li>
-              <Link
-                href="mailto:foodhub@gmail.com"
-                className="flex text-[20px] items-center gap-3 text-slate-500 hover:text-primary transition-colors"
-=======
           <h4 className="text-lg lg:text-xl font-bold text-primary-800 mb-4 lg:mb-6">
             ទំនាក់ទំនង
           </h4>
@@ -115,7 +77,6 @@ export default function Footer() {
               <Link
                 href="mailto:foodhub@gmail.com"
                 className="flex items-center gap-3 text-slate-500 hover:text-primary transition-colors break-all"
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
               >
                 <Mail className="w-5 h-5 shrink-0" strokeWidth={1.8} />
                 foodhub@gmail.com
@@ -124,30 +85,12 @@ export default function Footer() {
             <li>
               <Link
                 href="tel:+15550123456"
-<<<<<<< HEAD
-                className="flex items-center gap-3 text-[20px] text-slate-500 hover:text-primary transition-colors"
-=======
                 className="flex items-center gap-3 text-slate-500 hover:text-primary transition-colors"
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
               >
                 <Phone className="w-5 h-5 shrink-0" strokeWidth={1.8} />
                 +1 (555) 012-3456
               </Link>
             </li>
-<<<<<<< HEAD
-            <li className="flex items-center  gap-3 text-[20px] text-slate-500">
-              <MapPin className="w-5 h-5 shrink-0" strokeWidth={1.8} />
-              PhnomPenh, Combodia
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-xl font-bold text-primary-800 mb-6">
-            ឧបត្ថម្ភដោយ
-          </h4>
-          <div className="flex gap-2 gap-15 mb-10">
-            <div className="relative w-[195px] h-[75px]">
-=======
             <li className="flex items-center gap-3 text-slate-500">
               <MapPin className="w-5 h-5 shrink-0" strokeWidth={1.8} />
               Phnom Penh, Cambodia
@@ -162,73 +105,45 @@ export default function Footer() {
           </h4>
           <div className="flex flex-wrap items-center gap-6 lg:gap-10 mb-8 lg:mb-10">
             <div className="relative h-[56px] w-[145px] sm:h-[64px] sm:w-[168px] lg:h-[75px] lg:w-[195px]">
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
               <Image
                 src="/Image/mptc.png"
                 alt="Ministry of Posts and Telecommunications"
                 fill
                 className="object-contain object-left"
-<<<<<<< HEAD
-                sizes="195px"
-              />
-            </div>
-            <div className="relative w-[163px] h-[75px]">
-=======
                 sizes="(max-width: 640px) 145px, (max-width: 1024px) 168px, 195px"
               />
             </div>
             <div className="relative h-[56px] w-[122px] sm:h-[64px] sm:w-[140px] lg:h-[75px] lg:w-[163px]">
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
               <Image
                 src="/Image/cbrd.png"
                 alt="CBRD Fund"
                 fill
                 className="object-contain object-left"
-<<<<<<< HEAD
-                sizes="163px"
-=======
                 sizes="(max-width: 640px) 122px, (max-width: 1024px) 140px, 163px"
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
               />
             </div>
           </div>
 
-<<<<<<< HEAD
-          <h4 className="text-xl font-bold text-primary-800 mb-6">រៀបចំដោយ</h4>
-          <div className="relative w-[208px] h-[75px]">
-=======
           <h4 className="text-lg lg:text-xl font-bold text-primary-800 mb-4 lg:mb-6">
             រៀបចំដោយ
           </h4>
           <div className="relative h-[56px] w-[155px] sm:h-[64px] sm:w-[178px] lg:h-[75px] lg:w-[208px]">
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
             <Image
               src="/Image/istad.png"
               alt="ISTAD"
               fill
               className="object-contain object-left"
-<<<<<<< HEAD
-              sizes="208px"
-=======
               sizes="(max-width: 640px) 155px, (max-width: 1024px) 178px, 208px"
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
             />
           </div>
         </div>
       </div>
 
-<<<<<<< HEAD
-      {/* Sponsored */}
-
-      <div className="border-t border-slate-200 py-6   text-center">
-        <p className="text-slate-400">© 2026 FoodHub | All Rights Reserved</p>
-=======
       {/* Copyright */}
       <div className="border-t border-slate-200 px-5 py-5 lg:py-6 text-center">
         <p className="text-slate-400 text-sm lg:text-base">
           © 2026 FoodHub | All Rights Reserved
         </p>
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
       </div>
     </footer>
   );

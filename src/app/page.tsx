@@ -3,17 +3,10 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
-<<<<<<< HEAD
-import PopularSection from "./pages/home/popular";
-import RecommandSection from "@/app/pages/home/recommand";
-import EventSection from "./pages/home/event";
-import LocationSection from "./pages/home/location";
-=======
 import PopularSection from "./home/popular";
 import RecommandSection from "@/app/home/Recommand";
 import EventSection from "./home/event";
 import LocationSection from "./home/location";
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 import TextType from "@/components/TextType";
 import { CiHeart } from "react-icons/ci";
 import CurvedLoop from "@/components/CurvedLoop";
@@ -21,20 +14,6 @@ import SplitReveal from "../../components/animata/preloader/split-reveal";
 import Modal from "../../components/animata/overlay/modal";
 import { Skiper30 } from "@/components/ui/skiper-ui/skiper30";
 import { Skiper19 } from "@/components/ui/skiper-ui/skiper19";
-<<<<<<< HEAD
-
-import Carousel, { slides } from "@/components/ui/Carosel";
-import SeasonSection from "./pages/home/season";
-import MealsByAgeSection from "./pages/home/age";
-import FitFoodSection from "./pages/home/fitfood";
-import FilterByCategory from "./pages/home/filterByCategory";
-
-import TinderFoodStack from "./pages/home/RecommendationStack";
-import { FoodItem } from "./types/food";
-import RecommendCardStack from "./pages/home/RecommendationStack";
-import { Skiper48 } from "@/components/ui/skiper-ui/skiper48";
-import SectionModal from "./pages/home/SectionModal";
-=======
 import Carousel, { slides } from "@/components/ui/Carosel";
 import SeasonSection from "./home/season";
 import MealsByAgeSection from "./home/age";
@@ -46,7 +25,6 @@ import { FoodItem } from "./types/food";
 import RecommendCardStack from "./home/RecommendationStack";
 import { Skiper48 } from "@/components/ui/skiper-ui/skiper48";
 import SectionModal from "./home/SectionModal";
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 import { CreatePost } from "./CreatePost";
 import { PostsList } from "./PostsList";
 
@@ -198,10 +176,6 @@ export default function Home() {
       image: "/Image/card-img.png",
     },
   ];
-<<<<<<< HEAD
-// >>>>>>> 0a0d14fb285e05757d38d2c89907639b1b37b83e
-=======
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
   return (
     <div>
       {/* <SplitReveal
@@ -526,27 +500,6 @@ export default function Home() {
             </section>
           </div>
         </div>
-<<<<<<< HEAD
-{/* <<<<<<< HEAD 
-        <Skiper30 />
-        <PopularSection /> */}
-        {/* <Skiper19/> */}
-        {/* <RecommandSection />
-        <EventSection />
-        <LocationSection />
-======= */}
-
-        {/* <Skiper30 /> */}
-        <PopularSection />
-        {/* <RecommandSection
-          filters={{
-            query: "",
-            food: undefined, //error
-            drink: undefined, //error
-            age: undefined, //error
-          }}
-        /> */}
-=======
 
         {/* <Skiper30 /> */}
         {/* <PopularSection /> */}
@@ -558,7 +511,6 @@ export default function Home() {
             age: undefined,
           }}
         />
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
         {/* <FoodDiscoverySection /> */}
         <FilterByCategory />
         <SeasonSection />
@@ -574,10 +526,6 @@ export default function Home() {
         {/* <Skiper48/> */}
         {/* <TinderFoodStack foods={recommendedFoods} /> */}
         <FitFoodSection />
-<<<<<<< HEAD
-{/* >>>>>>> 0a0d14fb285e05757d38d2c89907639b1b37b83e */}
-=======
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
       </section>
 
       {/* <CurvedLoop

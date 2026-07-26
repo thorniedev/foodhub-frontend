@@ -191,10 +191,7 @@ const TextType = ({
     {
       ref: containerRef,
       className: `inline-block whitespace-pre-wrap tracking-tight ${className}`,
-<<<<<<< HEAD
-=======
       ...props,
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
     },
     <span
       className="inline"

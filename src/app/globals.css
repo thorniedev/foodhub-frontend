@@ -1,12 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap");
 @import "tailwindcss";
-<<<<<<< HEAD
-/* @import "tw-animate-css"; */
-/* @import "shadcn/tailwind.css"; */
-=======
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 
 @custom-variant dark (&:is(.dark *));
 * {
@@ -261,17 +256,10 @@ h6 {
 }
 
 /* Add to your globals.css — hides the scrollbar on the drag track */
-<<<<<<< HEAD
-/* .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  /* scrollbar-width: none; //Firefox */
-/* }  */
-=======
 .no-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
