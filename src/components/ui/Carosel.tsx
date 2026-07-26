@@ -162,10 +162,7 @@ export default function Carousel({
       if (target) {
         el.scrollLeft = target.offsetLeft;
         activeIndexRef.current = n;
-<<<<<<< HEAD
-=======
         targetIndexRef.current = { index: n, at: 0 };
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
       }
     }
 

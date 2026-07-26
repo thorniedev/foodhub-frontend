@@ -39,7 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-<<<<<<< HEAD
 
 # ---
 note.git.MD
@@ -67,5 +66,3 @@ git rm --cached public/Image/food/image.png
 echo "public/Image/food/" >> .gitignore
 git commit -m "remove large images to fix push"
 git push origin longfoupublic/Image/food/
-=======
->>>>>>> d1cdd83bd745a3a0f98e4be08cf8aa4555ae8915
