@@ -425,3 +425,30 @@ From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
 Already up to date.
 
 
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (dara)
+$ git pull origin longfu
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            longfu     -> FETCH_HEAD
+Already up to date.
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (dara)
+$ git switch -c longfu
+fatal: a branch named 'longfu' already exists
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (dara)
+$ git switch longfu
+M       run.git.NOTE.MD
+Switched to branch 'longfu'
+Your branch is ahead of 'origin/longfu' by 2 commits.
+  (use "git push" to publish your local commits)
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfu)
+$ git commit -m "save 22 commits lasted"
+[longfu 83d7451] save 22 commits lasted
+ 1 file changed, 198 insertions(+)
+
+ 
+
