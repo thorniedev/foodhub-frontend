@@ -17,7 +17,7 @@ export default function PopularSection() {
         </p>
       </section>
       <div className="flex  justify-center lg:max-w-7xl mt-20 mx-auto">
-        <Image 
+        <Image
           width={235}
           height={285}
           className="border-6 object-cover z-7 lg:w-[235px]  lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] mt-6 -rotate-[10deg] border-white shadow-md rounded-[24px]"
