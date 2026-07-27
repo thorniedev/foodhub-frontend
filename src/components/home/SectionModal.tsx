@@ -14,7 +14,7 @@ type ModalTab = "swipe" | "spin";
 
 const MODAL_TABS: { id: ModalTab; label: string }[] = [
   { id: "swipe", label: "អូសមើលម្ហូប" },
-  { id: "spin", label: "បង្វិលកង់" },
+  { id: "spin", label: "បង្វិលកង" },
 ];
 
 export default function SectionModal() {

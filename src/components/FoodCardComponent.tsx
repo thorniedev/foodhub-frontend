@@ -1,5 +1,6 @@
 "use client";
 
+import { FoodItem } from "@/types/food";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { CiHeart } from "react-icons/ci";
@@ -7,7 +8,6 @@ import { FaStore, FaStar } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 import { MdDeliveryDining } from "react-icons/md";
 
-import type { FoodItem } from "@/app/types/food";
 
 type Props = {
   food: FoodItem;
