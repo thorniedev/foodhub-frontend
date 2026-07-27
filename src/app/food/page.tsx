@@ -6,7 +6,6 @@ import {
   IoSearchOutline,
   IoLocationOutline,
   IoOptionsOutline,
-  IoSunnyOutline,
   IoChevronForward,
   IoChevronBack,
   IoChevronDown,
@@ -24,11 +23,6 @@ import type { FoodItem } from "@/app/types/food";
 import FoodCardComponent from "@/components/FoodCardComponent";
 import { useGetFoodsQuery } from "../store/foodApi";
 import FoodNavTabs from "@/components/Foodnavtabs";
-
-/* -------------------------------------------------------------------- */
-/*  Mock data — same FoodItem shape used across RecommandCardStack /
-    SpinWheel, just extended with what this page's cards need           */
-/* -------------------------------------------------------------------- */
 
 type ListedFood = FoodItem & {
   pickup: string;
@@ -852,45 +846,12 @@ function CtaBanner() {
   );
 }
 
-/* -------------------------------------------------------------------- */
-/*  Footer                                                               */
-/* -------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------- */
-/*  Page                                                                 */
-/* -------------------------------------------------------------------- */
-
 export default function FoodPage() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const filteredNewFoods = applyFilters(NEW_FOODS, filters);
   const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
-  // const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
-  // const {
-  //   data: recommendedFoods = [],
-  //   isLoading,
-  //   isError,
-  //   error,
-  // } = useGetFoodsQuery();
-
-  // const filteredFoods = applyFilters(recommendedFoods, filters);
-
-  // const popularFoods = [...filteredFoods]
-  //   .sort((a, b) => b.rating - a.rating)
-  //   .slice(0, 3);
-
-  // if (isLoading) {
-  //   return <div className="text-center py-20">កំពុងផ្ទុក...</div>;
-  // }
-
-  // if (isError) {
-  //   return (
-  //     <div className="text-center py-20 text-red-500">
-  //       មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ
-  //     </div>
-  //   );
-  // }
   return (
     <div className="min-h-screen bg-[#fafaf8]">
       {/* <Header /> */}
