@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
 
-import RecommandSection from "@/app/home/Recommand";
+
 
 import TextType from "@/components/TextType";
 import { CiHeart } from "react-icons/ci";
@@ -21,6 +21,7 @@ import FitFoodSection from "@/components/home/fitfood";
 import EventSection from "@/components/home/event";
 import LocationSection from "@/components/home/location";
 import PopularSection from "@/components/home/popular";
+import RecommandSection from "@/components/home/recommand";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];

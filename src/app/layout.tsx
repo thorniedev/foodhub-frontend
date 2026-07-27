@@ -4,10 +4,10 @@ import "./globals.css";
 import { AOSInit } from "@/components/AOSInit";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
 
-import SectionModal from "./home/SectionModal";
 import Providers from "@/app/store/Providers";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import SectionModal from "@/components/home/SectionModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

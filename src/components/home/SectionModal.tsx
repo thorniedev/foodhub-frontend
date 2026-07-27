@@ -5,10 +5,10 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import { HiSparkles } from "react-icons/hi2";
-import RecommendCardStack from "./RecommendationStack";
 import { FoodItem } from "@/types/food";
-import SpinWheel from "./Spinwheel ";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
+import RecommendCardStack from "./RecommendationStack";
+import SpinWheel from "./Spinwheel ";
 
 type ModalTab = "swipe" | "spin";
 
