@@ -502,12 +502,12 @@ export default function Home() {
         </div>
 
         {/* <Skiper30 /> */}
-        {/* <PopularSection /> */}
+        <PopularSection />
         {/* <Skiper19/> */}
         {/* <Skiper26/> */}
-        <div className="hidden">
+        {/* <div className="hidden">
           <Skiper31 />
-        </div>
+        </div> */}
         <RecommandSection
           filters={{
             query: "",

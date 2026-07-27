@@ -67,7 +67,7 @@ export default function SectionModal() {
         transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.5 }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.92 }}
-        className="group fixed bottom-15 right-15 z-99 flex items-center gap-0 rounded-full bg-gradient-to-br from-primary-800 to-secondary-500 p-2.5 pr-2.5 text-white shadow-xl shadow-primary-800/30 transition-[padding,gap] duration-300 hover:gap-2 hover:pr-5 cursor-pointer"
+        className="group fixed bottom-10 right-10 z-99 flex items-center gap-0 rounded-full bg-gradient-to-br from-primary-800 to-secondary-500 p-2.5 pr-2.5 text-white shadow-xl shadow-primary-800/30 transition-[padding,gap] duration-300 hover:gap-2 hover:pr-5 cursor-pointer"
       >
         {/* soft pulsing glow — the "AI is here / available" cue */}
         <motion.span

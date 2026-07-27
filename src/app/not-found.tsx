@@ -12,13 +12,13 @@ export default function NotFoundPage() {
       />{" "}
       {/* <img className="w-[350px] hidden dark:block" src={LogoDark} alt="L0go" /> */}
       <div className="flex py-4 dark:bg-white px-10 rounded-full  flex-col items-center ">
-        {/* <h2 className="font-semibold text-primary-800 ">404 - Page </h2> */}
+        <h2 className="font-semibold text-primary-800 ">404 - Page </h2>
       </div>
-      <p className="text-xl text-center py-2.5 dark:text-cool-sky text-text-description">
+      <p className="text-xl text-center py-2.5 dark:text-cool-sky text-gray-500">
         Oops! The page you’re looking for isn’t available.
       </p>
       <Link
-        className="bg-primary text-white dark:bg-primary dark:bg-white dark:text-primary px-5  py-2.5 rounded-full  "
+        className="bg-primary-800 text-accent-500 dark:bg-primary dark:bg-white dark:text-primary px-5  py-2.5 rounded-full  "
         href="/"
       >
         {" "}
