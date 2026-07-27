@@ -4,9 +4,11 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
+import { FoodItem } from "@/types/food";
+import RecommendCardStack from "@/components/home/RecommendationStack";
 
-import { FoodItem } from "@/app/types/food";
-import RecommendCardStack from "@/app/home/RecommendationStack";
+// import { FoodItem } from "@/app/types/food";
+// import RecommendCardStack from "@/app/home/RecommendationStack";
 
 export default function SectionModal() {
   const [isOpen, setIsOpen] = useState(false);
