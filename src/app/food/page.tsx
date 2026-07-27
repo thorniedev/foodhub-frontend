@@ -23,6 +23,7 @@ import { MdDeliveryDining } from "react-icons/md";
 import type { FoodItem } from "@/app/types/food";
 import FoodCardComponent from "@/components/FoodCardComponent";
 import { useGetFoodsQuery } from "../store/foodApi";
+import FoodNavTabs from "@/components/Foodnavtabs";
 
 /* -------------------------------------------------------------------- */
 /*  Mock data — same FoodItem shape used across RecommandCardStack /
@@ -336,66 +337,13 @@ function applyFilters(foods: ListedFood[], filters: FilterState) {
 }
 
 /* -------------------------------------------------------------------- */
-/*  Header                                                               */
-/* -------------------------------------------------------------------- */
-
-function Header() {
-  return (
-    <header className="sticky top-0 z-30 border-b border-gray-100 bg-white">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-6 py-3.5 lg:px-10">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-800 text-sm font-bold text-white">
-            ខ
-          </div>
-          <span className="text-lg font-semibold text-primary-900">
-            ខ្ញុំហូប
-          </span>
-        </div>
-
-        <nav className="hidden items-center gap-8 md:flex">
-          {NAV_LINKS.map((link, i) => (
-            <a
-              key={link}
-              href="#"
-              className={`text-sm font-medium transition-colors ${
-                i === 0
-                  ? "text-primary-800"
-                  : "text-gray-500 hover:text-primary-800"
-              }`}
-            >
-              {link}
-            </a>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="Toggle theme"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-50 cursor-pointer"
-          >
-            <IoSunnyOutline className="text-lg" />
-          </button>
-          <button
-            type="button"
-            className="rounded-full bg-primary-800 px-5 py-2 text-sm font-medium text-white hover:bg-primary-900 transition-colors cursor-pointer"
-          >
-            បង្កើតគណនី
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-/* -------------------------------------------------------------------- */
 /*  Search + location + sort row                                        */
 /* -------------------------------------------------------------------- */
 
 function SearchRow() {
   return (
-    <div className="mx-auto flex max-w-[1400px] flex-col gap-3 px-6 pt-6 md:flex-row md:items-center lg:px-10">
-      <div className="flex flex-1 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5">
+    <div className="mx-auto  flex max-w-7xl container flex-col gap-3 px-6 pt-6 md:flex-row md:items-center ">
+      <div className="flex flex-1  items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5">
         <IoSearchOutline className="text-lg text-gray-400" />
         <input
           type="text"
@@ -406,7 +354,7 @@ function SearchRow() {
 
       <button
         type="button"
-        className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+        className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
       >
         <IoLocationOutline className="shrink-0 text-lg text-primary-700" />
         <span className="whitespace-nowrap">
@@ -416,7 +364,7 @@ function SearchRow() {
 
       <button
         type="button"
-        className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+        className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
       >
         <IoOptionsOutline className="text-lg text-primary-700" />
         <span className="whitespace-nowrap">ប្រភេទអាហារ</span>
@@ -542,7 +490,7 @@ function FilterSidebar({
     <motion.aside
       animate={{ width: collapsed ? 76 : 264 }}
       transition={{ type: "spring", stiffness: 320, damping: 34 }}
-      className="sidebar-scroll sticky top-20 hidden max-h-[calc(100vh-6rem)] shrink-0 self-start overflow-y-auto overflow-x-hidden lg:block"
+      className="sidebar-scroll sticky top-30 hidden max-h-[calc(100vh-6rem)] shrink-0 self-start overflow-y-auto overflow-x-hidden lg:block"
     >
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
@@ -556,7 +504,7 @@ function FilterSidebar({
                 transition={{ duration: 0.15 }}
                 className="whitespace-nowrap text-base font-semibold text-primary-900"
               >
-                ការត្រង
+                Filter
               </motion.h2>
             )}
           </AnimatePresence>
@@ -579,7 +527,6 @@ function FilterSidebar({
           </motion.button>
         </div>
 
-        {/* collapsed rail: icon-only shortcuts back into each section */}
         {collapsed && (
           <div className="mt-5 flex flex-col items-center gap-4">
             {SIDEBAR_SECTIONS.map((section) => (
@@ -783,9 +730,6 @@ function FilterSidebar({
         </AnimatePresence>
       </div>
 
-      {/* visible, thin scrollbar so overflowing filter content clearly
-          shows there's more to scroll, instead of a default/invisible
-          browser scrollbar */}
       <style jsx>{`
         .sidebar-scroll {
           scrollbar-width: thin;
@@ -848,65 +792,6 @@ function CategoryTabs() {
 /*  Food card + grid section                                            */
 /* -------------------------------------------------------------------- */
 
-function FoodListCard({ food }: { food: ListedFood }) {
-  return (
-    <div className="flex flex-col gap-3 rounded-[20px] border border-gray-100 bg-white p-2.5 shadow-sm">
-      <div className="relative">
-        <img
-          src={food.image}
-          alt={food.name}
-          className="rounded-[14px] w-[350px] object-cover"
-        />
-        <button
-          type="button"
-          aria-label="Save to favorites"
-          className="absolute top-0 right-0"
-        >
-          <CiHeart className="text-4xl p-2 bg-primary-800 font-bold rounded-full text-white" />
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <div className="flex text-secondary-400 items-center gap-2">
-          <FaStore />
-          <p className="mt-1 text-[14px]">{food.store}</p>
-        </div>
-        <div className="flex justify-between items-center">
-          <p className="text-[24px] font-medium text-primary-900">
-            {food.name}
-          </p>
-          <p className="text-[24px] font-medium text-primary-800">{`${food.price}$`}</p>
-        </div>
-        {/* <p className="text-gray-500 text-[16px]">{food.description}</p> */}
-        <div className="flex gap-4">
-          <div className="flex gap-2 items-center text-accent-400">
-            <FaStar />
-            <p className="mt-1">{food.rating}</p>
-          </div>
-          <div className="flex gap-2 items-center text-primary-400">
-            <IoMdTime />
-            <p>{food.time}</p>
-          </div>
-          <div className="flex gap-2 items-center text-primary-400">
-            <MdDeliveryDining className="text-xl" />
-            <p>{food.distance}</p>
-          </div>
-        </div>
-        <div className="flex gap-2 items-center flex-wrap">
-          {food.tags.map((tag) => (
-            <span
-              key={tag}
-              className="bg-primary-800 text-gray-100 w-fit px-3 py-1 rounded-full text-sm"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function FoodSection({
   title,
   foods,
@@ -918,7 +803,7 @@ function FoodSection({
 }) {
   return (
     <section className="mt-8">
-      <h2 className="mb-5 text-center text-lg font-semibold text-primary-800 underline decoration-2 underline-offset-8">
+      <h2 className="pb-12.5 text-center text-lg font-semibold text-primary-800 underline decoration-2 underline-offset-8">
         {title}
       </h2>
 
@@ -927,7 +812,7 @@ function FoodSection({
           មិនមានលទ្ធផលត្រូវនឹងតម្រងដែលបានជ្រើសរើសទេ
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {foods.map((food) => (
             // <FoodListCard key={food.id} food={food} />
             <FoodCardComponent key={food.id} food={food} />
@@ -971,66 +856,6 @@ function CtaBanner() {
 /*  Footer                                                               */
 /* -------------------------------------------------------------------- */
 
-function Footer() {
-  return (
-    <footer className="mt-14 bg-primary-900 text-white">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-bold text-primary-800">
-              ខ
-            </div>
-            <span className="text-lg font-semibold">ខ្ញុំហូប</span>
-          </div>
-          <p className="mt-3 max-w-xs text-sm text-white/60">
-            ជម្រើសម្ហូបល្អបំផុតជិតអ្នក ភ្ជាប់អ្នកជាមួយហាងអាហារដែលអ្នកចូលចិត្ត
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-3 text-sm font-semibold text-white/80">ទំព័រ</p>
-          <ul className="flex flex-col gap-2 text-sm text-white/60">
-            {NAV_LINKS.map((link) => (
-              <li key={link}>
-                <a href="#" className="hover:text-white">
-                  {link}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <p className="mb-3 text-sm font-semibold text-white/80">ទំនាក់ទំនង</p>
-          <ul className="flex flex-col gap-2 text-sm text-white/60">
-            <li>foodhub@gmail.com</li>
-            <li>+1 (555) 012-3456</li>
-            <li>Phnom Penh, Cambodia</li>
-          </ul>
-        </div>
-
-        <div>
-          <p className="mb-3 text-sm font-semibold text-white/80">ដៃគូ</p>
-          <div className="flex flex-wrap gap-2">
-            {["ក្រសួង", "CBRD Fund", "iSTAD"].map((partner) => (
-              <span
-                key={partner}
-                className="rounded-md bg-white/10 px-3 py-1.5 text-xs text-white/70"
-              >
-                {partner}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-white/10 py-4 text-center text-xs text-white/50">
-        © 2026 ខ្ញុំហូប | រក្សាសិទ្ធិគ្រប់យ៉ាង
-      </div>
-    </footer>
-  );
-}
-
 /* -------------------------------------------------------------------- */
 /*  Page                                                                 */
 /* -------------------------------------------------------------------- */
@@ -1069,10 +894,14 @@ export default function FoodPage() {
   return (
     <div className="min-h-screen bg-[#fafaf8]">
       {/* <Header /> */}
-      <div className="pt-15"></div>
-      <SearchRow />
 
-      <div className="mx-auto flex max-w-[1400px] gap-8 px-6 pb-16 pt-6 lg:px-10">
+      <div className="pt-15"></div>
+      <div className="sticky  container mx-auto  top-15 z-20 bg-white/2 dark:bg-gray-600/5 w-full  backdrop-blur-xs ">
+        {" "}
+        <FoodNavTabs />
+      </div>
+
+      <div className="mx-auto flex max-w-7xl gap-8 container px-6 pb-16 pt-6 ">
         <FilterSidebar filters={filters} onChange={setFilters} />
 
         <main className="min-w-0 flex-1">

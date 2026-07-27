@@ -17,46 +17,60 @@ export default function PopularSection() {
         </p>
       </section>
       <div className="flex  justify-center lg:max-w-7xl mt-20 mx-auto">
-        <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] mt-6 -rotate-[10deg] border-white shadow-md rounded-[24px]"
-          src="/Image/card2.png"
+        <Image
+          width={235}
+          height={285}
+          className="border-6 object-cover z-7 lg:w-[235px]  lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] mt-6 -rotate-[10deg] border-white shadow-md rounded-[24px]"
+          src="/Image/food-picture/card 4.jpg"
           alt="Popular"
         />{" "}
-        <img
-          className="border-6  lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -rotate-3 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
-          src="/Image/card2.png"
+        <Image
+          width={235}
+          height={285}
+          className="border-6 object-cover z-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -rotate-3 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
+          src="/Image/food-picture/drink 1.jpg"
           alt="Popular"
         />{" "}
-        <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -rotate-1 -ml-10 border-white shadow-md rounded-[24px]"
-          src="/Image/card2.png"
+        <Image
+          width={235}
+          height={285}
+          className="border-6 object-fill z-5 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -rotate-1 -ml-10 border-white shadow-md rounded-[24px]"
+          src="/Image/food-picture/card 2.jpg"
           alt="Popular"
         />{" "}
-        <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px]  rotate-2 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
-          src="/Image/card2.png"
+        <Image
+          width={235}
+          height={285}
+          className="border-6 object-cover z-4 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px]  rotate-2 -mt-6 -ml-10 border-white shadow-md rounded-[24px]"
+          src="/Image/food-picture/card 3.jpg"
           alt="Popular"
         />{" "}
-        <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] rotate-5 mt-4  -ml-10 border-white shadow-md rounded-[24px]"
-          src="/Image/card2.png"
+        <Image
+          width={235}
+          height={285}
+          className="border-6 object-cover z-2 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] rotate-5 mt-4  -ml-10 border-white shadow-md rounded-[24px]"
+          src="/Image/food-picture/drink 2.jpg"
           alt="Popular"
         />{" "}
-        <img
-          className="border-6 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -ml-10 rotate-10 border-white shadow-md rounded-[24px]"
-          src="/Image/card2.png"
+        <Image
+          width={235}
+          height={285}
+          className="border-6 object-cover z-1 lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[85px] max-md:h-[130px] max-md:w-[100px] -ml-10 rotate-10 border-white shadow-md rounded-[24px]"
+          src="/Image/food-picture/card 6.jpg"
           alt="Popular"
         />{" "}
       </div>
-      {/* <FireflyButton
-        text="ណែនាំមុខម្ហូប "
-        backgroundColor="#ffa500"
-        textColor="#ffffff"
-        glowColor="#ff4500"
-        fireflyCount={40}
-        className="cursor-pointer mx-auto  container mt-8 "
-        onClick={() => alert("Glowing button clicked!")}
-      /> */}
+      {/* <div className="container max-w-7xl mx-auto">
+        <FireflyButton
+          text="ណែនាំមុខម្ហូប "
+          backgroundColor="#ffa500"
+          textColor="#ffffff"
+          glowColor="#ff4500"
+          fireflyCount={40}
+          className="cursor-pointer mx-auto  mt-8 "
+          onClick={() => alert("Glowing button clicked!")}
+        />
+      </div> */}
     </div>
   );
 }
