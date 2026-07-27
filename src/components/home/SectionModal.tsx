@@ -8,6 +8,7 @@ import { HiSparkles } from "react-icons/hi2";
 import RecommendCardStack from "./RecommendationStack";
 import { FoodItem } from "@/types/food";
 import SpinWheel from "./Spinwheel ";
+import { useGetFoodsQuery } from "@/app/store/foodApi";
 
 type ModalTab = "swipe" | "spin";
 
@@ -55,153 +56,11 @@ export default function SectionModal() {
     };
   }, [isOpen]);
 
-  const recommendedFoods: FoodItem[] = [
-    {
-      id: 1,
-      mealTime: "breakfast",
-      store: "Kongfou Kitchen",
-      name: "នំ Tacos",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់", "អាហារបួស"],
-      foodTypes: ["ម្ហូបលោកខាងលិច"],
-      drinkTypes: ["កាហ្វេ"],
-      ageGroups: ["គ្រប់វ័យ"],
-      image: "/Image/card-img.png",
-    },
-    {
-      id: 2,
-      mealTime: "lunch",
-      store: "Kongfou Kitchen",
-      name: "គុយទាវខ្មែរ",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់"],
-      foodTypes: ["ម្ហូបខ្មែរ"],
-      drinkTypes: ["ទឹកផ្លែឈើ"],
-      ageGroups: ["គ្រប់វ័យ", "កុមារ"],
-      image: "/Image/food/food1.png",
-    },
-    {
-      id: 3,
-      mealTime: "dinner",
-      store: "Kongfou Kitchen",
-      name: "ជើងមាន់អាំង",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["អាហារបួស"],
-      foodTypes: ["អាហារដុត/BBQ"],
-      drinkTypes: ["ស្រា/ បៀរ"],
-      ageGroups: ["យុវជន", "មនុស្សពេញវ័យ"],
-      image: "/Image/food/food2.png",
-    },
-    {
-      id: 4,
-      mealTime: "breakfast",
-      store: "Kongfou Kitchen",
-      name: "បបរសាច់មាន់",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់"],
-      foodTypes: ["ម្ហូបខ្មែរ"],
-      drinkTypes: ["តែ"],
-      ageGroups: ["គ្រប់វ័យ"],
-      image: "/Image/card-img.png",
-    },
-    {
-      id: 5,
-      mealTime: "lunch",
-      store: "Kongfou Kitchen",
-      name: "មីឆាកូរ៉េ",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់"],
-      foodTypes: ["ម្ហូបចិន"],
-      drinkTypes: ["តែ"],
-      ageGroups: ["យុវជន"],
-      image: "/Image/card-img.png",
-    },
-    {
-      id: 6,
-      mealTime: "dinner",
-      store: "Kongfou Kitchen",
-      name: "ស៊ុប Tom Yum",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់"],
-      foodTypes: ["ម្ហូបថៃ"],
-      drinkTypes: ["ទឹកផ្លែឈើ"],
-      ageGroups: ["មនុស្សពេញវ័យ"],
-      image: "/Image/card-img.png",
-    },
-    {
-      id: 7,
-      mealTime: "breakfast",
-      store: "Kongfou Kitchen",
-      name: "នំបុ័ង Croissant",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់"],
-      foodTypes: ["បង្អែម", "ម្ហូបលោកខាងលិច"],
-      drinkTypes: ["កាហ្វេ"],
-      ageGroups: ["គ្រប់វ័យ"],
-      image: "/Image/card-img.png",
-    },
-    {
-      id: 8,
-      mealTime: "lunch",
-      store: "Kongfou Kitchen",
-      name: "សាច់អាំងសាច់គោ",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់"],
-      foodTypes: ["អាហារដុត/BBQ"],
-      drinkTypes: ["ស្រា/ បៀរ"],
-      ageGroups: ["មនុស្សពេញវ័យ"],
-      image: "/Image/card-img.png",
-    },
-    {
-      id: 9,
-      mealTime: "breakfast",
-      store: "Kongfou Kitchen",
-      name: "នំ Tacos",
-      description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-      rating: 4.3,
-      time: "10min",
-      distance: "1.3km",
-      price: "2",
-      tags: ["ហាឡាល់"],
-      foodTypes: ["ម្ហូបខ្មែរ"],
-      drinkTypes: ["ទឹកផ្លែឈើ"],
-      ageGroups: ["កុមារ"],
-      image: "/Image/card-img.png",
-    },
-  ];
-
+  const {
+    data: recommendedFoods = [],
+    isLoading,
+    isError,
+  } = useGetFoodsQuery();
   return (
     <div>
       {/* floating AI-assistant style launcher — lives bottom-right on
@@ -215,7 +74,7 @@ export default function SectionModal() {
         transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.5 }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.92 }}
-        className="group fixed bottom-15 right-15 z-99 flex items-center gap-0 rounded-full bg-gradient-to-br from-primary-800 to-secondary-500 p-2.5 pr-2.5 text-white shadow-xl shadow-primary-800/30 transition-[padding,gap] duration-300 hover:gap-2 hover:pr-5 cursor-pointer"
+        className="group fixed bottom-10 right-10 z-99 flex items-center gap-0 rounded-full bg-gradient-to-br from-primary-800 to-secondary-500 p-2.5 pr-2.5 text-white shadow-xl shadow-primary-800/30 transition-[padding,gap] duration-300 hover:gap-2 hover:pr-5 cursor-pointer"
       >
         {/* soft pulsing glow — the "AI is here / available" cue */}
         <motion.span
@@ -262,7 +121,11 @@ export default function SectionModal() {
                   exit={{ opacity: 0, scale: 0.92, y: 16 }}
                   transition={{ type: "spring", stiffness: 320, damping: 30 }}
                   onClick={(e) => e.stopPropagation()}
+<<<<<<<< HEAD:src/components/home/SectionModal.tsx
                   className="relative overflow-clip shadow-md border w-full max-w-md max-h-[90vh]  rounded-[28px] bg-[#f5f4f3] p-4 "
+========
+                  className="relative shadow-md border w-full overflow-x-clip max-w-md max-h-[90vh]  rounded-[28px] bg-[#f5f4f3] p-4 "
+>>>>>>>> 3ac91be43590fb4a71ed6e9b2bb87bc0fa094ff4:src/app/home/SectionModal.tsx
                 >
                   <button
                     type="button"

@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+note.git-Store-version.MD
+run.git.NOTE.MD

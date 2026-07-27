@@ -1,0 +1,17 @@
+[
+  {
+    "id": 101,
+    "name": "ភោជនីយដ្ឋាន ម្លប់ស្វាយ",
+    "phone": "012345678",
+    "province": "ភ្នំពេញ",
+    "address": "សង្កាត់បឹងកេងកង ខណ្ឌបឹងកេងកង",
+    "latitude": 11.5564,
+    "longitude": 104.9282,
+    "googleMapUrl": "https://maps.google.com/...",
+    "openingHours": "06:00",
+    "closingHours": "21:00",
+    "rating": 4.8,
+    "logo": "/Image/store/store1.png",
+    "coverImage": "/Image/store/store1-cover.png"
+  }
+]
