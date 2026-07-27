@@ -6,8 +6,8 @@ import { IoMdTime } from "react-icons/io";
 import { FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
-import type { FoodItem, MealTime, FilterState } from "@/app/types/food";
-import { EMPTY_FILTERS } from "@/app/types/food";
+import type { FoodItem, MealTime, FilterState } from "@/types/food";
+import { EMPTY_FILTERS } from "@/types/food";
 
 const tabs: { id: MealTime; label: string }[] = [
   { id: "breakfast", label: "អាហារពេលព្រឹក" },

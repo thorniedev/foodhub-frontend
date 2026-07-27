@@ -3,9 +3,16 @@
 import { useState } from "react";
 import FoodSearchBar from "./FoodSearchBar";
 import RecommandSection from "./recommand";
-import { EMPTY_FILTERS, type FilterState } from "@/app/types/food";
+import { EMPTY_FILTERS, type FilterState } from "@/types/food";
 
-const FOOD_OPTIONS = ["ម្ហូបខ្មែរ", "ម្ហូបចិន", "ម្ហូបថៃ", "ម្ហូបលោកខាងលិច", "អាហារដុត/BBQ", "បង្អែម"];
+const FOOD_OPTIONS = [
+  "ម្ហូបខ្មែរ",
+  "ម្ហូបចិន",
+  "ម្ហូបថៃ",
+  "ម្ហូបលោកខាងលិច",
+  "អាហារដុត/BBQ",
+  "បង្អែម",
+];
 const DRINK_OPTIONS = ["កាហ្វេ", "តែ", "ទឹកផ្លែឈើ", "ស្រា/ បៀរ"];
 const AGE_OPTIONS = ["គ្រប់វ័យ", "កុមារ", "យុវជន", "មនុស្សពេញវ័យ"];
 

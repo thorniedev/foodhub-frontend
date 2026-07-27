@@ -12,7 +12,7 @@ import type { Swiper as SwiperInstance } from "swiper";
 import "swiper/css/effect-cards";
 import "swiper/css";
 
-import type { FoodItem } from "@/app/types/food";
+import type { FoodItem } from "@/types/food";
 
 type RecommendCardStackProps = {
   foods: FoodItem[];

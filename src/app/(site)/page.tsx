@@ -3,30 +3,30 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
-import PopularSection from "./pages/home/popular";
-import RecommandSection from "@/app/pages/home/recommand";
-import EventSection from "./pages/home/event";
-import LocationSection from "./pages/home/location";
+import PopularSection from "../../components/home/popular";
+import RecommandSection from "@/components/home/recommand";
+import EventSection from "../../components/home/event";
+import LocationSection from "../../components/home/location";
 import TextType from "@/components/TextType";
 import { CiHeart } from "react-icons/ci";
 import CurvedLoop from "@/components/CurvedLoop";
-import SplitReveal from "../../components/animata/preloader/split-reveal";
-import Modal from "../../components/animata/overlay/modal";
+import SplitReveal from "../../../components/animata/preloader/split-reveal";
+import Modal from "../../../components/animata/overlay/modal";
 import { Skiper30 } from "@/components/ui/skiper-ui/skiper30";
 import { Skiper19 } from "@/components/ui/skiper-ui/skiper19";
 import Carousel, { slides } from "@/components/ui/Carosel";
-import SeasonSection from "./pages/home/season";
-import MealsByAgeSection from "./pages/home/age";
-import FitFoodSection from "./pages/home/fitfood";
-import FilterByCategory from "./pages/home/filterByCategory";
+import SeasonSection from "../../components/home/season";
+import MealsByAgeSection from "../../components/home/age";
+import FitFoodSection from "../../components/home/fitfood";
+import FilterByCategory from "../../components/home/filterByCategory";
 
-import TinderFoodStack from "./pages/home/RecommendationStack";
-import { FoodItem } from "./types/food";
-import RecommendCardStack from "./pages/home/RecommendationStack";
+import TinderFoodStack from "../../components/home/RecommendationStack";
+import { FoodItem } from "../../types/food";
+import RecommendCardStack from "../../components/home/RecommendationStack";
 import { Skiper48 } from "@/components/ui/skiper-ui/skiper48";
-import SectionModal from "./pages/home/SectionModal";
-import { CreatePost } from "./CreatePost";
-import { PostsList } from "./PostsList";
+import SectionModal from "../../components/home/SectionModal";
+// import { CreatePost } from "../CreatePost";
+// import { PostsList } from "../PostsList";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];
@@ -514,8 +514,8 @@ export default function Home() {
         {/* <FoodDiscoverySection /> */}
         <FilterByCategory />
         <SeasonSection />
-        <CreatePost />
-        <PostsList />
+        {/* <CreatePost />
+        <PostsList /> */}
         {/* <Skiper19/> */}
 
         <EventSection />

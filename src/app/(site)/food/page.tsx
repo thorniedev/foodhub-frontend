@@ -20,7 +20,7 @@ import { FaStar, FaStore } from "react-icons/fa";
 import { CiHeart } from "react-icons/ci";
 import { MdDeliveryDining } from "react-icons/md";
 
-import type { FoodItem } from "@/app/types/food";
+import type { FoodItem } from "@/types/food";
 
 /* -------------------------------------------------------------------- */
 /*  Mock data — same FoodItem shape used across RecommandCardStack /

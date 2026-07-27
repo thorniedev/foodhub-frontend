@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import RecommendCardStack from "./RecommendationStack";
-import { FoodItem } from "@/app/types/food";
+import { FoodItem } from "@/types/food";
 
 export default function SectionModal() {
   const [isOpen, setIsOpen] = useState(false);

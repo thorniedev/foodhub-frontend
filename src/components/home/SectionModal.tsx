@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import { HiSparkles } from "react-icons/hi2";
 import RecommendCardStack from "./RecommendationStack";
-import { FoodItem } from "@/app/types/food";
+import { FoodItem } from "@/types/food";
 import SpinWheel from "./Spinwheel ";
 
 type ModalTab = "swipe" | "spin";
