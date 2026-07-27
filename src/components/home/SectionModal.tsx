@@ -121,11 +121,7 @@ export default function SectionModal() {
                   exit={{ opacity: 0, scale: 0.92, y: 16 }}
                   transition={{ type: "spring", stiffness: 320, damping: 30 }}
                   onClick={(e) => e.stopPropagation()}
-<<<<<<<< HEAD:src/components/home/SectionModal.tsx
                   className="relative overflow-clip shadow-md border w-full max-w-md max-h-[90vh]  rounded-[28px] bg-[#f5f4f3] p-4 "
-========
-                  className="relative shadow-md border w-full overflow-x-clip max-w-md max-h-[90vh]  rounded-[28px] bg-[#f5f4f3] p-4 "
->>>>>>>> 3ac91be43590fb4a71ed6e9b2bb87bc0fa094ff4:src/app/home/SectionModal.tsx
                 >
                   <button
                     type="button"

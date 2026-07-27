@@ -2,13 +2,9 @@
 
 import { useState } from "react";
 import FoodSearchBar from "./FoodSearchBar";
-<<<<<<<< HEAD:src/components/home/FoodDiscoverySection.tsx
+
 import RecommandSection from "./recommand";
 import { EMPTY_FILTERS, type FilterState } from "@/types/food";
-========
-import RecommandSection from "./Recommand";
-import { EMPTY_FILTERS, type FilterState } from "@/app/types/food";
->>>>>>>> 3ac91be43590fb4a71ed6e9b2bb87bc0fa094ff4:src/app/home/FoodDiscoverySection.tsx
 
 const FOOD_OPTIONS = [
   "ម្ហូបខ្មែរ",

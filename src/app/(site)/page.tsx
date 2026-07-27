@@ -3,10 +3,9 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
-import PopularSection from "./home/popular";
+
 import RecommandSection from "@/app/home/Recommand";
-import EventSection from "./home/event";
-import LocationSection from "./home/location";
+
 import TextType from "@/components/TextType";
 import { CiHeart } from "react-icons/ci";
 import CurvedLoop from "@/components/CurvedLoop";
@@ -15,18 +14,13 @@ import Modal from "../../../components/animata/overlay/modal";
 import { Skiper30 } from "@/components/ui/skiper-ui/skiper30";
 import { Skiper19 } from "@/components/ui/skiper-ui/skiper19";
 import Carousel, { slides } from "@/components/ui/Carosel";
-import SeasonSection from "./home/season";
-import MealsByAgeSection from "./home/age";
-import FitFoodSection from "./home/fitfood";
-import FilterByCategory from "./home/FilterByCategory";
-
-import TinderFoodStack from "./home/RecommendationStack";
-import { FoodItem } from "./types/food";
-import RecommendCardStack from "./home/RecommendationStack";
-import { Skiper48 } from "@/components/ui/skiper-ui/skiper48";
-import SectionModal from "./home/SectionModal";
-import { Skiper26 } from "@/components/ui/skiper-ui/skiper26";
-import { Skiper31 } from "@/components/ui/skiper-ui/skiper31";
+import FilterByCategory from "@/components/home/filterByCategory";
+import SeasonSection from "@/components/home/season";
+import MealsByAgeSection from "@/components/home/age";
+import FitFoodSection from "@/components/home/fitfood";
+import EventSection from "@/components/home/event";
+import LocationSection from "@/components/home/location";
+import PopularSection from "@/components/home/popular";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];
