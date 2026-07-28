@@ -16,9 +16,9 @@ export default function NotificationGroup({ group, notifications }: Props) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <p className="text-2xl font-semibold uppercase tracking-wide text-[#F97316]">
           {groupLabels[group]}
-        </h2>
+        </p>
         <span className="text-xs text-slate-400">{notifications.length}</span>
       </div>
 

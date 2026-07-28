@@ -46,9 +46,9 @@ export default function NotificationCard({ notification }: Props) {
 
       <div className="flex-1 space-y-1.5">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-sm font-semibold text-slate-900">
+          <p className="text-xl font-semibold text-slate-900">
             {notification.title}
-          </h3>
+          </p>
           {notification.isUrgent && (
             <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-600">
               <AlertTriangle className="h-3 w-3" />
