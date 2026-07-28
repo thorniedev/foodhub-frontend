@@ -6,7 +6,7 @@ import { IoMdTime } from "react-icons/io";
 import { FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining } from "react-icons/md";
 
-import type { FoodItem } from "@/app/types/food";
+import type { FoodItem } from "@/types/food";
 
 type SpinWheelProps = {
   foods: FoodItem[];

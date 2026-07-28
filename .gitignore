@@ -40,10 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# ---
-note.git.MD
-run.git.NOTE.MD
-zNOte.version.MD
 # --stop caches in lock.json
 git rm --cached package-lock.json
 echo "package-lock.json"
@@ -67,3 +63,8 @@ git rm --cached public/Image/food/image.png
 echo "public/Image/food/" >> .gitignore
 git commit -m "remove large images to fix push"
 git push origin longfoupublic/Image/food/
+
+
+# ---history commands git
+Git-Commands.md
+run.git.NOTE.MD
