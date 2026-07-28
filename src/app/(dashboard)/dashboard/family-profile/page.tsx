@@ -13,20 +13,20 @@ import FoodCardComponent from "@/components/FoodCardComponent";
 const familyMembers: FamilyMember[] = [
   {
     id: "1",
-    name: "Marco Bellini",
-    role: "Executive Chef",
+    name: "សុខ​ ស៊ូហេង",
+    role: "កូនបង",
     avatarUrl: "https://placehold.co/96x96?text=MB",
   },
   {
     id: "2",
-    name: "Mom",
-    role: "Food Explorer",
+    name: "សុខ​ លីតា",
+    role: "កូនកណ្កាល",
     avatarUrl: "https://placehold.co/96x96?text=M",
   },
   {
     id: "3",
-    name: "Children",
-    role: "Restaurant Owner",
+    name: "សៀវយៀក",
+    role: "កូនពៅ",
     avatarUrl: "https://placehold.co/96x96?text=C",
   },
 ];
@@ -94,7 +94,7 @@ export default function FamilyPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className="mt-5 grid grid-cols-1 place-items-center gap-4 sm:grid-cols-2 sm:place-items-stretch sm:gap-5 lg:grid-cols-3"
+              className="mt-5 grid grid-cols-1 place-items-center gap-4 sm:grid-cols-2 sm:place-items-stretch sm:gap-5 lg:grid-cols-3 lg:w-4xl"
             >
               {visibleFoods.map((item) => (
                 <FoodCardComponent key={item.id} food={item} />
