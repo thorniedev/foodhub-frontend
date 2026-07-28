@@ -1,0 +1,1127 @@
+{
+  "menuItems": [
+    {
+      "uuid": "ca23ec03-0c9f-4017-8f78-c622b7a051ca",
+      "legacyId": 1,
+      "name": "Phnom Penh Noodle Soup",
+      "localName": "គុយទាវភ្នំពេញ",
+      "description": "Rice noodle soup in original-style beef broth, served with fresh vegetables.",
+      "localDescription": "គុយទាវទឹកសាច់គោរសជាតិដើម បម្រើជាមួយបន្លែស្រស់។",
+      "thumbnail": "/Image/food/food3.png",
+      "gallery": [
+        "/Image/food/food3.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 8,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "a2a2f89c-a668-46ab-b8d0-4f35c81ccc11",
+        "name": "Malis Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ម៉ាលីស",
+        "logoUrl": "/images/stores/malis-logo.webp",
+        "coverImageUrl": "/images/stores/malis-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5564,
+        "longitude": 104.9282,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 412
+      },
+      "food": {
+        "uuid": "375bb9bc-be96-4d5f-ac1a-dfc987199ac4",
+        "canonicalName": "Kuy Teav Phnom Penh",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "BREAKFAST",
+          "name": "Breakfast"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "HALAL",
+          "name": "Halal",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "MAY_CONTAIN",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Rice Noodles",
+        "Beef",
+        "Bean Sprouts",
+        "Fresh Herbs",
+        "Fried Garlic"
+      ],
+      "beveragePairings": ["តែក្តៅ"],
+      "nutrition": {
+        "calories": 380,
+        "protein": 22,
+        "carbohydrate": 50,
+        "fat": 9,
+        "fiber": 4,
+        "sodium": 610
+      },
+      "distanceKm": 0.5,
+      "deliveryFee": 0.65,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 3,
+        "finalScore": 0.92,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": [
+          "CUISINE_MATCH",
+          "MEAL_MATCH",
+          "NEARBY",
+          "POPULAR",
+          "HALAL"
+        ],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.92,
+          "popularity": 0.96
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "61c9cd79-8b17-4a48-949b-f650ffe116fa",
+      "legacyId": 2,
+      "name": "Chicken Rice Porridge",
+      "localName": "បបរសាច់មាន់",
+      "description": "Soft rice porridge with shredded chicken and fried garlic.",
+      "localDescription": "បបរទន់ៗ ជាមួយសាច់មាន់ និងខ្ទឹមបំពង។",
+      "thumbnail": "/Image/food/food4.png",
+      "gallery": [
+        "/Image/food/food4.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 2.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 10,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "57a000d1-021d-421c-9f98-881d6f403d00",
+        "name": "Mlop Svay Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ម្លប់ស្វាយ",
+        "logoUrl": "/images/stores/mlop-svay-logo.webp",
+        "coverImageUrl": "/images/stores/mlop-svay-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5701,
+        "longitude": 104.9105,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.7,
+        "totalReviews": 205
+      },
+      "food": {
+        "uuid": "044f45ff-6595-4dbb-8e6d-e60dfde7a6c2",
+        "canonicalName": "Bobor Sach Moan",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 0,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "BREAKFAST",
+          "name": "Breakfast"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "LOW_FAT",
+          "name": "Low Fat",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [],
+      "ingredients": ["Rice", "Chicken", "Fried Garlic", "Ginger", "Scallions"],
+      "beveragePairings": ["ទឹកសណ្តែក"],
+      "nutrition": {
+        "calories": 300,
+        "protein": 18,
+        "carbohydrate": 45,
+        "fat": 5,
+        "fiber": 2,
+        "sodium": 480
+      },
+      "distanceKm": 0.85,
+      "deliveryFee": 0.76,
+      "recommendation": {
+        "isRecommended": false,
+        "rankPosition": 7,
+        "finalScore": 0.84,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "HEALTHY"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.86,
+          "popularity": 0.94
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "7561cb0e-343b-4bb9-a248-89ea1753753b",
+      "legacyId": 3,
+      "name": "Fish Amok",
+      "localName": "អាម៉ុកត្រី",
+      "description": "Steamed fish curry with coconut milk and traditional Khmer herbs.",
+      "localDescription": "ម្ហូបអាម៉ុកត្រីបែបប្រពៃណីខ្មែរ មានរសជាតិឈ្ងុយឆ្ងាញ់។",
+      "thumbnail": "/Image/food/image.png",
+      "gallery": [
+        "/Image/food/image.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 6.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 15,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "49cacd49-5cfa-4602-8964-93795d30a66f",
+        "name": "Tonle Bassac Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ទន្លេបាសាក់",
+        "logoUrl": "/images/stores/tonle-bassac-logo.webp",
+        "coverImageUrl": "/images/stores/tonle-bassac-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5533,
+        "longitude": 104.9268,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.9,
+        "totalReviews": 540
+      },
+      "food": {
+        "uuid": "e1b62941-954d-4bba-82ab-ee7ca4471c7b",
+        "canonicalName": "Fish Amok",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 2,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "EGG",
+          "name": "Egg",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["Fish", "Coconut Milk", "Kroeung", "Egg", "Banana Leaf"],
+      "beveragePairings": ["ទឹកដូង"],
+      "nutrition": {
+        "calories": 420,
+        "protein": 24,
+        "carbohydrate": 48,
+        "fat": 13,
+        "fiber": 6,
+        "sodium": 520
+      },
+      "distanceKm": 1.2,
+      "deliveryFee": 0.86,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 1,
+        "finalScore": 0.96,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "TRADITIONAL"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.58,
+          "distanceMatch": 0.8,
+          "popularity": 0.98
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "307228c1-5140-4cce-b525-e3a1e64959a5",
+      "legacyId": 4,
+      "name": "Grilled Pork with Rice",
+      "localName": "បាយសាច់ជ្រូក",
+      "description": "Grilled pork served over rice with pickled vegetables and soup.",
+      "localDescription": "បាយសាច់ជ្រូកអាំង បម្រើជាមួយជ្រក់ និងស៊ុប។",
+      "thumbnail": "/Image/food/food5.png",
+      "gallery": [
+        "/Image/food/food5.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 12,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "68f35651-fd69-4362-a1e2-b141ca346104",
+        "name": "Phteah Sleuk Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ផ្ទះស្លឹក",
+        "logoUrl": "/images/stores/phteah-sleuk-logo.webp",
+        "coverImageUrl": "/images/stores/phteah-sleuk-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.562,
+        "longitude": 104.9187,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 297
+      },
+      "food": {
+        "uuid": "1840af85-3c1b-4fda-ad33-a658720bc2c0",
+        "canonicalName": "Bai Sach Chrouk",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "MAY_CONTAIN",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Rice",
+        "Pork",
+        "Pickled Vegetables",
+        "Cucumber",
+        "Clear Soup"
+      ],
+      "beveragePairings": ["ត្រចៀកក្រាញ់"],
+      "nutrition": {
+        "calories": 520,
+        "protein": 28,
+        "carbohydrate": 62,
+        "fat": 16,
+        "fiber": 3,
+        "sodium": 700
+      },
+      "distanceKm": 0.9,
+      "deliveryFee": 0.77,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 4,
+        "finalScore": 0.9,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "POPULAR"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.85,
+          "popularity": 0.96
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "22e47c75-ec89-4795-9219-e3a4f3578857",
+      "legacyId": 5,
+      "name": "Num Banh Chok",
+      "localName": "នំបញ្ចុក",
+      "description": "Khmer rice noodles with fish curry gravy and fresh vegetables.",
+      "localDescription": "នំបញ្ចុកខ្មែរ ជាមួយទឹកសម្លការី និងបន្លែស្រស់។",
+      "thumbnail": "/Image/food/food6.png",
+      "gallery": [
+        "/Image/food/food6.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 11,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "81c3223a-5c14-4af9-9b72-9f818bd0ba08",
+        "name": "Sovann Restaurant",
+        "localName": "ភោជនីយដ្ឋាន សុវណ្ណ",
+        "logoUrl": "/images/stores/sovann-logo.webp",
+        "coverImageUrl": "/images/stores/sovann-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5686,
+        "longitude": 104.9214,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.9,
+        "totalReviews": 328
+      },
+      "food": {
+        "uuid": "347d9218-957d-426e-9cf2-9f299d46d9a8",
+        "canonicalName": "Num Banh Chok",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Rice Noodles",
+        "Fish",
+        "Kroeung",
+        "Fresh Vegetables",
+        "Bean Sprouts"
+      ],
+      "beveragePairings": ["ទឹកអំពៅ"],
+      "nutrition": {
+        "calories": 410,
+        "protein": 20,
+        "carbohydrate": 58,
+        "fat": 10,
+        "fiber": 7,
+        "sodium": 560
+      },
+      "distanceKm": 1.5,
+      "deliveryFee": 0.95,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 2,
+        "finalScore": 0.94,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "TRADITIONAL"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.75,
+          "popularity": 0.98
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "067e309e-f2e2-4215-9bb8-c6e28000b991",
+      "legacyId": 6,
+      "name": "Samlor Machu Kreung",
+      "localName": "សម្លម្ជូរគ្រឿង",
+      "description": "Sour fish soup with Khmer herb paste and fresh vegetables.",
+      "localDescription": "សម្លម្ជូរគ្រឿងត្រី ជាមួយបន្លែស្រស់ និងគ្រឿងខ្មែរ។",
+      "thumbnail": "/Image/food/food7.png",
+      "gallery": [
+        "/Image/food/food7.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 5.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 18,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "7e9bb828-f23b-4590-810a-76f0f86f0c05",
+        "name": "Mlih Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ម្លិះ",
+        "logoUrl": "/images/stores/mlih-logo.webp",
+        "coverImageUrl": "/images/stores/mlih-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5478,
+        "longitude": 104.9331,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 176
+      },
+      "food": {
+        "uuid": "3d7257ca-affe-4c00-b126-ce80eb74485c",
+        "canonicalName": "Samlor Machu Kreung",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 2,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Fish",
+        "Kroeung",
+        "Vegetables",
+        "Tamarind",
+        "Lemongrass"
+      ],
+      "beveragePairings": ["ទឹកក្រូច"],
+      "nutrition": {
+        "calories": 340,
+        "protein": 23,
+        "carbohydrate": 30,
+        "fat": 11,
+        "fiber": 6,
+        "sodium": 650
+      },
+      "distanceKm": 2.0,
+      "deliveryFee": 1.1,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 5,
+        "finalScore": 0.88,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "TRADITIONAL"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.7,
+          "distanceMatch": 0.67,
+          "popularity": 0.96
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "5a09b206-378b-493a-b56f-12b3f1ed2615",
+      "legacyId": 7,
+      "name": "Beef Lok Lak",
+      "localName": "សាច់គោឡុកឡាក់",
+      "description": "Stir-fried diced beef served with rice and a fried egg.",
+      "localDescription": "សាច់គោឡុកឡាក់ បម្រើជាមួយបាយ និងស៊ុតចៀន។",
+      "thumbnail": "/Image/food/food8.png",
+      "gallery": [
+        "/Image/food/food8.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 6.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 17,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "3cb58389-57d6-43bd-b35c-0418e625e9b4",
+        "name": "Angkor Thom Restaurant",
+        "localName": "ភោជនីយដ្ឋាន អង្គរធំ",
+        "logoUrl": "/images/stores/angkor-thom-logo.webp",
+        "coverImageUrl": "/images/stores/angkor-thom-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5412,
+        "longitude": 104.9089,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.7,
+        "totalReviews": 489
+      },
+      "food": {
+        "uuid": "08323381-4113-42e2-96e0-55d85d0c3428",
+        "canonicalName": "Beef Lok Lak",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "EGG",
+          "name": "Egg",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Beef",
+        "Rice",
+        "Fried Egg",
+        "Lettuce",
+        "Tomato",
+        "Pepper-Lime Sauce"
+      ],
+      "beveragePairings": ["ទឹកក្រូចឆ្មា"],
+      "nutrition": {
+        "calories": 560,
+        "protein": 32,
+        "carbohydrate": 55,
+        "fat": 20,
+        "fiber": 3,
+        "sodium": 780
+      },
+      "distanceKm": 2.3,
+      "deliveryFee": 1.19,
+      "recommendation": {
+        "isRecommended": false,
+        "rankPosition": 8,
+        "finalScore": 0.82,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "POPULAR"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.54,
+          "distanceMatch": 0.62,
+          "popularity": 0.94
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "7c0cdaad-3675-4974-9f20-16e8984967a8",
+      "legacyId": 8,
+      "name": "Grilled Fish with Sweet Fish Sauce",
+      "localName": "ត្រីអាំងជាមួយទឹកត្រីផ្អែម",
+      "description": "Freshly grilled fish served with vegetables and sweet fish sauce.",
+      "localDescription": "ត្រីអាំងថ្មីៗ បម្រើជាមួយបន្លែ និងទឹកត្រីផ្អែម។",
+      "thumbnail": "/Image/food/food9.png",
+      "gallery": [
+        "/Image/food/food9.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 7.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 20,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "a334cfa2-f3be-4c6f-878a-bbba71c5a297",
+        "name": "Prek Leap Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ព្រែកលាភ",
+        "logoUrl": "/images/stores/prek-leap-logo.webp",
+        "coverImageUrl": "/images/stores/prek-leap-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.6208,
+        "longitude": 104.9401,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 231
+      },
+      "food": {
+        "uuid": "f01adbd2-c4e2-4bcb-8c80-760214065af0",
+        "canonicalName": "Trey Ang",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "High Protein",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["Fish", "Fresh Vegetables", "Sweet Fish Sauce", "Herbs"],
+      "beveragePairings": ["ទឹកដូង"],
+      "nutrition": {
+        "calories": 390,
+        "protein": 34,
+        "carbohydrate": 22,
+        "fat": 16,
+        "fiber": 4,
+        "sodium": 690
+      },
+      "distanceKm": 2.8,
+      "deliveryFee": 1.34,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 6,
+        "finalScore": 0.86,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "HEALTHY"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.5,
+          "distanceMatch": 0.53,
+          "popularity": 0.96
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "uuid": "b564c054-1b52-4130-809a-589d6cd10784",
+      "legacyId": 9,
+      "name": "Khmer Fried Rice",
+      "localName": "បាយឆាខ្មែរ",
+      "description": "Khmer-style fried rice with pork and vegetables.",
+      "localDescription": "បាយឆារសជាតិបែបខ្មែរ ជាមួយសាច់ជ្រូក និងបន្លែ។",
+      "thumbnail": "/Image/food/food10.png",
+      "gallery": [
+        "/Image/food/food10.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 9,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "b05ce592-90d6-4262-9888-bdf747fa1278",
+        "name": "Bay Khmer Restaurant",
+        "localName": "ភោជនីយដ្ឋាន បាយខ្មែរ",
+        "logoUrl": "/images/stores/bay-khmer-logo.webp",
+        "coverImageUrl": "/images/stores/bay-khmer-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5749,
+        "longitude": 104.9226,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.6,
+        "totalReviews": 384
+      },
+      "food": {
+        "uuid": "93cdb8ae-ef60-426b-b7e3-fc4c63271fc4",
+        "canonicalName": "Bai Cha Khmer",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "BREAKFAST",
+          "name": "Breakfast"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "EGG",
+          "name": "Egg",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["Rice", "Pork", "Mixed Vegetables", "Egg", "Soy Sauce"],
+      "beveragePairings": ["តែទឹកកក"],
+      "nutrition": {
+        "calories": 480,
+        "protein": 19,
+        "carbohydrate": 68,
+        "fat": 14,
+        "fiber": 3,
+        "sodium": 720
+      },
+      "distanceKm": 0.65,
+      "deliveryFee": 0.7,
+      "recommendation": {
+        "isRecommended": false,
+        "rankPosition": 9,
+        "finalScore": 0.8,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "QUICK_PREP"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.89,
+          "popularity": 0.92
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    }
+  ]
+}

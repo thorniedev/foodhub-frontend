@@ -21,8 +21,13 @@ import { MdDeliveryDining } from "react-icons/md";
 
 import FoodCardComponent from "@/components/FoodCardComponent";
 
-import FoodNavTabs from "@/components/Foodnavtabs";
+import FoodNavTabs, { FoodTabId } from "@/components/Foodnavtabs";
+import FoodCard from "@/components/FoodCard";
+import { useGetMenuItemsQuery } from "@/redux/api/fooodApi";
 import { FoodItem } from "@/types/food";
+import Link from "next/link";
+import LocationPanel from "@/components/food/LocationPanel";
+import StorePanel from "@/components/food/StorePanel";
 
 type ListedFood = FoodItem & {
   pickup: string;
@@ -209,7 +214,7 @@ const POPULAR_FOODS: ListedFood[] = NEW_FOODS.slice(0, 3).map((f) => ({
   id: f.id + 100,
 }));
 
-const NAV_LINKS = ["ទំព័រដើម", "អំពីយើង", "មុខម្ហូប"];
+const NAV_LINKS = ["ទំព័រដើម", "មុខម្ហូប", "អំពីយើង"];
 
 const CATEGORY_TABS = [
   "ចំណីអាហារ",
@@ -224,10 +229,7 @@ const CATEGORY_TABS = [
 const MEAL_TYPE_FILTERS = [
   "អាហារបួស",
   "អាហារសុខភាព",
-  "អាហារប្រញាប់ញញេច",
-  "អាហារភ្លាដល់ថ្នាំ",
-  "អាហារធានាចំណេះដឹង",
-  "អាហារសម្រាប់ថ្ងៃទុក",
+
   "អាហារសម្រាប់សម្រកទម្ងន់",
   "អាហារសម្រាប់ថែទាំសុខភាព",
 ];
@@ -235,7 +237,6 @@ const MEAL_TYPE_FILTERS = [
 const FOOD_TYPE_FILTERS = [
   "ចិន",
   "វៀតណាម",
-  "ថៃ",
   "កូរ៉េ",
   "ភេសជ្ជៈ",
   "បង្អែម",
@@ -256,6 +257,12 @@ const MEAL_TIME_LABEL_TO_VALUE: Record<string, string> = {
   សម្រន់: "snack",
 };
 
+// const AGE: Record<string, string> = {
+//   ព្រឹក: "breakfast",
+//   ថ្ងៃ: "lunch",
+//   ល្ងាច: "dinner",
+//   សម្រន់: "snack",
+// };
 type SortBy = "popular" | "fastest" | "rating";
 
 type FilterState = {
@@ -571,7 +578,7 @@ function FilterSidebar({
                   {(
                     [
                       { label: "ពេញនិយម", value: "popular" },
-                      { label: "ដឹកមកដល់លឿន", value: "fastest" },
+
                       { label: "ចំណាត់ថ្នាក់ខ្ពស់", value: "rating" },
                     ] as { label: string; value: SortBy }[]
                   ).map((opt) => (
@@ -594,6 +601,34 @@ function FilterSidebar({
                 </div>
               </FilterSection>
 
+              <FilterSection
+                title="ពេលវេលាទទួលទាន"
+                icon={<IoTimeOutline />}
+                isOpen={openSections.mealTime}
+                onToggle={() => toggleSection("mealTime")}
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.keys(MEAL_TIME_LABEL_TO_VALUE).map((opt) => (
+                    <label
+                      key={opt}
+                      className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-600 cursor-pointer hover:border-primary-300"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.mealTimes.includes(opt)}
+                        onChange={() =>
+                          onChange({
+                            ...filters,
+                            mealTimes: toggleInList(filters.mealTimes, opt),
+                          })
+                        }
+                        className="h-3 w-3 accent-primary-800"
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              </FilterSection>
               <FilterSection
                 title="ពេលវេលាទទួលទាន"
                 icon={<IoTimeOutline />}
@@ -845,39 +880,152 @@ function CtaBanner() {
     </section>
   );
 }
+// quick fade + slight slide so switching tabs feels smooth
+const panelMotion = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
+};
 
+// function LocationPanel({ foods }: { foods: ListedFood[] }) {
+//   return (
+//     <div className="flex flex-col gap-6 lg:flex-row">
+//       <div className="lg:w-[46%]">
+//         <h2 className="mb-4 text-lg font-semibold text-primary-800">
+//           ទីតាំងជិតអ្នក
+//         </h2>
+//         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+//           {foods.map((food) => (
+//             <FoodCardComponent key={food.id} food={food} />
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* swap this placeholder for your real Google Map */}
+//       <div className="lg:w-[54%]">
+//         <div className="sticky top-32 flex h-[70vh] items-center justify-center rounded-2xl border border-gray-200 bg-white">
+//           <div className="flex flex-col items-center gap-2 text-gray-400">
+//             <IoLocationOutline className="text-3xl text-primary-700" />
+//             <p className="text-sm">ដាក់ Google Map នៅទីនេះ</p>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function StorePanel({ foods }: { foods: ListedFood[] }) {
+//   const stores = Array.from(new Set(foods.map((f) => f.store)));
+//   return (
+//     <section>
+//       <h2 className="mb-6 text-center text-lg font-semibold text-primary-800 underline decoration-2 underline-offset-8">
+//         ហាងអាហារ
+//       </h2>
+//       <div className="grid grid-c ols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+//         {stores.map((store) => {
+//           const sample = foods.find((f) => f.store === store)!;
+//           const count = foods.filter((f) => f.store === store).length;
+//           return (
+//             <div
+//               key={store}
+//               className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md"
+//             >
+//               <img
+//                 src={sample.image}
+//                 alt={store}
+//                 className="h-36 w-full object-cover"
+//               />
+//               <div className="flex flex-col gap-1 p-4">
+//                 <div className="flex items-center gap-2 text-primary-900">
+//                   <FaStore className="shrink-0 text-sm text-secondary-500" />
+//                   <h3 className="truncate font-medium">{store}</h3>
+//                 </div>
+//                 <div className="flex items-center gap-3 text-xs text-primary-400">
+//                   <span className="flex items-center gap-1 text-accent-400">
+//                     <FaStar className="text-[10px]" />
+//                     {sample.rating}
+//                   </span>
+//                   <span>{count} មុខម្ហូប</span>
+//                 </div>
+//               </div>
+//             </div>
+//           );
+//         })}
+//       </div>
+//     </section>
+//   );
+// }
 export default function FoodPage() {
+  const [activeTab, setActiveTab] = useState<FoodTabId>("food");
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const filteredNewFoods = applyFilters(NEW_FOODS, filters);
   const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
-
+  const {
+    data: foods = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetMenuItemsQuery();
   return (
     <div className="min-h-screen bg-[#fafaf8]">
-      {/* <Header /> */}
+      <div className="pt-15" />
 
-      <div className="pt-15"></div>
-      <div className="sticky  container mx-auto  top-15 z-20 bg-white/2 dark:bg-gray-600/5 w-full  backdrop-blur-xs ">
-        {" "}
-        <FoodNavTabs />
+      <div className="sticky container mx-auto top-15 z-20 w-full bg-white/2 backdrop-blur-xs dark:bg-gray-600/5">
+        <FoodNavTabs activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <div className="mx-auto flex max-w-7xl gap-8 container px-6 pb-16 pt-6 ">
-        <FilterSidebar filters={filters} onChange={setFilters} />
+      <div className="mx-auto max-w-7xl container px-6 pb-16 pt-6">
+        <AnimatePresence mode="wait">
+          {activeTab === "food" && (
+            <motion.div key="food" {...panelMotion}>
+              <div className="flex gap-8">
+                <FilterSidebar filters={filters} onChange={setFilters} />
+                <main className="min-w-0 flex-1">
+                  <CategoryTabs />
+                  <div className="grid-cols-3 pt-8 max-w-5xl grid  place-content-center gap-2">
+                    {foods.map((food) => (
+                      <Link key={food.uuid} href={`/food/${food.uuid}`}>
+                        <FoodCard food={food} />
+                      </Link>
+                    ))}
+                  </div>
+                  {/* <FoodSection
+                    title="អាហារដែលទើបតែបញ្ចូលថ្មី"
+                    foods={filteredNewFoods}
+                    showLoadMore
+                  />
+                  <FoodSection
+                    title="អាហារពេញនិយមបំផុត"
+                    foods={filteredPopularFoods}
+                  /> */}
+                  <CtaBanner />
+                </main>
+              </div>
+            </motion.div>
+          )}
 
-        <main className="min-w-0 flex-1">
-          <CategoryTabs />
-          <FoodSection
-            title="អាហារដែលទើបតែបញ្ចូលថ្មី"
-            foods={filteredNewFoods}
-            showLoadMore
-          />
-          <FoodSection title="អាហារពេញនិយមបំផុត" foods={filteredPopularFoods} />
-          <CtaBanner />
-        </main>
+          {activeTab === "location" && (
+            <motion.div>
+              {/* <LocationPanel foods={filteredNewFoods} /> */}
+              <LocationPanel />
+            </motion.div>
+          )}
+
+          {activeTab === "store" && (
+            <motion.div>
+              {/* <StorePanel foods={NEW_FOODS} /> */}
+              <div className="flex gap-8">
+                <FilterSidebar filters={filters} onChange={setFilters} />
+                <main className="min-w-0 flex-1">
+                  <StorePanel />
+                </main>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* <Footer /> */}
     </div>
   );
 }

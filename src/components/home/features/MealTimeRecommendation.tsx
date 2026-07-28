@@ -2,20 +2,15 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IoMdTime } from "react-icons/io";
-import { FaStar, FaStore } from "react-icons/fa";
-import { MdDeliveryDining } from "react-icons/md";
-import { CiHeart } from "react-icons/ci";
-
 import Link from "next/link";
-import { useGetFoodsQuery } from "@/redux/api/foodApi";
-import Image from "next/image";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
-import FoodCardComponent from "../FoodCardComponent";
-import { EMPTY_FILTERS, FilterState, MealTime } from "@/types/food";
+import { EMPTY_FILTERS, FilterState } from "@/types/food";
+import { MenuItem } from "@/types/menu-item";
+import FoodCard from "@/components/FoodCard";
+import { useGetMenuItemsQuery } from "@/redux/api/fooodApi";
 
-type TabId = MealTime | "all";
+type TabId = "all" | "breakfast" | "lunch" | "dinner";
 
 const tabs: { id: TabId; label: string }[] = [
   { id: "all", label: "ទាំងអស់" },
@@ -30,17 +25,17 @@ function getMealTimeByHour(hour: number): TabId {
   return "dinner";
 }
 
-function matchesQuery(
-  food: { name: string; store: string; description: string; tags: string[] },
-  query?: string,
-) {
+function matchesQuery(food: MenuItem, query?: string) {
   if (!query || !query.trim()) return true;
+
   const q = query.trim().toLowerCase();
+
   return (
+    food.localName.toLowerCase().includes(q) ||
     food.name.toLowerCase().includes(q) ||
-    food.store.toLowerCase().includes(q) ||
     food.description.toLowerCase().includes(q) ||
-    food.tags.some((t) => t.toLowerCase().includes(q))
+    food.store.name.toLowerCase().includes(q) ||
+    food.food.category.name.toLowerCase().includes(q)
   );
 }
 
@@ -54,7 +49,7 @@ type RecommandSectionProps = {
   filters?: FilterState;
 };
 
-export default function RecommandSection({
+export default function MealTimeRecommandSection({
   filters = EMPTY_FILTERS,
 }: RecommandSectionProps) {
   const [activeTab, setActiveTab] = useState<TabId>("all");
@@ -93,29 +88,48 @@ export default function RecommandSection({
   }, []);
 
   const {
-    data: recommendedFoods = [],
+    data: foods = [],
     isLoading,
     isError,
     error,
-  } = useGetFoodsQuery();
-  console.log(recommendedFoods);
-  if (error) {
-    console.log("RTK Query error:", JSON.stringify(error, null, 2));
-  }
+  } = useGetMenuItemsQuery();
+  console.log(" ==> data :", foods);
+  //   if (error) {
+  //     console.log("RTK Query error:", JSON.stringify(error, null, 2));
+  //   }
 
   const filteredFoods = useMemo(
     () =>
-      recommendedFoods.filter(
-        (food) =>
-          (activeTab === "all" || food.mealTime === activeTab) &&
-          matchesQuery(food, filters.query) &&
-          matchesGroup(food.foodTypes, filters.food) &&
-          matchesGroup(food.drinkTypes, filters.drink) &&
-          matchesGroup(food.ageGroups, filters.age),
-      ),
-    [recommendedFoods, activeTab, filters],
-  );
+      foods.filter((food) => {
+        const mealMatch =
+          activeTab === "all" ||
+          food.mealTypes.some((meal) => meal.code.toLowerCase() === activeTab);
 
+        const categoryMatch = matchesGroup(
+          [food.food.category.name],
+          filters.food,
+        );
+
+        const dietaryMatch = matchesGroup(
+          food.dietaryTypes.map((item) => item.name),
+          filters.drink,
+        );
+
+        const ageMatch = matchesGroup(
+          food.food.ageGroups.map((item) => item.name),
+          filters.age,
+        );
+
+        return (
+          mealMatch &&
+          matchesQuery(food, filters.query) &&
+          categoryMatch &&
+          dietaryMatch &&
+          ageMatch
+        );
+      }),
+    [foods, activeTab, filters],
+  );
   return (
     <div className="my-15 flex flex-col gap-12.5">
       <section className="flex flex-col items-center lg:pt-0 md:pt-4 justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
@@ -176,13 +190,13 @@ export default function RecommandSection({
             កំពុងផ្ទុក...
           </p>
         )}
-        {isError && (
+        {/* {isError && (
           <p className="col-span-full text-center text-red-400 py-10">
             មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ
           </p>
-        )}
+        )} */}
         <AnimatePresence mode="popLayout">
-          {!isLoading && filteredFoods.length === 0 && (
+          {/* {!isLoading && filteredFoods.length === 0 && (
             <motion.p
               key="empty"
               initial={{ opacity: 0 }}
@@ -192,10 +206,10 @@ export default function RecommandSection({
             >
               រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
             </motion.p>
-          )}
+          )} */}
           {filteredFoods.map((food) => (
-            <Link key={food.id} href={`/food/${food.id}`}>
-              <FoodCardComponent food={food} />
+            <Link key={food.uuid} href={`/food/${food.uuid}`}>
+              <FoodCard food={food} />
             </Link>
           ))}
         </AnimatePresence>

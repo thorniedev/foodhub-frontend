@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
+import { ThemeToggle } from "../theme-toggle";
 
 const NAV_LINKS = [
   { href: "/", label: "ទំព័រដើម" },
-  { href: "/about", label: "អំពីយេីង" },
   { href: "/food", label: "ម្ហូបអាហារ" },
+  { href: "/about", label: "អំពីយេីង" },
 ];
 
 export default function Navbar() {
@@ -82,6 +83,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex md:gap-4 max-md:gap-0.5 justify-center max-md:hidden items-center">
+          <ThemeToggle />
           <Link
             href="/dashboard"
             className="md:px-4 dark:text-primary text-secondary md:py-2 dark:bg-white max-md:w-[80px] max-sm:w-fit max-md:px-2 max-md:py-1.5 text-white bg-primary-800 rounded-full"

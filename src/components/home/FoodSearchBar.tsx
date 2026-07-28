@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import Link from "next/link";
 
-import { useGetFoodsQuery } from "@/app/store/foodApi";
+import { useGetFoodsQuery } from "@/redux/api/foodApi";
 import FoodCardComponent from "../FoodCardComponent";
 
 type ChipGroup = {
