@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Heart, Store, Star, Clock, Bike, Clock3 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { FoodRecommendation } from "@/types/family-profile";
+
 import Image from "next/image";
 interface FoodRecommendationCardProps {
-  item: FoodRecommendation;
+  item: any; // Replace 'any' with the actual type if available
   onToggleFavorite?: (id: string) => void;
 }
 

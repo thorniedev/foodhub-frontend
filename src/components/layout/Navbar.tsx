@@ -83,7 +83,7 @@ export default function Navbar() {
 
         <div className="flex md:gap-4 max-md:gap-0.5 justify-center max-md:hidden items-center">
           <Link
-            href="/login"
+            href="/dashboard"
             className="md:px-4 dark:text-primary text-secondary md:py-2 dark:bg-white max-md:w-[80px] max-sm:w-fit max-md:px-2 max-md:py-1.5 text-white bg-primary-800 rounded-full"
           >
             បង្កេីតគណនី

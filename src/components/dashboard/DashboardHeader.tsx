@@ -88,6 +88,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Bell, Search } from "lucide-react";
 import { getActiveLabel } from "@/components/layout/NavItem";
+import Link from "next/link";
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -110,7 +111,7 @@ export default function DashboardHeader({
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-6 border-b border-slate-100 bg-white px-6">
       {/* Logo — swap src for your real logo in /public/Image */}
-      <div className="flex shrink-0 items-center">
+      <Link href={"/"} className="flex shrink-0 items-center">
         <Image
           src="/Image/logo.png"
           alt="FoodHub"
@@ -119,7 +120,7 @@ export default function DashboardHeader({
           priority
           className="h-10 w-auto object-contain"
         />
-      </div>
+      </Link>
 
       {/* Dynamic page title — reflects the active Aside page */}
       <span className="shrink-0 text-lg font-semibold text-[#136C34]">

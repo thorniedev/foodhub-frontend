@@ -11,8 +11,9 @@ import type { MealTime, FilterState } from "@/app/types/food";
 import Link from "next/link";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
 import Image from "next/image";
-import FoodCardComponent from "@/components/FoodCardComponent";
+
 import { TypingAnimation } from "@/components/ui/typing-animation";
+import FoodCardComponent from "../FoodCardComponent";
 
 type TabId = MealTime | "all";
 

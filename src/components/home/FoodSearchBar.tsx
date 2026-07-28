@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import Link from "next/link";
-import FoodCardComponent from "@/components/FoodCardComponent";
+
 import { useGetFoodsQuery } from "@/app/store/foodApi";
+import FoodCardComponent from "../FoodCardComponent";
 
 type ChipGroup = {
   title: string;
