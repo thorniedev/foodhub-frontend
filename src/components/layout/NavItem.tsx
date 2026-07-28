@@ -1,0 +1,33 @@
+import { GrAppsRounded } from "react-icons/gr";
+import { FaHistory } from "react-icons/fa";
+import { LuUsersRound } from "react-icons/lu";
+import { FaRegHeart } from "react-icons/fa";
+import { FaRegBell } from "react-icons/fa6";
+
+export interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  badge?: number;
+}
+
+export const navItems: NavItem[] = [
+  { href: "/dashboard", label: "ផ្ទាំងព័ត៌មាន", icon: <GrAppsRounded /> },
+  { href: "/dashboard/review", label: "ប្រវត្តិការវាយតម្លៃអាហារ", icon: <FaHistory /> },
+  { href: "/dashboard/family-profile", label: "គណនីសមាជិកគ្រួសារ", icon: <LuUsersRound /> },
+  { href: "/dashboard/favorites", label: "ចំណូលចិត្ត", icon: <FaRegHeart /> },
+  { href: "/dashboard/notifications", label: "ការជូនដំណឹង", icon: <FaRegBell />, badge: 2 },
+];
+
+// Finds the label for the current route. Longest matching href wins,
+// so /dashboard/review beats /dashboard.
+export function getActiveLabel(pathname: string): string {
+  const match = [...navItems]
+    .sort((a, b) => b.href.length - a.href.length)
+    .find((item) =>
+      item.href === "/dashboard"
+        ? pathname === "/dashboard"
+        : pathname.startsWith(item.href),
+    );
+  return match?.label ?? "";
+}

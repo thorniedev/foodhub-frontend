@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { FaChevronRight } from "react-icons/fa";
 import FamilyMemberList from "@/components/dashboard/family-profile/FamilyMemberList";
 import FoodRecommendationCard from "@/components/dashboard/family-profile/FoodRecommendationCard";
 import MealTimeTabs from "@/components/dashboard/family-profile/MealTimeTabs";
@@ -35,7 +36,8 @@ const familyMembers: FamilyMember[] = [
 const recommendations: FoodRecommendation[] = [
   {
     id: "r1",
-    imageUrl: "https://placehold.co/400x300?text=Mi",
+    mealTime: "breakfast",
+    imageUrl: "/Image/food/food1.png",
     restaurantName: "Kongfou Kitchen",
     dishName: "មីឆាសាច់គោ",
     priceLabel: "2$",
@@ -49,7 +51,8 @@ const recommendations: FoodRecommendation[] = [
   },
   {
     id: "r2",
-    imageUrl: "https://placehold.co/400x300?text=Banh+Mi",
+    mealTime: "breakfast",
+    imageUrl: "/Image/food/food2.png",
     restaurantName: "Kongfou Kitchen",
     dishName: "នំបុ័ងសាច់ជ្រូកខៀ",
     priceLabel: "1.5$",
@@ -63,7 +66,8 @@ const recommendations: FoodRecommendation[] = [
   },
   {
     id: "r3",
-    imageUrl: "https://placehold.co/400x300?text=Rice",
+    mealTime: "lunch",
+    imageUrl: "/Image/food/food3.png",
     restaurantName: "ផ្ទះបាយអំបាប់",
     dishName: "បាយឆាម្រះព្រៅ",
     priceLabel: "2.5$",
@@ -77,7 +81,8 @@ const recommendations: FoodRecommendation[] = [
   },
   {
     id: "r4",
-    imageUrl: "https://placehold.co/400x300?text=Fried",
+    mealTime: "lunch",
+    imageUrl: "/Image/food/food4.png",
     restaurantName: "Kongfou Kitchen",
     dishName: "ប្រហិតបំពង",
     priceLabel: "1$",
@@ -91,7 +96,8 @@ const recommendations: FoodRecommendation[] = [
   },
   {
     id: "r5",
-    imageUrl: "https://placehold.co/400x300?text=Dumplings",
+    mealTime: "dinner",
+    imageUrl: "/Image/food/food5.png",
     restaurantName: "អាហារឆ្នាន 99",
     dishName: "នំចាំ និងសៀវរម៉ែ",
     priceLabel: "2$",
@@ -105,7 +111,8 @@ const recommendations: FoodRecommendation[] = [
   },
   {
     id: "r6",
-    imageUrl: "https://placehold.co/400x300?text=Salad",
+    mealTime: "dinner",
+    imageUrl: "/Image/food/food6.png",
     restaurantName: "Kongfou Kitchen",
     dishName: "បុកល្អងគ្រឿងសមុទ្រ",
     priceLabel: "2$",
@@ -128,12 +135,20 @@ export default function FamilyPage() {
     dinner: "ពេលល្ងាច",
   };
 
+  // only the dishes for the active tab
+  const visibleFoods = recommendations.filter(
+    (item) => item.mealTime === mealTime,
+  );
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-6">
-      <p className="font-medium text-emerald-600">ថ្ងៃព្រហស្បតិ៍ ទី២៨ ខែតុលា</p>
-      <h1 className="mt-1 text-2xl font-bold text-slate-800">
+      {/* greeting */}
+      <p className="text-xl font-medium text-[#F97316]">
+        ថ្ងៃព្រហស្បតិ៍ ទី២៨ ខែតុលា
+      </p>
+      <p className="mt-1 text-4xl font-bold leading-snug text-[#136C34]">
         អរុណសួស្តី លីតា!
-      </h1>
+      </p>
 
       <div className="mt-6">
         <FamilyMemberList
@@ -144,27 +159,52 @@ export default function FamilyPage() {
 
       <div className="mt-10 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-800">
+          <p className="text-3xl font-bold leading-snug text-[#F97316]">
             មុខម្ហូបណែនាំសម្រាប់{mealTimeLabel[mealTime]}
-          </h2>
-          <p className="text-sm text-slate-500">សម្របតាមចំណូលចិត្តរបស់ លីតា</p>
+          </p>
+          <p className="mt-0.5 text-base text-slate-500">
+            សម្របតាមចំណូលចិត្តរបស់ លីតា
+          </p>
         </div>
         <MealTimeTabs active={mealTime} onChange={setMealTime} />
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {recommendations.map((item) => (
-          <FoodRecommendationCard key={item.id} item={item} />
-        ))}
-      </div>
+      {/* grid re-keys on mealTime so it fades out/in when the tab changes */}
+      <AnimatePresence mode="wait">
+        {visibleFoods.length > 0 ? (
+          <motion.div
+            key={mealTime}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {visibleFoods.map((item) => (
+              <FoodRecommendationCard key={item.id} item={item} />
+            ))}
+          </motion.div>
+        ) : (
+          <motion.p
+            key={`${mealTime}-empty`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-10 text-center text-slate-400"
+          >
+            មិនទាន់មានមុខម្ហូបសម្រាប់{mealTimeLabel[mealTime]}ទេ
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       <div className="mt-6 flex justify-center">
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+          className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:scale-[0.98]"
         >
           មើលបន្ថែម
-          <ChevronRight className="h-4 w-4" />
+          <FaChevronRight className="h-4 w-4" />
         </button>
       </div>
     </div>

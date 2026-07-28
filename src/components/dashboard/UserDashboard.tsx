@@ -1,14 +1,11 @@
 "use client";
 import { IoCameraOutline } from "react-icons/io5";
 import { useState } from "react";
-import {
-  Camera,
-  User,
-  ShieldCheck,
-  Utensils,
-  AlertTriangle,
-  Star,
-} from "lucide-react";
+import { FaRegUser } from "react-icons/fa";
+import { RiShieldCheckLine } from "react-icons/ri";
+import { FaUtensils } from "react-icons/fa";
+import { FiAlertTriangle } from "react-icons/fi";
+import { FaRegStar } from "react-icons/fa";
 import TagToggle from "./TagToggle";
 import FoodChipInput from "./FoodChipInput";
 import type { TagOption, UserProfile } from "@/types/dashboard";
@@ -96,7 +93,7 @@ export default function UserDashboard() {
     <div className="mx-auto  max-w-6xl px-4 py-6">
       {/* Profile banner */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="relative h-32 bg-gradient-to-r from-emerald-600 to-yellow-400" />
+        <div className="relative h-32 bg-gradient-to-r from-primary-100 to-primary-200" />
         <div className="relative px-6 pb-6">
           <div className="-mt-10 flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-end gap-4">
@@ -139,7 +136,7 @@ export default function UserDashboard() {
 
       {/* Personal info */}
       <SectionCard
-        icon={<User className="h-5 w-5" />}
+        icon={<FaRegUser />}
         title="ព័ត៌មានផ្ទាល់ខ្លួន"
         className="mt-5"
       >
@@ -223,7 +220,7 @@ export default function UserDashboard() {
 
       {/* Health goals */}
       <SectionCard
-        icon={<ShieldCheck className="h-5 w-5" />}
+        icon={<RiShieldCheckLine />}
         title="គោលដៅក្នុងការថែរក្សាសុខភាព"
         className="mt-5"
       >
@@ -238,7 +235,8 @@ export default function UserDashboard() {
           ))}
         </div>
         <div className="mt-4 flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+          {/* <ShieldCheckLine className="mt-0.5 h-4 w-4 shrink-0" /> */}
+          <RiShieldCheckLine />
           FoodHub AI នឹងផ្តល់ការណែនាំដែលត្រូវបានកែសម្រួលជាពិសេសសម្រាប់អ្នក
           ដោយផ្អែកលើគោលដៅទាំង {healthGoals.length} ដែលអ្នកបានជ្រើសរើស។
         </div>
@@ -246,10 +244,7 @@ export default function UserDashboard() {
 
       {/* Dietary restrictions + allergies */}
       <div className="mt-5 grid gap-5 md:grid-cols-2">
-        <SectionCard
-          icon={<Utensils className="h-5 w-5" />}
-          title="ចំណូលចិត្តផ្នែកអាហារ"
-        >
+        <SectionCard icon={<FaUtensils />} title="ចំណូលចិត្តផ្នែកអាហារ">
           <div className="flex flex-wrap gap-2">
             {dietaryOptions.map((opt) => (
               <TagToggle
@@ -262,10 +257,7 @@ export default function UserDashboard() {
           </div>
         </SectionCard>
 
-        <SectionCard
-          icon={<AlertTriangle className="h-5 w-5" />}
-          title="អាឡែស៊ីនិងអាហារ"
-        >
+        <SectionCard icon={<FiAlertTriangle />} title="អាឡែស៊ីនិងអាហារ">
           <div className="flex flex-wrap gap-2">
             {allergyOptions.map((opt) => (
               <TagToggle
@@ -279,7 +271,7 @@ export default function UserDashboard() {
           </div>
           {allergies.length > 0 && (
             <p className="mt-3 flex items-center gap-1.5 text-xs text-orange-600">
-              <AlertTriangle className="h-3.5 w-3.5" />
+              <FiAlertTriangle />
               របស់ទាំងនេះនឹងត្រូវបានចៀសវាងក្នុងអាហារដែលណែនាំដល់អ្នក
             </p>
           )}
@@ -288,7 +280,7 @@ export default function UserDashboard() {
 
       {/* Cuisine preferences */}
       <SectionCard
-        icon={<Star className="h-5 w-5" />}
+        icon={<FaRegStar />}
         title="មុខម្ហូបដែលពេញចិត្ត"
         className="mt-5"
       >
@@ -306,7 +298,7 @@ export default function UserDashboard() {
 
       {/* Favorite foods */}
       <SectionCard
-        icon={<Star className="h-5 w-5" />}
+        icon={<FaRegStar />}
         title="ចំណូលចិត្តអាហារ"
         className="mt-5"
       >
