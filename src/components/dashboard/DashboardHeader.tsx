@@ -1,7 +1,10 @@
 // "use client";
 
 // import Image from "next/image";
+// import { usePathname } from "next/navigation";
 // import { Bell, Search } from "lucide-react";
+// import { getActiveLabel } from "@/components/layout/NavItem";
+// import Link from "next/link";
 
 // interface DashboardHeaderProps {
 //   userName?: string;
@@ -18,10 +21,13 @@
 //   notificationCount = 0,
 //   onSearch,
 // }: DashboardHeaderProps) {
+//   const pathname = usePathname();
+//   const pageTitle = getActiveLabel(pathname);
+
 //   return (
 //     <header className="sticky top-0 z-40 flex h-16 items-center gap-6 border-b border-slate-100 bg-white px-6">
 //       {/* Logo — swap src for your real logo in /public/Image */}
-//       <div className="flex shrink-0 items-center">
+//       <Link href={"/"} className="flex shrink-0 items-center">
 //         <Image
 //           src="/Image/logo.png"
 //           alt="FoodHub"
@@ -30,7 +36,12 @@
 //           priority
 //           className="h-10 w-auto object-contain"
 //         />
-//       </div>
+//       </Link>
+
+//       {/* Dynamic page title — reflects the active Aside page */}
+//       <span className="shrink-0 text-lg font-semibold text-[#136C34]">
+//         {pageTitle}
+//       </span>
 
 //       {/* Search */}
 //       <div className="mx-auto w-full max-w-2xl">
@@ -81,13 +92,13 @@
 //   );
 // }
 
-
 "use client";
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 import { getActiveLabel } from "@/components/layout/NavItem";
+import { useSidebar } from "@/components/layout/SidebarContext";
 import Link from "next/link";
 
 interface DashboardHeaderProps {
@@ -107,9 +118,20 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const pageTitle = getActiveLabel(pathname);
+  const { toggle } = useSidebar();
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-6 border-b border-slate-100 bg-white px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-slate-100 bg-white px-3 sm:gap-6 sm:px-6">
+      {/* Hamburger — mobile only */}
+      <button
+        type="button"
+        aria-label="បើកម៉ឺនុយ"
+        onClick={toggle}
+        className="flex shrink-0 items-center justify-center rounded-full p-2 text-[#136C34] transition hover:bg-emerald-50 lg:hidden"
+      >
+        <Menu className="h-6 w-6" />
+      </button>
+
       {/* Logo — swap src for your real logo in /public/Image */}
       <Link href={"/"} className="flex shrink-0 items-center">
         <Image
@@ -118,17 +140,17 @@ export default function DashboardHeader({
           width={140}
           height={48}
           priority
-          className="h-10 w-auto object-contain"
+          className="h-8 w-auto object-contain sm:h-10"
         />
       </Link>
 
       {/* Dynamic page title — reflects the active Aside page */}
-      <span className="shrink-0 text-lg font-semibold text-[#136C34]">
+      <span className="hidden shrink-0 text-lg font-semibold text-[#136C34] sm:block">
         {pageTitle}
       </span>
 
       {/* Search */}
-      <div className="mx-auto w-full max-w-2xl">
+      <div className="mx-auto hidden w-full max-w-2xl md:block">
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#136C34]" />
           <input
@@ -140,8 +162,17 @@ export default function DashboardHeader({
         </div>
       </div>
 
+      {/* Search icon only — mobile, pushes remaining items to the right */}
+      <button
+        type="button"
+        aria-label="ស្វែងរក"
+        className="ml-auto flex shrink-0 items-center justify-center rounded-full p-2 text-[#136C34] transition hover:bg-emerald-50 md:hidden"
+      >
+        <Search className="h-5 w-5" />
+      </button>
+
       {/* Right: bell + user */}
-      <div className="flex shrink-0 items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
         <button
           type="button"
           aria-label="ការជូនដំណឹង"
@@ -169,7 +200,9 @@ export default function DashboardHeader({
               {avatarInitial}
             </div>
           )}
-          <span className="text-sm font-medium text-slate-700">{userName}</span>
+          <span className="hidden text-sm font-medium text-slate-700 sm:block">
+            {userName}
+          </span>
         </div>
       </div>
     </header>
