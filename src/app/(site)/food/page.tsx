@@ -19,10 +19,10 @@ import { FaStar, FaStore } from "react-icons/fa";
 import { CiHeart } from "react-icons/ci";
 import { MdDeliveryDining } from "react-icons/md";
 
-import type { FoodItem } from "@/app/types/food";
 import FoodCardComponent from "@/components/FoodCardComponent";
-import { useGetFoodsQuery } from "../store/foodApi";
+
 import FoodNavTabs from "@/components/Foodnavtabs";
+import { FoodItem } from "@/types/food";
 
 type ListedFood = FoodItem & {
   pickup: string;

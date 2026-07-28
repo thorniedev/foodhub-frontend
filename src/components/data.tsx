@@ -1,7 +1,7 @@
 "use client";
 
+import { FoodItem } from "@/types/food";
 import { useEffect, useState } from "react";
-import type { FoodItem } from "@/app/types/food";
 
 export default function RecommandSection() {
   const [foods, setFoods] = useState<FoodItem[]>([]);

@@ -17,7 +17,7 @@ export default function FoodRecommendationCard({
   const [favorite, setFavorite] = useState(item.isFavorite);
 
   const handleFavoriteClick = () => {
-    setFavorite((f) => !f);
+    setFavorite((f: boolean) => !f);
     onToggleFavorite?.(item.id);
   };
 

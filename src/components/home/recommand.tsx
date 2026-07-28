@@ -6,7 +6,7 @@ import { IoMdTime } from "react-icons/io";
 import { FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
-import type { MealTime, FilterState } from "@/app/types/food";
+
 
 import Link from "next/link";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
@@ -14,6 +14,7 @@ import Image from "next/image";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import FoodCardComponent from "../FoodCardComponent";
+import { EMPTY_FILTERS, FilterState, MealTime } from "@/types/food";
 
 type TabId = MealTime | "all";
 

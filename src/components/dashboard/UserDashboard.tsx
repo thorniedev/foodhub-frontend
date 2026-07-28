@@ -93,7 +93,7 @@ export default function UserDashboard() {
     <div className="mx-auto  max-w-6xl px-4 py-6">
       {/* Profile banner */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="relative h-32 bg-gradient-to-r from-emerald-600 to-yellow-400" />
+        <div className="relative h-32 bg-gradient-to-r from-primary-100 to-primary-200" />
         <div className="relative px-6 pb-6">
           <div className="-mt-10 flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-end gap-4">
@@ -244,10 +244,7 @@ export default function UserDashboard() {
 
       {/* Dietary restrictions + allergies */}
       <div className="mt-5 grid gap-5 md:grid-cols-2">
-        <SectionCard
-          icon={<FaUtensils />}
-          title="ចំណូលចិត្តផ្នែកអាហារ"
-        >
+        <SectionCard icon={<FaUtensils />} title="ចំណូលចិត្តផ្នែកអាហារ">
           <div className="flex flex-wrap gap-2">
             {dietaryOptions.map((opt) => (
               <TagToggle
@@ -260,10 +257,7 @@ export default function UserDashboard() {
           </div>
         </SectionCard>
 
-        <SectionCard
-          icon={<FiAlertTriangle />}
-          title="អាឡែស៊ីនិងអាហារ"
-        >
+        <SectionCard icon={<FiAlertTriangle />} title="អាឡែស៊ីនិងអាហារ">
           <div className="flex flex-wrap gap-2">
             {allergyOptions.map((opt) => (
               <TagToggle
