@@ -44,3 +44,12 @@ Total 39 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
 remote: Resolving deltas: 100% (12/12), completed with 10 local objects.
 To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
    7e17057..ed7ebcb  test/before-merge -> test/before-merge
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git commit -m "save"
+[test/before-merge 4007685] save
+ 1 file changed, 46 insertions(+)
+
