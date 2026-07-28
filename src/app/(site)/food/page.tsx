@@ -320,6 +320,7 @@ function applyFilters(foods: ListedFood[], filters: FilterState) {
     return true;
   });
 
+  
   const sorted = [...filtered].sort((a, b) => {
     if (filters.sortBy === "fastest")
       return parseMinutes(a.time) - parseMinutes(b.time);
