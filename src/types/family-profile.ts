@@ -9,6 +9,7 @@ export type MealTime = "breakfast" | "lunch" | "dinner";
 
 export interface FoodRecommendation {
   id: string;
+  mealTime: MealTime; 
   imageUrl: string;
   restaurantName: string;
   dishName: string;

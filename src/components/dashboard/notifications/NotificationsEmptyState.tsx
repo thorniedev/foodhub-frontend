@@ -7,7 +7,7 @@ export default function NotificationsEmptyState() {
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
         <BellOff className="h-5 w-5 text-slate-400" />
       </span>
-      <p className="text-sm font-medium text-slate-600">មិនមានការជូនដំណឹងត្រូវនឹងលក្ខខណ្ឌនេះទេ</p>
+      <p className="text-md font-medium text-slate-600">មិនមានការជូនដំណឹងត្រូវនឹងលក្ខខណ្ឌនេះទេ</p>
       <p className="text-xs text-slate-400">សូមសាកល្បងប្តូរតម្រង ឬបិទ &quot;មិនទាន់អានប៉ុណ្ណោះ&quot;</p>
     </div>
   );

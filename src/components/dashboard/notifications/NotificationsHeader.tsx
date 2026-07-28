@@ -17,8 +17,8 @@ export default function NotificationsHeader({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">ការជូនដំណឹង</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="text-4xl font-semibold text-[#F97316]">ការជូនដំណឹង</p>
+        <p className="mt-1 text-md text-slate-500">
           {unreadCount > 0
             ? `អ្នកមានការជូនដំណឹង ${unreadCount} មិនទាន់អាន`
             : "អ្នកបានអានការជូនដំណឹងទាំងអស់ហើយ"}

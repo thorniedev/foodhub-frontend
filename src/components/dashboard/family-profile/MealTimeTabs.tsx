@@ -24,8 +24,9 @@ export default function MealTimeTabs({ active, onChange }: MealTimeTabsProps) {
             key={opt.id}
             type="button"
             onClick={() => onChange(opt.id)}
+            aria-pressed={isActive}
             className={cn(
-              "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+              "rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500",
               isActive
                 ? "bg-emerald-100 text-emerald-700"
                 : "text-slate-500 hover:text-slate-700",

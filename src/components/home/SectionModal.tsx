@@ -8,7 +8,7 @@ import { HiSparkles } from "react-icons/hi2";
 import { FoodItem } from "@/types/food";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
 import RecommendCardStack from "./RecommendationStack";
-import SpinWheel from "./Spinwheel ";
+import SpinWheel from "@/app/home/Spinwheel";
 
 type ModalTab = "swipe" | "spin";
 

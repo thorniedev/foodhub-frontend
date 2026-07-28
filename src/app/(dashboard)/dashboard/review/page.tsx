@@ -287,7 +287,7 @@ export default function ReviewPage() {
     sortOptions.find((o) => o.id === sortOrder)?.label ?? "ចាស់បំផុត";
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6">
+    <div className="mx-auto max-w-7xl px-6 py-6">
       <p className="text-3xl font-bold text-[#E36914]">
         ប្រវត្តិនៃការវាយតម្លៃម្ហូបអាហារ
       </p>

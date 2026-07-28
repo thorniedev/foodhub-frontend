@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Heart, Store, Star, Clock, Bike, Clock3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FoodRecommendation } from "@/types/family-profile";
-
+import Image from "next/image";
 interface FoodRecommendationCardProps {
   item: FoodRecommendation;
   onToggleFavorite?: (id: string) => void;
@@ -22,23 +22,25 @@ export default function FoodRecommendationCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="relative h-44 w-full">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+    <div className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+      <div className="relative h-44 w-full overflow-hidden">
+        <Image
+          width={285}
+          height={370}
           src={item.imageUrl}
           alt={item.dishName}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <button
           type="button"
           onClick={handleFavoriteClick}
           aria-label="ចំណូលចិត្ត"
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm"
+          aria-pressed={favorite}
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-transform hover:bg-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
         >
           <Heart
             className={cn(
-              "h-4 w-4",
+              "h-4 w-4 transition-colors",
               favorite ? "fill-emerald-600 text-emerald-600" : "text-slate-400",
             )}
           />
@@ -51,9 +53,11 @@ export default function FoodRecommendationCard({
           {item.restaurantName}
         </div>
 
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800">{item.dishName}</h3>
-          <span className="font-semibold text-emerald-600">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="truncate font-semibold text-slate-800">
+            {item.dishName}
+          </h3>
+          <span className="shrink-0 font-semibold text-emerald-600">
             {item.priceLabel}
           </span>
         </div>
@@ -82,7 +86,7 @@ export default function FoodRecommendationCard({
           {item.openHours}
         </p>
 
-        <span className="mt-3 inline-block rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
+        <span className="mt-3 inline-block rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
           {item.badgeLabel}
         </span>
       </div>
