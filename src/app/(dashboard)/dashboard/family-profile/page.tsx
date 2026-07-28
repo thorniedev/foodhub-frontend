@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaChevronRight } from "react-icons/fa";
 import FamilyMemberList from "@/components/dashboard/family-profile/FamilyMemberList";
-import FoodRecommendationCard from "@/components/dashboard/family-profile/FoodRecommendationCard";
+// import FoodCardComponent from "@/components/ui/FoodCardComponent";
 import MealTimeTabs from "@/components/dashboard/family-profile/MealTimeTabs";
-import type {
-  FamilyMember,
-  FoodRecommendation,
-  MealTime,
-} from "@/types/family-profile";
+import type { FamilyMember, MealTime } from "@/types/family-profile";
+import type { FoodItem } from "@/types/food";
+import FoodCardComponent from "@/components/FoodCardComponent";
 
 const familyMembers: FamilyMember[] = [
   {
@@ -33,101 +31,18 @@ const familyMembers: FamilyMember[] = [
   },
 ];
 
-const recommendations: FoodRecommendation[] = [
-  {
-    id: "r1",
-    mealTime: "breakfast",
-    imageUrl: "/Image/food/food1.png",
-    restaurantName: "Kongfou Kitchen",
-    dishName: "មីឆាសាច់គោ",
-    priceLabel: "2$",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្នះឆ្នៃ",
-    rating: 4.3,
-    etaMinutes: 15,
-    distanceKm: 2,
-    openHours: "ម៉ោងបើក ៥យប់",
-    badgeLabel: "Halal",
-    isFavorite: true,
-  },
-  {
-    id: "r2",
-    mealTime: "breakfast",
-    imageUrl: "/Image/food/food2.png",
-    restaurantName: "Kongfou Kitchen",
-    dishName: "នំបុ័ងសាច់ជ្រូកខៀ",
-    priceLabel: "1.5$",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្នះឆ្នៃ",
-    rating: 4.3,
-    etaMinutes: 10,
-    distanceKm: 1.5,
-    openHours: "ម៉ោងបើក ៨យប់",
-    badgeLabel: "ត្រានត់ថែម",
-    isFavorite: false,
-  },
-  {
-    id: "r3",
-    mealTime: "lunch",
-    imageUrl: "/Image/food/food3.png",
-    restaurantName: "ផ្ទះបាយអំបាប់",
-    dishName: "បាយឆាម្រះព្រៅ",
-    priceLabel: "2.5$",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្នះឆ្នៃ",
-    rating: 4.3,
-    etaMinutes: 10,
-    distanceKm: 7.3,
-    openHours: "ម៉ោងបើក ៨យប់",
-    badgeLabel: "Halal",
-    isFavorite: true,
-  },
-  {
-    id: "r4",
-    mealTime: "lunch",
-    imageUrl: "/Image/food/food4.png",
-    restaurantName: "Kongfou Kitchen",
-    dishName: "ប្រហិតបំពង",
-    priceLabel: "1$",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្នះឆ្នៃ",
-    rating: 4.3,
-    etaMinutes: 10,
-    distanceKm: 1.5,
-    openHours: "ម៉ោងបើក ៨យប់",
-    badgeLabel: "Halal",
-    isFavorite: false,
-  },
-  {
-    id: "r5",
-    mealTime: "dinner",
-    imageUrl: "/Image/food/food5.png",
-    restaurantName: "អាហារឆ្នាន 99",
-    dishName: "នំចាំ និងសៀវរម៉ែ",
-    priceLabel: "2$",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្នះឆ្នៃ",
-    rating: 4.3,
-    etaMinutes: 10,
-    distanceKm: 1.5,
-    openHours: "ម៉ោងបើក ៨យប់",
-    badgeLabel: "Halal",
-    isFavorite: false,
-  },
-  {
-    id: "r6",
-    mealTime: "dinner",
-    imageUrl: "/Image/food/food6.png",
-    restaurantName: "Kongfou Kitchen",
-    dishName: "បុកល្អងគ្រឿងសមុទ្រ",
-    priceLabel: "2$",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្នះឆ្នៃ",
-    rating: 4.3,
-    etaMinutes: 10,
-    distanceKm: 1.5,
-    openHours: "ម៉ោងបើក ៨យប់",
-    badgeLabel: "Halal",
-    isFavorite: true,
-  },
-];
-
 export default function FamilyPage() {
   const [mealTime, setMealTime] = useState<MealTime>("breakfast");
+  const [foods, setFoods] = useState<FoodItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/data/recommendedFoods.json")
+      .then((res) => res.json())
+      .then((data: FoodItem[]) => setFoods(data))
+      .catch((err) => console.error("Failed to load foods:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const mealTimeLabel: Record<MealTime, string> = {
     breakfast: "ពេលព្រឹក",
@@ -135,68 +50,70 @@ export default function FamilyPage() {
     dinner: "ពេលល្ងាច",
   };
 
-  // only the dishes for the active tab
-  const visibleFoods = recommendations.filter(
-    (item) => item.mealTime === mealTime,
-  );
+  const visibleFoods = foods.filter((item) => item.mealTime === mealTime);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6">
+    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6">
       {/* greeting */}
-      <p className="text-xl font-medium text-[#F97316]">
+      <p className="text-base font-medium text-[#F97316] sm:text-xl">
         ថ្ងៃព្រហស្បតិ៍ ទី២៨ ខែតុលា
       </p>
-      <p className="mt-1 text-4xl font-bold leading-snug text-[#136C34]">
+      <p className="mt-1 text-2xl font-bold leading-snug text-[#136C34] sm:text-4xl">
         អរុណសួស្តី លីតា!
       </p>
 
-      <div className="mt-6">
+      <div className="mt-5 sm:mt-6">
         <FamilyMemberList
           members={familyMembers}
           onAddProfile={() => console.log("add profile")}
         />
       </div>
 
-      <div className="mt-10 flex flex-wrap items-start justify-between gap-4">
+      <div className="mt-8 flex flex-col gap-4 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div>
-          <p className="text-3xl font-bold leading-snug text-[#F97316]">
+          <p className="text-xl font-bold leading-snug text-[#F97316] sm:text-3xl">
             មុខម្ហូបណែនាំសម្រាប់{mealTimeLabel[mealTime]}
           </p>
-          <p className="mt-0.5 text-base text-slate-500">
+          <p className="mt-0.5 text-sm text-slate-500 sm:text-base">
             សម្របតាមចំណូលចិត្តរបស់ លីតា
           </p>
         </div>
-        <MealTimeTabs active={mealTime} onChange={setMealTime} />
+        <div className="overflow-x-auto">
+          <MealTimeTabs active={mealTime} onChange={setMealTime} />
+        </div>
       </div>
 
-      {/* grid re-keys on mealTime so it fades out/in when the tab changes */}
-      <AnimatePresence mode="wait">
-        {visibleFoods.length > 0 ? (
-          <motion.div
-            key={mealTime}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {visibleFoods.map((item) => (
-              <FoodRecommendationCard key={item.id} item={item} />
-            ))}
-          </motion.div>
-        ) : (
-          <motion.p
-            key={`${mealTime}-empty`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="mt-10 text-center text-slate-400"
-          >
-            មិនទាន់មានមុខម្ហូបសម្រាប់{mealTimeLabel[mealTime]}ទេ
-          </motion.p>
-        )}
-      </AnimatePresence>
+      {loading ? (
+        <p className="mt-10 text-center text-slate-400">កំពុងផ្ទុក...</p>
+      ) : (
+        <AnimatePresence mode="wait">
+          {visibleFoods.length > 0 ? (
+            <motion.div
+              key={mealTime}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="mt-5 grid grid-cols-1 place-items-center gap-4 sm:grid-cols-2 sm:place-items-stretch sm:gap-5 lg:grid-cols-3"
+            >
+              {visibleFoods.map((item) => (
+                <FoodCardComponent key={item.id} food={item} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.p
+              key={`${mealTime}-empty`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-10 text-center text-slate-400"
+            >
+              មិនទាន់មានមុខម្ហូបសម្រាប់{mealTimeLabel[mealTime]}ទេ
+            </motion.p>
+          )}
+        </AnimatePresence>
+      )}
 
       <div className="mt-6 flex justify-center">
         <button
