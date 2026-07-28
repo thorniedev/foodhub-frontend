@@ -1,28 +1,3 @@
-
-// import Navbar from "@/components/layout/Navbar";
-// import Aside from "@/components/layout/Aside";
-// import DashboardHeader from "@/components/dashboard/DashboardHeader";
-
-// export default function DashboardLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   return (
-//     <div className="flex min-h-screen flex-col">
-//       {/* Navbar on top, full width */}
-//       <DashboardHeader/>
-
-//       {/* Row below the navbar: Aside + page content */}
-//       <div className="flex flex-1">
-//         <Aside />
-//         <main className="flex-1 overflow-y-auto bg-slate-50 p-6">
-//           {children}
-//         </main>
-//       </div>
-//     </div>
-//   );
-// }
 import Aside from "@/components/layout/Aside";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
