@@ -18,7 +18,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: "spicy-noodles",
-    image: "/Image/food01.png",
+    image: "/Image/food02.png",
     title: "អាហារបែបអឺរ៉ុប",
     description:
       "ជ្រើសរើសមុខម្ហូបដែលមានតុល្យភាពអាហារូបត្ថម្ភ និងល្អសម្រាប់សុខភាព",
@@ -26,7 +26,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: "green-vitality-bowl",
-    image: "/Image/food01.png",
+    image: "/Image/food04.png",
     title: "អាហារសុខភាព",
     description:
       "រីករាយជាមួយមុខម្ហូបបែបអឺរ៉ុបដែលមានរសជាតិឆ្ងាញ់ និងគុណភាពខ្ពស់",
