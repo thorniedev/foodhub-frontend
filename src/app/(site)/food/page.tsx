@@ -25,9 +25,9 @@ import FoodNavTabs from "@/components/Foodnavtabs";
 import { FoodItem } from "@/types/food";
 
 type ListedFood = FoodItem & {
-  pickup: string;
-  badge: string;
-  dietTypes: string[];
+  pickup?: string;
+  badge?: string;
+  dietTypes?: string[];
 };
 
 const NEW_FOODS: ListedFood[] = [
@@ -296,7 +296,12 @@ function parseMinutes(time: string) {
   return match ? Number(match[0]) : Infinity;
 }
 
-function applyFilters(foods: ListedFood[], filters: FilterState) {
+// function applyFilters(foods: ListedFood[], filters: FilterState) {
+//   const filtered = foods.filter((food) => {
+function applyFilters<T extends FoodItem & { dietTypes?: string[] }>(
+  foods: T[],
+  filters: FilterState,
+): T[] {
   const filtered = foods.filter((food) => {
     if (filters.mealTimes.length > 0) {
       const allowedValues = filters.mealTimes.map(
@@ -305,20 +310,20 @@ function applyFilters(foods: ListedFood[], filters: FilterState) {
       if (!allowedValues.includes(food.mealTime)) return false;
     }
     if (filters.foodTypes.length > 0) {
-      const hasMatch = food.foodTypes.some((t) =>
-        filters.foodTypes.includes(t),
-      );
-      if (!hasMatch) return false;
+      if (!food.foodTypes.some((t) => filters.foodTypes.includes(t))) return false;
     }
     if (filters.dietTypes.length > 0) {
-      const hasMatch = food.dietTypes.some((t) =>
-        filters.dietTypes.includes(t),
-      );
-      if (!hasMatch) return false;
+      const diet = food.dietTypes ?? [];
+      if (!diet.some((t) => filters.dietTypes.includes(t))) return false;
     }
     if (!matchesPriceTier(food.price, filters.priceTier)) return false;
     return true;
   });
+
+  // return [...filtered].sort((a, b) => {
+  //   if (filters.sortBy === "fastest") return parseMinutes(a.time) - parseMinutes(b.time);
+  //   return b.rating - a.rating;
+  // });
 
   const sorted = [...filtered].sort((a, b) => {
     if (filters.sortBy === "fastest")

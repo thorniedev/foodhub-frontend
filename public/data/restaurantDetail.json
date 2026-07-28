@@ -1,0 +1,131 @@
+[
+  {
+    "id": 1,
+    "slug": "lucky-express",
+    "name": "Lucky Express",
+    "tagline": "អាហារ​ថ្មី​ស្រស់ រហ័ស ឆ្ងាញ់ រៀងរាល់ថ្ងៃ",
+    "logo": "/Image/logo.png",
+    "brandColor": "#D3282A",
+    "heroSlides": [
+      { "id": 1, "image": "/Image/food-picture/food%201.jpg", "alt": "ម្ហូបពិសេសរបស់ Lucky Express" },
+      { "id": 2, "image": "/Image/food-picture/food%202.jpg", "alt": "សាឡាត់ស្រស់" },
+      { "id": 3, "image": "/Image/food-picture/food%203.jpg", "alt": "អាហារពេលព្រឹក" }
+    ],
+    "rating": 4.7,
+    "reviewCount": 1280,
+    "isOpen": true,
+    "openingHours": { "opensAt": "06:00", "closesAt": "21:00" },
+    "etaMinutes": 10,
+    "distanceKm": 1.5,
+    "phone": "012 345 678",
+    "province": "ភ្នំពេញ",
+    "address": "សង្កាត់បឹងកេងកង១ ខណ្ឌបឹងកេងកង, ភ្នំពេញ",
+    "latitude": 11.552,
+    "longitude": 104.928,
+    "isHalal": true,
+    "vouchers": [
+      { "id": 1, "title": "បញ្ចុះតម្លៃ 20% លើការបញ្ជាទិញ", "discountLabel": "20%", "minSpend": 15, "expiresAt": "2026-07-30" },
+      { "id": 2, "title": "បញ្ចុះតម្លៃ $3 លើការដឹកជញ្ជូន", "discountLabel": "$3", "minSpend": 12, "expiresAt": "2026-08-05" }
+    ],
+    "categories": [
+      {
+        "key": "special-offers",
+        "label": "ការបញ្ចុះតម្លៃពិសេស",
+        "icon": "tag",
+        "items": [
+          { "id": 101, "categoryKey": "special-offers", "name": "ន័រ និងសៀវម៉ែ", "image": "/Image/food/food1.png", "price": 2.5, "originalPrice": 3.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": ["-40%"] },
+          { "id": 102, "categoryKey": "special-offers", "name": "ន័រ និងសៀវម៉ែ", "image": "/Image/food/food2.png", "price": 4, "originalPrice": 5.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": ["-40%"] },
+          { "id": 103, "categoryKey": "special-offers", "name": "ន័រ និងសៀវម៉ែ", "image": "/Image/food/food3.png", "price": 4.5, "originalPrice": 7.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": ["-40%"] },
+          { "id": 104, "categoryKey": "special-offers", "name": "ន័រ និងសៀវម៉ែ", "image": "/Image/food/food4.png", "price": 1, "originalPrice": 2, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": ["-40%"] }
+        ]
+      },
+      {
+        "key": "breakfast",
+        "label": "អាហារពេលព្រឹក",
+        "icon": "sunrise",
+        "items": [
+          { "id": 201, "categoryKey": "breakfast", "name": "នំបញ្ចុក ស្រស់", "image": "/Image/food/food5.png", "price": 2.75, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.6, "isHalal": true, "tags": [] },
+          { "id": 202, "categoryKey": "breakfast", "name": "បាយសាច់មាន់ដុត", "image": "/Image/food/food6.png", "price": 1.25, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.6, "isHalal": true, "tags": [] },
+          { "id": 203, "categoryKey": "breakfast", "name": "គុយទាវសាច់គោ", "image": "/Image/food/food7.png", "price": 2.5, "rating": 4.2, "etaMinutes": 12, "distanceKm": 1.4, "isHalal": true, "tags": [] }
+        ]
+      },
+      {
+        "key": "coffee-tea",
+        "label": "កាហ្វេ និង តែ",
+        "icon": "coffee",
+        "items": [
+          { "id": 301, "categoryKey": "coffee-tea", "name": "កាហ្វេ Latte", "image": "/Image/food/food8.png", "price": 1.5, "originalPrice": 2.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 302, "categoryKey": "coffee-tea", "name": "តែ សុខភាព", "image": "/Image/food/food9.png", "price": 2, "originalPrice": 2.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 303, "categoryKey": "coffee-tea", "name": "តែ ទឹកដោះគោ", "image": "/Image/food/food10.png", "price": 1, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] }
+        ]
+      },
+      {
+        "key": "healthy",
+        "label": "អាហារសុខភាព",
+        "icon": "leaf",
+        "items": [
+          { "id": 401, "categoryKey": "healthy", "name": "សាឡាត់បន្លែ", "image": "/Image/food/food1.png", "price": 2.5, "originalPrice": 3.5, "rating": 4.4, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 402, "categoryKey": "healthy", "name": "សាច់មាន់ដុត", "image": "/Image/food/food2.png", "price": 2.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 403, "categoryKey": "healthy", "name": "ស៊ុបបន្លែ", "image": "/Image/food/food3.png", "price": 1, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] }
+        ]
+      },
+      {
+        "key": "rice-porridge-noodles",
+        "label": "ភ្លែ ង និង បំពង",
+        "icon": "bowl",
+        "items": [
+          { "id": 501, "categoryKey": "rice-porridge-noodles", "name": "បបរសាច់មាន់", "image": "/Image/food/food4.png", "price": 2.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 502, "categoryKey": "rice-porridge-noodles", "name": "នំបញ្ចុកខ្មែរ", "image": "/Image/food/food5.png", "price": 2.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 503, "categoryKey": "rice-porridge-noodles", "name": "នំបញ្ចុកខេត", "image": "/Image/food/food6.png", "price": 1, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] }
+        ]
+      },
+      {
+        "key": "drinks",
+        "label": "ភេសជ្ជៈ",
+        "icon": "cup",
+        "items": [
+          { "id": 601, "categoryKey": "drinks", "name": "ទឹកក្រឡក់", "image": "/Image/food/food7.png", "price": 1.5, "originalPrice": 1.5, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 602, "categoryKey": "drinks", "name": "តែ សុខភាព", "image": "/Image/food/food8.png", "price": 1.1, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] },
+          { "id": 603, "categoryKey": "drinks", "name": "កាហ្វេ Latte", "image": "/Image/food/food9.png", "price": 1, "rating": 4.3, "etaMinutes": 10, "distanceKm": 1.5, "isHalal": true, "tags": [] }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "slug": "kongfou-kitchen",
+    "name": "Kongfou Kitchen",
+    "tagline": "ម្ហូបចិន-ខ្មែរ រសជាតិដើម",
+    "logo": "/Image/logo.png",
+    "brandColor": "#16A34A",
+    "heroSlides": [
+      { "id": 1, "image": "/Image/food-picture/food%2010.jpg", "alt": "ម្ហូបពិសេស" },
+      { "id": 2, "image": "/Image/food-picture/food%2011.jpg", "alt": "ម្ហូបចិន" }
+    ],
+    "rating": 4.5,
+    "reviewCount": 860,
+    "isOpen": true,
+    "openingHours": { "opensAt": "07:00", "closesAt": "22:00" },
+    "etaMinutes": 15,
+    "distanceKm": 2,
+    "phone": "012 987 654",
+    "province": "ភ្នំពេញ",
+    "address": "សង្កាត់ទួលទំពូង ខណ្ឌចំការមន, ភ្នំពេញ",
+    "latitude": 11.562,
+    "longitude": 104.9,
+    "isHalal": false,
+    "vouchers": [
+      { "id": 1, "title": "បញ្ចុះតម្លៃ 15%", "discountLabel": "15%", "minSpend": 10, "expiresAt": "2026-08-15" }
+    ],
+    "categories": [
+      {
+        "key": "special-offers",
+        "label": "ការបញ្ចុះតម្លៃពិសេស",
+        "icon": "tag",
+        "items": [
+          { "id": 701, "categoryKey": "special-offers", "name": "មីគាត់ខ្ទេច", "image": "/Image/food/food10.png", "price": 2, "originalPrice": 2.75, "rating": 4.3, "etaMinutes": 15, "distanceKm": 2, "tags": ["-25%"] }
+        ]
+      }
+    ]
+  }
+]
