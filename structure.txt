@@ -1,0 +1,46 @@
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git add .
+warning: in the working copy of 'public/data/restaurantDetail.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/restaurant/[id]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/store/restaurantApi.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/restaurant/MenuItemCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/restaurant/RestaurantCategorySidebar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/restaurant/RestaurantHero.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/restaurant/RestaurantLocationMap.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/restaurant/RestaurantMenuSection.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/restaurant/VoucherCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/restaurant/categoryIcons.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/fonts.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/types/restaurant.ts', LF will be replaced by CRLF the next time Git touches it
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git commit -m "feat: Add Restaurant Detail Page with Reponsive"
+[test/before-merge ed7ebcb] feat: Add Restaurant Detail Page with Reponsive
+ 16 files changed, 995 insertions(+), 1 deletion(-)
+ create mode 100644 public/data/restaurantDetail.json
+ create mode 100644 src/app/restaurant/[id]/page.tsx
+ create mode 100644 src/app/store/restaurantApi.ts
+ create mode 100644 src/assets/fonts/google-sans/GoogleSans-Italic-VariableFont.ttf
+ create mode 100644 src/assets/fonts/google-sans/GoogleSans-VariableFont.ttf
+ create mode 100644 src/assets/fonts/google-sans/OFL.txt
+ create mode 100644 src/components/restaurant/MenuItemCard.tsx
+ create mode 100644 src/components/restaurant/RestaurantCategorySidebar.tsx
+ create mode 100644 src/components/restaurant/RestaurantHero.tsx
+ create mode 100644 src/components/restaurant/RestaurantLocationMap.tsx
+ create mode 100644 src/components/restaurant/RestaurantMenuSection.tsx
+ create mode 100644 src/components/restaurant/VoucherCard.tsx
+ create mode 100644 src/components/restaurant/categoryIcons.tsx
+ create mode 100644 src/lib/fonts.ts
+ create mode 100644 src/types/restaurant.ts
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git push origin test/before-merge
+Enumerating objects: 65, done.
+Counting objects: 100% (63/63), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (34/34), done.
+Writing objects: 100% (39/39), 4.19 MiB | 1.61 MiB/s, done.
+Total 39 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (12/12), completed with 10 local objects.
+To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
+   7e17057..ed7ebcb  test/before-merge -> test/before-merge
