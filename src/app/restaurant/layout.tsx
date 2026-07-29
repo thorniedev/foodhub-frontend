@@ -13,7 +13,7 @@ export default function SiteLayout({
       <Navbar />
       {children}
       <footer>
-        <RestaurantDetailPage />
+        {/* <RestaurantDetailPage /> */}
         <Footer />
       </footer>
       {/* <SectionModal /> */}

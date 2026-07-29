@@ -37,24 +37,24 @@ export default function RestaurantHero({ restaurant }: Props) {
 
   return (
     <div
-      className="relative overflow-hidden lg:w-300 lg:h-50 rounded-[32px] shadow-lg"
-      style={{ backgroundColor: restaurant.brandColor }}
+      className="relative overflow-hidden bg-red-600 lg:w-285 lg:h-50 rounded-[32px] shadow-lg"
+      // style={{ backgroundColor: restaurant.brandColor }}
     >
-      {/* <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]"> */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] w-full min-w-0">
+      {/* <div className="grid lg:grid-cols-[minmax(0,1.1fr w-full)_minmax(0,1.4fr)]"> */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] min-w-0">
         {/* Brand panel */}
         <div className="min-w-0 flex flex-col justify-between gap-6 p-6 lg:p-8 text-white">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white/90 sm:h-14 sm:w-14">
-                <Image
+              {/* <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-red-600 sm:h-14 sm:w-14">
+                 <Image
                   src={restaurant.logo}
                   alt={`${restaurant.name} logo`}
                   fill
                   sizes="56px"
                   className="object-contain p-1.5"
-                />
-              </div>
+                /> 
+              </div> */}
               {/* <div>
                 <p className="text-2xl font-bold leading-tight sm:text-3xl">
                   {restaurant.name}
@@ -63,13 +63,12 @@ export default function RestaurantHero({ restaurant }: Props) {
                   {restaurant.tagline}
                 </p>
               </div> */}
-              <div className="min-w-0">
+              <div className="flex flex-1 flex-col items-center justify-center text-center min-w-0">
                 <p className="truncate text-2xl font-bold sm:text-3xl">
-                  {restaurant.name}
+                  {restaurant.name}{/*  text center */}
                 </p>
-
-                <p className="mt-1 line-clamp-2 text-sm text-white/80">
-                  {restaurant.tagline}
+                <p className="mt-2 text-sm text-white/80">
+                  {restaurant.tagline} {/*  text center */}
                 </p>
               </div>
             </div>
@@ -117,14 +116,14 @@ export default function RestaurantHero({ restaurant }: Props) {
                   key={slide.id}
                   className="relative h-[220px] pl-0 sm:h-[280px] lg:h-[360px]"
                 >
-                  <Image
+                  {/* <Image
                     src={slide.image}
                     alt={slide.alt}
                     fill
                     priority
                     sizes="(max-width: 768px) 100vw, 55vw"
                     className="object-cover"
-                  />
+                  /> */}
                 </CarouselItem>
               ))}
             </CarouselContent>

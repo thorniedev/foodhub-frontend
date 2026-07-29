@@ -6,7 +6,7 @@ import { FaArrowLeft } from "react-icons/fa";
 
 import RestaurantHero from "@/components/restaurant/RestaurantHero";
 import RestaurantCategorySidebar from "@/components/restaurant/RestaurantCategorySidebar";
-import RestaurantLocationMap from "@/components/restaurant/RestaurantLocationMap";
+// import RestaurantLocationMap from "@/components/restaurant/RestaurantLocationMap";
 import RestaurantMenuSection from "@/components/restaurant/RestaurantMenuSection";
 import VoucherCard from "@/components/restaurant/VoucherCard";
 import { useGetRestaurantByIdQuery } from "@/app/store/restaurantApi";
@@ -32,9 +32,7 @@ export default function RestaurantDetailPage() {
   if (isError || !restaurant) {
     return (
       <main className="flex min-h-[70vh] flex-col items-center justify-center gap-4 bg-zinc-50 px-4 text-center">
-        <p className="text-lg font-semibold text-gray-600">
-          រកមិនឃើញហាងនេះទេ
-        </p>
+        <p className="text-lg font-semibold text-gray-600">រកមិនឃើញហាងនេះទេ</p>
         <Link
           href="/"
           className="rounded-full bg-primary-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 transition"
@@ -48,13 +46,13 @@ export default function RestaurantDetailPage() {
   return (
     <main className="min-h-screen bg-zinc-50 pt-14">
       <div className="mx-auto max-w-360 px-4 py-6 sm:px-6">
-        {/* <Link
+        <Link
           href="/"
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-800 hover:text-primary-600"
         >
-          <FaArrowLeft />
+        <FaArrowLeft />
           ត្រឡប់ក្រោយ
-        </Link> */}
+        </Link>
 
         <div className="grid gap-6 lg:grid-cols-[224px_1fr_360px] lg:items-start lg:gap-8">
           {/* Category nav: horizontal chip row on mobile/tablet, sticky
@@ -93,16 +91,16 @@ export default function RestaurantDetailPage() {
               ))}
             </div>
           </div>
-
-          {/* Right: sticky location map (desktop), toggled panel (mobile) */}
-          <div className="lg:sticky lg:top-120 h-fit self-start">
+          {/* Right: sticky location map (desktop), toggled panel (mobile)
+          {/* <div className="lg:sticky lg:top-6 h-fit self-start"> */}
+          {/* <div className="h-fit self-start">
             <RestaurantLocationMap
               name={restaurant.name}
               address={restaurant.address}
               latitude={restaurant.latitude}
               longitude={restaurant.longitude}
             />
-          </div>
+          </div> */}
         </div>
       </div>
     </main>
