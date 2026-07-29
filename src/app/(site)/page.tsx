@@ -22,6 +22,7 @@ import PopularSection from "@/components/home/popular";
 import RecommandSection from "@/components/home/recommand";
 import Hero from "@/components/home/Hero";
 import FilterByMealTime from "@/components/home/features/FilterByMealTime";
+import FoodSearchBar from "@/components/home/features/FoodSearchBarComponent";
 
 export default function Home() {
   return (
@@ -41,7 +42,7 @@ export default function Home() {
         {/* <Skiper30 /> */}
         <Hero />
         <FilterByMealTime />
-        <PopularSection />
+        {/* <PopularSection /> */}
         {/* <Skiper19/> */}
         {/* <Skiper26/> */}
         {/* <div className="hidden">
@@ -55,8 +56,9 @@ export default function Home() {
             age: new Set(),
           }}
         /> */}
+        <FoodSearchBar />
         {/* <FoodDiscoverySection /> */}
-        <FilterByCategory />
+        {/* <FilterByCategory /> */}
         <SeasonSection />
         {/* <CreatePost />
         <PostsList /> */}

@@ -214,11 +214,6 @@
       ],
       "dietaryTypes": [
         {
-          "code": "DAIRY_FREE",
-          "name": "គ្មានទឹកដោះគោ",
-          "verificationStatus": "VERIFIED"
-        },
-        {
           "code": "LOW_FAT",
           "name": "ជាតិខ្លាញ់ទាប",
           "verificationStatus": "UNVERIFIED"
@@ -300,8 +295,8 @@
         "uuid": "277b395c-de04-4285-aeb8-4b8a94941b48",
         "canonicalName": "Fish Amok",
         "category": {
-          "code": "KHMER_FOOD",
-          "name": "Khmer Food"
+          "code": "FAST_FOOD",
+          "name": "Fast Food"
         },
         "cuisine": {
           "code": "KHMER",
@@ -339,11 +334,7 @@
           "name": "គ្មានជាតិស្អិត",
           "verificationStatus": "VERIFIED"
         },
-        {
-          "code": "DAIRY_FREE",
-          "name": "គ្មានទឹកដោះគោ",
-          "verificationStatus": "VERIFIED"
-        },
+
         {
           "code": "PESCATARIAN",
           "name": "បរិភោគត្រី",
@@ -571,8 +562,8 @@
         "uuid": "e0a3d0a0-c2cf-4100-b461-fb394277a83d",
         "canonicalName": "Num Banh Chok",
         "category": {
-          "code": "KHMER_FOOD",
-          "name": "Khmer Food"
+          "code": "FAST_FOOD",
+          "name": "Fast Food"
         },
         "cuisine": {
           "code": "KHMER",
@@ -614,11 +605,6 @@
           "code": "DAIRY_FREE",
           "name": "គ្មានទឹកដោះគោ",
           "verificationStatus": "VERIFIED"
-        },
-        {
-          "code": "GLUTEN_FREE",
-          "name": "គ្មានជាតិស្អិត",
-          "verificationStatus": "UNVERIFIED"
         }
       ],
       "allergenDeclarations": [
@@ -741,16 +727,6 @@
       ],
       "dietaryTypes": [
         {
-          "code": "PESCATARIAN",
-          "name": "បរិភោគត្រី",
-          "verificationStatus": "VERIFIED"
-        },
-        {
-          "code": "DAIRY_FREE",
-          "name": "គ្មានទឹកដោះគោ",
-          "verificationStatus": "VERIFIED"
-        },
-        {
           "code": "GLUTEN_FREE",
           "name": "គ្មានជាតិស្អិត",
           "verificationStatus": "UNVERIFIED"
@@ -841,8 +817,8 @@
         "uuid": "a7424845-df7a-4065-8ef1-98149f366f85",
         "canonicalName": "Beef Lok Lak",
         "category": {
-          "code": "KHMER_FOOD",
-          "name": "Khmer Food"
+          "code": "CHINESE_FOOD",
+          "name": "Chinese Food"
         },
         "cuisine": {
           "code": "KHMER",
@@ -867,11 +843,6 @@
         }
       ],
       "dietaryTypes": [
-        {
-          "code": "DAIRY_FREE",
-          "name": "គ្មានទឹកដោះគោ",
-          "verificationStatus": "VERIFIED"
-        },
         {
           "code": "HIGH_PROTEIN",
           "name": "ប្រូតេអ៊ីនខ្ពស់",
@@ -1015,11 +986,7 @@
           "name": "បរិភោគត្រី",
           "verificationStatus": "VERIFIED"
         },
-        {
-          "code": "DAIRY_FREE",
-          "name": "គ្មានទឹកដោះគោ",
-          "verificationStatus": "VERIFIED"
-        },
+
         {
           "code": "HIGH_PROTEIN",
           "name": "ប្រូតេអ៊ីនខ្ពស់",
@@ -1105,8 +1072,8 @@
         "uuid": "772f0039-2856-482e-80e0-43a8541bebf7",
         "canonicalName": "Bai Cha Khmer",
         "category": {
-          "code": "KHMER_FOOD",
-          "name": "Khmer Food"
+          "code": "CHINESE_FOOD",
+          "name": "Chinese Food"
         },
         "cuisine": {
           "code": "KHMER",
@@ -1147,11 +1114,6 @@
         {
           "code": "HIGH_PROTEIN",
           "name": "ប្រូតេអ៊ីនខ្ពស់",
-          "verificationStatus": "UNVERIFIED"
-        },
-        {
-          "code": "NUT_FREE",
-          "name": "គ្មានគ្រាប់ធញ្ញជាតិ",
           "verificationStatus": "UNVERIFIED"
         }
       ],
