@@ -47,8 +47,10 @@ export default function FoodChipInput({
 
   return (
     <div>
-      <p className="text-xl mb-3 font-semibold text-slate-800">{label}</p>
-      <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+      <p className="mb-2.5 text-base font-semibold text-slate-800 sm:mb-3 sm:text-xl">
+        {label}
+      </p>
+      <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-2.5 sm:p-3">
         <div className="mb-2 flex flex-wrap gap-2">
           {chips.map((chip) => (
             <span

@@ -25,26 +25,28 @@ export default function FavoriteFoodRow({
   };
 
   return (
-    <div className="relative flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-3">
+    <div className="relative flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-2.5 sm:items-center sm:gap-4 sm:p-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <Image
         src={item.imageUrl}
         alt={item.dishName}
         width={100}
         height={100}
-        className="h-20 w-20 shrink-0 rounded-xl object-cover"
+        className="h-16 w-16 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
       />
 
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-slate-800 text-xl">{item.dishName}</p>
-        <p className="mt-0.5 flex items-center gap-1.5 text-sm font-medium text-orange-500">
-          <Store className="h-3.5 w-3.5" />
-          {item.restaurantName}
+        <p className="truncate text-base font-semibold text-slate-800 sm:text-xl">
+          {item.dishName}
+        </p>
+        <p className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-orange-500 sm:text-sm">
+          <Store className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{item.restaurantName}</span>
         </p>
         <span className="mt-1 inline-block rounded-md bg-emerald-700 px-2 py-0.5 text-xs font-medium text-white">
           {item.categoryLabel}
         </span>
-        <div className="mt-1.5 flex items-center gap-3 text-sm text-slate-500">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 sm:text-sm">
           <span className="flex items-center gap-1 text-amber-500">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
             {item.rating}
@@ -60,7 +62,7 @@ export default function FavoriteFoodRow({
         </div>
       </div>
 
-      <div className="flex flex-col items-end justify-between self-stretch py-1">
+      <div className="flex shrink-0 flex-col items-end justify-between gap-2 self-stretch py-0.5 sm:gap-0 sm:py-1">
         <button
           type="button"
           onClick={handleToggleSaved}
@@ -72,7 +74,7 @@ export default function FavoriteFoodRow({
         <button
           type="button"
           onClick={() => onViewMore?.(item.id)}
-          className="text-sm text-slate-400 hover:text-emerald-600"
+          className="text-xs text-slate-400 hover:text-emerald-600 sm:text-sm"
         >
           មើលបន្ថែម
         </button>

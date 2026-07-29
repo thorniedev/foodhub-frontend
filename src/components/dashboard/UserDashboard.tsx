@@ -90,30 +90,32 @@ export default function UserDashboard() {
   ]);
 
   return (
-    <div className="mx-auto  max-w-6xl px-4 py-6">
+    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
       {/* Profile banner */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="relative h-32 bg-gradient-to-r from-primary-100 to-primary-200" />
-        <div className="relative px-6 pb-6">
-          <div className="-mt-10 flex flex-wrap items-start justify-between gap-4">
-            <div className="flex items-end gap-4">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-white bg-[#136C34] text-2xl font-bold text-white shadow-sm">
+        <div className="relative h-20 bg-gradient-to-r from-primary-100 to-primary-200 sm:h-32" />
+        <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
+          <div className="-mt-8 flex flex-col gap-4 sm:-mt-10 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+            <div className="flex items-end gap-3 sm:gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-[#136C34] text-lg font-bold text-white shadow-sm sm:h-20 sm:w-20 sm:text-2xl">
                 {profile.avatarInitials}
               </div>
-              <div className="pb-1">
-                <p className="text-4xl font-bold text-slate-800">
+              <div className="min-w-0 pb-1">
+                <p className="truncate text-xl font-bold text-slate-800 sm:text-4xl">
                   {profile.fullName}
                 </p>
-                <p className="text-base text-slate-500">{profile.email}</p>
+                <p className="truncate text-sm text-slate-500 sm:text-base">
+                  {profile.email}
+                </p>
               </div>
             </div>
-            <button className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+            <button className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 sm:mt-2 sm:w-auto">
               <IoCameraOutline />
               ផ្លាស់ប្តូររូបភាព
             </button>
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-4">
+          <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
             <StatCard
               label="ធម្មតា"
               value={profile.memberSinceDays}
@@ -138,7 +140,7 @@ export default function UserDashboard() {
       <SectionCard
         icon={<FaRegUser />}
         title="ព័ត៌មានផ្ទាល់ខ្លួន"
-        className="mt-5"
+        className="mt-4 sm:mt-5"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="ឈ្មោះពេញ">
@@ -222,7 +224,7 @@ export default function UserDashboard() {
       <SectionCard
         icon={<RiShieldCheckLine />}
         title="គោលដៅក្នុងការថែរក្សាសុខភាព"
-        className="mt-5"
+        className="mt-4 sm:mt-5"
       >
         <div className="flex flex-wrap gap-2">
           {healthGoalOptions.map((opt) => (
@@ -235,15 +237,14 @@ export default function UserDashboard() {
           ))}
         </div>
         <div className="mt-4 flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
-          {/* <ShieldCheckLine className="mt-0.5 h-4 w-4 shrink-0" /> */}
-          <RiShieldCheckLine />
+          <RiShieldCheckLine className="mt-0.5 shrink-0" />
           FoodHub AI នឹងផ្តល់ការណែនាំដែលត្រូវបានកែសម្រួលជាពិសេសសម្រាប់អ្នក
           ដោយផ្អែកលើគោលដៅទាំង {healthGoals.length} ដែលអ្នកបានជ្រើសរើស។
         </div>
       </SectionCard>
 
       {/* Dietary restrictions + allergies */}
-      <div className="mt-5 grid gap-5 md:grid-cols-2">
+      <div className="mt-4 grid gap-4 sm:mt-5 sm:gap-5 md:grid-cols-2">
         <SectionCard icon={<FaUtensils />} title="ចំណូលចិត្តផ្នែកអាហារ">
           <div className="flex flex-wrap gap-2">
             {dietaryOptions.map((opt) => (
@@ -270,8 +271,8 @@ export default function UserDashboard() {
             ))}
           </div>
           {allergies.length > 0 && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-orange-600">
-              <FiAlertTriangle />
+            <p className="mt-3 flex items-start gap-1.5 text-xs text-orange-600">
+              <FiAlertTriangle className="mt-0.5 shrink-0" />
               របស់ទាំងនេះនឹងត្រូវបានចៀសវាងក្នុងអាហារដែលណែនាំដល់អ្នក
             </p>
           )}
@@ -282,7 +283,7 @@ export default function UserDashboard() {
       <SectionCard
         icon={<FaRegStar />}
         title="មុខម្ហូបដែលពេញចិត្ត"
-        className="mt-5"
+        className="mt-4 sm:mt-5"
       >
         <div className="flex flex-wrap gap-2">
           {cuisineOptions.map((opt) => (
@@ -300,7 +301,7 @@ export default function UserDashboard() {
       <SectionCard
         icon={<FaRegStar />}
         title="ចំណូលចិត្តអាហារ"
-        className="mt-5"
+        className="mt-4 sm:mt-5"
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <FoodChipInput
@@ -319,11 +320,11 @@ export default function UserDashboard() {
       </SectionCard>
 
       {/* Actions */}
-      <div className="mt-6 flex justify-end gap-3">
-        <button className="rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button className="w-full rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 sm:w-auto">
           លុបចោល
         </button>
-        <button className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700">
+        <button className="w-full rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 sm:w-auto">
           រក្សាទុកការផ្លាស់ប្តូរ
         </button>
       </div>
@@ -345,10 +346,12 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-4">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className={`text-2xl font-bold ${accent}`}>{value}</p>
-      <p className="text-xs text-slate-400">{sublabel}</p>
+    <div className="rounded-xl bg-slate-50 p-2.5 sm:p-4">
+      <p className="text-xs text-slate-500 sm:text-sm">{label}</p>
+      <p className={`text-lg font-bold sm:text-2xl ${accent}`}>{value}</p>
+      <p className="truncate text-[10px] text-slate-400 sm:text-xs">
+        {sublabel}
+      </p>
     </div>
   );
 }
@@ -366,13 +369,13 @@ function SectionCard({
 }) {
   return (
     <section
-      className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ${className}`}
+      className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 ${className}`}
     >
       <div className="mb-4 flex items-center gap-2 text-slate-800">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
           {icon}
         </span>
-        <p className="text-2xl font-semibold">{title}</p>
+        <p className="text-lg font-semibold sm:text-2xl">{title}</p>
       </div>
       {children}
     </section>
