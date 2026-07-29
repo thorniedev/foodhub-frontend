@@ -1,407 +1,280 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useMemo, useState, type ReactNode } from "react";
+
+import Link from "next/link";
+
+import { AnimatePresence, motion } from "framer-motion";
+
 import {
-  IoSearchOutline,
-  IoLocationOutline,
-  IoOptionsOutline,
-  IoChevronForward,
   IoChevronBack,
   IoChevronDown,
+  IoChevronForward,
+  IoNutritionOutline,
+  IoPricetagOutline,
+  IoRefresh,
+  IoSearchOutline,
   IoSwapVerticalOutline,
   IoTimeOutline,
-  IoPricetagOutline,
-  IoNutritionOutline,
 } from "react-icons/io5";
-import { IoMdTime } from "react-icons/io";
-import { FaStar, FaStore } from "react-icons/fa";
-import { CiHeart } from "react-icons/ci";
-import { MdDeliveryDining } from "react-icons/md";
 
-import FoodCardComponent from "@/components/FoodCardComponent";
+import { FaFire, FaStar } from "react-icons/fa";
+
+import { MdOutlineCategory } from "react-icons/md";
 
 import FoodNavTabs from "@/components/Foodnavtabs";
-import { FoodItem } from "@/types/food";
+import FoodCard from "@/components/dynamic-card/FoodCard";
 
-type ListedFood = FoodItem & {
-  pickup: string;
-  badge: string;
-  dietTypes: string[];
-};
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
-const NEW_FOODS: ListedFood[] = [
-  {
-    id: 1,
-    mealTime: "breakfast",
-    store: "អាហារដ្ឋាន 99 (ឆាបួស)",
-    name: "នំហ្គៅ និងសៀវម៉ែ",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ចិន"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារភ្លាដល់ថ្នាំ"],
-  },
-  {
-    id: 2,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "បុសម្លៀងសម្រង់",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារសុខភាព"],
-  },
-  {
-    id: 3,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "ណែមស្រស់សាច់បង្គា",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 3.3,
-    time: "5min",
-    distance: "1.5km",
-    price: "2.75",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["វៀតណាម"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារប្រញាប់ញញេច"],
-  },
-  {
-    id: 4,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "មីគាត់ខ្ទេច",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "15min",
-    distance: "2km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: [],
-  },
-  {
-    id: 5,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "នំបុ័ងសាច់ជ្រូកខ្វៃ",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "1.5",
-    tags: ["ជម្រើសបួស"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "ជម្រើសបួស",
-    dietTypes: ["អាហារបួស"],
-  },
-  {
-    id: 6,
-    mealTime: "breakfast",
-    store: "ភោជនីយដ្ឋានអូឡាំពិក",
-    name: "បាយឆាត្រកួន",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "7.3km",
-    price: "2.5",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារសម្រាប់សម្រកទម្ងន់"],
-  },
-  {
-    id: 7,
-    mealTime: "dinner",
-    store: "Kongfou Kitchen",
-    name: "បាយសាច់មាន់ដុតបំពង",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "1.25",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["អាហារដុត"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: [],
-  },
-  {
-    id: 8,
-    mealTime: "dinner",
-    store: "Kongfou Kitchen",
-    name: "បាយសាច់មាន់ដុតបំពង",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "1.25",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["អាហារដុត"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារធានាចំណេះដឹង"],
-  },
-  {
-    id: 9,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "ណែមស្រស់សាច់បង្គា",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 3.3,
-    time: "5min",
-    distance: "1.5km",
-    price: "2.75",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["វៀតណាម"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: [],
-  },
-];
+import type { MenuItem } from "@/types/manu";
 
-const POPULAR_FOODS: ListedFood[] = NEW_FOODS.slice(0, 3).map((f) => ({
-  ...f,
-  id: f.id + 100,
-}));
+type SortBy =
+  | "recommended"
+  | "popular"
+  | "rating"
+  | "fastest"
+  | "nearest"
+  | "price-low"
+  | "price-high";
 
-const NAV_LINKS = ["ទំព័រដើម", "អំពីយើង", "មុខម្ហូប"];
-
-const CATEGORY_TABS = [
-  "ចំណីអាហារ",
-  "តេស្ត:",
-  "បន្លែ",
-  "អាហារតាមអង្រការ",
-  "អាហារតាមអំបិល",
-  "អាហារតាមហេតុផល",
-  "អាហារតាមសម្រុទ",
-];
-
-const MEAL_TYPE_FILTERS = [
-  "អាហារបួស",
-  "អាហារសុខភាព",
-  "អាហារប្រញាប់ញញេច",
-  "អាហារភ្លាដល់ថ្នាំ",
-  "អាហារធានាចំណេះដឹង",
-  "អាហារសម្រាប់ថ្ងៃទុក",
-  "អាហារសម្រាប់សម្រកទម្ងន់",
-  "អាហារសម្រាប់ថែទាំសុខភាព",
-];
-
-const FOOD_TYPE_FILTERS = [
-  "ចិន",
-  "វៀតណាម",
-  "ថៃ",
-  "កូរ៉េ",
-  "ភេសជ្ជៈ",
-  "បង្អែម",
-  "អាហារបារាំង",
-  "ចំណីធម្មតា",
-];
-
-/* -------------------------------------------------------------------- */
-/*  Filter state — shared between the sidebar and the food grid          */
-/* -------------------------------------------------------------------- */
-
-// sidebar shows these Khmer labels, food data uses FoodItem's mealTime
-// values — this bridges the two so the checkboxes actually match
-const MEAL_TIME_LABEL_TO_VALUE: Record<string, string> = {
-  ព្រឹក: "breakfast",
-  ថ្ងៃ: "lunch",
-  ល្ងាច: "dinner",
-  សម្រន់: "snack",
-};
-
-type SortBy = "popular" | "fastest" | "rating";
+type PriceTier = "$" | "$$" | "$$$" | null;
 
 type FilterState = {
+  query: string;
   sortBy: SortBy;
-  mealTimes: string[]; // Khmer labels, e.g. "ព្រឹក"
-  foodTypes: string[];
-  dietTypes: string[];
-  priceTier: "$" | "$$" | "$$$" | null;
-  foodTypeQuery: string;
+
+  categoryCodes: string[];
+  cuisineCodes: string[];
+  mealTypeCodes: string[];
+  dietaryTypeCodes: string[];
+  ageGroupCodes: string[];
+
+  availabilityOnly: boolean;
+  recommendedOnly: boolean;
+
+  priceTier: PriceTier;
+};
+
+type FilterOption = {
+  code: string;
+  name: string;
+  count: number;
 };
 
 const DEFAULT_FILTERS: FilterState = {
-  sortBy: "popular",
-  mealTimes: [],
-  foodTypes: [],
-  dietTypes: [],
+  query: "",
+  sortBy: "recommended",
+
+  categoryCodes: [],
+  cuisineCodes: [],
+  mealTypeCodes: [],
+  dietaryTypeCodes: [],
+  ageGroupCodes: [],
+
+  availabilityOnly: true,
+  recommendedOnly: false,
+
   priceTier: null,
-  foodTypeQuery: "",
 };
 
-function toggleInList(list: string[], value: string) {
+function toggleInList(list: string[], value: string): string[] {
   return list.includes(value)
-    ? list.filter((v) => v !== value)
+    ? list.filter((item) => item !== value)
     : [...list, value];
 }
 
-function matchesPriceTier(price: string, tier: FilterState["priceTier"]) {
-  if (!tier) return true;
-  const value = parseFloat(price);
-  if (Number.isNaN(value)) return true;
-  if (tier === "$") return value < 2;
-  if (tier === "$$") return value >= 2 && value < 3;
-  return value >= 3;
-}
-
-function parseMinutes(time: string) {
-  const match = time.match(/\d+/);
-  return match ? Number(match[0]) : Infinity;
-}
-
-function applyFilters(foods: ListedFood[], filters: FilterState) {
-  const filtered = foods.filter((food) => {
-    if (filters.mealTimes.length > 0) {
-      const allowedValues = filters.mealTimes.map(
-        (l) => MEAL_TIME_LABEL_TO_VALUE[l],
-      );
-      if (!allowedValues.includes(food.mealTime)) return false;
-    }
-    if (filters.foodTypes.length > 0) {
-      const hasMatch = food.foodTypes.some((t) =>
-        filters.foodTypes.includes(t),
-      );
-      if (!hasMatch) return false;
-    }
-    if (filters.dietTypes.length > 0) {
-      const hasMatch = food.dietTypes.some((t) =>
-        filters.dietTypes.includes(t),
-      );
-      if (!hasMatch) return false;
-    }
-    if (!matchesPriceTier(food.price, filters.priceTier)) return false;
+function matchesPriceTier(price: number, tier: PriceTier): boolean {
+  if (!tier) {
     return true;
-  });
+  }
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (filters.sortBy === "fastest")
-      return parseMinutes(a.time) - parseMinutes(b.time);
-    if (filters.sortBy === "rating") return b.rating - a.rating;
-    return b.rating - a.rating; // "popular" — no real popularity metric yet, rating is the best proxy
-  });
+  if (tier === "$") {
+    return price < 3;
+  }
 
-  return sorted;
+  if (tier === "$$") {
+    return price >= 3 && price < 6;
+  }
+
+  return price >= 6;
 }
 
-/* -------------------------------------------------------------------- */
-/*  Search + location + sort row                                        */
-/* -------------------------------------------------------------------- */
+function matchesSearch(food: MenuItem, query: string): boolean {
+  const normalizedQuery = query.trim().toLowerCase();
 
-function SearchRow() {
-  return (
-    <div className="mx-auto  flex max-w-7xl container flex-col gap-3 px-6 pt-6 md:flex-row md:items-center ">
-      <div className="flex flex-1  items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5">
-        <IoSearchOutline className="text-lg text-gray-400" />
-        <input
-          type="text"
-          placeholder="ស្វែងរកម្ហូបអ្វីមួយ..."
-          className="w-full text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
-        />
-      </div>
+  if (!normalizedQuery) {
+    return true;
+  }
 
-      <button
-        type="button"
-        className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
-      >
-        <IoLocationOutline className="shrink-0 text-lg text-primary-700" />
-        <span className="whitespace-nowrap">
-          កំណត់ទីតាំងដើម្បីទទួលបានលទ្ធផលល្អ
-        </span>
-      </button>
+  const searchableValues = [
+    food.name,
+    food.localName,
+    food.description,
+    food.localDescription,
 
-      <button
-        type="button"
-        className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
-      >
-        <IoOptionsOutline className="text-lg text-primary-700" />
-        <span className="whitespace-nowrap">ប្រភេទអាហារ</span>
-      </button>
-    </div>
+    food.store.name,
+    food.store.localName,
+    food.store.addressLine,
+    food.store.district,
+    food.store.city,
+
+    food.food.canonicalName,
+    food.food.category.name,
+    food.food.cuisine.name,
+
+    ...food.ingredients,
+    ...food.beveragePairings,
+
+    ...food.mealTypes.map((mealType) => mealType.name),
+
+    ...food.dietaryTypes.map((dietaryType) => dietaryType.name),
+
+    ...food.food.ageGroups.map((ageGroup) => ageGroup.name),
+  ];
+
+  return searchableValues.some((value) =>
+    value?.toLowerCase().includes(normalizedQuery),
   );
 }
 
-/* -------------------------------------------------------------------- */
-/*  Filter sidebar — collapsible dashboard style, accordion sections    */
-/* -------------------------------------------------------------------- */
+function getUniqueOptions(
+  values: {
+    code: string;
+    name: string;
+  }[],
+): FilterOption[] {
+  const optionMap = new Map<string, FilterOption>();
 
-function FilterPill({
-  label,
-  active,
-  onToggle,
-}: {
-  label: string;
-  active: boolean;
-  onToggle: () => void;
-}) {
+  values.forEach((item) => {
+    const existing = optionMap.get(item.code);
+
+    if (existing) {
+      existing.count += 1;
+      return;
+    }
+
+    optionMap.set(item.code, {
+      code: item.code,
+      name: item.name,
+      count: 1,
+    });
+  });
+
+  return Array.from(optionMap.values()).sort((first, second) =>
+    first.name.localeCompare(second.name),
+  );
+}
+
+function applyFilters(foods: MenuItem[], filters: FilterState): MenuItem[] {
+  const filteredFoods = foods.filter((food) => {
+    if (filters.availabilityOnly && food.availabilityStatus !== "AVAILABLE") {
+      return false;
+    }
+
+    if (filters.recommendedOnly && !food.recommendation.isRecommended) {
+      return false;
+    }
+
+    if (!matchesSearch(food, filters.query)) {
+      return false;
+    }
+
+    if (
+      filters.categoryCodes.length > 0 &&
+      !filters.categoryCodes.includes(food.food.category.code)
+    ) {
+      return false;
+    }
+
+    if (
+      filters.cuisineCodes.length > 0 &&
+      !filters.cuisineCodes.includes(food.food.cuisine.code)
+    ) {
+      return false;
+    }
+
+    if (
+      filters.mealTypeCodes.length > 0 &&
+      !food.mealTypes.some((mealType) =>
+        filters.mealTypeCodes.includes(mealType.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.dietaryTypeCodes.length > 0 &&
+      !food.dietaryTypes.some((dietaryType) =>
+        filters.dietaryTypeCodes.includes(dietaryType.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.ageGroupCodes.length > 0 &&
+      !food.food.ageGroups.some((ageGroup) =>
+        filters.ageGroupCodes.includes(ageGroup.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (!matchesPriceTier(food.price, filters.priceTier)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return [...filteredFoods].sort((first, second) => {
+    switch (filters.sortBy) {
+      case "popular":
+        return second.store.totalReviews - first.store.totalReviews;
+
+      case "rating":
+        return second.store.averageRating - first.store.averageRating;
+
+      case "fastest":
+        return first.preparationTimeMinutes - second.preparationTimeMinutes;
+
+      case "nearest":
+        return first.distanceKm - second.distanceKm;
+
+      case "price-low":
+        return first.price - second.price;
+
+      case "price-high":
+        return second.price - first.price;
+
+      case "recommended":
+      default:
+        return (
+          second.recommendation.finalScore - first.recommendation.finalScore
+        );
+    }
+  });
+}
+
+function countActiveFilters(filters: FilterState): number {
   return (
-    <motion.button
-      type="button"
-      onClick={onToggle}
-      whileTap={{ scale: 0.96 }}
-      className={`w-full rounded-xl border px-3 py-2.5 text-left text-sm transition-colors duration-200 cursor-pointer ${
-        active
-          ? "border-primary-800 bg-primary-800 text-white"
-          : "border-gray-200 text-gray-600 hover:border-primary-300"
-      }`}
-    >
-      {label}
-    </motion.button>
+    filters.categoryCodes.length +
+    filters.cuisineCodes.length +
+    filters.mealTypeCodes.length +
+    filters.dietaryTypeCodes.length +
+    filters.ageGroupCodes.length +
+    (filters.priceTier ? 1 : 0) +
+    (filters.recommendedOnly ? 1 : 0)
   );
 }
 
 type FilterSectionProps = {
   title: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   isOpen: boolean;
   onToggle: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 function FilterSection({
@@ -416,32 +289,49 @@ function FilterSection({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between text-sm font-medium text-gray-700 cursor-pointer"
+        className="flex w-full cursor-pointer items-center justify-between text-left"
       >
-        <span className="flex items-center gap-2">
-          <span className="text-base text-primary-700">{icon}</span>
+        <span className="flex items-center gap-2 text-[16px] font-semibold text-primary-900">
+          <span className="text-[20px] text-primary-700">{icon}</span>
+
           {title}
         </span>
+
         <motion.span
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
+          animate={{
+            rotate: isOpen ? 180 : 0,
+          }}
+          transition={{
+            duration: 0.2,
+          }}
           className="text-gray-400"
         >
-          <IoChevronDown className="text-base" />
+          <IoChevronDown className="text-[20px]" />
         </motion.span>
       </button>
 
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
-            key="content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            initial={{
+              height: 0,
+              opacity: 0,
+            }}
+            animate={{
+              height: "auto",
+              opacity: 1,
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+            }}
+            transition={{
+              duration: 0.25,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             className="overflow-hidden"
           >
-            <div className="pt-3.5">{children}</div>
+            <div className="pt-4">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -449,93 +339,175 @@ function FilterSection({
   );
 }
 
-const SIDEBAR_SECTIONS = [
-  { key: "sort", label: "តម្រៀបតាម", icon: <IoSwapVerticalOutline /> },
-  { key: "mealTime", label: "ពេលវេលាទទួលទាន", icon: <IoTimeOutline /> },
-  { key: "foodType", label: "ប្រភេទចំណីអាហារ", icon: <IoSearchOutline /> },
-  { key: "dietType", label: "របបអាហារ", icon: <IoNutritionOutline /> },
-  { key: "price", label: "ថ្លៃ", icon: <IoPricetagOutline /> },
-] as const;
+type CheckboxOptionProps = {
+  label: string;
+  count?: number;
+  checked: boolean;
+  onChange: () => void;
+};
+
+function CheckboxOption({
+  label,
+  count,
+  checked,
+  onChange,
+}: CheckboxOptionProps) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50">
+      <span className="flex min-w-0 items-center gap-3">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="h-4 w-4 shrink-0 accent-primary-800"
+        />
+
+        <span className="truncate text-[16px] text-gray-600">{label}</span>
+      </span>
+
+      {typeof count === "number" && (
+        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[16px] text-gray-500">
+          {count}
+        </span>
+      )}
+    </label>
+  );
+}
+
+type FilterSidebarProps = {
+  filters: FilterState;
+  onChange: (filters: FilterState) => void;
+
+  categoryOptions: FilterOption[];
+  cuisineOptions: FilterOption[];
+  mealTypeOptions: FilterOption[];
+  dietaryTypeOptions: FilterOption[];
+  ageGroupOptions: FilterOption[];
+};
 
 function FilterSidebar({
   filters,
   onChange,
-}: {
-  filters: FilterState;
-  onChange: (next: FilterState) => void;
-}) {
+  categoryOptions,
+  cuisineOptions,
+  mealTypeOptions,
+  dietaryTypeOptions,
+  ageGroupOptions,
+}: FilterSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+
+  const [categoryQuery, setCategoryQuery] = useState("");
+
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     sort: true,
-    mealTime: true,
-    foodType: false,
-    dietType: false,
+    category: true,
+    cuisine: false,
+    mealType: true,
+    dietaryType: false,
+    ageGroup: false,
     price: true,
+    availability: true,
   });
 
-  const toggleSection = (key: string) =>
-    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  const activeFilterCount = countActiveFilters(filters);
 
-  const visibleFoodTypes = FOOD_TYPE_FILTERS.filter((opt) =>
-    opt.toLowerCase().includes(filters.foodTypeQuery.trim().toLowerCase()),
+  const toggleSection = (key: string) => {
+    setOpenSections((previous) => ({
+      ...previous,
+      [key]: !previous[key],
+    }));
+  };
+
+  const visibleCategoryOptions = categoryOptions.filter((option) =>
+    option.name.toLowerCase().includes(categoryQuery.trim().toLowerCase()),
   );
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 76 : 264 }}
-      transition={{ type: "spring", stiffness: 320, damping: 34 }}
-      className="sidebar-scroll sticky top-30 hidden max-h-[calc(100vh-6rem)] shrink-0 self-start overflow-y-auto overflow-x-hidden lg:block"
+      animate={{
+        width: collapsed ? 78 : 286,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 320,
+        damping: 34,
+      }}
+      className="sidebar-scroll sticky top-28 hidden max-h-[calc(100vh-8rem)] shrink-0 self-start overflow-y-auto overflow-x-hidden lg:block"
     >
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <AnimatePresence mode="wait" initial={false}>
             {!collapsed && (
-              <motion.h2
-                key="title"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="whitespace-nowrap text-base font-semibold text-primary-900"
+              <motion.div
+                initial={{
+                  opacity: 0,
+                }}
+                animate={{
+                  opacity: 1,
+                }}
+                exit={{
+                  opacity: 0,
+                }}
               >
-                Filter
-              </motion.h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[20px] font-semibold text-primary-900">
+                    តម្រង
+                  </h2>
+
+                  {activeFilterCount > 0 && (
+                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary-500 px-1.5 text-[16px] font-semibold text-white">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-1 text-[16px] text-gray-400">
+                  ជ្រើសរើសតាមចំណូលចិត្ត
+                </p>
+              </motion.div>
             )}
           </AnimatePresence>
 
           <motion.button
             type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            whileTap={{ scale: 0.9 }}
+            onClick={() => setCollapsed((previous) => !previous)}
+            whileTap={{
+              scale: 0.9,
+            }}
             aria-label={collapsed ? "Expand filters" : "Collapse filters"}
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-50 cursor-pointer ${
+            className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700 ${
               collapsed ? "mx-auto" : ""
             }`}
           >
             <motion.span
-              animate={{ rotate: collapsed ? 180 : 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 24 }}
+              animate={{
+                rotate: collapsed ? 180 : 0,
+              }}
             >
-              <IoChevronBack />
+              <IoChevronBack className="text-[20px]" />
             </motion.span>
           </motion.button>
         </div>
 
         {collapsed && (
-          <div className="mt-5 flex flex-col items-center gap-4">
-            {SIDEBAR_SECTIONS.map((section) => (
+          <div className="mt-5 flex flex-col items-center gap-3">
+            {[
+              <IoSwapVerticalOutline key="sort" />,
+              <MdOutlineCategory key="category" />,
+              <IoTimeOutline key="time" />,
+              <IoNutritionOutline key="diet" />,
+              <IoPricetagOutline key="price" />,
+            ].map((icon, index) => (
               <motion.button
-                key={section.key}
+                key={index}
                 type="button"
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  setCollapsed(false);
-                  setOpenSections((prev) => ({ ...prev, [section.key]: true }));
+                whileTap={{
+                  scale: 0.9,
                 }}
-                aria-label={section.label}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-primary-700 hover:bg-primary-50 cursor-pointer"
+                onClick={() => setCollapsed(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[20px] text-primary-700 hover:bg-primary-50"
               >
-                {section.icon}
+                {icon}
               </motion.button>
             ))}
           </div>
@@ -544,20 +516,31 @@ function FilterSidebar({
         <AnimatePresence initial={false}>
           {!collapsed && (
             <motion.div
-              key="body"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              initial={{
+                opacity: 0,
+                height: 0,
+              }}
+              animate={{
+                opacity: 1,
+                height: "auto",
+              }}
+              exit={{
+                opacity: 0,
+                height: 0,
+              }}
               className="overflow-hidden"
             >
-              <div className="mt-4 flex items-center justify-end">
+              <div className="mt-5 flex items-center justify-between">
+                <p className="text-[16px] text-gray-400">
+                  {activeFilterCount} តម្រងបានជ្រើស
+                </p>
+
                 <button
                   type="button"
                   onClick={() => onChange(DEFAULT_FILTERS)}
-                  className="text-base text-secondary-500 hover:underline cursor-pointer"
+                  className="cursor-pointer text-[16px] font-medium text-secondary-500 hover:underline"
                 >
-                  លុបចោលទាំងអស់
+                  សម្អាតទាំងអស់
                 </button>
               </div>
 
@@ -567,124 +550,91 @@ function FilterSidebar({
                 isOpen={openSections.sort}
                 onToggle={() => toggleSection("sort")}
               >
-                <div className="flex flex-col gap-2 text-sm text-gray-600">
-                  {(
-                    [
-                      { label: "ពេញនិយម", value: "popular" },
-                      { label: "ដឹកមកដល់លឿន", value: "fastest" },
-                      { label: "ចំណាត់ថ្នាក់ខ្ពស់", value: "rating" },
-                    ] as { label: string; value: SortBy }[]
-                  ).map((opt) => (
+                <div className="flex flex-col gap-3">
+                  {[
+                    {
+                      label: "ការណែនាំល្អបំផុត",
+                      value: "recommended",
+                    },
+                    {
+                      label: "ពេញនិយមបំផុត",
+                      value: "popular",
+                    },
+                    {
+                      label: "ចំណាត់ថ្នាក់ខ្ពស់",
+                      value: "rating",
+                    },
+                    {
+                      label: "រៀបចំលឿនបំផុត",
+                      value: "fastest",
+                    },
+                    {
+                      label: "នៅជិតបំផុត",
+                      value: "nearest",
+                    },
+                    {
+                      label: "តម្លៃទាបទៅខ្ពស់",
+                      value: "price-low",
+                    },
+                    {
+                      label: "តម្លៃខ្ពស់ទៅទាប",
+                      value: "price-high",
+                    },
+                  ].map((option) => (
                     <label
-                      key={opt.value}
-                      className="flex items-center gap-2 cursor-pointer"
+                      key={option.value}
+                      className="flex cursor-pointer items-center gap-3 text-[16px] text-gray-600"
                     >
                       <input
                         type="radio"
-                        name="sort"
-                        checked={filters.sortBy === opt.value}
-                        onChange={() =>
-                          onChange({ ...filters, sortBy: opt.value })
-                        }
-                        className="h-3.5 w-3.5 accent-primary-800"
-                      />
-                      {opt.label}
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              <FilterSection
-                title="ពេលវេលាទទួលទាន"
-                icon={<IoTimeOutline />}
-                isOpen={openSections.mealTime}
-                onToggle={() => toggleSection("mealTime")}
-              >
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.keys(MEAL_TIME_LABEL_TO_VALUE).map((opt) => (
-                    <label
-                      key={opt}
-                      className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-base text-gray-600 cursor-pointer hover:border-primary-300"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={filters.mealTimes.includes(opt)}
+                        name="food-sort"
+                        checked={filters.sortBy === option.value}
                         onChange={() =>
                           onChange({
                             ...filters,
-                            mealTimes: toggleInList(filters.mealTimes, opt),
+                            sortBy: option.value as SortBy,
                           })
                         }
-                        className="h-3 w-3 accent-primary-800"
+                        className="h-4 w-4 accent-primary-800"
                       />
-                      {opt}
+
+                      {option.label}
                     </label>
                   ))}
                 </div>
               </FilterSection>
 
               <FilterSection
-                title="ប្រភេទចំណីអាហារ"
-                icon={<IoSearchOutline />}
-                isOpen={openSections.foodType}
-                onToggle={() => toggleSection("foodType")}
+                title="ប្រភេទម្ហូប"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.category}
+                onToggle={() => toggleSection("category")}
               >
-                <div className="mb-2 flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
-                  <IoSearchOutline className="text-sm text-gray-400" />
+                <div className="mb-3 flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2.5">
+                  <IoSearchOutline className="shrink-0 text-[20px] text-gray-400" />
+
                   <input
-                    type="text"
-                    value={filters.foodTypeQuery}
-                    onChange={(e) =>
-                      onChange({ ...filters, foodTypeQuery: e.target.value })
-                    }
-                    placeholder="ស្វែងរកប្រភេទចំណីអាហារ"
-                    className="w-full text-base text-gray-600 placeholder:text-gray-400 focus:outline-none"
+                    value={categoryQuery}
+                    onChange={(event) => setCategoryQuery(event.target.value)}
+                    placeholder="ស្វែងរកប្រភេទម្ហូប"
+                    className="w-full bg-transparent text-[16px] text-gray-600 outline-none placeholder:text-gray-400"
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  {visibleFoodTypes.length === 0 && (
-                    <p className="text-base text-gray-400">
-                      រកមិនឃើញប្រភេទនេះទេ
-                    </p>
-                  )}
-                  {visibleFoodTypes.map((opt) => (
-                    <label
-                      key={opt}
-                      className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={filters.foodTypes.includes(opt)}
-                        onChange={() =>
-                          onChange({
-                            ...filters,
-                            foodTypes: toggleInList(filters.foodTypes, opt),
-                          })
-                        }
-                        className="h-3.5 w-3.5 accent-primary-800"
-                      />
-                      {opt}
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
 
-              <FilterSection
-                title="របបអាហារ"
-                icon={<IoNutritionOutline />}
-                isOpen={openSections.dietType}
-                onToggle={() => toggleSection("dietType")}
-              >
-                <div className="flex flex-col gap-2">
-                  {MEAL_TYPE_FILTERS.map((label) => (
-                    <FilterPill
-                      key={label}
-                      label={label}
-                      active={filters.dietTypes.includes(label)}
-                      onToggle={() =>
+                <div className="max-h-[240px] space-y-1 overflow-y-auto">
+                  {visibleCategoryOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.categoryCodes.includes(option.code)}
+                      onChange={() =>
                         onChange({
                           ...filters,
-                          dietTypes: toggleInList(filters.dietTypes, label),
+                          categoryCodes: toggleInList(
+                            filters.categoryCodes,
+                            option.code,
+                          ),
                         })
                       }
                     />
@@ -693,32 +643,176 @@ function FilterSidebar({
               </FilterSection>
 
               <FilterSection
-                title="ថ្លៃ"
+                title="ម្ហូបតាមប្រទេស"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.cuisine}
+                onToggle={() => toggleSection("cuisine")}
+              >
+                <div className="space-y-1">
+                  {cuisineOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.cuisineCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          cuisineCodes: toggleInList(
+                            filters.cuisineCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+
+              <FilterSection
+                title="ពេលទទួលទាន"
+                icon={<IoTimeOutline />}
+                isOpen={openSections.mealType}
+                onToggle={() => toggleSection("mealType")}
+              >
+                <div className="space-y-1">
+                  {mealTypeOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.mealTypeCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          mealTypeCodes: toggleInList(
+                            filters.mealTypeCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+
+              <FilterSection
+                title="របបអាហារ"
+                icon={<IoNutritionOutline />}
+                isOpen={openSections.dietaryType}
+                onToggle={() => toggleSection("dietaryType")}
+              >
+                <div className="space-y-1">
+                  {dietaryTypeOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.dietaryTypeCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          dietaryTypeCodes: toggleInList(
+                            filters.dietaryTypeCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+
+              <FilterSection
+                title="ក្រុមអាយុ"
+                icon={<IoNutritionOutline />}
+                isOpen={openSections.ageGroup}
+                onToggle={() => toggleSection("ageGroup")}
+              >
+                <div className="space-y-1">
+                  {ageGroupOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.ageGroupCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          ageGroupCodes: toggleInList(
+                            filters.ageGroupCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+
+              <FilterSection
+                title="តម្លៃ"
                 icon={<IoPricetagOutline />}
                 isOpen={openSections.price}
                 onToggle={() => toggleSection("price")}
               >
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {(["$", "$$", "$$$"] as const).map((tier) => (
-                    <motion.button
+                    <button
                       key={tier}
                       type="button"
-                      whileTap={{ scale: 0.94 }}
                       onClick={() =>
                         onChange({
                           ...filters,
                           priceTier: filters.priceTier === tier ? null : tier,
                         })
                       }
-                      className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors duration-200 cursor-pointer ${
+                      className={`rounded-xl border py-2.5 text-[16px] font-semibold transition ${
                         filters.priceTier === tier
                           ? "border-primary-800 bg-primary-800 text-white"
                           : "border-gray-200 text-gray-600 hover:border-primary-300"
                       }`}
                     >
                       {tier}
-                    </motion.button>
+                    </button>
                   ))}
+                </div>
+
+                <div className="mt-3 space-y-1 text-[16px] text-gray-400">
+                  <p>$: ក្រោម $3</p>
+                  <p>$$: $3 ដល់ក្រោម $6</p>
+                  <p>$$$: $6 ឡើងទៅ</p>
+                </div>
+              </FilterSection>
+
+              <FilterSection
+                title="ភាពអាចរកបាន"
+                icon={<FaFire />}
+                isOpen={openSections.availability}
+                onToggle={() => toggleSection("availability")}
+              >
+                <div className="space-y-2">
+                  <CheckboxOption
+                    label="បង្ហាញតែម្ហូបដែលមានលក់"
+                    checked={filters.availabilityOnly}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        availabilityOnly: !filters.availabilityOnly,
+                      })
+                    }
+                  />
+
+                  <CheckboxOption
+                    label="បង្ហាញតែម្ហូបដែល AI ណែនាំ"
+                    checked={filters.recommendedOnly}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        recommendedOnly: !filters.recommendedOnly,
+                      })
+                    }
+                  />
                 </div>
               </FilterSection>
             </motion.div>
@@ -728,158 +822,424 @@ function FilterSidebar({
 
       <style jsx>{`
         .sidebar-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(107, 114, 128, 0.4) transparent;
+          scrollbar-width: none;
         }
+
         .sidebar-scroll::-webkit-scrollbar {
-          width: 6px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .sidebar-scroll::-webkit-scrollbar-thumb {
-          background-color: rgba(107, 114, 128, 0.4);
-          border-radius: 9999px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(107, 114, 128, 0.65);
+          display: none;
         }
       `}</style>
     </motion.aside>
   );
 }
 
-/* -------------------------------------------------------------------- */
-/*  Category tabs                                                       */
-/* -------------------------------------------------------------------- */
+type CategoryTabsProps = {
+  options: FilterOption[];
+  selectedCodes: string[];
+  onChange: (categoryCodes: string[]) => void;
+};
 
-function CategoryTabs() {
-  const [active, setActive] = useState(0);
+function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
+  const allSelected = selectedCodes.length === 0;
+
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1">
-      <div className="flex flex-1 gap-3 overflow-x-auto">
-        {CATEGORY_TABS.map((label, i) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => setActive(i)}
-            className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
-              active === i
-                ? "border-primary-800 bg-primary-800 text-white"
-                : "border-gray-200 text-gray-600 hover:border-primary-300"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+    <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
       <button
         type="button"
-        aria-label="See more categories"
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 cursor-pointer"
+        onClick={() => onChange([])}
+        className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
+          allSelected
+            ? "border-primary-800 bg-primary-800 text-white"
+            : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
+        }`}
       >
-        <IoChevronForward />
+        ទាំងអស់
       </button>
+
+      {options.map((option) => {
+        const isSelected = selectedCodes.includes(option.code);
+
+        return (
+          <button
+            key={option.code}
+            type="button"
+            onClick={() =>
+              onChange(
+                isSelected
+                  ? selectedCodes.filter((code) => code !== option.code)
+                  : [...selectedCodes, option.code],
+              )
+            }
+            className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
+              isSelected
+                ? "border-primary-800 bg-primary-800 text-white"
+                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
+            }`}
+          >
+            {option.name}
+
+            <span className="ml-2 opacity-70">{option.count}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-/* -------------------------------------------------------------------- */
-/*  Food card + grid section                                            */
-/* -------------------------------------------------------------------- */
+type FoodGridProps = {
+  foods: MenuItem[];
+};
 
-function FoodSection({
-  title,
-  foods,
-  showLoadMore,
-}: {
-  title: string;
-  foods: ListedFood[];
-  showLoadMore?: boolean;
-}) {
+function FoodGrid({ foods }: FoodGridProps) {
+  if (foods.length === 0) {
+    return (
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 10,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-16 text-center"
+      >
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50">
+          <IoSearchOutline className="text-[30px] text-primary-700" />
+        </div>
+
+        <h3 className="mt-4 text-[20px] font-semibold text-primary-900">
+          រកមិនឃើញមុខម្ហូប
+        </h3>
+
+        <p className="mx-auto mt-2 max-w-md text-[16px] leading-7 text-gray-500">
+          សូមសាកល្បងផ្លាស់ប្តូរពាក្យស្វែងរក ឬសម្អាតតម្រងមួយចំនួន។
+        </p>
+      </motion.div>
+    );
+  }
+
   return (
-    <section className="mt-8">
-      <h2 className="pb-12.5 text-center text-lg font-semibold text-primary-800 underline decoration-2 underline-offset-8">
-        {title}
-      </h2>
-
-      {foods.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center text-sm text-gray-400">
-          មិនមានលទ្ធផលត្រូវនឹងតម្រងដែលបានជ្រើសរើសទេ
-        </div>
-      ) : (
-        <div className="max-w-4xl mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {foods.map((food) => (
-            // <FoodListCard key={food.id} food={food} />
-            <FoodCardComponent key={food.id} food={food} />
-          ))}
-        </div>
-      )}
-
-      {showLoadMore && foods.length > 0 && (
-        <div className="mt-8 flex justify-center">
-          <button
-            type="button"
-            className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-900 transition-colors cursor-pointer"
+    <motion.div
+      layout
+      className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+    >
+      <AnimatePresence mode="popLayout">
+        {foods.map((food) => (
+          <motion.div
+            layout
+            key={food.uuid}
+            initial={{
+              opacity: 0,
+              scale: 0.96,
+              y: 12,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.95,
+            }}
+            transition={{
+              duration: 0.25,
+            }}
+            className="w-full"
           >
-            មើលបន្ថែម
-            <IoChevronForward className="text-base" />
-          </button>
-        </div>
-      )}
-    </section>
+            <Link href={`/food/${food.uuid}`} className="block h-full w-full">
+              <FoodCard food={food} />
+            </Link>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
-/* -------------------------------------------------------------------- */
-/*  CTA banner                                                          */
-/* -------------------------------------------------------------------- */
-
-function CtaBanner() {
+function LoadingState() {
   return (
-    <section className="mt-14 rounded-[28px] bg-primary-800 px-6 py-12 text-center">
-      <p className="text-2xl font-semibold text-white md:text-3xl">
-        បទពិសោធន៍ថ្មីក្នុងការ
-      </p>
-      <p className="text-2xl font-semibold text-accent-300 md:text-3xl">
-        ស្វែងរកអាហារ
-      </p>
-    </section>
+    <div className="flex min-h-[500px] flex-col items-center justify-center gap-4">
+      <motion.div
+        animate={{
+          rotate: 360,
+        }}
+        transition={{
+          duration: 0.9,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="h-12 w-12 rounded-full border-4 border-primary-100 border-t-primary-800"
+      />
+
+      <p className="text-[16px] text-gray-500">កំពុងផ្ទុកមុខម្ហូប...</p>
+    </div>
   );
 }
 
 export default function FoodPage() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
-  const filteredNewFoods = applyFilters(NEW_FOODS, filters);
-  const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
+  const {
+    data: menuItems = [],
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useGetMenuItemsQuery();
+
+  const categoryOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.map((item) => ({
+          code: item.food.category.code,
+          name: item.food.category.name,
+        })),
+      ),
+    [menuItems],
+  );
+
+  const cuisineOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.map((item) => ({
+          code: item.food.cuisine.code,
+          name: item.food.cuisine.name,
+        })),
+      ),
+    [menuItems],
+  );
+
+  const mealTypeOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.flatMap((item) =>
+          item.mealTypes.map((mealType) => ({
+            code: mealType.code,
+            name: mealType.name,
+          })),
+        ),
+      ),
+    [menuItems],
+  );
+
+  const dietaryTypeOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.flatMap((item) =>
+          item.dietaryTypes.map((dietaryType) => ({
+            code: dietaryType.code,
+            name: dietaryType.name,
+          })),
+        ),
+      ),
+    [menuItems],
+  );
+
+  const ageGroupOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.flatMap((item) =>
+          item.food.ageGroups.map((ageGroup) => ({
+            code: ageGroup.code,
+            name: ageGroup.name,
+          })),
+        ),
+      ),
+    [menuItems],
+  );
+
+  const filteredFoods = useMemo(
+    () => applyFilters(menuItems, filters),
+    [menuItems, filters],
+  );
+
+  const recommendedFoods = useMemo(
+    () =>
+      filteredFoods
+        .filter((food) => food.recommendation.isRecommended)
+        .slice(0, 6),
+    [filteredFoods],
+  );
+
+  const activeFilterCount = countActiveFilters(filters);
 
   return (
     <div className="min-h-screen bg-[#fafaf8]">
-      {/* <Header /> */}
+      <div className="pt-15" />
 
-      <div className="pt-15"></div>
-      <div className="sticky  container mx-auto  top-15 z-20 bg-white/2 dark:bg-gray-600/5 w-full  backdrop-blur-xs ">
-        {" "}
+      <div className="sticky top-15 z-20 mx-auto w-full bg-white/70 backdrop-blur-md">
         <FoodNavTabs />
       </div>
 
-      <div className="mx-auto flex max-w-7xl gap-8 container px-6 pb-16 pt-6 ">
-        <FilterSidebar filters={filters} onChange={setFilters} />
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6">
+        {/* Search */}
+        <section className="rounded-[26px] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-full border border-gray-200 px-5 transition focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
+              <IoSearchOutline className="shrink-0 text-[22px] text-primary-700" />
 
-        <main className="min-w-0 flex-1">
-          <CategoryTabs />
-          <FoodSection
-            title="អាហារដែលទើបតែបញ្ចូលថ្មី"
-            foods={filteredNewFoods}
-            showLoadMore
+              <input
+                type="text"
+                value={filters.query}
+                onChange={(event) =>
+                  setFilters({
+                    ...filters,
+                    query: event.target.value,
+                  })
+                }
+                placeholder="ស្វែងរកម្ហូប ហាង គ្រឿងផ្សំ ឬរបបអាហារ..."
+                className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400"
+              />
+
+              {filters.query && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFilters({
+                      ...filters,
+                      query: "",
+                    })
+                  }
+                  className="text-[16px] font-medium text-secondary-500"
+                >
+                  សម្អាត
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
+              <FaStar className="text-[20px] text-yellow-500" />
+
+              <p className="text-[16px] text-primary-800">
+                រកឃើញ{" "}
+                <span className="font-semibold">{filteredFoods.length}</span>{" "}
+                មុខម្ហូប
+              </p>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setFilters(DEFAULT_FILTERS)}
+                className="rounded-full border border-secondary-200 px-5 py-3 text-[16px] font-semibold text-secondary-500 transition hover:bg-secondary-50"
+              >
+                សម្អាតតម្រង {activeFilterCount}
+              </button>
+            )}
+          </div>
+        </section>
+
+        <div className="mt-6 flex gap-8">
+          <FilterSidebar
+            filters={filters}
+            onChange={setFilters}
+            categoryOptions={categoryOptions}
+            cuisineOptions={cuisineOptions}
+            mealTypeOptions={mealTypeOptions}
+            dietaryTypeOptions={dietaryTypeOptions}
+            ageGroupOptions={ageGroupOptions}
           />
-          <FoodSection title="អាហារពេញនិយមបំផុត" foods={filteredPopularFoods} />
-          <CtaBanner />
-        </main>
-      </div>
 
-      {/* <Footer /> */}
+          <main className="min-w-0 flex-1">
+            <CategoryTabs
+              options={categoryOptions}
+              selectedCodes={filters.categoryCodes}
+              onChange={(categoryCodes) =>
+                setFilters({
+                  ...filters,
+                  categoryCodes,
+                })
+              }
+            />
+
+            {isLoading || isFetching ? (
+              <LoadingState />
+            ) : isError ? (
+              <div className="flex min-h-[500px] flex-col items-center justify-center gap-4 rounded-[24px] border border-red-100 bg-white px-5 text-center">
+                <p className="text-[20px] font-semibold text-red-500">
+                  មិនអាចទាញយកមុខម្ហូបបានទេ
+                </p>
+
+                <p className="text-[16px] text-gray-500">
+                  សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្តងទៀត។
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => refetch()}
+                  className="flex items-center gap-2 rounded-full bg-primary-800 px-5 py-3 text-[16px] font-semibold text-white"
+                >
+                  <IoRefresh className="text-[20px]" />
+                  ព្យាយាមម្តងទៀត
+                </button>
+
+                <pre className="max-w-full overflow-auto whitespace-pre-wrap text-left text-[16px] text-red-400">
+                  {JSON.stringify(error, null, 2)}
+                </pre>
+              </div>
+            ) : (
+              <>
+                {recommendedFoods.length > 0 && (
+                  <section className="mt-8">
+                    <div className="mb-6 flex items-end justify-between gap-4">
+                      <div>
+                        <p className="text-[16px] font-semibold text-secondary-500">
+                          FoodHub AI
+                        </p>
+
+                        <h2 className="mt-1 text-[26px] font-bold text-primary-900">
+                          មុខម្ហូបណែនាំសម្រាប់អ្នក
+                        </h2>
+                      </div>
+
+                      <span className="rounded-full bg-primary-50 px-4 py-2 text-[16px] font-semibold text-primary-700">
+                        {recommendedFoods.length} ជម្រើស
+                      </span>
+                    </div>
+
+                    <FoodGrid foods={recommendedFoods} />
+                  </section>
+                )}
+
+                <section className="mt-12">
+                  <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <p className="text-[16px] font-semibold text-secondary-500">
+                        មុខម្ហូបទាំងអស់
+                      </p>
+
+                      <h2 className="mt-1 text-[26px] font-bold text-primary-900">
+                        ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
+                      </h2>
+                    </div>
+
+                    <p className="text-[16px] text-gray-500">
+                      បង្ហាញ {filteredFoods.length} ក្នុងចំណោម{" "}
+                      {menuItems.length}
+                    </p>
+                  </div>
+
+                  <FoodGrid foods={filteredFoods} />
+                </section>
+              </>
+            )}
+
+            <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 via-primary-800 to-secondary-500 px-6 py-12 text-center text-white">
+              <p className="text-[28px] font-semibold md:text-[36px]">
+                បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
+              </p>
+
+              <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-8 text-white/80">
+                ស្វែងរកមុខម្ហូបដែលសមនឹងចំណូលចិត្ត របបអាហារ អាឡែស៊ី ថវិកា
+                និងទីតាំងរបស់អ្នក។
+              </p>
+            </section>
+          </main>
+        </div>
+      </div>
     </div>
   );
 }
