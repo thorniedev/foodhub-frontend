@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import Link from "next/link";
 
@@ -102,42 +102,77 @@ function matchesPriceTier(price: number, tier: PriceTier): boolean {
 
   return price >= 6;
 }
-
+function normalizeText(value?: string | null): string {
+  return (value ?? "").trim().toLowerCase().normalize("NFKC");
+}
 function matchesSearch(food: MenuItem, query: string): boolean {
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = normalizeText(query);
 
   if (!normalizedQuery) {
     return true;
   }
 
   const searchableValues = [
+    // Food information
     food.name,
     food.localName,
     food.description,
     food.localDescription,
+    food.source,
 
+    // Store information
     food.store.name,
     food.store.localName,
     food.store.addressLine,
     food.store.district,
     food.store.city,
+    food.store.operatingStatus,
 
+    // Category and cuisine
     food.food.canonicalName,
+    food.food.category.code,
     food.food.category.name,
+    food.food.cuisine.code,
     food.food.cuisine.name,
 
+    // Ingredients and drinks
     ...food.ingredients,
     ...food.beveragePairings,
 
-    ...food.mealTypes.map((mealType) => mealType.name),
+    // Meal types
+    ...food.mealTypes.flatMap((mealType) => [mealType.code, mealType.name]),
 
-    ...food.dietaryTypes.map((dietaryType) => dietaryType.name),
+    // Dietary types
+    ...food.dietaryTypes.flatMap((dietaryType) => [
+      dietaryType.code,
+      dietaryType.name,
+      dietaryType.verificationStatus,
+    ]),
 
-    ...food.food.ageGroups.map((ageGroup) => ageGroup.name),
+    // Allergens
+    ...food.allergenDeclarations.flatMap((allergen) => [
+      allergen.code,
+      allergen.name,
+      allergen.declarationType,
+      allergen.riskLevel,
+      allergen.verificationStatus,
+    ]),
+
+    // Age groups
+    ...food.food.ageGroups.flatMap((ageGroup) => [
+      ageGroup.code,
+      ageGroup.name,
+    ]),
+
+    // Recommendation information
+    food.recommendation.reasonText,
+    food.recommendation.candidateSource,
+    food.recommendation.safetyStatus,
+    ...food.recommendation.reasonCodes,
   ];
 
   return searchableValues.some((value) =>
-    value?.toLowerCase().includes(normalizedQuery),
+    normalizeText(value).includes(normalizedQuery),
   );
 }
 
@@ -400,7 +435,7 @@ function FilterSidebar({
   const [collapsed, setCollapsed] = useState(false);
 
   const [categoryQuery, setCategoryQuery] = useState("");
-
+  const [searchInput, setSearchInput] = useState("");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     sort: true,
     category: true,
