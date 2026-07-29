@@ -32,17 +32,17 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-6">
+    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
       {/* Title */}
-      <p className="flex items-center gap-2 text-4xl font-bold text-[#136C34]">
-        <Heart className="h-5 w-5 fill-[#136C34]" />
+      <p className="flex items-center gap-2 text-2xl font-bold text-[#136C34] sm:text-4xl">
+        <Heart className="h-4 w-4 shrink-0 fill-[#136C34] sm:h-5 sm:w-5" />
         ចំណីអាហារចំណូលចិត្ត
       </p>
 
       {/* Count + Clear All */}
-      <div className="mt-2 flex items-center justify-between">
-        <p className="flex items-center gap-1.5 text-md text-[#F97316]">
-          <Bookmark className="h-4 w-4 text-[#F97316]" />
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-sm text-[#F97316] sm:text-md">
+          <Bookmark className="h-4 w-4 shrink-0 text-[#F97316]" />
           មុខម្ហូបចំនួន {favorites.length} ត្រូវបានក្សាទុក
         </p>
 
@@ -50,7 +50,7 @@ export default function FavoritesPage() {
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-md font-medium text-red-600 hover:underline"
+            className="text-sm font-medium text-red-600 hover:underline sm:text-md"
           >
             លុបទាំងអស់
           </button>
@@ -59,7 +59,7 @@ export default function FavoritesPage() {
 
       {/* Favorite Cards */}
       {favorites.length > 0 ? (
-        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:gap-4 lg:grid-cols-2">
           {favorites.map((item) => (
             <FavoriteFoodRow
               key={item.id}

@@ -47,14 +47,14 @@ export default function RestaurantDetailPage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 pt-20">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <Link
+      <div className="mx-auto max-w-360 px-4 py-6 sm:px-6">
+        {/* <Link
           href="/"
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-800 hover:text-primary-600"
         >
           <FaArrowLeft />
           ត្រឡប់ក្រោយ
-        </Link>
+        </Link> */}
 
         <div className="grid gap-6 lg:grid-cols-[224px_1fr_360px] lg:items-start lg:gap-8">
           {/* Category nav: horizontal chip row on mobile/tablet, sticky
@@ -95,7 +95,7 @@ export default function RestaurantDetailPage() {
           </div>
 
           {/* Right: sticky location map (desktop), toggled panel (mobile) */}
-          <div className="lg:sticky lg:top-24">
+          <div className="lg:sticky lg:top-120 h-fit self-start">
             <RestaurantLocationMap
               name={restaurant.name}
               address={restaurant.address}

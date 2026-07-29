@@ -7,7 +7,6 @@ import { FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
 
-
 import Link from "next/link";
 import { useGetFoodsQuery } from "@/app/store/foodApi";
 import Image from "next/image";
@@ -83,10 +82,6 @@ export default function RecommandSection({
 
     const intervalId = setInterval(applyTimeBasedTab, 1_000);
 
-    // Force an immediate recheck when the tab regains focus/visibility —
-    // this is what actually fixes the "need multiple refreshes" issue,
-    // since background-tab timer throttling means the interval alone
-    // can't be trusted to fire promptly while you're away from the tab.
     document.addEventListener("visibilitychange", applyTimeBasedTab);
     window.addEventListener("focus", applyTimeBasedTab);
 

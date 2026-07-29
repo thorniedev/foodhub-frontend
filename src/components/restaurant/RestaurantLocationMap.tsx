@@ -45,7 +45,8 @@ export default function RestaurantLocationMap({
           expanded ? "block" : "hidden"
         } lg:block`}
       >
-        <div className="relative h-64 w-full lg:h-[420px]">
+        {/* height image map*/}
+        <div className="relative h-64 w-full lg:h-[670px]">
           <iframe
             title={`ទីតាំង ${name} នៅលើ Google Maps`}
             src={embedSrc}

@@ -19,7 +19,6 @@ export default function FamilyMemberList({
       <div className="flex flex-wrap items-center gap-6">
         {members.map((member) => (
           <div key={member.id} className="flex items-center gap-3">
-   
             <img
               src={member.avatarUrl}
               alt={member.name}

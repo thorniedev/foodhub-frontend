@@ -1,0 +1,79 @@
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin test/before-merge 
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            test/before-merge -> FETCH_HEAD
+Merge made by the 'ort' strategy.
+ .gitignore                                         |  32 +-
+ README.md                                          |  13 +
+ package.json                                       |   7 +-
+ public/data/restaurantDetail.json                  | 131 ++++++
+ src/app/(site)/food/page.tsx                       |  31 +-
+ src/app/food/[id]/page.tsx                         |   2 +-
+ src/app/pages/home/FoodCard.tsx                    |  84 ++++
+ src/app/pages/home/FoodDiscoverySection.tsx        |  41 ++
+ src/app/pages/home/FoodSearchBar.tsx               | 524 +++++++++++++++++++++
+ src/app/pages/home/RecommendationStack.tsx         | 207 ++++++++
+ src/app/pages/home/SectionModal.tsx                | 333 +++++++++++++
+ src/app/pages/home/Spinwheel .tsx                  | 315 +++++++++++++
+ src/app/pages/home/age.tsx                         | 166 +++++++
+ src/app/pages/home/event.tsx                       | 101 ++++
+ src/app/pages/home/filterByCategory.tsx            |  24 +
+ src/app/pages/home/fitfood.tsx                     |  83 ++++
+ src/app/pages/home/location.tsx                    | 110 +++++
+ src/app/pages/home/popular.tsx                     |  75 +++
+ src/app/pages/home/recommand.tsx                   | 414 ++++++++++++++++
+ src/app/pages/home/season.tsx                      |  27 ++
+ src/app/providers.tsx                              |   9 +
+ src/app/restaurant/[id]/page.tsx                   | 110 +++++
+ src/app/store/baseApi.ts                           |   2 +-
+ src/app/store/restaurantApi.ts                     |  21 +
+ .../google-sans/GoogleSans-Italic-VariableFont.ttf | Bin 0 -> 5000836 bytes
+ .../fonts/google-sans/GoogleSans-VariableFont.ttf  | Bin 0 -> 4712272 bytes
+ src/assets/fonts/google-sans/OFL.txt               |  91 ++++
+ src/components/restaurant/MenuItemCard.tsx         |  74 +++
+ .../restaurant/RestaurantCategorySidebar.tsx       | 114 +++++
+ src/components/restaurant/RestaurantHero.tsx       | 149 ++++++
+ .../restaurant/RestaurantLocationMap.tsx           |  78 +++
+ .../restaurant/RestaurantMenuSection.tsx           |  42 ++
+ src/components/restaurant/VoucherCard.tsx          |  37 ++
+ src/components/restaurant/categoryIcons.tsx        |  40 ++
+ src/data/site.json                                 |  35 ++
+ src/data/users.json                                |   8 +
+ src/hooks/useAppDispatch.ts                        |   2 +-
+ src/lib/auth/auth.ts                               |  35 ++
+ src/lib/fonts.ts                                   |  33 ++
+ src/types/restaurant.ts                            |  74 +++
+ 40 files changed, 3650 insertions(+), 24 deletions(-)
+ create mode 100644 public/data/restaurantDetail.json
+ create mode 100644 src/app/pages/home/FoodCard.tsx
+ create mode 100644 src/app/pages/home/FoodDiscoverySection.tsx
+ create mode 100644 src/app/pages/home/FoodSearchBar.tsx
+ create mode 100644 src/app/pages/home/RecommendationStack.tsx
+ create mode 100644 src/app/pages/home/SectionModal.tsx
+ create mode 100644 src/app/pages/home/Spinwheel .tsx
+ create mode 100644 src/app/pages/home/age.tsx
+ create mode 100644 src/app/pages/home/event.tsx
+ create mode 100644 src/app/pages/home/filterByCategory.tsx
+ create mode 100644 src/app/pages/home/fitfood.tsx
+ create mode 100644 src/app/pages/home/location.tsx
+ create mode 100644 src/app/pages/home/popular.tsx
+ create mode 100644 src/app/pages/home/recommand.tsx
+ create mode 100644 src/app/pages/home/season.tsx
+ create mode 100644 src/app/providers.tsx
+ create mode 100644 src/app/restaurant/[id]/page.tsx
+ create mode 100644 src/app/store/restaurantApi.ts
+ create mode 100644 src/assets/fonts/google-sans/GoogleSans-Italic-VariableFont.ttf
+ create mode 100644 src/assets/fonts/google-sans/GoogleSans-VariableFont.ttf
+ create mode 100644 src/assets/fonts/google-sans/OFL.txt
+ create mode 100644 src/components/restaurant/MenuItemCard.tsx
+ create mode 100644 src/components/restaurant/RestaurantCategorySidebar.tsx
+ create mode 100644 src/components/restaurant/RestaurantHero.tsx
+ create mode 100644 src/components/restaurant/RestaurantLocationMap.tsx
+ create mode 100644 src/components/restaurant/RestaurantMenuSection.tsx
+ create mode 100644 src/components/restaurant/VoucherCard.tsx
+ create mode 100644 src/components/restaurant/categoryIcons.tsx
+ create mode 100644 src/data/site.json
+ create mode 100644 src/data/users.json
+ create mode 100644 src/lib/auth/auth.ts
+ create mode 100644 src/lib/fonts.ts
+ create mode 100644 src/types/restaurant.ts
