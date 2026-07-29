@@ -378,7 +378,7 @@ function WinPopup({
               )}
             </div>
 
-            <div className="flex flex-col gap-2 px-3 pb-3 pt-3">
+            <div className="flex flex-col gap-2 p-3">
               <div className="flex items-center gap-1.5 text-secondary-400">
                 <FaStore className="shrink-0 text-base" />
 
@@ -397,11 +397,11 @@ function WinPopup({
 
               <FoodStats food={food} />
 
-              <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
+              <div className="scrollbar-hide flex gap-2 overflow-x-auto">
                 {food.dietaryTypes.map((diet) => (
                   <span
                     key={diet.code}
-                    className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-base text-white"
+                    className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white"
                   >
                     {diet.name}
                   </span>
@@ -410,7 +410,8 @@ function WinPopup({
             </div>
           </Link>
 
-          <div className="flex gap-2 border-t border-gray-100 px-2 pb-1 pt-3">
+          {/* mdorng tt spin */}
+          {/* <div className="flex gap-2 border-t border-gray-100 px-2 pb-1 pt-3">
             <button
               type="button"
               onClick={onSpinAgain}
@@ -427,7 +428,7 @@ function WinPopup({
             >
               មើលលម្អិត
             </Link>
-          </div>
+          </div> */}
         </div>
       </motion.div>
     </motion.div>
