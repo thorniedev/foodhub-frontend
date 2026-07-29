@@ -60,7 +60,7 @@ export default function Home() {
           }}
         /> */}
         <FoodSearchBar />
-        <DisplaySwipeCard />
+        {/* <DisplaySwipeCard /> */}
         <Model />
         {/* <FoodDiscoverySection /> */}
         {/* <FilterByCategory /> */}

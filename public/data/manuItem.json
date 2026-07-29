@@ -183,8 +183,8 @@
           "name": "Khmer Food"
         },
         "cuisine": {
-          "code": "KHMER",
-          "name": "Khmer"
+          "code": "CHINESE_FOOD",
+          "name": "Chinease"
         },
         "spiceLevel": 0,
         "ageGroups": [
