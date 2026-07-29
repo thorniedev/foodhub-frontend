@@ -1124,11 +1124,11 @@ export default function FoodPage() {
                 <main className="min-w-0 flex-1">
                   <CategoryTabs />
                   <div className="grid-cols-3 pt-8 max-w-5xl grid place-content-center gap-2">
-                    {foods.map((food) => (
+                    {/* {foods.map((food) => (
                       <Link key={food.uuid} href={`/food/${food.uuid}`}>
-                        <FoodCard food={food} />
+                        <FoodCardComponent food={food} />
                       </Link>
-                    ))}
+                    ))} */}
                   </div>
                   {/* <FoodSection
                     title="អាហារដែលទើបតែបញ្ចូលថ្មី"

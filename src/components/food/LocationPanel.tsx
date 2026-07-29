@@ -46,7 +46,7 @@ export default function LocationPanel() {
       <h2 className="mb-6 text-center text-lg font-semibold text-primary-800  ">
         ទីតាំងជិតអ្នក
       </h2>
-      <LocationFilter />
+      {/* <LocationFilter /> */}
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* ================= LEFT: FOOD CARD GRID ================= */}
         <div className="lg:flex-1">
@@ -54,11 +54,11 @@ export default function LocationPanel() {
             <p className="text-sm text-gray-400">មិនមានលទ្ធផលទេ</p>
           ) : (
             <div className="grid max-w-5xl grid-cols-1 place-content-center gap-2 pt-2 sm:grid-cols-2 ">
-              {foods.map((food) => (
+              {/* {foods.map((food) => (
                 <Link key={food.uuid} href={`/food/${food.uuid}`}>
                   <FoodCard food={food} />
                 </Link>
-              ))}
+              ))} */}
             </div>
           )}
         </div>
