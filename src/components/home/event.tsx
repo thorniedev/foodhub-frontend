@@ -41,7 +41,7 @@ export default function EventSection() {
 
           <div className="rounded-2xl overflow-hidden shadow-md">
             <img
-              src="/Image/card2.png"
+              src="/Image/food-picture/food-21.webp"
               alt="New Dish"
               className="w-full h-40 object-cover"
             />
@@ -52,13 +52,13 @@ export default function EventSection() {
         <div data-aos="fade-up" data-aos-delay="250">
           <div className="rounded-2xl flex flex-col justify-between gap-4 overflow-hidden">
             <img
-              src="/Image/card2.png"
+              src="/Image/food-picture/food-20.jpg"
               alt="Dishes"
               className="w-full h-40 rounded-2xl object-cover"
             />
 
             <img
-              src="/Image/card2.png"
+              src="/Image/food-picture/food-19.jpg"
               alt="Snack"
               className="w-full h-40 rounded-2xl object-cover"
             />
@@ -68,7 +68,7 @@ export default function EventSection() {
         {/* Column 3 */}
         <div data-aos="zoom-in" data-aos-delay="300" className="h-full">
           <img
-            src="/Image/card2.png"
+            src="/Image/food-picture/food-22.jpg"
             alt="Gyoza"
             className="w-full h-[340px] object-cover rounded-2xl shadow-md"
           />
@@ -77,7 +77,7 @@ export default function EventSection() {
         {/* Column 4 */}
         <div data-aos="zoom-in" data-aos-delay="400" className="h-full">
           <img
-            src="/Image/card2.png"
+            src="/Image/food-picture/food-25.jpg"
             alt="Pasta"
             className="w-full h-[340px] object-cover rounded-2xl shadow-md"
           />
@@ -90,7 +90,7 @@ export default function EventSection() {
           className="h-full max-sm:col-span-2"
         >
           <img
-            src="/Image/card2.png"
+            src="/Image/food-picture/food-24.jpg"
             alt="Penne"
             className="w-full h-[340px] object-cover rounded-2xl shadow-md"
           />
