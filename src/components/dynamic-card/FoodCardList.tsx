@@ -25,7 +25,7 @@ export default function FoodCardList() {
       <div className="py-20 text-center text-red-500">
         <p>មិនអាចទាញយកមុខម្ហូបបានទេ</p>
 
-        <pre className="mt-3 text-xs">{JSON.stringify(error, null, 2)}</pre>
+        <pre className="mt-3 text-base">{JSON.stringify(error, null, 2)}</pre>
       </div>
     );
   }

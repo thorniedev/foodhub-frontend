@@ -28,7 +28,7 @@ export default function FamilyMemberList({
               <p className="text-sm font-semibold text-slate-800">
                 {member.name}
               </p>
-              <p className="text-xs text-slate-400">{member.role}</p>
+              <p className="text-base text-slate-400">{member.role}</p>
             </div>
           </div>
         ))}

@@ -123,7 +123,7 @@ function FoodStats({ food }: { food: FoodItem }) {
   return (
     <div className="flex items-center gap-3 text-[12px] text-primary-400">
       <span className="flex items-center gap-1 text-accent-400">
-        <FaStar className="text-xs" />
+        <FaStar className="text-base" />
         {food.rating}
       </span>
       <span className="flex items-center gap-1">
@@ -253,7 +253,7 @@ function WinPopup({
 
           <div className="flex flex-col gap-1 px-4 pb-2 pt-3">
             <div className="flex items-center gap-1.5 text-secondary-400">
-              <FaStore className="text-xs" />
+              <FaStore className="text-base" />
               <p className="truncate text-[12px]">{food.store}</p>
             </div>
             <p className="truncate text-[17px] font-medium text-primary-900">

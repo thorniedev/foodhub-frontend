@@ -346,8 +346,8 @@ export default function FoodSearchBar() {
         (count > 2 ? ` +${count - 2}` : "");
 
   return (
-    <div className="mx-auto w-full max-w-7xl text-[#3d3d3a]">
-      <div className="flex flex-wrap items-stretch gap-3.5">
+    <div className="mx-auto container w-full max-w-7xl text-[#3d3d3a]">
+      <div className="flex container max-w-7xl px-4 sticky top-18 z-10 flex-wrap items-stretch gap-3.5">
         <div className="flex h-[60px] min-w-[280px] flex-1 items-center gap-2.5 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition-all focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec] hover:border-[#cfcec6]">
           <SearchIcon className="h-5 w-5 shrink-0 text-[#1c6b45]" />
 
@@ -375,7 +375,7 @@ export default function FoodSearchBar() {
             <span className="flex-1 truncate text-left">{label}</span>
 
             {count > 0 && (
-              <span className="rounded-full bg-[#1c6b45] px-2 py-0.5 text-xs font-semibold text-white">
+              <span className="rounded-full bg-[#1c6b45] px-2 py-0.5 text-base font-semibold text-white">
                 {count}
               </span>
             )}
@@ -467,7 +467,7 @@ export default function FoodSearchBar() {
           <div className="col-span-full flex flex-col items-center gap-3 py-10 text-center">
             <p className="text-red-500">មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ</p>
 
-            <pre className="max-w-full overflow-auto text-xs text-red-500">
+            <pre className="max-w-full overflow-auto text-base text-red-500">
               {JSON.stringify(error, null, 2)}
             </pre>
 

@@ -34,7 +34,7 @@ export default function ReviewFilterTabs({ tabs, activeTab, onChange }: ReviewFi
             {tab.label}
             <span
               className={cn(
-                "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-semibold",
+                "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-base font-semibold",
                 active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
               )}
             >

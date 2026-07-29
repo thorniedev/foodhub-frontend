@@ -66,7 +66,9 @@ export default function FoodCard({ food }: FoodCardProps) {
         <div className="flex items-center gap-2 text-secondary-400">
           <FaStore className="shrink-0" />
 
-          <p className="truncate text-sm">{food.store.localName}</p>
+          <p className="truncate lg:text-[16px] text-sm">
+            {food.store.localName}
+          </p>
         </div>
 
         <div className="flex items-center justify-between gap-3">
@@ -100,7 +102,7 @@ export default function FoodCard({ food }: FoodCardProps) {
           {food.dietaryTypes.map((diet) => (
             <span
               key={diet.code}
-              className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-sm text-white"
+              className="shrink-0 lg:text-[16px] whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-sm text-white"
             >
               {diet.name}
             </span>

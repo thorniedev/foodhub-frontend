@@ -23,6 +23,9 @@ import RecommandSection from "@/components/home/recommand";
 import Hero from "@/components/home/Hero";
 import FilterByMealTime from "@/components/home/features/FilterByMealTime";
 import FoodSearchBar from "@/components/home/features/FoodSearchBarComponent";
+import SwipeCardTinderStyle from "@/components/home/features/SwipeCardTinderStyle";
+import DisplaySwipeCard from "@/components/home/features/DisplaySwipeCard";
+import Model from "@/components/home/features/Model";
 
 export default function Home() {
   return (
@@ -57,6 +60,8 @@ export default function Home() {
           }}
         /> */}
         <FoodSearchBar />
+        <DisplaySwipeCard />
+        <Model />
         {/* <FoodDiscoverySection /> */}
         {/* <FilterByCategory /> */}
         <SeasonSection />

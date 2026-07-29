@@ -41,7 +41,7 @@ const Skiper26 = () => {
       </div>
 
       <div className="text-foreground grid content-start justify-items-center gap-6 py-20 text-center">
-        <span className="after:from-background after:to-foreground relative max-w-[12ch] text-xs uppercase leading-tight opacity-40 after:absolute after:left-1/2 after:top-full after:h-16 after:w-px after:bg-gradient-to-b after:content-['']">
+        <span className="after:from-background after:to-foreground relative max-w-[12ch] text-base uppercase leading-tight opacity-40 after:absolute after:left-1/2 after:top-full after:h-16 after:w-px after:bg-gradient-to-b after:content-['']">
           Click to toggle the theme
         </span>
       </div>
@@ -436,7 +436,7 @@ const Options = ({
               value={gifUrl}
               onChange={(e) => setGifUrl(e.target.value)}
               placeholder="Enter GIF URL"
-              className="text-foreground placeholder:text-foreground/50 w-full rounded-lg bg-transparent px-2 py-1 text-xs focus:outline-none"
+              className="text-foreground placeholder:text-foreground/50 w-full rounded-lg bg-transparent px-2 py-1 text-base focus:outline-none"
             />
           </div>
         )}

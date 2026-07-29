@@ -142,7 +142,7 @@ export default function Hero() {
                     <p className="font-bold text-sm md:text-lg  ">
                       2.ម្ហូបគ្រប់ប្រភេទ
                     </p>
-                    <p className="text-[10px] md:text-xs  /80 mt-1">
+                    <p className="text-[10px] md:text-base  /80 mt-1">
                       23 422 មុខសម្រាប់ជ្រើសរើស
                     </p>
                   </div>
@@ -176,7 +176,7 @@ export default function Hero() {
                     <p className="font-bold text-sm md:text-lg  ">
                       1.ម្ហូបគ្រប់ប្រភេទ
                     </p>
-                    <p className="text-[10px] md:text-xs  /80 mt-1">
+                    <p className="text-[10px] md:text-base  /80 mt-1">
                       23 422 មុខសម្រាប់ជ្រើសរើស
                     </p>
                   </div>
@@ -270,7 +270,7 @@ export default function Hero() {
                     <div className="bg-white/20 text-white font-bold text-sm px-4 py-2 rounded-full mr-2">
                       play with
                     </div>
-                    <div className="font-bold text-xs px-4">swipe style</div>
+                    <div className="font-bold text-base px-4">swipe style</div>
                   </div>
 
                   {/* Small floating green pill */}

@@ -50,7 +50,7 @@ export default function NotificationCard({ notification }: Props) {
             {notification.title}
           </p>
           {notification.isUrgent && (
-            <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-600">
+            <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-base font-medium text-rose-600">
               <AlertTriangle className="h-3 w-3" />
               បន្ទាន់
             </span>
@@ -66,7 +66,7 @@ export default function NotificationCard({ notification }: Props) {
             {notification.tags.map((tag) => (
               <span
                 key={tag.label}
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                className={`rounded-full px-2 py-0.5 text-base font-medium ${
                   tag.tone === "urgent"
                     ? "bg-rose-50 text-rose-600"
                     : "bg-slate-100 text-slate-500"
@@ -77,7 +77,7 @@ export default function NotificationCard({ notification }: Props) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-slate-400">
+          <div className="flex items-center gap-3 text-base text-slate-400">
             <span>{timeAgo(notification.createdAt)}</span>
             <Link
               href={notification.action.href}

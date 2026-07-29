@@ -41,7 +41,8 @@ export default function RootLayout({
         {/* <AOSInit /> */}
         {/* <Navbar /> */}
         <Providers>
-          {children} <SectionModal />
+          {children}
+          {/* <SectionModal /> */}
         </Providers>
         {/* <footer>
           <DrawCircleText />

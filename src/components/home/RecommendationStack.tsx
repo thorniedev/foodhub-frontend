@@ -91,7 +91,7 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
               repeat: Infinity,
               repeatDelay: 3,
             }}
-            className="flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-xs text-white shadow-lg backdrop-blur-sm"
+            className="flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-base text-white shadow-lg backdrop-blur-sm"
           >
             <MdSwipe className="text-sm" />
             <span>អូសដើម្បីមើលបន្ថែម</span>

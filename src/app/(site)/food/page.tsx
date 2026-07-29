@@ -427,7 +427,7 @@ function FilterSection({
           transition={{ duration: 0.25, ease: "easeInOut" }}
           className="text-gray-400"
         >
-          <IoChevronDown className="text-xs" />
+          <IoChevronDown className="text-base" />
         </motion.span>
       </button>
 
@@ -555,7 +555,7 @@ function FilterSidebar({
                 <button
                   type="button"
                   onClick={() => onChange(DEFAULT_FILTERS)}
-                  className="text-xs text-secondary-500 hover:underline cursor-pointer"
+                  className="text-base text-secondary-500 hover:underline cursor-pointer"
                 >
                   លុបចោលទាំងអស់
                 </button>
@@ -604,7 +604,7 @@ function FilterSidebar({
                   {Object.keys(MEAL_TIME_LABEL_TO_VALUE).map((opt) => (
                     <label
                       key={opt}
-                      className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-600 cursor-pointer hover:border-primary-300"
+                      className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-base text-gray-600 cursor-pointer hover:border-primary-300"
                     >
                       <input
                         type="checkbox"
@@ -638,12 +638,14 @@ function FilterSidebar({
                       onChange({ ...filters, foodTypeQuery: e.target.value })
                     }
                     placeholder="ស្វែងរកប្រភេទចំណីអាហារ"
-                    className="w-full text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none"
+                    className="w-full text-base text-gray-600 placeholder:text-gray-400 focus:outline-none"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   {visibleFoodTypes.length === 0 && (
-                    <p className="text-xs text-gray-400">រកមិនឃើញប្រភេទនេះទេ</p>
+                    <p className="text-base text-gray-400">
+                      រកមិនឃើញប្រភេទនេះទេ
+                    </p>
                   )}
                   {visibleFoodTypes.map((opt) => (
                     <label

@@ -44,7 +44,7 @@ export default function NotificationSummaryCards({
               </span>
               {card.count > 0 && (
                 <span
-                  className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white ${style.dot}`}
+                  className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-base font-semibold text-white ${style.dot}`}
                 >
                   {card.count}
                 </span>

@@ -39,14 +39,14 @@ export default function FavoriteFoodRow({
         <p className="truncate text-base font-semibold text-slate-800 sm:text-xl">
           {item.dishName}
         </p>
-        <p className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-orange-500 sm:text-sm">
+        <p className="mt-0.5 flex items-center gap-1.5 text-base font-medium text-orange-500 sm:text-sm">
           <Store className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{item.restaurantName}</span>
         </p>
-        <span className="mt-1 inline-block rounded-md bg-emerald-700 px-2 py-0.5 text-xs font-medium text-white">
+        <span className="mt-1 inline-block rounded-md bg-emerald-700 px-2 py-0.5 text-base font-medium text-white">
           {item.categoryLabel}
         </span>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 sm:text-sm">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-base text-slate-500 sm:text-sm">
           <span className="flex items-center gap-1 text-amber-500">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
             {item.rating}
@@ -74,7 +74,7 @@ export default function FavoriteFoodRow({
         <button
           type="button"
           onClick={() => onViewMore?.(item.id)}
-          className="text-xs text-slate-400 hover:text-emerald-600 sm:text-sm"
+          className="text-base text-slate-400 hover:text-emerald-600 sm:text-sm"
         >
           មើលបន្ថែម
         </button>
