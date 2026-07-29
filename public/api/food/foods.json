@@ -1,0 +1,21 @@
+[
+  {
+    "uuid": "4cf40782-0a54-45f5-bd7b-d6d986f5ee4b",
+
+    "canonicalName": "Fish Amok",
+
+    "category": {
+      "code": "KHMER_FOOD",
+      "name": "Khmer Food"
+    },
+
+    "cuisine": {
+      "code": "KHMER",
+      "name": "Khmer"
+    },
+
+    "spiceLevel": 2,
+
+    "ingredients": ["fish", "coconut milk", "kroeung", "egg", "banana leaf"]
+  }
+]

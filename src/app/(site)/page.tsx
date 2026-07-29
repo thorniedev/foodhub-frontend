@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
 
-
-
 import TextType from "@/components/TextType";
 import { CiHeart } from "react-icons/ci";
 import CurvedLoop from "@/components/CurvedLoop";
@@ -22,155 +20,11 @@ import EventSection from "@/components/home/event";
 import LocationSection from "@/components/home/location";
 import PopularSection from "@/components/home/popular";
 import RecommandSection from "@/components/home/recommand";
+import MealTimeRecommandSection from "@/components/home/features/MealTimeRecommendation";
 
 export default function Home() {
   const imageUrls = ["/Image/background.png", "/Image/logo.png"];
-  // const recommendedFoods: FoodItem[] = [
-  //   {
-  //     id: 1,
-  //     mealTime: "breakfast",
-  //     store: "Kongfou Kitchen",
-  //     name: "នំ Tacos",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់", "អាហារបួស"],
-  //     foodTypes: ["ម្ហូបលោកខាងលិច"],
-  //     drinkTypes: ["កាហ្វេ"],
-  //     ageGroups: ["គ្រប់វ័យ"],
-  //     image: "/Image/card-img.png",
-  //   },
-  //   {
-  //     id: 2,
-  //     mealTime: "lunch",
-  //     store: "Kongfou Kitchen",
-  //     name: "គុយទាវខ្មែរ",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់"],
-  //     foodTypes: ["ម្ហូបខ្មែរ"],
-  //     drinkTypes: ["ទឹកផ្លែឈើ"],
-  //     ageGroups: ["គ្រប់វ័យ", "កុមារ"],
-  //     image: "/Image/food/food1.png",
-  //   },
-  //   {
-  //     id: 3,
-  //     mealTime: "dinner",
-  //     store: "Kongfou Kitchen",
-  //     name: "ជើងមាន់អាំង",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["អាហារបួស"],
-  //     foodTypes: ["អាហារដុត/BBQ"],
-  //     drinkTypes: ["ស្រា/ បៀរ"],
-  //     ageGroups: ["យុវជន", "មនុស្សពេញវ័យ"],
-  //     image: "/Image/food/food2.png",
-  //   },
-  //   {
-  //     id: 4,
-  //     mealTime: "breakfast",
-  //     store: "Kongfou Kitchen",
-  //     name: "បបរសាច់មាន់",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់"],
-  //     foodTypes: ["ម្ហូបខ្មែរ"],
-  //     drinkTypes: ["តែ"],
-  //     ageGroups: ["គ្រប់វ័យ"],
-  //     image: "/Image/card-img.png",
-  //   },
-  //   {
-  //     id: 5,
-  //     mealTime: "lunch",
-  //     store: "Kongfou Kitchen",
-  //     name: "មីឆាកូរ៉េ",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់"],
-  //     foodTypes: ["ម្ហូបចិន"],
-  //     drinkTypes: ["តែ"],
-  //     ageGroups: ["យុវជន"],
-  //     image: "/Image/card-img.png",
-  //   },
-  //   {
-  //     id: 6,
-  //     mealTime: "dinner",
-  //     store: "Kongfou Kitchen",
-  //     name: "ស៊ុប Tom Yum",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់"],
-  //     foodTypes: ["ម្ហូបថៃ"],
-  //     drinkTypes: ["ទឹកផ្លែឈើ"],
-  //     ageGroups: ["មនុស្សពេញវ័យ"],
-  //     image: "/Image/card-img.png",
-  //   },
-  //   {
-  //     id: 7,
-  //     mealTime: "breakfast",
-  //     store: "Kongfou Kitchen",
-  //     name: "នំបុ័ង Croissant",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់"],
-  //     foodTypes: ["បង្អែម", "ម្ហូបលោកខាងលិច"],
-  //     drinkTypes: ["កាហ្វេ"],
-  //     ageGroups: ["គ្រប់វ័យ"],
-  //     image: "/Image/card-img.png",
-  //   },
-  //   {
-  //     id: 8,
-  //     mealTime: "lunch",
-  //     store: "Kongfou Kitchen",
-  //     name: "សាច់អាំងសាច់គោ",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់"],
-  //     foodTypes: ["អាហារដុត/BBQ"],
-  //     drinkTypes: ["ស្រា/ បៀរ"],
-  //     ageGroups: ["មនុស្សពេញវ័យ"],
-  //     image: "/Image/card-img.png",
-  //   },
-  //   {
-  //     id: 9,
-  //     mealTime: "breakfast",
-  //     store: "Kongfou Kitchen",
-  //     name: "នំ Tacos",
-  //     description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-  //     rating: 4.3,
-  //     time: "10min",
-  //     distance: "1.3km",
-  //     price: "2",
-  //     tags: ["ហាឡាល់"],
-  //     foodTypes: ["ម្ហូបខ្មែរ"],
-  //     drinkTypes: ["ទឹកផ្លែឈើ"],
-  //     ageGroups: ["កុមារ"],
-  //     image: "/Image/card-img.png",
-  //   },
-  // ];
+
   return (
     <div>
       {/* <SplitReveal
@@ -308,7 +162,7 @@ export default function Home() {
                 >
                   <div className="w-16 h-16 md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
                     <img
-                      src="https://api.dicebear.com/7.x/pixel-art/svg?seed=John"
+                      src="/Image/food-picture/food 31.jpg"
                       alt="Avatar"
                       className="w-full h-full object-cover scale-150"
                     />
@@ -342,7 +196,7 @@ export default function Home() {
                 >
                   <div className="w-16 h-16  md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
                     <img
-                      src="https://api.dicebear.com/7.x/pixel-art/svg?seed=John"
+                      src="/Image/food-picture/food-32.jpg"
                       alt="Avatar"
                       className="w-full h-full object-cover scale-150"
                     />
@@ -403,7 +257,7 @@ export default function Home() {
                     <div className="flex items-center bg-primary-600 rounded-full p-2 pr-16 text-white shadow-lg relative z-10">
                       <div className="w-8 h-8 bg-[#D2B48C] rounded-full mr-3 border border-white/30 overflow-hidden flex-shrink-0">
                         <img
-                          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=D2B48C"
+                          src="https://i.pinimg.com/736x/c7/f9/cd/c7f9cd69787cfb858d686150d097597f.jpg"
                           alt="Avatar"
                           className="w-full h-full object-cover"
                         />
@@ -503,14 +357,15 @@ export default function Home() {
         {/* <div className="hidden">
           <Skiper31 />
         </div> */}
-        <RecommandSection
+        {/* <RecommandSection
           filters={{
             query: "",
             food: new Set(),
             drink: new Set(),
             age: new Set(),
           }}
-        />
+        /> */}
+        <MealTimeRecommandSection />
         {/* <FoodDiscoverySection /> */}
         <FilterByCategory />
         <SeasonSection />

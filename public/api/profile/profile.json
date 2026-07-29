@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1",
+    "name": "Kim",
+    "role": "Owner",
+    "avatarUrl": "",
+    "isActive": true,
+    "preference": {
+      "allergies": ["Seafood", "Peanut"],
+      "diet": "Healthy Food",
+      "favoriteFoods": ["Khmer Food", "Asian Food"],
+      "mealTime": ["Breakfast", "Lunch"]
+    }
+  },
+  {
+    "id": "2",
+    "name": "Mom",
+    "role": "Family Member",
+    "avatarUrl": "",
+    "isActive": false,
+    "preference": {
+      "allergies": ["Milk"],
+      "diet": "Low Sugar",
+      "favoriteFoods": ["Traditional Food", "Soup"],
+      "mealTime": ["Lunch", "Dinner"]
+    }
+  },
+  {
+    "id": "3",
+    "name": "Brother",
+    "role": "Family Member",
+    "avatarUrl": "",
+    "isActive": false,
+    "preference": {
+      "allergies": [],
+      "diet": "High Protein",
+      "favoriteFoods": ["Chicken", "Grilled Food"],
+      "mealTime": ["Breakfast", "Dinner"]
+    }
+  }
+]

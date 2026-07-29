@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 import { MdDeliveryDining, MdRestaurantMenu } from "react-icons/md";
-import { useGetFoodByIdQuery, useGetFoodsQuery } from "@/app/store/foodApi";
+import { useGetFoodByIdQuery, useGetFoodsQuery } from "@/redux/api/foodApi";
 
 export default function FoodDetailPage() {
   const params = useParams<{ id: string }>();

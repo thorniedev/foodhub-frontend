@@ -77,3 +77,57 @@ Merge made by the 'ort' strategy.
  create mode 100644 src/lib/auth/auth.ts
  create mode 100644 src/lib/fonts.ts
  create mode 100644 src/types/restaurant.ts
+
+ 
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git fetch
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git pull origin longfou
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            longfou    -> FETCH_HEAD
+Merge made by the 'ort' strategy.
+ Git-commands.log                                   |  79 +++++++
+ .../(dashboard)/dashboard/family-profile/page.tsx  | 211 ++++++-------------
+ src/app/(dashboard)/dashboard/favorites/page.tsx   |  16 +-
+ src/app/(dashboard)/dashboard/review/page.tsx      | 234 ++-------------------
+ src/app/(dashboard)/layout.tsx                     |  75 ++-----
+ src/app/restaurant/[id]/page.tsx                   |   8 +-
+ src/app/restaurant/layout.tsx                      |  22 ++
+ src/components/FoodCardComponent.tsx               | 103 ---------
+ src/components/dashboard/DashboardHeader.tsx       | 121 +++--------
+ src/components/dashboard/FoodChipInput.tsx         |   6 +-
+ src/components/dashboard/UserDashboard.tsx         |  65 +++---
+ .../dashboard/family-profile/FamilyMemberList.tsx  |   3 +-
+ .../family-profile/FoodRecommendationCard.tsx      |  95 ---------
+ .../dashboard/family-profile/MealTimeTabs.tsx      |   2 +-
+ .../dashboard/favorites/FavoriteFoodRow.tsx        |  22 +-
+ .../dashboard/notifications/NotificationCard.tsx   |   4 +-
+ .../dashboard/notifications/NotificationGroup.tsx  |   4 +-
+ src/components/dashboard/review/ReviewTable.tsx    | 175 ++++++++++-----
+ src/components/home/recommand.tsx                  |   5 -
+ src/components/layout/Aside.tsx                    | 138 +++++++-----
+ src/components/layout/SidebarContext.tsx           |  43 ++++
+ src/components/restaurant/RestaurantHero.tsx       |   2 +-
+ .../restaurant/RestaurantLocationMap.tsx           |   3 +-
+ 23 files changed, 547 insertions(+), 889 deletions(-)
+ create mode 100644 Git-commands.log
+ create mode 100644 src/app/restaurant/layout.tsx
+ delete mode 100644 src/components/dashboard/family-profile/FoodRecommendationCard.tsx
+ create mode 100644 src/components/layout/SidebarContext.tsx
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git pull origin souheng
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            souheng    -> FETCH_HEAD
+Auto-merging package.json
+Auto-merging src/app/(site)/food/page.tsx
+CONFLICT (content): Merge conflict in src/app/(site)/food/page.tsx
+Auto-merging src/app/food/[uuid]/page.tsx
+Auto-merging src/hooks/useAppDispatch.ts
+CONFLICT (content): Merge conflict in src/hooks/useAppDispatch.ts
+Auto-merging src/redux/api/baseApi-1.ts
+CONFLICT (content): Merge conflict in src/redux/api/baseApi-1.ts
+CONFLICT (file location): src/app/store/restaurantApi.ts added in HEAD inside a directory that was renamed in 1776acad8fc00f4b47dbecca63776f66d34d2ef6, suggesting it should perhaps be moved to src/redux/api/restaurantApi.ts.
+Automatic merge failed; fix conflicts and then commit the result.
+

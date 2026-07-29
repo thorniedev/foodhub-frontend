@@ -12,15 +12,14 @@ import type { Swiper as SwiperInstance } from "swiper";
 import "swiper/css/effect-cards";
 import "swiper/css";
 
-
 import type { FoodItem } from "@/types/food";
 
 import Image from "next/image";
 import Link from "next/link";
-
+import { MenuItem } from "@/types/menu-item";
 
 type RecommendCardStackProps = {
-  foods: FoodItem[];
+  foods: MenuItem[];
 };
 
 export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
@@ -31,13 +30,13 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
   const [pulseKey, setPulseKey] = useState(0);
   const total = foods.length;
 
-  if (total === 0) {
-    return (
-      <div className="flex items-center justify-center py-20 text-gray-400">
-        មិនមានមុខម្ហូបណែនាំទេ
-      </div>
-    );
-  }
+  // if (total === 0) {
+  //   return (
+  //     <div className="flex items-center justify-center py-20 text-gray-400">
+  //       មិនមានមុខម្ហូបណែនាំទេ
+  //     </div>
+  //   );
+  // }
 
   const markInteracted = () => setPulseKey((k) => k + 1);
 
@@ -65,7 +64,7 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
           className="h-full w-full"
         >
           {foods.map((food) => (
-            <SwiperSlide key={food.id} className="rounded-[24px]">
+            <SwiperSlide key={food.uuid} className="rounded-[24px]">
               <FoodCard food={food} />
             </SwiperSlide>
           ))}
@@ -154,7 +153,10 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
 
 function FoodCard({ food }: { food: FoodItem }) {
   return (
-    <Link href={`/food/$`} className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200  shadow-sm rounded-[24px] p-2.5">
+    <Link
+      href={""}
+      className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200  shadow-sm rounded-[24px] p-2.5"
+    >
       <div className="relative bord flex-1 min-h-0">
         <Image
           width={285}
@@ -199,12 +201,12 @@ function FoodCard({ food }: { food: FoodItem }) {
           </div>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
-          {food.tags.map((tag) => (
+          {food.dietaryTypes?.map((diet) => (
             <span
-              key={tag}
+              key={diet.code}
               className="bg-primary-800 text-gray-100 w-fit px-3 py-1 rounded-full text-sm"
             >
-              {tag}
+              {diet.name}
             </span>
           ))}
         </div>

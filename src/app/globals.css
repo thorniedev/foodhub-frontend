@@ -1,5 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap");
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -150,11 +152,13 @@ body {
   --radius-4xl: calc(var(--radius) * 2.6);
   --animate-blink-cursor: blink-cursor 1.2s step-end infinite;
   @keyframes blink-cursor {
-  0%, 49% {
-    opacity: 1;
+    0%,
+    49% {
+      opacity: 1;
     }
-  50%, 100% {
-    opacity: 0;
+    50%,
+    100% {
+      opacity: 0;
     }
   }
 }
@@ -249,19 +253,19 @@ h2 {
 }
 
 h3 {
-  @apply text-3xl ;
+  @apply text-3xl;
 }
 
 h4 {
-  @apply text-2xl ;
+  @apply text-2xl;
 }
 
 h5 {
-  @apply text-xl ;
+  @apply text-xl;
 }
 
 h6 {
-  @apply text-lg  ;
+  @apply text-lg;
 }
 
 /* Add to your globals.css — hides the scrollbar on the drag track */
@@ -271,4 +275,13 @@ h6 {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+/* dietary matrix overflow x  */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

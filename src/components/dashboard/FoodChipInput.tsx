@@ -57,7 +57,7 @@ export default function FoodChipInput({
               key={chip}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm",
-                chipClasses
+                chipClasses,
               )}
             >
               {chip}

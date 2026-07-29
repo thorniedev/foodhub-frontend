@@ -1,6 +1,5 @@
 import { FoodItem } from "@/types/food";
-import { baseApi } from "./baseApi";
-
+import { baseApi } from "./baseApi-1";
 
 export const foodApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
