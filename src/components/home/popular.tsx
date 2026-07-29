@@ -1,11 +1,12 @@
 import React from "react";
 import Image from "next/image";
 import FireflyButton from "@/components/ui/firefly-button";
+import CurvedLoop from "../CurvedLoop";
 export default function PopularSection() {
   return (
     <div className="my-15 ">
       {" "}
-      <section className="  flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
+      {/* <section className="  flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
         <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center font-semibold text-primary-800">
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>{" "}
@@ -15,8 +16,16 @@ export default function PopularSection() {
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
         </p>
-      </section>
-      <div className="flex  justify-center lg:max-w-7xl mt-20 mx-auto">
+      </section> */}
+      <CurvedLoop
+        marqueeText="ស្វែងរកមុខម្ហូបនៅជិតអ្នកបំផុត"
+        speed={2}
+        curveAmount={-170}
+        direction="left"
+        interactive
+        className="custom-text-style"
+      />
+      <div className="flex  justify-center lg:max-w-7xl  mx-auto">
         <Image
           width={235}
           height={285}

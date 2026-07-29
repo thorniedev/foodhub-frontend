@@ -538,14 +538,20 @@ function ChevronIcon({ direction }: { direction: "left" | "right" }) {
 export const slides: CarouselItem[] = [
   {
     id: 1,
-    image: "/Image/benner.png",
+    image: "/Image/carousel/food1.jpeg",
     alt: "Grilled chicken combo with dipping sauces",
   },
   {
     id: 2,
-    image: "/Image/benner.png",
+    image: "/Image/carousel/food2.jpg",
     alt: "Fried chicken special combo with fries and coke",
   },
-  { id: 3, image: "/Image/benner.png", alt: "Chicken burger combo" },
-  { id: 4, image: "/Image/benner.png", alt: "Family sharing platter" },
+  { id: 3, image: "/Image/carousel/food3.avif", alt: "Chicken burger combo" },
+  { id: 4, image: "/Image/carousel/food4.jpg", alt: "Family sharing platter" },
+  { id: 5, image: "/Image/carousel/food5.jpg", alt: "Family sharing platter" },
+  { id: 6, image: "/Image/carousel/food6.jpg", alt: "Family sharing platter" },
+  { id: 7, image: "/Image/carousel/food7.png", alt: "Family sharing platter" },
+  { id: 8, image: "/Image/carousel/food11.jpg", alt: "Family sharing platter" },
+  { id: 9, image: "/Image/carousel/food9.webp", alt: "Family sharing platter" },
+  { id: 10, image: "/Image/carousel/food10.jpg", alt: "Family sharing platter" },
 ];

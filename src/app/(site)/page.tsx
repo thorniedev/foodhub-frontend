@@ -162,7 +162,7 @@ export default function Home() {
                 >
                   <div className="w-16 h-16 md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
                     <img
-                      src="https://api.dicebear.com/7.x/pixel-art/svg?seed=John"
+                      src="/Image/food-picture/food 31.jpg"
                       alt="Avatar"
                       className="w-full h-full object-cover scale-150"
                     />
@@ -196,7 +196,7 @@ export default function Home() {
                 >
                   <div className="w-16 h-16  md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
                     <img
-                      src="https://api.dicebear.com/7.x/pixel-art/svg?seed=John"
+                      src="/Image/food-picture/food-32.jpg"
                       alt="Avatar"
                       className="w-full h-full object-cover scale-150"
                     />
@@ -257,7 +257,7 @@ export default function Home() {
                     <div className="flex items-center bg-primary-600 rounded-full p-2 pr-16 text-white shadow-lg relative z-10">
                       <div className="w-8 h-8 bg-[#D2B48C] rounded-full mr-3 border border-white/30 overflow-hidden flex-shrink-0">
                         <img
-                          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=D2B48C"
+                          src="https://i.pinimg.com/736x/c7/f9/cd/c7f9cd69787cfb858d686150d097597f.jpg"
                           alt="Avatar"
                           className="w-full h-full object-cover"
                         />
