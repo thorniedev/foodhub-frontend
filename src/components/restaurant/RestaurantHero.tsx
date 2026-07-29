@@ -37,7 +37,7 @@ export default function RestaurantHero({ restaurant }: Props) {
 
   return (
     <div
-      className="relative overflow-hidden lg:w-300 rounded-[32px] shadow-lg"
+      className="relative overflow-hidden lg:w-300 lg:h-50 rounded-[32px] shadow-lg"
       style={{ backgroundColor: restaurant.brandColor }}
     >
       {/* <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]"> */}

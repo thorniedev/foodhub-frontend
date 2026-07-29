@@ -46,7 +46,7 @@ export default function RestaurantDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50 pt-20">
+    <main className="min-h-screen bg-zinc-50 pt-14">
       <div className="mx-auto max-w-360 px-4 py-6 sm:px-6">
         {/* <Link
           href="/"

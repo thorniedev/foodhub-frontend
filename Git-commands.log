@@ -77,3 +77,26 @@ Merge made by the 'ort' strategy.
  create mode 100644 src/lib/auth/auth.ts
  create mode 100644 src/lib/fonts.ts
  create mode 100644 src/types/restaurant.ts
+
+ 
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "chore: Update responsive session cards fit on screen Desktop"
+[longfou 3a914aa] chore: Update responsive session cards fit on screen Desktop
+ 5 files changed, 108 insertions(+), 6 deletions(-)
+ create mode 100644 Git-commands.log
+ create mode 100644 src/app/restaurant/layout.tsx
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git push origin longfou
+Enumerating objects: 32, done.
+Counting objects: 100% (32/32), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (17/17), done.
+Writing objects: 100% (18/18), 2.86 KiB | 975.00 KiB/s, done.
+Total 18 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (12/12), completed with 8 local objects.
+To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
+   d0ee811..3a914aa  longfou -> longfou
