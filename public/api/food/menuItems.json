@@ -1063,17 +1063,8 @@
           "code": "GLUTEN_FREE",
           "name": "Gluten Free",
           "verificationStatus": "VERIFIED"
-        },
-        {
-          "code": "GLUTEN_FREE",
-          "name": "Gluten Free",
-          "verificationStatus": "VERIFIED"
-        },
-        {
-          "code": "GLUTEN_FREE",
-          "name": "Gluten Free",
-          "verificationStatus": "VERIFIED"
         }
+        
       ],
       "allergenDeclarations": [
         {

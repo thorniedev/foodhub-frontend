@@ -31,9 +31,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="km" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
+      
     </html>
   );
 }

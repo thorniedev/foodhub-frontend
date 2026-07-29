@@ -4,8 +4,9 @@ import Link from "next/link";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { useMemo } from "react";
 import { IoLocationOutline } from "react-icons/io5";
-import FoodCard from "../FoodCard";
+
 import { useGetMenuItemsQuery } from "@/redux/api/fooodApi";
+import LocationFilter from "./LocationFilter";
 
 type MenuItem = {
   uuid: string;
@@ -18,7 +19,7 @@ const DEFAULT_CENTER = { lat: 11.5564, lng: 104.9282 }; // Phnom Penh
 
 export default function LocationPanel() {
   const { data, isLoading, isError } = useGetMenuItemsQuery();
-  const foods: MenuItem[] = data?.data ?? [];
+  const foods: MenuItem[] = data ?? [];
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_KEY!,
@@ -42,17 +43,17 @@ export default function LocationPanel() {
 
   return (
     <section className="px-6">
-      <h2 className="mb-6 text-center text-lg font-semibold text-primary-800 underline decoration-2 underline-offset-8">
+      <h2 className="mb-6 text-center text-lg font-semibold text-primary-800  ">
         ទីតាំងជិតអ្នក
       </h2>
-
+      <LocationFilter />
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* ================= LEFT: FOOD CARD GRID ================= */}
         <div className="lg:flex-1">
           {foods.length === 0 ? (
             <p className="text-sm text-gray-400">មិនមានលទ្ធផលទេ</p>
           ) : (
-            <div className="grid max-w-5xl grid-cols-1 place-content-center gap-2 pt-2 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid max-w-5xl grid-cols-1 place-content-center gap-2 pt-2 sm:grid-cols-2 ">
               {foods.map((food) => (
                 <Link key={food.uuid} href={`/food/${food.uuid}`}>
                   <FoodCard food={food} />

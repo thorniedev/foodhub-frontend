@@ -1,8 +1,7 @@
-
+import SectionModal from "@/components/home/SectionModal";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
-
 
 export default function SiteLayout({
   children,
@@ -17,6 +16,7 @@ export default function SiteLayout({
         <Footer />
       </footer>
       {/* <SectionModal /> */}
+      <SectionModal />
     </>
   );
 }

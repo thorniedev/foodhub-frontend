@@ -13,6 +13,7 @@ import {
   IoTimeOutline,
   IoPricetagOutline,
   IoNutritionOutline,
+  IoPeopleOutline,
 } from "react-icons/io5";
 import { IoMdTime } from "react-icons/io";
 import { FaStar, FaStore } from "react-icons/fa";
@@ -22,266 +23,320 @@ import { MdDeliveryDining } from "react-icons/md";
 import FoodCardComponent from "@/components/FoodCardComponent";
 
 import FoodNavTabs, { FoodTabId } from "@/components/Foodnavtabs";
-import FoodCard from "@/components/FoodCard";
+
 import { useGetMenuItemsQuery } from "@/redux/api/fooodApi";
 import { FoodItem } from "@/types/food";
 import Link from "next/link";
 import LocationPanel from "@/components/food/LocationPanel";
 import StorePanel from "@/components/food/StorePanel";
 
-type ListedFood = FoodItem & {
-  pickup: string;
-  badge: string;
+/* -------------------------------------------------------------------- */
+/* Types                                                                */
+/* -------------------------------------------------------------------- */
+
+type SortBy = "popular" | "rating" | "fastest";
+
+// Shape used by the local mock-filtering helpers below (applyFilters /
+// FoodSection). Replace/remove once filtering runs against live `foods`.
+type ListedFood = {
+  id: string | number;
+  mealTime: string;
+  store: string;
+  name: string;
+  description: string;
+  rating: number;
+  time: string;
+  distance: string;
+  price: string;
+  tags: string[];
+  foodTypes: string[];
   dietTypes: string[];
+  ageGroups: string[];
+  province: string;
+  image: string;
 };
-
-const NEW_FOODS: ListedFood[] = [
-  {
-    id: 1,
-    mealTime: "breakfast",
-    store: "អាហារដ្ឋាន 99 (ឆាបួស)",
-    name: "នំហ្គៅ និងសៀវម៉ែ",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.3km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ចិន"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារភ្លាដល់ថ្នាំ"],
-  },
-  {
-    id: 2,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "បុសម្លៀងសម្រង់",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារសុខភាព"],
-  },
-  {
-    id: 3,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "ណែមស្រស់សាច់បង្គា",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 3.3,
-    time: "5min",
-    distance: "1.5km",
-    price: "2.75",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["វៀតណាម"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារប្រញាប់ញញេច"],
-  },
-  {
-    id: 4,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "មីគាត់ខ្ទេច",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "15min",
-    distance: "2km",
-    price: "2",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: [],
-  },
-  {
-    id: 5,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "នំបុ័ងសាច់ជ្រូកខ្វៃ",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "1.5",
-    tags: ["ជម្រើសបួស"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "ជម្រើសបួស",
-    dietTypes: ["អាហារបួស"],
-  },
-  {
-    id: 6,
-    mealTime: "breakfast",
-    store: "ភោជនីយដ្ឋានអូឡាំពិក",
-    name: "បាយឆាត្រកួន",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "7.3km",
-    price: "2.5",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["ខ្មែរ"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារសម្រាប់សម្រកទម្ងន់"],
-  },
-  {
-    id: 7,
-    mealTime: "dinner",
-    store: "Kongfou Kitchen",
-    name: "បាយសាច់មាន់ដុតបំពង",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "1.25",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["អាហារដុត"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: [],
-  },
-  {
-    id: 8,
-    mealTime: "dinner",
-    store: "Kongfou Kitchen",
-    name: "បាយសាច់មាន់ដុតបំពង",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 4.3,
-    time: "10min",
-    distance: "1.5km",
-    price: "1.25",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["អាហារដុត"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: ["អាហារធានាចំណេះដឹង"],
-  },
-  {
-    id: 9,
-    mealTime: "lunch",
-    store: "Kongfou Kitchen",
-    name: "ណែមស្រស់សាច់បង្គា",
-    description: "សូមរីករាយជាមួយមុខម្ហូបដ៏ឈ្ងុយឆ្ងាញ់",
-    rating: 3.3,
-    time: "5min",
-    distance: "1.5km",
-    price: "2.75",
-    tags: ["ហាឡាល់"],
-    foodTypes: ["វៀតណាម"],
-    drinkTypes: [],
-    ageGroups: ["គ្រប់វ័យ"],
-    image: "/Image/card-img.png",
-    pickup: "ម្ចាស់បិទ ដល់ប្ដិ",
-    badge: "Halal",
-    dietTypes: [],
-  },
-];
-
-const POPULAR_FOODS: ListedFood[] = NEW_FOODS.slice(0, 3).map((f) => ({
-  ...f,
-  id: f.id + 100,
-}));
-
-const NAV_LINKS = ["ទំព័រដើម", "មុខម្ហូប", "អំពីយើង"];
-
-const CATEGORY_TABS = [
-  "ចំណីអាហារ",
-  "តេស្ត:",
-  "បន្លែ",
-  "អាហារតាមអង្រការ",
-  "អាហារតាមអំបិល",
-  "អាហារតាមហេតុផល",
-  "អាហារតាមសម្រុទ",
-];
-
-const MEAL_TYPE_FILTERS = [
-  "អាហារបួស",
-  "អាហារសុខភាព",
-
-  "អាហារសម្រាប់សម្រកទម្ងន់",
-  "អាហារសម្រាប់ថែទាំសុខភាព",
-];
-
-const FOOD_TYPE_FILTERS = [
-  "ចិន",
-  "វៀតណាម",
-  "កូរ៉េ",
-  "ភេសជ្ជៈ",
-  "បង្អែម",
-  "អាហារបារាំង",
-  "ចំណីធម្មតា",
-];
-
-/* -------------------------------------------------------------------- */
-/*  Filter state — shared between the sidebar and the food grid          */
-/* -------------------------------------------------------------------- */
-
-// sidebar shows these Khmer labels, food data uses FoodItem's mealTime
-// values — this bridges the two so the checkboxes actually match
-const MEAL_TIME_LABEL_TO_VALUE: Record<string, string> = {
-  ព្រឹក: "breakfast",
-  ថ្ងៃ: "lunch",
-  ល្ងាច: "dinner",
-  សម្រន់: "snack",
-};
-
-// const AGE: Record<string, string> = {
-//   ព្រឹក: "breakfast",
-//   ថ្ងៃ: "lunch",
-//   ល្ងាច: "dinner",
-//   សម្រន់: "snack",
-// };
-type SortBy = "popular" | "fastest" | "rating";
 
 type FilterState = {
   sortBy: SortBy;
-  mealTimes: string[]; // Khmer labels, e.g. "ព្រឹក"
-  foodTypes: string[];
+
+  // when user eats
+  mealTimes: string[];
+
+  // what food category
+  categories: string[];
+
+  // health preference
   dietTypes: string[];
-  priceTier: "$" | "$$" | "$$$" | null;
+
+  // age recommendation
+  ageGroups: string[];
+
+  // country/cuisine
+  cuisines: string[];
+
+  // special occasions
+  specialTypes: string[];
+
+  // food type search section
+  foodTypes: string[];
   foodTypeQuery: string;
+
+  // province (popular-in-province)
+  provinces: string[];
+  provinceQuery: string;
+
+  // price
+  priceTier: "$" | "$$" | "$$$" | null;
+
+  searchQuery: string;
 };
 
 const DEFAULT_FILTERS: FilterState = {
   sortBy: "popular",
+
   mealTimes: [],
-  foodTypes: [],
+  categories: [],
   dietTypes: [],
-  priceTier: null,
+  ageGroups: [],
+  cuisines: [],
+  specialTypes: [],
+
+  foodTypes: [],
   foodTypeQuery: "",
+
+  provinces: [],
+  provinceQuery: "",
+
+  priceTier: null,
+  searchQuery: "",
 };
+
+/* -------------------------------------------------------------------- */
+/* Category Tabs — Main Food Categories                                 */
+/* -------------------------------------------------------------------- */
+
+const CATEGORY_TABS = [
+  "ទាំងអស់",
+
+  // Food
+  "ចំណីអាហារ",
+  "អាហារខ្មែរ",
+  "អាហារសមុទ្រ",
+  "សាច់អាំង",
+  "ស៊ុប",
+  "បាយ",
+  "មី",
+  "បន្លែ",
+
+  // International Food
+  "អាហារចិន",
+  "អាហារកូរ៉េ",
+  "អាហារជប៉ុន",
+  "អាហារថៃ",
+  "អាហារវៀតណាម",
+  "អាហារបារាំង",
+
+  // Fast Food
+  "Fast Food",
+  "Pizza",
+  "Burger",
+  "Chicken",
+  "BBQ",
+
+  // Drink & Dessert
+  "ភេសជ្ជៈ",
+  "Coffee",
+  "Milk Tea",
+  "Smoothie",
+  "បង្អែម",
+];
+
+/* -------------------------------------------------------------------- */
+/* Diet & Health Preferences — User Goal Based Filters                 */
+/* -------------------------------------------------------------------- */
+
+const DIET_FILTERS = [
+  "អាហារសុខភាព",
+  "អាហារបួស",
+  "អាហារ Vegan",
+  "អាហារ Halal",
+
+  // Nutrition Goal
+  "អាហារមានប្រូតេអ៊ីនខ្ពស់",
+  "អាហារសម្រាប់សម្រកទម្ងន់",
+  "អាហារសម្រាប់ឡើងទម្ងន់",
+
+  // Health Condition
+  "អាហារគ្មានជាតិស្ករ",
+  "អាហារគ្មានជាតិក្លុយតែន",
+  "អាហារកាត់បន្ថយជាតិខ្លាញ់",
+  "អាហារកាត់បន្ថយអំបិល",
+];
+
+/* -------------------------------------------------------------------- */
+/* Age Group Recommendation — real-world life stages                    */
+/* "young" is a parent group broken into infant/child sub-stages so a    */
+/* user can pick, e.g., baby 0–6 months specifically.                    */
+/* -------------------------------------------------------------------- */
+
+type AgeOption = { label: string; value: string };
+type AgeGroupCategory = {
+  label: string;
+  value: string;
+  children?: AgeOption[];
+};
+
+const AGE_GROUPS: AgeGroupCategory[] = [
+  {
+    label: "កុមារ / យុវវ័យ",
+    value: "young",
+    children: [
+      { label: "ទារក ០–៦ ខែ", value: "baby_0_6m" },
+      { label: "ទារក ៦–១២ ខែ", value: "baby_6_12m" },
+      { label: "កុមារតូច ១–៣ ឆ្នាំ", value: "toddler_1_3y" },
+      { label: "កុមារមតេយ្យ ៣–៥ ឆ្នាំ", value: "preschool_3_5y" },
+      { label: "កុមារ ៦–១២ ឆ្នាំ", value: "child_6_12y" },
+      { label: "យុវវ័យ ១៣–១៧ ឆ្នាំ", value: "teen_13_17y" },
+    ],
+  },
+  {
+    label: "មនុស្សពេញវ័យ ១៨–៥៩ ឆ្នាំ",
+    value: "adult_18_59y",
+  },
+  {
+    label: "មនុស្សចាស់ ៦០+ ឆ្នាំ",
+    value: "elderly_60y",
+  },
+];
+
+/* -------------------------------------------------------------------- */
+/* Meal Time Filters                                                     */
+/* -------------------------------------------------------------------- */
+
+const MEAL_TIME_FILTERS = [
+  {
+    label: "ពេលព្រឹក",
+    value: "breakfast",
+  },
+  {
+    label: "ពេលថ្ងៃ",
+    value: "lunch",
+  },
+  {
+    label: "ពេលល្ងាច",
+    value: "dinner",
+  },
+  {
+    label: "អាហារសម្រន់",
+    value: "snack",
+  },
+];
+
+// label -> value lookup, derived from MEAL_TIME_FILTERS. The sidebar stores
+// the Khmer labels in filters.mealTimes; applyFilters maps them to values.
+const MEAL_TIME_LABEL_TO_VALUE: Record<string, string> = Object.fromEntries(
+  MEAL_TIME_FILTERS.map((m) => [m.label, m.value]),
+);
+
+/* -------------------------------------------------------------------- */
+/* Cuisine / Country Filters                                             */
+/* -------------------------------------------------------------------- */
+
+const CUISINE_FILTERS = [
+  "ខ្មែរ",
+  "ចិន",
+  "ជប៉ុន",
+  "កូរ៉េ",
+  "ថៃ",
+  "វៀតណាម",
+  "បារាំង",
+  "អ៊ីតាលី",
+  "អាមេរិក",
+];
+
+/* -------------------------------------------------------------------- */
+/* Special Food Filters                                                  */
+/* -------------------------------------------------------------------- */
+
+const SPECIAL_FILTERS = [
+  "អាហារតាមរដូវ",
+  "អាហារពិធីបុណ្យ",
+  "អាហារពេញនិយម",
+  "អាហារថ្មីៗ",
+  "ម្ហូបប្រចាំថ្ងៃ",
+];
+
+/* -------------------------------------------------------------------- */
+/* Price Filter                                                          */
+/* -------------------------------------------------------------------- */
+
+const PRICE_FILTERS = [
+  {
+    label: "តម្លៃថោក",
+    value: "$",
+  },
+  {
+    label: "តម្លៃមធ្យម",
+    value: "$$",
+  },
+  {
+    label: "តម្លៃខ្ពស់",
+    value: "$$$",
+  },
+];
+
+/* -------------------------------------------------------------------- */
+/* Food Type Search                                                      */
+/* -------------------------------------------------------------------- */
+
+const FOOD_TYPE_FILTERS = [
+  "ម្ហូបចិន",
+  "ម្ហូបវៀតណាម",
+  "ម្ហូបកូរ៉េ",
+  "ភេសជ្ជៈ",
+  "បង្អែម",
+  "Fast Food",
+];
+
+/* -------------------------------------------------------------------- */
+/* Province Filter — popular food by province                           */
+/* -------------------------------------------------------------------- */
+
+const PROVINCE_FILTERS = [
+  "ភ្នំពេញ",
+  "បាត់ដំបង",
+  "សៀមរាប",
+  "កំពត",
+  "កែប",
+  "ព្រះសីហនុ",
+  "កំពង់ចាម",
+  "ត្បូងឃ្មុំ",
+  "កំពង់ស្ពឺ",
+  "កំពង់ធំ",
+  "កំពង់ឆ្នាំង",
+  "តាកែវ",
+  "កណ្ដាល",
+  "ព្រៃវែង",
+  "ស្វាយរៀង",
+  "ពោធិ៍សាត់",
+  "បន្ទាយមានជ័យ",
+  "ក្រចេះ",
+  "មណ្ឌលគិរី",
+  "រតនគិរី",
+  "ស្ទឹងត្រែង",
+  "ព្រះវិហារ",
+  "ឧត្តរមានជ័យ",
+  "ប៉ៃលិន",
+  "កោះកុង",
+];
+
+/* -------------------------------------------------------------------- */
+/* Mock data — replace with live `foods` when wiring real filtering.    */
+/* Left empty so the file compiles; applyFilters/FoodSection stay usable */
+/* -------------------------------------------------------------------- */
+
+const NEW_FOODS: ListedFood[] = [];
+const POPULAR_FOODS: ListedFood[] = [];
 
 function toggleInList(list: string[], value: string) {
   return list.includes(value)
@@ -323,11 +378,19 @@ function applyFilters(foods: ListedFood[], filters: FilterState) {
       );
       if (!hasMatch) return false;
     }
+    if (filters.ageGroups.length > 0) {
+      const hasMatch = food.ageGroups.some((t) =>
+        filters.ageGroups.includes(t),
+      );
+      if (!hasMatch) return false;
+    }
+    if (filters.provinces.length > 0) {
+      if (!filters.provinces.includes(food.province)) return false;
+    }
     if (!matchesPriceTier(food.price, filters.priceTier)) return false;
     return true;
   });
 
-  
   const sorted = [...filtered].sort((a, b) => {
     if (filters.sortBy === "fastest")
       return parseMinutes(a.time) - parseMinutes(b.time);
@@ -457,11 +520,112 @@ function FilterSection({
   );
 }
 
+/* -------------------------------------------------------------------- */
+/*  Age group filter — nested life stages ("young" expands to sub-stages) */
+/* -------------------------------------------------------------------- */
+
+function AgeGroupFilter({
+  selected,
+  onToggleValue,
+}: {
+  selected: string[];
+  onToggleValue: (value: string) => void;
+}) {
+  const [openCats, setOpenCats] = useState<Record<string, boolean>>({
+    young: true,
+  });
+
+  return (
+    <div className="flex flex-col gap-2">
+      {AGE_GROUPS.map((group) => {
+        if (!group.children) {
+          return (
+            <FilterPill
+              key={group.value}
+              label={group.label}
+              active={selected.includes(group.value)}
+              onToggle={() => onToggleValue(group.value)}
+            />
+          );
+        }
+
+        const isOpen = openCats[group.value];
+        const selectedCount = group.children.filter((c) =>
+          selected.includes(c.value),
+        ).length;
+
+        return (
+          <div key={group.value} className="rounded-xl border border-gray-200">
+            <button
+              type="button"
+              onClick={() =>
+                setOpenCats((prev) => ({
+                  ...prev,
+                  [group.value]: !prev[group.value],
+                }))
+              }
+              className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm text-gray-700 cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                {group.label}
+                {selectedCount > 0 && (
+                  <span className="rounded-full bg-primary-800 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                    {selectedCount}
+                  </span>
+                )}
+              </span>
+              <motion.span
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-gray-400"
+              >
+                <IoChevronDown className="text-xs" />
+              </motion.span>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  key="children"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex flex-col gap-2 border-t border-gray-100 px-3 py-2.5">
+                    {group.children.map((child) => (
+                      <label
+                        key={child.value}
+                        className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(child.value)}
+                          onChange={() => onToggleValue(child.value)}
+                          className="h-3.5 w-3.5 accent-primary-800"
+                        />
+                        {child.label}
+                      </label>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const SIDEBAR_SECTIONS = [
   { key: "sort", label: "តម្រៀបតាម", icon: <IoSwapVerticalOutline /> },
   { key: "mealTime", label: "ពេលវេលាទទួលទាន", icon: <IoTimeOutline /> },
   { key: "foodType", label: "ប្រភេទចំណីអាហារ", icon: <IoSearchOutline /> },
   { key: "dietType", label: "របបអាហារ", icon: <IoNutritionOutline /> },
+  { key: "ageGroup", label: "ក្រុមអាយុ", icon: <IoPeopleOutline /> },
+  { key: "province", label: "ពេញនិយមតាមខេត្ត", icon: <IoLocationOutline /> },
   { key: "price", label: "ថ្លៃ", icon: <IoPricetagOutline /> },
 ] as const;
 
@@ -478,6 +642,8 @@ function FilterSidebar({
     mealTime: true,
     foodType: false,
     dietType: false,
+    ageGroup: false,
+    province: false,
     price: true,
   });
 
@@ -486,6 +652,10 @@ function FilterSidebar({
 
   const visibleFoodTypes = FOOD_TYPE_FILTERS.filter((opt) =>
     opt.toLowerCase().includes(filters.foodTypeQuery.trim().toLowerCase()),
+  );
+
+  const visibleProvinces = PROVINCE_FILTERS.filter((opt) =>
+    opt.toLowerCase().includes(filters.provinceQuery.trim().toLowerCase()),
   );
 
   return (
@@ -579,7 +749,6 @@ function FilterSidebar({
                   {(
                     [
                       { label: "ពេញនិយម", value: "popular" },
-
                       { label: "ចំណាត់ថ្នាក់ខ្ពស់", value: "rating" },
                     ] as { label: string; value: SortBy }[]
                   ).map((opt) => (
@@ -602,34 +771,6 @@ function FilterSidebar({
                 </div>
               </FilterSection>
 
-              <FilterSection
-                title="ពេលវេលាទទួលទាន"
-                icon={<IoTimeOutline />}
-                isOpen={openSections.mealTime}
-                onToggle={() => toggleSection("mealTime")}
-              >
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.keys(MEAL_TIME_LABEL_TO_VALUE).map((opt) => (
-                    <label
-                      key={opt}
-                      className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-600 cursor-pointer hover:border-primary-300"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={filters.mealTimes.includes(opt)}
-                        onChange={() =>
-                          onChange({
-                            ...filters,
-                            mealTimes: toggleInList(filters.mealTimes, opt),
-                          })
-                        }
-                        className="h-3 w-3 accent-primary-800"
-                      />
-                      {opt}
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
               <FilterSection
                 title="ពេលវេលាទទួលទាន"
                 icon={<IoTimeOutline />}
@@ -710,7 +851,7 @@ function FilterSidebar({
                 onToggle={() => toggleSection("dietType")}
               >
                 <div className="flex flex-col gap-2">
-                  {MEAL_TYPE_FILTERS.map((label) => (
+                  {DIET_FILTERS.map((label) => (
                     <FilterPill
                       key={label}
                       label={label}
@@ -722,6 +863,67 @@ function FilterSidebar({
                         })
                       }
                     />
+                  ))}
+                </div>
+              </FilterSection>
+
+              <FilterSection
+                title="ក្រុមអាយុ"
+                icon={<IoPeopleOutline />}
+                isOpen={openSections.ageGroup}
+                onToggle={() => toggleSection("ageGroup")}
+              >
+                <AgeGroupFilter
+                  selected={filters.ageGroups}
+                  onToggleValue={(value) =>
+                    onChange({
+                      ...filters,
+                      ageGroups: toggleInList(filters.ageGroups, value),
+                    })
+                  }
+                />
+              </FilterSection>
+
+              <FilterSection
+                title="ពេញនិយមតាមខេត្ត"
+                icon={<IoLocationOutline />}
+                isOpen={openSections.province}
+                onToggle={() => toggleSection("province")}
+              >
+                <div className="mb-2 flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+                  <IoSearchOutline className="text-sm text-gray-400" />
+                  <input
+                    type="text"
+                    value={filters.provinceQuery}
+                    onChange={(e) =>
+                      onChange({ ...filters, provinceQuery: e.target.value })
+                    }
+                    placeholder="ស្វែងរកខេត្ត/ក្រុង"
+                    className="w-full text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none"
+                  />
+                </div>
+                <div className="flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">
+                  {visibleProvinces.length === 0 && (
+                    <p className="text-xs text-gray-400">រកមិនឃើញខេត្តនេះទេ</p>
+                  )}
+                  {visibleProvinces.map((opt) => (
+                    <label
+                      key={opt}
+                      className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.provinces.includes(opt)}
+                        onChange={() =>
+                          onChange({
+                            ...filters,
+                            provinces: toggleInList(filters.provinces, opt),
+                          })
+                        }
+                        className="h-3.5 w-3.5 accent-primary-800"
+                      />
+                      {opt}
+                    </label>
                   ))}
                 </div>
               </FilterSection>
@@ -844,7 +1046,6 @@ function FoodSection({
       ) : (
         <div className="max-w-4xl mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {foods.map((food) => (
-            // <FoodListCard key={food.id} food={food} />
             <FoodCardComponent key={food.id} food={food} />
           ))}
         </div>
@@ -881,6 +1082,7 @@ function CtaBanner() {
     </section>
   );
 }
+
 // quick fade + slight slide so switching tabs feels smooth
 const panelMotion = {
   initial: { opacity: 0, y: 8 },
@@ -889,86 +1091,22 @@ const panelMotion = {
   transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
 };
 
-// function LocationPanel({ foods }: { foods: ListedFood[] }) {
-//   return (
-//     <div className="flex flex-col gap-6 lg:flex-row">
-//       <div className="lg:w-[46%]">
-//         <h2 className="mb-4 text-lg font-semibold text-primary-800">
-//           ទីតាំងជិតអ្នក
-//         </h2>
-//         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//           {foods.map((food) => (
-//             <FoodCardComponent key={food.id} food={food} />
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* swap this placeholder for your real Google Map */}
-//       <div className="lg:w-[54%]">
-//         <div className="sticky top-32 flex h-[70vh] items-center justify-center rounded-2xl border border-gray-200 bg-white">
-//           <div className="flex flex-col items-center gap-2 text-gray-400">
-//             <IoLocationOutline className="text-3xl text-primary-700" />
-//             <p className="text-sm">ដាក់ Google Map នៅទីនេះ</p>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function StorePanel({ foods }: { foods: ListedFood[] }) {
-//   const stores = Array.from(new Set(foods.map((f) => f.store)));
-//   return (
-//     <section>
-//       <h2 className="mb-6 text-center text-lg font-semibold text-primary-800 underline decoration-2 underline-offset-8">
-//         ហាងអាហារ
-//       </h2>
-//       <div className="grid grid-c ols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-//         {stores.map((store) => {
-//           const sample = foods.find((f) => f.store === store)!;
-//           const count = foods.filter((f) => f.store === store).length;
-//           return (
-//             <div
-//               key={store}
-//               className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md"
-//             >
-//               <img
-//                 src={sample.image}
-//                 alt={store}
-//                 className="h-36 w-full object-cover"
-//               />
-//               <div className="flex flex-col gap-1 p-4">
-//                 <div className="flex items-center gap-2 text-primary-900">
-//                   <FaStore className="shrink-0 text-sm text-secondary-500" />
-//                   <h3 className="truncate font-medium">{store}</h3>
-//                 </div>
-//                 <div className="flex items-center gap-3 text-xs text-primary-400">
-//                   <span className="flex items-center gap-1 text-accent-400">
-//                     <FaStar className="text-[10px]" />
-//                     {sample.rating}
-//                   </span>
-//                   <span>{count} មុខម្ហូប</span>
-//                 </div>
-//               </div>
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </section>
-//   );
-// }
 export default function FoodPage() {
   const [activeTab, setActiveTab] = useState<FoodTabId>("food");
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
+  // Kept for when you wire filtering to real data. NEW_FOODS / POPULAR_FOODS
+  // are currently empty stubs, so these return [].
   const filteredNewFoods = applyFilters(NEW_FOODS, filters);
   const filteredPopularFoods = applyFilters(POPULAR_FOODS, filters);
+
   const {
     data: foods = [],
     isLoading,
     isError,
     error,
   } = useGetMenuItemsQuery();
+
   return (
     <div className="min-h-screen bg-[#fafaf8]">
       <div className="pt-15" />
@@ -985,7 +1123,7 @@ export default function FoodPage() {
                 <FilterSidebar filters={filters} onChange={setFilters} />
                 <main className="min-w-0 flex-1">
                   <CategoryTabs />
-                  <div className="grid-cols-3 pt-8 max-w-5xl grid  place-content-center gap-2">
+                  <div className="grid-cols-3 pt-8 max-w-5xl grid place-content-center gap-2">
                     {foods.map((food) => (
                       <Link key={food.uuid} href={`/food/${food.uuid}`}>
                         <FoodCard food={food} />
@@ -1009,14 +1147,12 @@ export default function FoodPage() {
 
           {activeTab === "location" && (
             <motion.div>
-              {/* <LocationPanel foods={filteredNewFoods} /> */}
               <LocationPanel />
             </motion.div>
           )}
 
           {activeTab === "store" && (
             <motion.div>
-              {/* <StorePanel foods={NEW_FOODS} /> */}
               <div className="flex gap-8">
                 <FilterSidebar filters={filters} onChange={setFilters} />
                 <main className="min-w-0 flex-1">

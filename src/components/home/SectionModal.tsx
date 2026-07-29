@@ -5,10 +5,11 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import { HiSparkles } from "react-icons/hi2";
-import { FoodItem } from "@/types/food";
+import { MenuItem } from "@/types/menu-item";
 import { useGetFoodsQuery } from "@/redux/api/foodApi";
 import RecommendCardStack from "./RecommendationStack";
 import SpinWheel from "./Spinwheel";
+import { useGetMenuItemsQuery } from "@/redux/api/fooodApi";
 
 type ModalTab = "swipe" | "spin";
 
@@ -60,7 +61,7 @@ export default function SectionModal() {
     data: recommendedFoods = [],
     isLoading,
     isError,
-  } = useGetFoodsQuery();
+  } = useGetMenuItemsQuery();
   return (
     <div>
       {/* floating AI-assistant style launcher — lives bottom-right on
@@ -172,9 +173,16 @@ export default function SectionModal() {
                         initial={{ opacity: 0, x: 24 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -24 }}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
                       >
-                        <RecommendCardStack foods={recommendedFoods} />
+                        {isLoading ? (
+                          <p className="text-center py-10">Loading...</p>
+                        ) : isError ? (
+                          <p className="text-center py-10 text-red-500">
+                            Cannot load food
+                          </p>
+                        ) : (
+                          <RecommendCardStack foods={recommendedFoods} />
+                        )}
                       </motion.div>
                     ) : (
                       <motion.div
@@ -182,7 +190,6 @@ export default function SectionModal() {
                         initial={{ opacity: 0, x: 24 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -24 }}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
                       >
                         <SpinWheel foods={recommendedFoods} />
                       </motion.div>

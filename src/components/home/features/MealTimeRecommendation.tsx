@@ -7,7 +7,7 @@ import Link from "next/link";
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import { EMPTY_FILTERS, FilterState } from "@/types/food";
 import { MenuItem } from "@/types/menu-item";
-import FoodCard from "@/components/FoodCard";
+
 import { useGetMenuItemsQuery } from "@/redux/api/fooodApi";
 
 type TabId = "all" | "breakfast" | "lunch" | "dinner";
@@ -209,7 +209,7 @@ export default function MealTimeRecommandSection({
           )} */}
           {filteredFoods.map((food) => (
             <Link key={food.uuid} href={`/food/${food.uuid}`}>
-              <FoodCard food={food} />
+              {/* <FoodCard/> */}
             </Link>
           ))}
         </AnimatePresence>
