@@ -21,6 +21,227 @@ type FoodSearchProps = {
   onChange: (value: string) => void;
 };
 
+type SearchDocument = {
+  food: MenuItem;
+
+  uuid: string;
+  name: string;
+  localName: string;
+
+  storeName: string;
+  storeLocalName: string;
+
+  category: string;
+  cuisine: string;
+
+  searchableText: string;
+};
+
+function normalizeSearchText(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  return String(value).trim().toLowerCase().normalize("NFKC");
+}
+
+function formatPriceSearchTerms(food: MenuItem): string[] {
+  const price = food.price;
+
+  return [
+    String(price),
+    price.toFixed(2),
+    `$${price}`,
+    `$${price.toFixed(2)}`,
+    `${price} ${food.currencyCode}`,
+    `${price.toFixed(2)} ${food.currencyCode}`,
+    food.currencyCode,
+
+    // Useful phrases
+    `price ${price}`,
+    `price ${price.toFixed(2)}`,
+    `តម្លៃ ${price}`,
+    `តម្លៃ ${price.toFixed(2)}`,
+  ];
+}
+
+function createSearchDocument(food: MenuItem): SearchDocument {
+  const searchableValues: unknown[] = [
+    // IDs
+    food.uuid,
+    food.legacyId,
+
+    // Food names and descriptions
+    food.name,
+    food.localName,
+    food.description,
+    food.localDescription,
+    food.source,
+
+    // Price
+    ...formatPriceSearchTerms(food),
+
+    // General status
+    food.availabilityStatus,
+    food.isFeatured ? "featured recommended popular" : "",
+
+    // Preparation
+    food.preparationTimeMinutes,
+    `${food.preparationTimeMinutes} min`,
+    `${food.preparationTimeMinutes} minutes`,
+    `${food.preparationTimeMinutes} នាទី`,
+    `preparation ${food.preparationTimeMinutes}`,
+    `time ${food.preparationTimeMinutes}`,
+
+    // Distance
+    food.distanceKm,
+    `${food.distanceKm} km`,
+    `${food.distanceKm} kilometer`,
+    `distance ${food.distanceKm}`,
+    `ចម្ងាយ ${food.distanceKm}`,
+
+    // Delivery fee
+    food.deliveryFee,
+    `$${food.deliveryFee}`,
+    `$${food.deliveryFee.toFixed(2)}`,
+    `delivery fee ${food.deliveryFee}`,
+    `ថ្លៃដឹក ${food.deliveryFee}`,
+
+    // Store
+    food.store.uuid,
+    food.store.name,
+    food.store.localName,
+    food.store.addressLine,
+    food.store.district,
+    food.store.city,
+    food.store.operatingStatus,
+    food.store.averageRating,
+    `${food.store.averageRating} rating`,
+    `${food.store.averageRating} stars`,
+    food.store.totalReviews,
+    `${food.store.totalReviews} reviews`,
+    food.store.latitude,
+    food.store.longitude,
+
+    // Food classification
+    food.food.uuid,
+    food.food.canonicalName,
+    food.food.category.code,
+    food.food.category.name,
+    food.food.cuisine.code,
+    food.food.cuisine.name,
+
+    // Spice
+    food.food.spiceLevel,
+    `spice ${food.food.spiceLevel}`,
+    `spice level ${food.food.spiceLevel}`,
+    `កម្រិតហឹរ ${food.food.spiceLevel}`,
+
+    // Ingredients and beverages
+    ...food.ingredients,
+    ...food.beveragePairings,
+
+    // Meal types
+    ...food.mealTypes.flatMap((mealType) => [mealType.code, mealType.name]),
+
+    // Dietary types
+    ...food.dietaryTypes.flatMap((dietaryType) => [
+      dietaryType.code,
+      dietaryType.name,
+      dietaryType.verificationStatus,
+    ]),
+
+    // Allergens
+    ...food.allergenDeclarations.flatMap((allergen) => [
+      allergen.code,
+      allergen.name,
+      allergen.declarationType,
+      allergen.riskLevel,
+      allergen.verificationStatus,
+    ]),
+
+    // Age groups
+    ...food.food.ageGroups.flatMap((ageGroup) => [
+      ageGroup.code,
+      ageGroup.name,
+    ]),
+
+    // Nutrition
+    food.nutrition.calories,
+    `${food.nutrition.calories} calories`,
+    `${food.nutrition.calories} kcal`,
+    `calories ${food.nutrition.calories}`,
+
+    food.nutrition.protein,
+    `${food.nutrition.protein} protein`,
+    `${food.nutrition.protein}g protein`,
+
+    food.nutrition.carbohydrate,
+    `${food.nutrition.carbohydrate} carbohydrate`,
+    `${food.nutrition.carbohydrate} carbs`,
+    `${food.nutrition.carbohydrate}g carbs`,
+
+    food.nutrition.fat,
+    `${food.nutrition.fat} fat`,
+    `${food.nutrition.fat}g fat`,
+
+    food.nutrition.fiber,
+    `${food.nutrition.fiber} fiber`,
+    `${food.nutrition.fiber}g fiber`,
+
+    food.nutrition.sodium,
+    `${food.nutrition.sodium} sodium`,
+    `${food.nutrition.sodium}mg sodium`,
+
+    // Recommendation
+    food.recommendation.isRecommended ? "recommended AI recommendation" : "",
+
+    food.recommendation.rankPosition,
+    food.recommendation.finalScore,
+    `${Math.round(food.recommendation.finalScore * 100)}% match`,
+
+    food.recommendation.safetyStatus,
+    food.recommendation.candidateSource,
+    food.recommendation.reasonText,
+
+    ...food.recommendation.reasonCodes,
+
+    // Recommendation score breakdown
+    food.recommendation.scoreBreakdown.mealMatch,
+
+    food.recommendation.scoreBreakdown.cuisineMatch,
+
+    food.recommendation.scoreBreakdown.budgetMatch,
+
+    food.recommendation.scoreBreakdown.distanceMatch,
+
+    food.recommendation.scoreBreakdown.popularity,
+  ];
+
+  return {
+    food,
+
+    uuid: food.uuid,
+
+    name: normalizeSearchText(food.name),
+
+    localName: normalizeSearchText(food.localName),
+
+    storeName: normalizeSearchText(food.store.name),
+
+    storeLocalName: normalizeSearchText(food.store.localName),
+
+    category: normalizeSearchText(food.food.category.name),
+
+    cuisine: normalizeSearchText(food.food.cuisine.name),
+
+    searchableText: searchableValues
+      .map(normalizeSearchText)
+      .filter(Boolean)
+      .join(" "),
+  };
+}
+
 export default function FoodSearch({
   menuItems,
   value,
@@ -30,13 +251,20 @@ export default function FoodSearch({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  const searchDocuments = useMemo(
+    () => menuItems.map(createSearchDocument),
+    [menuItems],
+  );
+
   const fuse = useMemo(
     () =>
-      new Fuse(menuItems, {
+      new Fuse(searchDocuments, {
         includeScore: true,
+        includeMatches: true,
+
         threshold: 0.35,
         ignoreLocation: true,
-        minMatchCharLength: 2,
+        minMatchCharLength: 1,
 
         keys: [
           {
@@ -48,65 +276,44 @@ export default function FoodSearch({
             weight: 1,
           },
           {
-            name: "store.localName",
+            name: "storeLocalName",
             weight: 0.9,
           },
           {
-            name: "store.name",
+            name: "storeName",
             weight: 0.9,
           },
           {
-            name: "food.category.name",
+            name: "category",
             weight: 0.8,
           },
           {
-            name: "food.cuisine.name",
+            name: "cuisine",
             weight: 0.8,
           },
           {
-            name: "ingredients",
-            weight: 0.7,
-          },
-          {
-            name: "dietaryTypes.name",
-            weight: 0.7,
-          },
-          {
-            name: "mealTypes.name",
-            weight: 0.6,
-          },
-          {
-            name: "store.city",
-            weight: 0.5,
-          },
-          {
-            name: "store.district",
-            weight: 0.5,
-          },
-          {
-            name: "description",
-            weight: 0.4,
-          },
-          {
-            name: "localDescription",
-            weight: 0.4,
+            name: "searchableText",
+            weight: 0.65,
           },
         ],
       }),
-    [menuItems],
+    [searchDocuments],
   );
 
   const suggestions = useMemo(() => {
-    const query = value.trim();
+    const query = normalizeSearchText(value);
 
-    if (query.length < 2) {
+    if (!query) {
       return [];
     }
 
     return fuse
       .search(query)
-      .slice(0, 6)
-      .map((result) => result.item);
+      .slice(0, 8)
+      .map((result) => ({
+        food: result.item.food,
+        score: result.score ?? 1,
+      }));
   }, [fuse, value]);
 
   useEffect(() => {
@@ -123,7 +330,7 @@ export default function FoodSearch({
     };
   }, []);
 
-  const showSuggestions = isFocused && value.trim().length >= 2;
+  const showSuggestions = isFocused && value.trim().length > 0;
 
   return (
     <div ref={wrapperRef} className="relative flex-1">
@@ -135,8 +342,8 @@ export default function FoodSearch({
           value={value}
           onFocus={() => setIsFocused(true)}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="ស្វែងរកម្ហូប ហាង ប្រភេទ គ្រឿងផ្សំ ឬទីតាំង..."
-          aria-label="Search foods and stores"
+          placeholder="ស្វែងរកម្ហូប តម្លៃ ហាង ប្រភេទ គ្រឿងផ្សំ ឬទីតាំង..."
+          aria-label="Search all food information"
           autoComplete="off"
           className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400"
         />
@@ -185,7 +392,7 @@ export default function FoodSearch({
               </p>
 
               <p className="mt-1 text-[16px] text-gray-500">
-                រកឃើញ {suggestions.length} ជម្រើស
+                រកឃើញ {suggestions.length} ជម្រើសសម្រាប់ “{value}”
               </p>
             </div>
 
@@ -198,12 +405,24 @@ export default function FoodSearch({
                 </p>
 
                 <p className="mt-1 text-[16px] leading-7 text-gray-400">
-                  សូមសាកល្បងពាក្យស្វែងរកផ្សេងទៀត។
+                  សូមសាកល្បងឈ្មោះ តម្លៃ ហាង ប្រភេទ គ្រឿងផ្សំ ឬទីតាំងផ្សេងទៀត។
                 </p>
               </div>
             ) : (
-              <div className="max-h-[420px] overflow-y-auto p-2">
-                {suggestions.map((food) => (
+              <div
+                className="
+                  max-h-[430px]
+                  overflow-y-auto
+                  p-2
+                  [scrollbar-width:thin]
+                  [scrollbar-color:#d1d5db_transparent]
+                  [&::-webkit-scrollbar]:w-1.5
+                  [&::-webkit-scrollbar-track]:bg-transparent
+                  [&::-webkit-scrollbar-thumb]:rounded-full
+                  [&::-webkit-scrollbar-thumb]:bg-gray-300
+                "
+              >
+                {suggestions.map(({ food, score }) => (
                   <Link
                     key={food.uuid}
                     href={`/food/${food.uuid}`}
@@ -237,11 +456,14 @@ export default function FoodSearch({
                         </div>
 
                         <p className="shrink-0 text-[16px] font-semibold text-primary-800">
-                          ${food.price.toFixed(2)}
+                          {new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: food.currencyCode || "USD",
+                          }).format(food.price)}
                         </p>
                       </div>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-3 text-[16px]">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[16px]">
                         <span className="flex items-center gap-1 text-yellow-500">
                           <FaStar />
 
@@ -254,6 +476,10 @@ export default function FoodSearch({
 
                         <span className="text-gray-500">
                           {food.distanceKm} km
+                        </span>
+
+                        <span className="text-gray-400">
+                          {Math.max(0, Math.round((1 - score) * 100))}% match
                         </span>
                       </div>
                     </div>
