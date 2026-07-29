@@ -6,6 +6,8 @@ import { MdDeliveryDining } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
 import type { FoodItem } from "@/types/food";
 import { MenuItem } from "@/types/menu-item";
+import Link from "next/link";
+import Image from "next/image";
 
 type Props = {
   food: MenuItem[];
