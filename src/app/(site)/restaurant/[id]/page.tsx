@@ -54,7 +54,7 @@ export default function RestaurantDetailPage() {
           ត្រឡប់ក្រោយ
         </Link>
 
-        <div className="grid gap-6 lg:grid-cols-[224px_1fr_360px] lg:items-start lg:gap-8">
+        <div className="grid gap-6 lg:grid-cols-[224px_1fr_1fr] lg:items-start lg:gap-8">
           {/* Category nav: horizontal chip row on mobile/tablet, sticky
               vertical rail on desktop — RestaurantCategorySidebar renders
               the right variant itself based on breakpoint. */}
