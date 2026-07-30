@@ -16,18 +16,21 @@ const familyMembers: FamilyMember[] = [
     name: "សុខ​ ស៊ូហេង",
     role: "កូនបង",
     avatarUrl: "https://placehold.co/96x96?text=MB",
+    isActive: undefined
   },
   {
     id: "2",
     name: "សុខ​ លីតា",
     role: "កូនកណ្កាល",
     avatarUrl: "https://placehold.co/96x96?text=M",
+    isActive: undefined
   },
   {
     id: "3",
     name: "សៀវយៀក",
     role: "កូនពៅ",
     avatarUrl: "https://placehold.co/96x96?text=C",
+    isActive: undefined
   },
 ];
 

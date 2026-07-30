@@ -79,6 +79,7 @@ Merge made by the 'ort' strategy.
  create mode 100644 src/types/restaurant.ts
 
  
+<<<<<<< HEAD
 USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
 $ git fetch
 
@@ -130,4 +131,148 @@ Auto-merging src/redux/api/baseApi-1.ts
 CONFLICT (content): Merge conflict in src/redux/api/baseApi-1.ts
 CONFLICT (file location): src/app/store/restaurantApi.ts added in HEAD inside a directory that was renamed in 1776acad8fc00f4b47dbecca63776f66d34d2ef6, suggesting it should perhaps be moved to src/redux/api/restaurantApi.ts.
 Automatic merge failed; fix conflicts and then commit the result.
+=======
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "chore: Update responsive session cards fit on screen Desktop"
+[longfou 3a914aa] chore: Update responsive session cards fit on screen Desktop
+ 5 files changed, 108 insertions(+), 6 deletions(-)
+ create mode 100644 Git-commands.log
+ create mode 100644 src/app/restaurant/layout.tsx
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git push origin longfou
+Enumerating objects: 32, done.
+Counting objects: 100% (32/32), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (17/17), done.
+Writing objects: 100% (18/18), 2.86 KiB | 975.00 KiB/s, done.
+Total 18 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (12/12), completed with 8 local objects.
+To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
+   d0ee811..3a914aa  longfou -> longfou
+
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git add .
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git commit -m "chore: update layout hero session and right sidebar Page Restauarant Detail and add structure page"
+[longfou 8bc4dba] chore: update layout hero session and right sidebar Page Restauarant Detail and add structure page
+ 6 files changed, 502 insertions(+), 4 deletions(-)
+ create mode 100644 restaurant-detail-structure.md
+ delete mode 100644 structure.txt
+## -------
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git fetch
+Username for 'https://github.com': Longfou1900
+Password for 'https://Longfou1900@github.com': 
+remote: Write access to repository not granted.
+fatal: unable to access 'https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git/': The requested URL returned error: 403
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git remote -v
+origin  https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git (fetch)
+origin  https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git (push)
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git config --global user.name
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git config --global user.email
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ gh auth status
+Command 'gh' not found, but can be installed with:
+sudo snap install gh  # version 2.86.0-112-gc30647b78, or
+sudo apt  install gh  # version 2.46.0-4
+See 'snap info gh' for additional versions.
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git config --global user.name "Longfou1900"
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git config --global user.email 
+"FouFou9172@gmail.com"
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git config --global --list
+credential.helper=store
+user.name=Longfou1900
+user.email=FouFou9172@gmail.com
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ cat ~/.git-credentials
+cat: /home/user/.git-credentials: No such file or directory
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ cat /d/Users/$USERNAME/.git-cre
+dentials
+cat: /d/Users//.git-credentials: No such file or directory
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ cat /d/Users/$USERNAME/.git-credentials
+cat: /d/Users//.git-credentials: No such file or directory
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git ls-remote origin
+Username for 'https://github.com': ^C
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git config --show-origin --get credential.helper
+file:/home/user/.gitconfig      store
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git credential reject
+
+fatal: refusing to work with credential missing host field
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ 
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git fetch
+Username for 'https://github.com': Longfou1900
+Password for 'https://Longfou1900@github.com': 
+remote: Write access to repository not granted.
+fatal: unable to access 'https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git/': The requested URL returned error: 403
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ printf "protocol=https\nhost=github.com\n\n" | git credential reject
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git fetch
+Username for 'https://github.com': Longfou1900
+Password for 'https://Longfou1900@github.com': 
+remote: Write access to repository not granted.
+fatal: unable to access 'https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git/': The requested URL returned error: 403
+
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git fetch
+remote: Enumerating objects: 119, done.
+remote: Counting objects: 100% (119/119), done.
+remote: Compressing objects: 100% (58/58), done.
+remote: Total 119 (delta 52), reused 119 (delta 52), pack-reused 0 (from 0)
+Receiving objects: 100% (119/119), 7.71 MiB | 485.00 KiB/s, done.
+Resolving deltas: 100% (52/52), completed with 34 local objects.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   42a19e8..e3af117  lyta       -> origin/lyta
+   426e86d..65580c5  main       -> origin/main
+   837dc73..09a682f  souheng    -> origin/souheng
+
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git add .
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git status      
+On branch longfou
+Your branch is ahead of 'origin/longfou' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   .gitignore
+        modified:   Git-commands.log
+
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git pull origin main
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            main       -> FETCH_HEAD
+error: Your local changes to the following files would be overwritten by merge:
+  .gitignore Git-commands.log
+<stdin>:32: trailing whitespace.
+Password for 'https://Longfou1900@github.com': 
+<stdin>:46: trailing whitespace.
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ git config --global user.email 
+<stdin>:66: trailing whitespace.
+user@DESKTOP-M1TVSAR:/mnt/d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend$ 
+<stdin>:69: trailing whitespace.
+Password for 'https://Longfou1900@github.com': 
+<stdin>:75: trailing whitespace.
+Password for 'https://Longfou1900@github.com': 
+warning: squelched 1 whitespace error
+warning: 6 lines add whitespace errors.
+Merge with strategy ort failed.
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git remote -v
+origin  https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git (fetch)
+origin  https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git (push)
+
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git fetch
+remote: Enumerating objects: 96, done.
+remote: Counting objects: 100% (96/96), done.
+remote: Compressing objects: 100% (38/38), done.
+remote: Total 96 (delta 56), reused 95 (delta 55), pack-reused 0 (from 0)
+Unpacking objects: 100% (96/96), 23.99 MiB | 428.00 KiB/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   e3af117..ce3136c  lyta       -> origin/lyta
+   b444b07..e9cad21  mingyeak   -> origin/mingyeak
+   09a682f..1776aca  souheng    -> origin/souheng
+PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git branch
+  dara
+* longfou
+  main
+  master
+  test/before-merge
+
+
+
+>>>>>>> 38feb2e4043cf3952990a64e69585f28d9e293d5
 
