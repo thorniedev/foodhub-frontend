@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -14,16 +11,9 @@ import {
   IoSearchOutline,
 } from "react-icons/io5";
 
-import {
-  FaMapMarkerAlt,
-  FaStar,
-  FaStore,
-} from "react-icons/fa";
+import { FaMapMarkerAlt, FaStar, FaStore } from "react-icons/fa";
 
-import type {
-  MenuItem,
-  Store,
-} from "@/types/manu";
+import type { MenuItem, Store } from "@/types/manu";
 
 type LocationContentProps = {
   menuItems: MenuItem[];
@@ -34,61 +24,40 @@ type StoreWithMenuCount = Store & {
   nearestDistance: number;
 };
 
-export default function LocationContent({
-  menuItems,
-}: LocationContentProps) {
-  const [query, setQuery] =
-    useState("");
+export default function LocationContent({ menuItems }: LocationContentProps) {
+  const [query, setQuery] = useState("");
 
-  const stores = useMemo<
-    StoreWithMenuCount[]
-  >(() => {
-    const storeMap = new Map<
-      string,
-      StoreWithMenuCount
-    >();
+  const stores = useMemo<StoreWithMenuCount[]>(() => {
+    const storeMap = new Map<string, StoreWithMenuCount>();
 
     menuItems.forEach((menuItem) => {
-      const existingStore =
-        storeMap.get(
-          menuItem.store.uuid,
-        );
+      const existingStore = storeMap.get(menuItem.store.uuid);
 
       if (existingStore) {
         existingStore.menuCount += 1;
 
-        existingStore.nearestDistance =
-          Math.min(
-            existingStore.nearestDistance,
-            menuItem.distanceKm,
-          );
+        existingStore.nearestDistance = Math.min(
+          existingStore.nearestDistance,
+          menuItem.distanceKm,
+        );
 
         return;
       }
 
-      storeMap.set(
-        menuItem.store.uuid,
-        {
-          ...menuItem.store,
-          menuCount: 1,
-          nearestDistance:
-            menuItem.distanceKm,
-        },
-      );
+      storeMap.set(menuItem.store.uuid, {
+        ...menuItem.store,
+        menuCount: 1,
+        nearestDistance: menuItem.distanceKm,
+      });
     });
 
-    return Array.from(
-      storeMap.values(),
-    ).sort(
-      (first, second) =>
-        first.nearestDistance -
-        second.nearestDistance,
+    return Array.from(storeMap.values()).sort(
+      (first, second) => first.nearestDistance - second.nearestDistance,
     );
   }, [menuItems]);
 
   const filteredStores = useMemo(() => {
-    const normalizedQuery =
-      query.trim().toLowerCase();
+    const normalizedQuery = query.trim().toLowerCase();
 
     if (!normalizedQuery) {
       return stores;
@@ -103,13 +72,8 @@ export default function LocationContent({
         store.city,
       ];
 
-      return searchableValues.some(
-        (value) =>
-          value
-            .toLowerCase()
-            .includes(
-              normalizedQuery,
-            ),
+      return searchableValues.some((value) =>
+        value.toLowerCase().includes(normalizedQuery),
       );
     });
   }, [stores, query]);
@@ -147,7 +111,7 @@ export default function LocationContent({
           }}
         />
 
-        <div className="relative z-10 max-w-3xl">
+        <div className="relative z-10 max-w-4xl">
           <p className="text-[16px] font-semibold text-secondary-300">
             FoodHub Location
           </p>
@@ -156,13 +120,13 @@ export default function LocationContent({
             មុខម្ហូប និងហាងអាហារនៅជិតអ្នក
           </h1>
 
-          <p className="mt-4 text-[16px] leading-8 text-white/85">
+          <p className="mt-4 text-[22px] leading-8 text-white/85">
             ស្វែងរកហាងអាហារតាមទីក្រុង តំបន់ អាសយដ្ឋាន និងចម្ងាយពីទីតាំងរបស់អ្នក។
           </p>
         </div>
       </section>
 
-      <section className="mt-6 rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
+      {/* <section className="mt-6 rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-full border border-gray-200 px-5 focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
             <IoSearchOutline className="shrink-0 text-[22px] text-primary-700" />
@@ -170,11 +134,7 @@ export default function LocationContent({
             <input
               type="text"
               value={query}
-              onChange={(event) =>
-                setQuery(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="ស្វែងរកហាង តំបន់ ឬទីក្រុង..."
               className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400"
             />
@@ -182,9 +142,7 @@ export default function LocationContent({
             {query && (
               <button
                 type="button"
-                onClick={() =>
-                  setQuery("")
-                }
+                onClick={() => setQuery("")}
                 className="text-[16px] font-medium text-secondary-500"
               >
                 សម្អាត
@@ -197,11 +155,10 @@ export default function LocationContent({
             className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-primary-800 px-6 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
           >
             <IoLocationOutline className="text-[22px]" />
-
             ប្រើទីតាំងខ្ញុំ
           </button>
         </div>
-      </section>
+      </section> */}
 
       <section className="mt-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -224,8 +181,7 @@ export default function LocationContent({
           </p>
         </div>
 
-        {filteredStores.length ===
-        0 ? (
+        {filteredStores.length === 0 ? (
           <div className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-16 text-center">
             <IoLocationOutline className="mx-auto text-[46px] text-primary-300" />
 
@@ -238,154 +194,119 @@ export default function LocationContent({
             </p>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredStores.map(
-              (store) => {
-                const mapUrl =
-                  `https://www.google.com/maps?q=${store.latitude},${store.longitude}`;
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-2">
+            {filteredStores.map((store) => {
+              const mapUrl = `https://www.google.com/maps?q=${store.latitude},${store.longitude}`;
 
-                return (
-                  <motion.article
-                    key={
-                      store.uuid
-                    }
-                    whileHover={{
-                      y: -5,
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 22,
-                    }}
-                    className="overflow-hidden rounded-[24px] border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
-                  >
-                    <div className="relative h-[190px] overflow-hidden bg-primary-50">
-                      {store.coverImageUrl ? (
-                        <Image
-                          fill
-                          src={
-                            store.coverImageUrl
-                          }
-                          alt={
-                            store.localName
-                          }
-                          sizes="(max-width: 768px) 100vw, 400px"
-                          className="object-cover transition-transform duration-500 hover:scale-105"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-100 to-secondary-100">
-                          <FaMapMarkerAlt className="text-[52px] text-primary-700" />
-                        </div>
-                      )}
+              return (
+                <motion.article
+                  key={store.uuid}
+                  whileHover={{
+                    y: -5,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 22,
+                  }}
+                  className="overflow-hidden rounded-[24px] border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
+                >
+                  <div className="relative h-[190px] overflow-hidden bg-primary-50">
+                    {store.coverImageUrl ? (
+                      <Image
+                        fill
+                        src={store.coverImageUrl}
+                        alt={store.localName}
+                        sizes="(max-width: 768px) 100vw, 400px"
+                        className="object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-100 to-secondary-100">
+                        <FaMapMarkerAlt className="text-[52px] text-primary-700" />
+                      </div>
+                    )}
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
 
-                      <span
-                        className={`absolute right-3 top-3 rounded-full px-3 py-1.5 text-[16px] font-semibold shadow ${
-                          store.operatingStatus ===
-                          "OPEN"
-                            ? "bg-green-500 text-white"
-                            : "bg-red-500 text-white"
-                        }`}
-                      >
-                        {store.operatingStatus ===
-                        "OPEN"
-                          ? "កំពុងបើក"
-                          : "បានបិទ"}
+                    <span
+                      className={`absolute right-3 top-3 rounded-full px-3 py-1.5 text-[16px] font-semibold shadow ${
+                        store.operatingStatus === "OPEN"
+                          ? "bg-green-500 text-white"
+                          : "bg-red-500 text-white"
+                      }`}
+                    >
+                      {store.operatingStatus === "OPEN" ? "កំពុងបើក" : "បានបិទ"}
+                    </span>
+
+                    <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 backdrop-blur">
+                      <IoNavigateOutline className="text-[19px] text-primary-700" />
+
+                      <span className="text-[16px] font-semibold text-primary-900">
+                        {store.nearestDistance} km
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-50">
+                        {store.logoUrl ? (
+                          <Image
+                            fill
+                            src={store.logoUrl}
+                            alt={store.localName}
+                            sizes="56px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <FaStore className="text-[24px] text-primary-700" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-[19px] font-semibold text-primary-900">
+                          {store.localName}
+                        </p>
+
+                        <p className="truncate text-[16px] text-gray-500">
+                          {store.name}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-start gap-2 text-[16px] leading-7 text-gray-500">
+                      <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700" />
+
+                      <span>
+                        {store.addressLine}, {store.district}, {store.city}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+                      <span className="flex items-center gap-2 text-[16px] text-yellow-500">
+                        <FaStar />
+
+                        {store.averageRating}
                       </span>
 
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 backdrop-blur">
-                        <IoNavigateOutline className="text-[19px] text-primary-700" />
-
-                        <span className="text-[16px] font-semibold text-primary-900">
-                          {
-                            store.nearestDistance
-                          }{" "}
-                          km
-                        </span>
-                      </div>
+                      <span className="text-[16px] text-gray-500">
+                        {store.menuCount} មុខម្ហូប
+                      </span>
                     </div>
 
-                    <div className="p-5">
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-50">
-                          {store.logoUrl ? (
-                            <Image
-                              fill
-                              src={
-                                store.logoUrl
-                              }
-                              alt={
-                                store.localName
-                              }
-                              sizes="56px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <FaStore className="text-[24px] text-primary-700" />
-                          )}
-                        </div>
-
-                        <div className="min-w-0">
-                          <h3 className="truncate text-[19px] font-semibold text-primary-900">
-                            {
-                              store.localName
-                            }
-                          </h3>
-
-                          <p className="truncate text-[16px] text-gray-500">
-                            {store.name}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex items-start gap-2 text-[16px] leading-7 text-gray-500">
-                        <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700" />
-
-                        <span>
-                          {
-                            store.addressLine
-                          }
-                          ,{" "}
-                          {
-                            store.district
-                          }
-                          , {store.city}
-                        </span>
-                      </div>
-
-                      <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
-                        <span className="flex items-center gap-2 text-[16px] text-yellow-500">
-                          <FaStar />
-
-                          {
-                            store.averageRating
-                          }
-                        </span>
-
-                        <span className="text-[16px] text-gray-500">
-                          {
-                            store.menuCount
-                          }{" "}
-                          មុខម្ហូប
-                        </span>
-                      </div>
-
-                      <a
-                        href={mapUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-5 flex items-center justify-center gap-2 rounded-full bg-primary-800 px-5 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
-                      >
-                        <IoNavigateOutline className="text-[20px]" />
-
-                        បើកក្នុងផែនទី
-                      </a>
-                    </div>
-                  </motion.article>
-                );
-              },
-            )}
+                    <a
+                      href={mapUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-5 flex items-center justify-center gap-2 rounded-full bg-primary-800 px-5 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
+                    >
+                      <IoNavigateOutline className="text-[20px]" />
+                      បើកក្នុងផែនទី
+                    </a>
+                  </div>
+                </motion.article>
+              );
+            })}
           </div>
         )}
       </section>

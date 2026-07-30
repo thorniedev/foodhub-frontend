@@ -26,6 +26,10 @@ import FoodSearchBar from "@/components/home/features/FoodSearchBarComponent";
 import SwipeCardTinderStyle from "@/components/home/features/SwipeCardTinderStyle";
 import DisplaySwipeCard from "@/components/home/features/DisplaySwipeCard";
 import Model from "@/components/home/features/Model";
+import FoodSearch from "@/components/food-page/FoodSearch";
+import { useGetMenuItemsQuery } from "../store/menuApi";
+import { useState } from "react";
+import ModelFloating from "@/components/home/features/ModelFloating";
 
 export default function Home() {
   return (
@@ -68,7 +72,7 @@ export default function Home() {
         {/* <CreatePost />
         <PostsList /> */}
         {/* <Skiper19/> */}
-
+        <div className="h-screen"></div>
         <EventSection />
         <LocationSection />
         <MealsByAgeSection />

@@ -415,11 +415,9 @@ export default function Carousel({
      disabled:opacity-0 disabled:pointer-events-none transition-opacity`;
 
   return (
-    <div
-      className={`mx-auto w-full max-w-7xl  ${className}`}
-    >
+    <div className={`mx-auto w-full max-w-7xl  ${className}`}>
       <div
-        className="relative"
+        className="relative z-0"
         onMouseEnter={() => {
           hoveredRef.current = true;
         }}
@@ -468,7 +466,7 @@ export default function Carousel({
               key={`${item.id}-${idx}`}
               className="snap-start shrink-0 basis-[88%] sm:basis-[70%] lg:basis-[calc(50%-12px)]"
             >
-              <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 aspect-[16/9] sm:aspect-[2/1] lg:aspect-auto lg:h-75">
+              <div className="relative  w-full overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 aspect-[16/9] sm:aspect-[2/1] lg:aspect-auto lg:h-75">
                 <Image
                   src={item.image}
                   alt={item.alt}
@@ -553,5 +551,9 @@ export const slides: CarouselItem[] = [
   { id: 7, image: "/Image/carousel/food7.png", alt: "Family sharing platter" },
   { id: 8, image: "/Image/carousel/food11.jpg", alt: "Family sharing platter" },
   { id: 9, image: "/Image/carousel/food9.webp", alt: "Family sharing platter" },
-  { id: 10, image: "/Image/carousel/food10.jpg", alt: "Family sharing platter" },
+  {
+    id: 10,
+    image: "/Image/carousel/food10.jpg",
+    alt: "Family sharing platter",
+  },
 ];

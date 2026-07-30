@@ -7,8 +7,8 @@ import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
 
 const NAV_LINKS = [
   { href: "/", label: "ទំព័រដើម" },
-  { href: "/about", label: "អំពីយេីង" },
   { href: "/food", label: "ម្ហូបអាហារ" },
+  { href: "/about", label: "អំពីយេីង" },
 ];
 
 export default function Navbar() {

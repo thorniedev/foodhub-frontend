@@ -1006,7 +1006,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid grid-cols-1 gap-x-10 gap-y-3  sm:grid-cols-2 xl:grid-cols-3"
+      className="grid grid-cols-1 gap-x-10 gap-y-3 max-w-4xl sm:grid-cols-2 xl:grid-cols-3"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -1074,6 +1074,7 @@ export default function FoodPage() {
     error,
     refetch,
   } = useGetMenuItemsQuery();
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setFilters((current) => ({
@@ -1227,7 +1228,7 @@ export default function FoodPage() {
                 }}
               >
                 {/* Search */}
-                <section className="rounded-[26px] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <section className="rounded-full  border border-gray-100 bg-white p-4 shadow-sm sm:p-1">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     {/* <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-full border border-gray-200 px-5 transition focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
                       <IoSearchOutline className="shrink-0 text-[22px] text-primary-700" />
@@ -1372,7 +1373,18 @@ export default function FoodPage() {
 
             {/* LOCATION TAB */}
             {activePageTab === "location" && (
-              <LocationContent key="location-tab" menuItems={menuItems} />
+              <div className="mt-6 flex gap-8">
+                <FilterSidebar
+                  filters={filters}
+                  onChange={setFilters}
+                  categoryOptions={categoryOptions}
+                  cuisineOptions={cuisineOptions}
+                  mealTypeOptions={mealTypeOptions}
+                  dietaryTypeOptions={dietaryTypeOptions}
+                  ageGroupOptions={ageGroupOptions}
+                />
+                <LocationContent key="location-tab" menuItems={menuItems} />
+              </div>
             )}
 
             {/* STORE TAB */}
