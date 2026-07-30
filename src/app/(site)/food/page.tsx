@@ -43,6 +43,57 @@ type SortBy =
 
 type PriceTier = "$" | "$$" | "$$$" | null;
 
+type RecommendationContextOption = {
+  code: string;
+  name: string;
+  localName: string;
+};
+
+type SeasonalContext = RecommendationContextOption & {
+  suitabilityScore: number;
+  reasonText: string;
+};
+
+type EventContext = RecommendationContextOption & {
+  relevanceScore: number;
+  reasonText: string;
+};
+
+type ProvincePopularity = {
+  provinceCode: string;
+  provinceName: string;
+  provinceLocalName: string;
+  popularityScore: number;
+  popularityRank?: number;
+  isTraditionalToProvince: boolean;
+  reasonText: string;
+};
+
+type WeatherContext = RecommendationContextOption & {
+  suitabilityScore: number;
+  reasonText: string;
+};
+
+type FoodOrigin = {
+  countryCode: string;
+  countryName: string;
+  countryLocalName?: string;
+  provinceCode?: string | null;
+  provinceName?: string | null;
+  provinceLocalName?: string | null;
+  isTraditional: boolean;
+};
+
+type MenuItemWithContext = MenuItem & {
+  origin?: FoodOrigin;
+  recommendationContext?: {
+    seasons: SeasonalContext[];
+    events: EventContext[];
+    provincePopularity: ProvincePopularity[];
+    suitableWeather: WeatherContext[];
+  };
+};
+
 type FilterState = {
   query: string;
   sortBy: SortBy;
@@ -58,6 +109,12 @@ type FilterState = {
   ingredientNames: string[];
   spiceLevels: number[];
 
+  seasonCodes: string[];
+  eventCodes: string[];
+  provinceCodes: string[];
+  weatherCodes: string[];
+  originProvinceCodes: string[];
+
   availabilityOnly: boolean;
   recommendedOnly: boolean;
   featuredOnly: boolean;
@@ -66,7 +123,6 @@ type FilterState = {
 
   maximumPreparationMinutes: number | null;
   maximumDistanceKm: number | null;
-  maximumDeliveryFee: number | null;
 
   minimumRating: number | null;
   minimumRecommendationScore: number | null;
@@ -110,12 +166,6 @@ const DISTANCE_OPTIONS: NumericOption[] = [
   { value: 3, label: "ក្រោម 3 km" },
 ];
 
-const DELIVERY_OPTIONS: NumericOption[] = [
-  { value: 0.75, label: "ក្រោម $0.75" },
-  { value: 1, label: "ក្រោម $1" },
-  { value: 1.5, label: "ក្រោម $1.50" },
-];
-
 const RATING_OPTIONS: NumericOption[] = [
   { value: 4.7, label: "4.7 ឡើងទៅ" },
   { value: 4.8, label: "4.8 ឡើងទៅ" },
@@ -143,6 +193,12 @@ const DEFAULT_FILTERS: FilterState = {
   ingredientNames: [],
   spiceLevels: [],
 
+  seasonCodes: [],
+  eventCodes: [],
+  provinceCodes: [],
+  weatherCodes: [],
+  originProvinceCodes: [],
+
   availabilityOnly: true,
   recommendedOnly: false,
   featuredOnly: false,
@@ -151,7 +207,6 @@ const DEFAULT_FILTERS: FilterState = {
 
   maximumPreparationMinutes: null,
   maximumDistanceKm: null,
-  maximumDeliveryFee: null,
 
   minimumRating: null,
   minimumRecommendationScore: null,
@@ -210,8 +265,6 @@ function matchesSearch(food: MenuItem, query: string): boolean {
     `${food.preparationTimeMinutes} min`,
     String(food.distanceKm),
     `${food.distanceKm} km`,
-    String(food.deliveryFee),
-    `$${food.deliveryFee}`,
     String(food.nutrition.calories),
     `${food.nutrition.calories} calories`,
     String(food.nutrition.protein),
@@ -262,6 +315,44 @@ function matchesSearch(food: MenuItem, query: string): boolean {
       ageGroup.code,
       ageGroup.name,
     ]),
+
+    // Cambodian recommendation context
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.seasons ?? []
+    ).flatMap((season) => [
+      season.code,
+      season.name,
+      season.localName,
+      season.reasonText,
+    ]),
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.events ?? []
+    ).flatMap((event) => [
+      event.code,
+      event.name,
+      event.localName,
+      event.reasonText,
+    ]),
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.provincePopularity ??
+      []
+    ).flatMap((province) => [
+      province.provinceCode,
+      province.provinceName,
+      province.provinceLocalName,
+      province.reasonText,
+    ]),
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.suitableWeather ?? []
+    ).flatMap((weather) => [
+      weather.code,
+      weather.name,
+      weather.localName,
+      weather.reasonText,
+    ]),
+    (food as MenuItemWithContext).origin?.provinceCode,
+    (food as MenuItemWithContext).origin?.provinceName,
+    (food as MenuItemWithContext).origin?.provinceLocalName,
 
     // Recommendation information
     food.recommendation.reasonText,
@@ -391,6 +482,53 @@ function applyFilters(foods: MenuItem[], filters: FilterState): MenuItem[] {
       return false;
     }
 
+    const contextFood = food as MenuItemWithContext;
+    const recommendationContext = contextFood.recommendationContext;
+
+    if (
+      filters.seasonCodes.length > 0 &&
+      !recommendationContext?.seasons.some((season) =>
+        filters.seasonCodes.includes(season.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.eventCodes.length > 0 &&
+      !recommendationContext?.events.some((event) =>
+        filters.eventCodes.includes(event.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.provinceCodes.length > 0 &&
+      !recommendationContext?.provincePopularity.some((province) =>
+        filters.provinceCodes.includes(province.provinceCode),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.weatherCodes.length > 0 &&
+      !recommendationContext?.suitableWeather.some((weather) =>
+        filters.weatherCodes.includes(weather.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.originProvinceCodes.length > 0 &&
+      (!contextFood.origin?.provinceCode ||
+        !filters.originProvinceCodes.includes(contextFood.origin.provinceCode))
+    ) {
+      return false;
+    }
+
     if (
       filters.spiceLevels.length > 0 &&
       !filters.spiceLevels.includes(food.food.spiceLevel)
@@ -412,13 +550,6 @@ function applyFilters(foods: MenuItem[], filters: FilterState): MenuItem[] {
     if (
       filters.maximumDistanceKm !== null &&
       food.distanceKm > filters.maximumDistanceKm
-    ) {
-      return false;
-    }
-
-    if (
-      filters.maximumDeliveryFee !== null &&
-      food.deliveryFee > filters.maximumDeliveryFee
     ) {
       return false;
     }
@@ -500,10 +631,14 @@ function countActiveFilters(filters: FilterState): number {
     filters.storeIds.length +
     filters.ingredientNames.length +
     filters.spiceLevels.length +
+    filters.seasonCodes.length +
+    filters.eventCodes.length +
+    filters.provinceCodes.length +
+    filters.weatherCodes.length +
+    filters.originProvinceCodes.length +
     (filters.priceTier ? 1 : 0) +
     (filters.maximumPreparationMinutes !== null ? 1 : 0) +
     (filters.maximumDistanceKm !== null ? 1 : 0) +
-    (filters.maximumDeliveryFee !== null ? 1 : 0) +
     (filters.minimumRating !== null ? 1 : 0) +
     (filters.minimumRecommendationScore !== null ? 1 : 0) +
     (filters.recommendedOnly ? 1 : 0) +
@@ -669,6 +804,12 @@ type FilterSidebarProps = {
   allergenOptions: FilterOption[];
   storeOptions: StoreFilterOption[];
   ingredientOptions: FilterOption[];
+
+  seasonOptions: FilterOption[];
+  eventOptions: FilterOption[];
+  provinceOptions: FilterOption[];
+  weatherOptions: FilterOption[];
+  originProvinceOptions: FilterOption[];
 };
 
 function FilterSidebar({
@@ -682,6 +823,11 @@ function FilterSidebar({
   allergenOptions,
   storeOptions,
   ingredientOptions,
+  seasonOptions,
+  eventOptions,
+  provinceOptions,
+  weatherOptions,
+  originProvinceOptions,
 }: FilterSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -698,7 +844,11 @@ function FilterSidebar({
     spice: false,
     preparation: false,
     distance: false,
-    delivery: false,
+    seasons: true,
+    events: true,
+    provinces: false,
+    weather: false,
+    originProvince: false,
     rating: false,
     matchScore: false,
     stores: false,
@@ -1196,23 +1346,144 @@ function FilterSidebar({
               />
             </FilterSection>
 
-            {/* <FilterSection
-              title="ថ្លៃដឹក"
-              icon={<IoPricetagOutline />}
-              isOpen={openSections.delivery}
-              onToggle={() => toggleSection("delivery")}
+            <FilterSection
+              title="រដូវកាលនៅកម្ពុជា"
+              icon={<FaFire />}
+              isOpen={openSections.seasons}
+              onToggle={() => toggleSection("seasons")}
             >
-              <SingleChoice
-                options={DELIVERY_OPTIONS}
-                selected={filters.maximumDeliveryFee}
-                onChange={(value) =>
-                  onChange({
-                    ...filters,
-                    maximumDeliveryFee: value,
-                  })
-                }
-              />
-            </FilterSection> */}
+              <div className="space-y-1">
+                {seasonOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.seasonCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        seasonCodes: toggleInList(
+                          filters.seasonCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="ពិធីបុណ្យ និងព្រឹត្តិការណ៍"
+              icon={<FaStar />}
+              isOpen={openSections.events}
+              onToggle={() => toggleSection("events")}
+            >
+              <div className="space-y-1">
+                {eventOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.eventCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        eventCodes: toggleInList(
+                          filters.eventCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="ពេញនិយមតាមខេត្ត"
+              icon={<MdOutlineCategory />}
+              isOpen={openSections.provinces}
+              onToggle={() => toggleSection("provinces")}
+            >
+              <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                {provinceOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.provinceCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        provinceCodes: toggleInList(
+                          filters.provinceCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="សមស្របតាមអាកាសធាតុ"
+              icon={<FaFire />}
+              isOpen={openSections.weather}
+              onToggle={() => toggleSection("weather")}
+            >
+              <div className="space-y-1">
+                {weatherOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.weatherCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        weatherCodes: toggleInList(
+                          filters.weatherCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            {originProvinceOptions.length > 0 && (
+              <FilterSection
+                title="ប្រភពដើមតាមខេត្ត"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.originProvince}
+                onToggle={() => toggleSection("originProvince")}
+              >
+                <div className="space-y-1">
+                  {originProvinceOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.originProvinceCodes.includes(
+                        option.code,
+                      )}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          originProvinceCodes: toggleInList(
+                            filters.originProvinceCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
 
             <FilterSection
               title="ការវាយតម្លៃ"
@@ -1731,6 +2002,88 @@ export default function FoodPage() {
     [menuItems],
   );
 
+  const contextualMenuItems = menuItems as MenuItemWithContext[];
+
+  const seasonOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.seasons ?? []).map((season) => ({
+            code: season.code,
+            name: season.localName || season.name,
+          })),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const eventOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.events ?? []).map((event) => ({
+            code: event.code,
+            name: event.localName || event.name,
+          })),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const provinceOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.provincePopularity ?? []).map(
+            (province) => ({
+              code: province.provinceCode,
+              name: province.provinceLocalName || province.provinceName,
+            }),
+          ),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const weatherOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.suitableWeather ?? []).map(
+            (weather) => ({
+              code: weather.code,
+              name: weather.localName || weather.name,
+            }),
+          ),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const originProvinceOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) => {
+          const origin = item.origin;
+
+          if (!origin?.provinceCode) {
+            return [];
+          }
+
+          return [
+            {
+              code: origin.provinceCode,
+              name:
+                origin.provinceLocalName ||
+                origin.provinceName ||
+                origin.provinceCode,
+            },
+          ];
+        }),
+      ),
+    [contextualMenuItems],
+  );
+
   const filteredFoods = useMemo(
     () => applyFilters(menuItems, filters),
     [menuItems, filters],
@@ -1885,6 +2238,11 @@ export default function FoodPage() {
                     allergenOptions={allergenOptions}
                     storeOptions={storeOptions}
                     ingredientOptions={ingredientOptions}
+                    seasonOptions={seasonOptions}
+                    eventOptions={eventOptions}
+                    provinceOptions={provinceOptions}
+                    weatherOptions={weatherOptions}
+                    originProvinceOptions={originProvinceOptions}
                   />
 
                   <main className="min-w-0 flex-1">
@@ -1971,6 +2329,11 @@ export default function FoodPage() {
                   allergenOptions={allergenOptions}
                   storeOptions={storeOptions}
                   ingredientOptions={ingredientOptions}
+                  seasonOptions={seasonOptions}
+                  eventOptions={eventOptions}
+                  provinceOptions={provinceOptions}
+                  weatherOptions={weatherOptions}
+                  originProvinceOptions={originProvinceOptions}
                 />
                 <LocationContent key="location-tab" menuItems={menuItems} />
               </div>
