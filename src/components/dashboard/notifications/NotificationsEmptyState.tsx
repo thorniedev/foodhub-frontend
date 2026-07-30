@@ -8,7 +8,7 @@ export default function NotificationsEmptyState() {
         <BellOff className="h-5 w-5 text-slate-400" />
       </span>
       <p className="text-md font-medium text-slate-600">មិនមានការជូនដំណឹងត្រូវនឹងលក្ខខណ្ឌនេះទេ</p>
-      <p className="text-xs text-slate-400">សូមសាកល្បងប្តូរតម្រង ឬបិទ &quot;មិនទាន់អានប៉ុណ្ណោះ&quot;</p>
+      <p className="text-base text-slate-400">សូមសាកល្បងប្តូរតម្រង ឬបិទ &quot;មិនទាន់អានប៉ុណ្ណោះ&quot;</p>
     </div>
   );
 }

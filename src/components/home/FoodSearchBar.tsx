@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import Link from "next/link";
 
-import { useGetFoodsQuery } from "@/redux/api/foodApi";
 import FoodCardComponent from "../FoodCardComponent";
+import { useGetFoodsQuery } from "@/app/store/foodApi";
 
 type ChipGroup = {
   title: string;
@@ -249,7 +249,7 @@ export default function FoodSearchBar() {
             <GridIcon className="h-5 w-5 shrink-0 text-[#1c6b45]" />
             <span className="flex-1 whitespace-nowrap text-left">{label}</span>
             {count > 0 && (
-              <span className="rounded-full bg-[#1c6b45] px-2 py-0.5 text-xs font-semibold text-white">
+              <span className="rounded-full bg-[#1c6b45] px-2 py-0.5 text-base font-semibold text-white">
                 {count}
               </span>
             )}

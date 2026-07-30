@@ -268,20 +268,21 @@ h6 {
   @apply text-lg;
 }
 
-/* Add to your globals.css — hides the scrollbar on the drag track */
-.no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-.no-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-/* dietary matrix overflow x  */
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
+/* NO SCOOLBAR IN CARD WEHN OVERLFOW*/
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

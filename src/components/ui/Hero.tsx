@@ -104,11 +104,11 @@ export const HeroComponent = () => {
       <nav className="relative z-20 flex items-center justify-between px-6 py-6 md:px-10 md:py-8 max-w-[1440px] mx-auto w-full">
         {/* Logo */}
         {/* <div className="flex items-center gap-1">
-          <div className="bg-white text-black font-black tracking-tight text-xs md:text-sm px-3 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
+          <div className="bg-white text-black font-black tracking-tight text-base md:text-sm px-3 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
             BASE
             <div className="absolute -bottom-1.5 left-0 w-3 h-3 bg-white" style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}></div>
           </div>
-          <div className="bg-[#CCFF00] text-black font-black text-xs md:text-sm px-3 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
+          <div className="bg-[#CCFF00] text-black font-black text-base md:text-sm px-3 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
             CLUB
           </div>
         </div> */}
@@ -116,14 +116,14 @@ export const HeroComponent = () => {
         {/* Desktop Links */}
         {/* <div className="hidden md:flex items-center space-x-2">
           {['About Club', 'My stats', 'Tokenomic', 'Airdrop'].map((item) => (
-            <a key={item} href="#" className="px-4 py-1.5 rounded-full border border-white/30 text-white text-xs font-semibold hover:bg-white/10 transition-colors">
+            <a key={item} href="#" className="px-4 py-1.5 rounded-full border border-white/30 text-white text-base font-semibold hover:bg-white/10 transition-colors">
               {item}
             </a>
           ))}
         </div> */}
 
         {/* Connect Button */}
-        {/* <button className="px-6 py-2 rounded-full border border-white text-white text-xs md:text-sm font-semibold hover:bg-white hover:text-[#0038FF] transition-colors">
+        {/* <button className="px-6 py-2 rounded-full border border-white text-white text-base md:text-sm font-semibold hover:bg-white hover:text-[#0038FF] transition-colors">
           Connect wallet
         </button> */}
       </nav>
@@ -197,7 +197,7 @@ export const HeroComponent = () => {
                   <p className="font-bold text-sm md:text-lg text-white">
                     baseclub.eth
                   </p>
-                  <p className="text-[10px] md:text-xs text-white/80 mt-1">
+                  <p className="text-[10px] md:text-base text-white/80 mt-1">
                     23 422 points
                   </p>
                 </div>
@@ -227,7 +227,7 @@ export const HeroComponent = () => {
                   <p className="font-bold text-sm md:text-lg text-white">
                     pearl.eth
                   </p>
-                  <p className="text-[10px] md:text-xs text-white/80 mt-1">
+                  <p className="text-[10px] md:text-base text-white/80 mt-1">
                     293 582 points
                   </p>
                 </div>
@@ -262,7 +262,7 @@ export const HeroComponent = () => {
               <br />
               TO CREATORS
             </h3>
-            <p className="text-[10px] md:text-xs text-black/60 font-bold mb-auto">
+            <p className="text-[10px] md:text-base text-black/60 font-bold mb-auto">
               you will receive $CLUB every second
             </p>
 
@@ -303,7 +303,7 @@ export const HeroComponent = () => {
               <br />
               $CLUB REWARDS
             </h3>
-            <p className="text-[10px] md:text-xs text-black/60 font-bold mb-auto">
+            <p className="text-[10px] md:text-base text-black/60 font-bold mb-auto">
               each account has a different of $CLUB
             </p>
 
@@ -313,7 +313,7 @@ export const HeroComponent = () => {
                 <div className="bg-white/20 text-white font-bold text-sm px-4 py-2 rounded-full mr-2">
                   20.4220
                 </div>
-                <div className="font-bold text-xs px-4">$CLUB</div>
+                <div className="font-bold text-base px-4">$CLUB</div>
               </div>
 
               {/* Small floating green pill */}
@@ -344,7 +344,7 @@ export const HeroComponent = () => {
               <br />
               FOR CREATORS
             </h3>
-            <p className="text-[10px] md:text-xs text-black/60 font-bold mb-auto">
+            <p className="text-[10px] md:text-base text-black/60 font-bold mb-auto">
               you will receive $CLUB every month
             </p>
 

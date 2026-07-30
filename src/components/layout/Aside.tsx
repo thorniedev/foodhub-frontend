@@ -70,7 +70,7 @@ export default function Aside() {
                 {item.badge ? (
                   <span
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold",
+                      "flex h-5 w-5 items-center justify-center rounded-full text-base font-semibold",
                       active
                         ? "bg-white/20 text-white"
                         : "bg-emerald-100 text-[#136C34]",

@@ -98,7 +98,7 @@ export default function LocationSection() {
               <p className="font-bold text-sm md:text-lg  ">
                 1.ម្ហូបគ្រប់ប្រភេទ
               </p>
-              <p className="text-[10px] md:text-xs  /80 mt-1">
+              <p className="text-[10px] md:text-base  /80 mt-1">
                 23 422 មុខសម្រាប់ជ្រើសរើស
               </p>
             </div>

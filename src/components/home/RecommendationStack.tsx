@@ -12,14 +12,15 @@ import type { Swiper as SwiperInstance } from "swiper";
 import "swiper/css/effect-cards";
 import "swiper/css";
 
+
 import type { FoodItem } from "@/types/food";
 
 import Image from "next/image";
 import Link from "next/link";
-import { MenuItem } from "@/types/menu-item";
+
 
 type RecommendCardStackProps = {
-  foods: MenuItem[];
+  foods: FoodItem[];
 };
 
 export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
@@ -30,13 +31,13 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
   const [pulseKey, setPulseKey] = useState(0);
   const total = foods.length;
 
-  // if (total === 0) {
-  //   return (
-  //     <div className="flex items-center justify-center py-20 text-gray-400">
-  //       មិនមានមុខម្ហូបណែនាំទេ
-  //     </div>
-  //   );
-  // }
+  if (total === 0) {
+    return (
+      <div className="flex items-center justify-center py-20 text-gray-400">
+        មិនមានមុខម្ហូបណែនាំទេ
+      </div>
+    );
+  }
 
   const markInteracted = () => setPulseKey((k) => k + 1);
 
@@ -64,7 +65,7 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
           className="h-full w-full"
         >
           {foods.map((food) => (
-            <SwiperSlide key={food.uuid} className="rounded-[24px]">
+            <SwiperSlide key={food.id} className="rounded-[24px]">
               <FoodCard food={food} />
             </SwiperSlide>
           ))}
@@ -90,7 +91,7 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
               repeat: Infinity,
               repeatDelay: 3,
             }}
-            className="flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-xs text-white shadow-lg backdrop-blur-sm"
+            className="flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-base text-white shadow-lg backdrop-blur-sm"
           >
             <MdSwipe className="text-sm" />
             <span>អូសដើម្បីមើលបន្ថែម</span>
@@ -153,10 +154,7 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
 
 function FoodCard({ food }: { food: FoodItem }) {
   return (
-    <Link
-      href={""}
-      className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200  shadow-sm rounded-[24px] p-2.5"
-    >
+    <Link href={`/food/$`} className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200  shadow-sm rounded-[24px] p-2.5">
       <div className="relative bord flex-1 min-h-0">
         <Image
           width={285}
@@ -201,12 +199,12 @@ function FoodCard({ food }: { food: FoodItem }) {
           </div>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
-          {food.dietaryTypes?.map((diet) => (
+          {food.tags.map((tag) => (
             <span
-              key={diet.code}
+              key={tag}
               className="bg-primary-800 text-gray-100 w-fit px-3 py-1 rounded-full text-sm"
             >
-              {diet.name}
+              {tag}
             </span>
           ))}
         </div>

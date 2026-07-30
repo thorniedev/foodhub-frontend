@@ -1,5 +1,12 @@
 import type { ReactNode } from "react";
-import { LayoutGrid, History, Users, Heart, Bell, Settings } from "lucide-react";
+import {
+  LayoutGrid,
+  History,
+  Users,
+  Heart,
+  Bell,
+  Settings,
+} from "lucide-react";
 import { createElement } from "react";
 
 export interface DashboardNavItem {
@@ -10,7 +17,11 @@ export interface DashboardNavItem {
 }
 
 export const dashboardNavItems: DashboardNavItem[] = [
-  { href: "/dashboard", label: "ផ្ទាំងព័ត៌មាន", icon: createElement(LayoutGrid, { className: "h-5 w-5" }) },
+  {
+    href: "/dashboard",
+    label: "ផ្ទាំងព័ត៌មាន",
+    icon: createElement(LayoutGrid, { className: "h-5 w-5" }),
+  },
   {
     href: "/dashboard/review",
     label: "ប្រវត្តិការវាយតម្លៃអាហារ",

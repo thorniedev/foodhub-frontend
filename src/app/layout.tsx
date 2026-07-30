@@ -4,7 +4,7 @@ import "./globals.css";
 import { AOSInit } from "@/components/AOSInit";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
 
-import Providers from "@/redux/Providers";
+import Providers from "@/app/store/Providers";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import SectionModal from "@/components/home/SectionModal";
@@ -14,7 +14,7 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = Geist_Mono({  
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -26,13 +26,29 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="km" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <Providers>{children}</Providers>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body
+        
+        className="min-h-full   max-md:px-4 overflow-x-hidden flex flex-col"
+      >
+        {/* <AOSInit /> */}
+        {/* <Navbar /> */}
+        <Providers>
+          {children}
+          {/* <SectionModal /> */}
+        </Providers>
+        {/* <footer>
+          <DrawCircleText />
+          <Footer />
+        </footer> */}
       </body>
     </html>
   );

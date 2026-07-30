@@ -105,7 +105,7 @@ export default function HeroSection() {
               className="pointer-events-auto inline-flex items-center gap-2.5 sm:gap-3 rounded-full bg-[#136c34] px-6 sm:px-9 py-2.5 sm:py-3.5 text-base sm:text-lg font-semibold text-white shadow-lg transition-colors hover:bg-[#0e5327] [font-family:'Kantumruy_Pro',sans-serif]"
             >
               ណែនាំមុខម្ហូប
-              <span className="flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full border-2 border-white text-[10px] sm:text-xs">
+              <span className="flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full border-2 border-white text-[10px] sm:text-base">
                 →
               </span>
             </Link>
