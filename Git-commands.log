@@ -79,7 +79,6 @@ Merge made by the 'ort' strategy.
  create mode 100644 src/types/restaurant.ts
 
  
-<<<<<<< HEAD
 USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
 $ git fetch
 
@@ -131,7 +130,6 @@ Auto-merging src/redux/api/baseApi-1.ts
 CONFLICT (content): Merge conflict in src/redux/api/baseApi-1.ts
 CONFLICT (file location): src/app/store/restaurantApi.ts added in HEAD inside a directory that was renamed in 1776acad8fc00f4b47dbecca63776f66d34d2ef6, suggesting it should perhaps be moved to src/redux/api/restaurantApi.ts.
 Automatic merge failed; fix conflicts and then commit the result.
-=======
 USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
 $ git add .
 
@@ -273,6 +271,23 @@ PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git branch
   test/before-merge
 
 
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge|MERGING)
+$ git add .
 
->>>>>>> 38feb2e4043cf3952990a64e69585f28d9e293d5
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge|MERGING)
+$ git commit -m "chore: Update pull latest code merge branch main and fix conflict with errors"
+[test/before-merge 630e074] chore: Update pull latest code merge branch main and fix conflict with errors
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
+$ git push origin test/before-merge 
+Enumerating objects: 95, done.
+Counting objects: 100% (94/94), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (37/37), done.
+Writing objects: 100% (38/38), 7.10 KiB | 346.00 KiB/s, done.
+Total 38 (delta 24), reused 1 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (24/24), completed with 24 local objects.
+To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
+   ebf7b8a..630e074  test/before-merge -> test/before-merge
+
 
