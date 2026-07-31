@@ -526,3 +526,34 @@ $ git commit -m "chore: relayout page restaurant detail with no discount"
 [longfou 2c09513] chore: relayout page restaurant detail with no discount
  7 files changed, 723 insertions(+), 182 deletions(-)
  create mode 100644 src/components/restaurant/Restaurantherocarousel.tsx
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "chore: update mockup data page restaurant detail"
+[longfou f65cf2b] chore: update mockup data page restaurant detail
+ 4 files changed, 519 insertions(+), 41 deletions(-)
+ create mode 100644 public/Image.zip
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git push origin longfou
+Enumerating objects: 90, done.
+Counting objects: 100% (90/90), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (44/44), done.
+Writing objects:  15% (7/45), 1.48 MiB | 29.00 KiB/s
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git push origin longfou
+Enumerating objects: 90, done.
+Counting objects: 100% (90/90), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (44/44), done.
+Writing objects: 100% (45/45), 93.40 MiB | 375.00 KiB/s, done.
+Total 45 (delta 31), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (31/31), completed with 18 local objects.
+remote: warning: See https://gh.io/lfs for more information.
+remote: warning: File public/Image.zip is 93.37 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
+   763b653..f65cf2b  longfou -> longfou
+

@@ -1,29 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { FiSun, FiMoon } from "react-icons/fi";
 
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+
+export default function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // avoid hydration mismatch — only render after mount
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return <div className="h-9 w-9" />;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const isDark = theme === "dark";
+  if (!mounted) {
+    return (
+      <button
+        type="button"
+        aria-label="Toggle theme"
+        className="size-10 rounded-full border border-border bg-background"
+      />
+    );
+  }
 
   return (
-    <button
-      type="button"
-      aria-label="ប្តូររបៀបងងឹត/ភ្លឺ"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="flex h-9 w-9 items-center justify-center rounded-full
-                 text-primary-800 transition-colors
-                 hover:bg-primary-400/10 dark:text-secondary-400"
-    >
-      {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
-    </button>
+    <AnimatedThemeToggler
+      theme={resolvedTheme === "dark" ? "dark" : "light"}
+      onThemeChange={(theme) => setTheme(theme)}
+      variant="circle"
+      duration={500}
+      className="
+        inline-flex size-10 items-center justify-center
+        rounded-full border border-border
+        bg-background text-foreground
+        transition-colors
+        hover:bg-accent hover:text-accent-foreground
+        [&_svg]:size-5
+      "
+    />
   );
 }
