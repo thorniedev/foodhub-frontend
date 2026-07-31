@@ -521,4 +521,8 @@ Merge made by the 'ort' strategy.
  create mode 100644 public/data/manuItem1.json
  create mode 100644 public/data/mockup.json
 
-
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "chore: relayout page restaurant detail with no discount"
+[longfou 2c09513] chore: relayout page restaurant detail with no discount
+ 7 files changed, 723 insertions(+), 182 deletions(-)
+ create mode 100644 src/components/restaurant/Restaurantherocarousel.tsx

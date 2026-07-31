@@ -61,13 +61,13 @@ type Props = {
  *  that RestaurantCategorySidebar links + observes. */
 export default function RestaurantMenuSection({ category }: Props) {
   const rowRef = useRef<HTMLDivElement>(null);
-
   if (category.items.length === 0) return null;
-
   const scrollForward = () => {
     // Scroll by roughly one card width so the next item snaps into view.
     rowRef.current?.scrollBy({ left: 260, behavior: "smooth" });
   };
+
+  
 
   return (
     <section
