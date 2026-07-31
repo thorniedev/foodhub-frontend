@@ -470,4 +470,55 @@ Fast-forward
  create mode 100644 structure.txt
 
 
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git fetch origin souheng
+remote: Enumerating objects: 52, done.
+remote: Counting objects: 100% (15/15), done.
+remote: Total 52 (delta 15), reused 15 (delta 15), pack-reused 37 (from 1)
+Unpacking objects: 100% (52/52), 48.20 KiB | 186.00 KiB/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            souheng    -> FETCH_HEAD
+   2c24cba..33e6e63  souheng    -> origin/souheng
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git fetch
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 1), reused 1 (delta 1), pack-reused 0 (from 0)
+Unpacking objects: 100% (1/1), 76 bytes | 1024 bytes/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   2c24cba..33e6e63  main       -> origin/main
+ * [new branch]      master     -> origin/master
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin souheng
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            souheng    -> FETCH_HEAD
+Auto-merging src/app/(site)/food/page.tsx
+Auto-merging src/components/food-page/FoodSearch.tsx
+Auto-merging src/components/layout/Navbar.tsx
+Merge made by the 'ort' strategy.
+ public/data/drinkCategory.json                     |   54 +
+ public/data/foodAndDrink.json                      |  283 +++
+ public/data/manuItem1.json                         | 1975 ++++++++++++++++++++
+ public/data/mockup.json                            |  225 +++
+ src/app/(site)/food/page.tsx                       |  976 +++++++++-
+ src/app/(site)/page.tsx                            |    6 +-
+ src/app/store/menuApi.ts                           |    2 +-
+ src/components/dynamic-card/FoodCard.tsx           |    8 +-
+ src/components/food-detail/FoodDetailPage.tsx      |   24 +-
+ src/components/food-page/FoodNavTabs.tsx           |   50 +-
+ src/components/food-page/FoodSearch.tsx            |  186 +-
+ src/components/food-page/LocationContent.tsx       |  343 ++--
+ .../home/features/FoodSearchBarComponent.tsx       |   82 +-
+ src/components/home/features/Model.tsx             |    2 +-
+ src/components/home/season.tsx                     |    2 +-
+ src/components/layout/Navbar.tsx                   |    2 +-
+ src/components/ui/Carosel.tsx                      |   14 +-
+ 17 files changed, 3886 insertions(+), 348 deletions(-)
+ create mode 100644 public/data/drinkCategory.json
+ create mode 100644 public/data/foodAndDrink.json
+ create mode 100644 public/data/manuItem1.json
+ create mode 100644 public/data/mockup.json
+
 
