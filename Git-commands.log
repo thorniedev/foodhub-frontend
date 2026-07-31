@@ -290,4 +290,13 @@ remote: Resolving deltas: 100% (24/24), completed with 24 local objects.
 To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
    ebf7b8a..630e074  test/before-merge -> test/before-merge
 
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git stash
+Saved working directory and index state WIP on longfou: 85adec0 chore: save process before change branch
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git checkout test/before-merge
+Switched to branch 'test/before-merge'
+Your branch is ahead of 'origin/test/before-merge' by 1 commit.
+  (use "git push" to publish your local commits)
 
