@@ -175,7 +175,7 @@ export default function UserDashboard() {
               onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-500 min-h-[80px] resize-none"
             />
-            <p className="mt-1 text-right text-xs text-slate-400">
+            <p className="mt-1 text-right text-base text-slate-400">
               {profile.bio.length}/200
             </p>
           </Field>
@@ -271,7 +271,7 @@ export default function UserDashboard() {
             ))}
           </div>
           {allergies.length > 0 && (
-            <p className="mt-3 flex items-start gap-1.5 text-xs text-orange-600">
+            <p className="mt-3 flex items-start gap-1.5 text-base text-orange-600">
               <FiAlertTriangle className="mt-0.5 shrink-0" />
               របស់ទាំងនេះនឹងត្រូវបានចៀសវាងក្នុងអាហារដែលណែនាំដល់អ្នក
             </p>
@@ -347,9 +347,9 @@ function StatCard({
 }) {
   return (
     <div className="rounded-xl bg-slate-50 p-2.5 sm:p-4">
-      <p className="text-xs text-slate-500 sm:text-sm">{label}</p>
+      <p className="text-base text-slate-500 sm:text-sm">{label}</p>
       <p className={`text-lg font-bold sm:text-2xl ${accent}`}>{value}</p>
-      <p className="truncate text-[10px] text-slate-400 sm:text-xs">
+      <p className="truncate text-[10px] text-slate-400 sm:text-base">
         {sublabel}
       </p>
     </div>

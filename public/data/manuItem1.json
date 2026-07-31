@@ -1,0 +1,1975 @@
+{
+  "menuItems": [
+    {
+      "uuid": "14996d11-7288-4815-bf04-9c8795653402",
+      "legacyId": 1,
+      "name": "Phnom Penh Noodle Soup",
+      "localName": "គុយទាវភ្នំពេញ",
+      "description": "Rice noodle soup in original-style beef broth, served with fresh vegetables.",
+      "localDescription": "គុយទាវទឹកសាច់គោរសជាតិដើម បម្រើជាមួយបន្លែស្រស់។",
+      "thumbnail": "/Image/food/food3.png",
+      "gallery": [
+        "/Image/food/food3.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 8,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "ceadf084-7ad4-434e-a88a-9ba6a0f85515",
+        "name": "Malis Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ម៉ាលីស",
+        "logoUrl": "/images/stores/malis-logo.webp",
+        "coverImageUrl": "/images/stores/malis-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5564,
+        "longitude": 104.9282,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 412
+      },
+      "food": {
+        "uuid": "c5831960-4054-4f50-998b-cc250e49b959",
+        "canonicalName": "Kuy Teav Phnom Penh",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "BREAKFAST",
+          "name": "Breakfast"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "HALAL",
+          "name": "ហាឡាល់",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "DAIRY_FREE",
+          "name": "គ្មានទឹកដោះគោ",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "ប្រូតេអ៊ីនខ្ពស់",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "MAY_CONTAIN",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Rice Noodles",
+        "Beef",
+        "Bean Sprouts",
+        "Fresh Herbs",
+        "Fried Garlic"
+      ],
+      "beveragePairings": ["តែក្តៅ"],
+      "nutrition": {
+        "calories": 380,
+        "protein": 22,
+        "carbohydrate": 50,
+        "fat": 9,
+        "fiber": 4,
+        "sodium": 610
+      },
+      "distanceKm": 0.5,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 3,
+        "finalScore": 0.92,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": [
+          "CUISINE_MATCH",
+          "MEAL_MATCH",
+          "NEARBY",
+          "POPULAR",
+          "HALAL"
+        ],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.92,
+          "popularity": 0.96,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.95,
+          "eventMatch": 0.93,
+          "provincePopularityMatch": 0.98,
+          "weatherMatch": 0.96
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": "PHNOM_PENH",
+        "provinceName": "Phnom Penh",
+        "provinceLocalName": "ភ្នំពេញ",
+        "isTraditional": true
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "RAINY_SEASON",
+            "name": "Rainy Season",
+            "localName": "រដូវវស្សា",
+            "suitabilityScore": 0.95,
+            "reasonText": "Warm broth is comforting during rainy weather."
+          },
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.91,
+            "reasonText": "A warm noodle soup fits cool mornings."
+          }
+        ],
+        "events": [
+          {
+            "code": "WATER_FESTIVAL",
+            "name": "Water Festival",
+            "localName": "បុណ្យអុំទូក",
+            "relevanceScore": 0.93,
+            "reasonText": "A convenient and popular meal around busy riverside celebrations."
+          },
+          {
+            "code": "KHMER_NEW_YEAR",
+            "name": "Khmer New Year",
+            "localName": "បុណ្យចូលឆ្នាំខ្មែរ",
+            "relevanceScore": 0.82,
+            "reasonText": "Suitable for breakfast and family outings during Khmer New Year."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.98,
+            "popularityRank": 1,
+            "isTraditionalToProvince": true,
+            "reasonText": "Mock recommendation signal showing popularity for Phnom Penh Noodle Soup in Phnom Penh."
+          },
+          {
+            "provinceCode": "KANDAL",
+            "provinceName": "Kandal",
+            "provinceLocalName": "កណ្ដាល",
+            "popularityScore": 0.86,
+            "popularityRank": 4,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Phnom Penh Noodle Soup in Kandal."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "RAINY",
+            "name": "Rainy",
+            "localName": "អាកាសធាតុភ្លៀង",
+            "suitabilityScore": 0.96,
+            "reasonText": "Hot broth is suitable for rainy days."
+          },
+          {
+            "code": "COOL",
+            "name": "Cool",
+            "localName": "អាកាសធាតុត្រជាក់",
+            "suitabilityScore": 0.92,
+            "reasonText": "A warm breakfast option for cooler mornings."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "0dc8a27f-4062-47a5-825c-470948ddcc38",
+      "legacyId": 2,
+      "name": "Chicken Rice Porridge",
+      "localName": "បបរសាច់មាន់",
+      "description": "Soft rice porridge with shredded chicken and fried garlic.",
+      "localDescription": "បបរទន់ៗ ជាមួយសាច់មាន់ និងខ្ទឹមបំពង។",
+      "thumbnail": "/Image/food/food4.png",
+      "gallery": [
+        "/Image/food/food4.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 2.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 10,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "696e7985-e9b5-4f9a-bf1f-05902e258b67",
+        "name": "Mlop Svay Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ម្លប់ស្វាយ",
+        "logoUrl": "/images/stores/mlop-svay-logo.webp",
+        "coverImageUrl": "/images/stores/mlop-svay-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5701,
+        "longitude": 104.9105,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.7,
+        "totalReviews": 205
+      },
+      "food": {
+        "uuid": "0a2ee522-8ed5-4855-b76b-c1e616e16edf",
+        "canonicalName": "Bobor Sach Moan",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "CHINESE_FOOD",
+          "name": "Chinease"
+        },
+        "spiceLevel": 0,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "BREAKFAST",
+          "name": "Breakfast"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "LOW_FAT",
+          "name": "ជាតិខ្លាញ់ទាប",
+          "verificationStatus": "UNVERIFIED"
+        },
+        {
+          "code": "GLUTEN_FREE",
+          "name": "គ្មានជាតិស្អិត",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [],
+      "ingredients": ["Rice", "Chicken", "Fried Garlic", "Ginger", "Scallions"],
+      "beveragePairings": ["ទឹកសណ្តែក"],
+      "nutrition": {
+        "calories": 300,
+        "protein": 18,
+        "carbohydrate": 45,
+        "fat": 5,
+        "fiber": 2,
+        "sodium": 480
+      },
+      "distanceKm": 0.85,
+      "recommendation": {
+        "isRecommended": false,
+        "rankPosition": 7,
+        "finalScore": 0.84,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "HEALTHY"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.86,
+          "popularity": 0.94,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 1.0,
+          "seasonMatch": 0.94,
+          "eventMatch": 0.82,
+          "provincePopularityMatch": 0.88,
+          "weatherMatch": 0.95
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": false
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "RAINY_SEASON",
+            "name": "Rainy Season",
+            "localName": "រដូវវស្សា",
+            "suitabilityScore": 0.94,
+            "reasonText": "Warm porridge is comforting during rainy days."
+          },
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.88,
+            "reasonText": "Suitable for cool mornings."
+          }
+        ],
+        "events": [
+          {
+            "code": "PCHUM_BEN",
+            "name": "Pchum Ben",
+            "localName": "បុណ្យភ្ជុំបិណ្ឌ",
+            "relevanceScore": 0.82,
+            "reasonText": "A light meal suitable for family and temple-day mornings."
+          },
+          {
+            "code": "FAMILY_GATHERING",
+            "name": "Family Gathering",
+            "localName": "ការជួបជុំគ្រួសារ",
+            "relevanceScore": 0.78,
+            "reasonText": "Easy to share and suitable for different age groups."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.88,
+            "popularityRank": 5,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Chicken Rice Porridge in Phnom Penh."
+          },
+          {
+            "provinceCode": "KANDAL",
+            "provinceName": "Kandal",
+            "provinceLocalName": "កណ្ដាល",
+            "popularityScore": 0.84,
+            "popularityRank": 6,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Chicken Rice Porridge in Kandal."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "RAINY",
+            "name": "Rainy",
+            "localName": "អាកាសធាតុភ្លៀង",
+            "suitabilityScore": 0.95,
+            "reasonText": "Warm and soft food for rainy weather."
+          },
+          {
+            "code": "COOL",
+            "name": "Cool",
+            "localName": "អាកាសធាតុត្រជាក់",
+            "suitabilityScore": 0.89,
+            "reasonText": "A gentle meal for cool mornings."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "480c8fad-811a-4d44-baea-3785f97d0169",
+      "legacyId": 3,
+      "name": "Fish Amok",
+      "localName": "អាម៉ុកត្រី",
+      "description": "Steamed fish curry with coconut milk and traditional Khmer herbs.",
+      "localDescription": "ម្ហូបអាម៉ុកត្រីបែបប្រពៃណីខ្មែរ មានរសជាតិឈ្ងុយឆ្ងាញ់។",
+      "thumbnail": "/Image/food/image.png",
+      "gallery": [
+        "/Image/food/image.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 6.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 15,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "605d394f-3f7b-452b-8f7f-108d2aff53bd",
+        "name": "Tonle Bassac Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ទន្លេបាសាក់",
+        "logoUrl": "/images/stores/tonle-bassac-logo.webp",
+        "coverImageUrl": "/images/stores/tonle-bassac-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5533,
+        "longitude": 104.9268,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.9,
+        "totalReviews": 540
+      },
+      "food": {
+        "uuid": "277b395c-de04-4285-aeb8-4b8a94941b48",
+        "canonicalName": "Fish Amok",
+        "category": {
+          "code": "FAST_FOOD",
+          "name": "Fast Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 2,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "គ្មានជាតិស្អិត",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "PESCATARIAN",
+          "name": "បរិភោគត្រី",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "EGG",
+          "name": "Egg",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["Fish", "Coconut Milk", "Kroeung", "Egg", "Banana Leaf"],
+      "beveragePairings": ["ទឹកដូង"],
+      "nutrition": {
+        "calories": 420,
+        "protein": 24,
+        "carbohydrate": 48,
+        "fat": 13,
+        "fiber": 6,
+        "sodium": 520
+      },
+      "distanceKm": 1.2,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 1,
+        "finalScore": 0.96,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "TRADITIONAL"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.58,
+          "distanceMatch": 0.8,
+          "popularity": 0.98,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.93,
+          "eventMatch": 0.94,
+          "provincePopularityMatch": 0.96,
+          "weatherMatch": 0.94
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": true
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.93,
+            "reasonText": "Rich coconut curry is pleasant in cooler weather."
+          },
+          {
+            "code": "RAINY_SEASON",
+            "name": "Rainy Season",
+            "localName": "រដូវវស្សា",
+            "suitabilityScore": 0.84,
+            "reasonText": "Warm steamed curry is suitable during rainy periods."
+          }
+        ],
+        "events": [
+          {
+            "code": "KHMER_NEW_YEAR",
+            "name": "Khmer New Year",
+            "localName": "បុណ្យចូលឆ្នាំខ្មែរ",
+            "relevanceScore": 0.94,
+            "reasonText": "A traditional Khmer dish suitable for New Year meals."
+          },
+          {
+            "code": "WATER_FESTIVAL",
+            "name": "Water Festival",
+            "localName": "បុណ្យអុំទូក",
+            "relevanceScore": 0.88,
+            "reasonText": "A recognizable Khmer dish for festival visitors and family meals."
+          },
+          {
+            "code": "FAMILY_GATHERING",
+            "name": "Family Gathering",
+            "localName": "ការជួបជុំគ្រួសារ",
+            "relevanceScore": 0.92,
+            "reasonText": "Well suited for shared family dining."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "SIEM_REAP",
+            "provinceName": "Siem Reap",
+            "provinceLocalName": "សៀមរាប",
+            "popularityScore": 0.96,
+            "popularityRank": 1,
+            "isTraditionalToProvince": true,
+            "reasonText": "Mock recommendation signal showing popularity for Fish Amok in Siem Reap."
+          },
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.94,
+            "popularityRank": 2,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Fish Amok in Phnom Penh."
+          },
+          {
+            "provinceCode": "BATTAMBANG",
+            "provinceName": "Battambang",
+            "provinceLocalName": "បាត់ដំបង",
+            "popularityScore": 0.89,
+            "popularityRank": 3,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Fish Amok in Battambang."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "COOL",
+            "name": "Cool",
+            "localName": "អាកាសធាតុត្រជាក់",
+            "suitabilityScore": 0.94,
+            "reasonText": "Rich curry works well in cooler weather."
+          },
+          {
+            "code": "RAINY",
+            "name": "Rainy",
+            "localName": "អាកាសធាតុភ្លៀង",
+            "suitabilityScore": 0.86,
+            "reasonText": "Warm curry is comforting during rain."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "ddc17c67-4f44-42e9-a804-359cb7d4906d",
+      "legacyId": 4,
+      "name": "Grilled Pork with Rice",
+      "localName": "បាយសាច់ជ្រូក",
+      "description": "Grilled pork served over rice with pickled vegetables and soup.",
+      "localDescription": "បាយសាច់ជ្រូកអាំង បម្រើជាមួយជ្រក់ និងស៊ុប។",
+      "thumbnail": "/Image/food/food5.png",
+      "gallery": [
+        "/Image/food/food5.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 12,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "88da43e3-a488-4d72-b6bb-d263635cd090",
+        "name": "Phteah Sleuk Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ផ្ទះស្លឹក",
+        "logoUrl": "/images/stores/phteah-sleuk-logo.webp",
+        "coverImageUrl": "/images/stores/phteah-sleuk-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.562,
+        "longitude": 104.9187,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 297
+      },
+      "food": {
+        "uuid": "0ae38de9-de34-47b3-b92b-f20bf1b811d8",
+        "canonicalName": "Bai Sach Chrouk",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "DAIRY_FREE",
+          "name": "គ្មានទឹកដោះគោ",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "ប្រូតេអ៊ីនខ្ពស់",
+          "verificationStatus": "UNVERIFIED"
+        },
+        {
+          "code": "NUT_FREE",
+          "name": "គ្មានគ្រាប់ធញ្ញជាតិ",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "MAY_CONTAIN",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Rice",
+        "Pork",
+        "Pickled Vegetables",
+        "Cucumber",
+        "Clear Soup"
+      ],
+      "beveragePairings": ["ត្រចៀកក្រាញ់"],
+      "nutrition": {
+        "calories": 520,
+        "protein": 28,
+        "carbohydrate": 62,
+        "fat": 16,
+        "fiber": 3,
+        "sodium": 700
+      },
+      "distanceKm": 0.9,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 4,
+        "finalScore": 0.9,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "POPULAR"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.85,
+          "popularity": 0.96,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.9,
+          "eventMatch": 0.87,
+          "provincePopularityMatch": 0.94,
+          "weatherMatch": 0.9
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": true
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.9,
+            "reasonText": "Grilled pork and rice are suitable for cool mornings."
+          },
+          {
+            "code": "HOT_DRY_SEASON",
+            "name": "Hot Dry Season",
+            "localName": "រដូវប្រាំងក្តៅ",
+            "suitabilityScore": 0.82,
+            "reasonText": "A quick and filling meal during busy dry-season days."
+          }
+        ],
+        "events": [
+          {
+            "code": "KHMER_NEW_YEAR",
+            "name": "Khmer New Year",
+            "localName": "បុណ្យចូលឆ្នាំខ្មែរ",
+            "relevanceScore": 0.87,
+            "reasonText": "A familiar breakfast option during holiday travel and family visits."
+          },
+          {
+            "code": "FAMILY_GATHERING",
+            "name": "Family Gathering",
+            "localName": "ការជួបជុំគ្រួសារ",
+            "relevanceScore": 0.82,
+            "reasonText": "A widely liked meal for mixed groups."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.94,
+            "popularityRank": 2,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Grilled Pork with Rice in Phnom Penh."
+          },
+          {
+            "provinceCode": "KAMPONG_CHAM",
+            "provinceName": "Kampong Cham",
+            "provinceLocalName": "កំពង់ចាម",
+            "popularityScore": 0.86,
+            "popularityRank": 4,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Grilled Pork with Rice in Kampong Cham."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "COOL",
+            "name": "Cool",
+            "localName": "អាកាសធាតុត្រជាក់",
+            "suitabilityScore": 0.9,
+            "reasonText": "Good for a warm breakfast on cool mornings."
+          },
+          {
+            "code": "SUNNY",
+            "name": "Sunny",
+            "localName": "អាកាសធាតុមានពន្លឺថ្ងៃ",
+            "suitabilityScore": 0.83,
+            "reasonText": "Convenient for daytime dining."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "294c18a0-ad12-4eaa-9715-44fd4aaef5e9",
+      "legacyId": 5,
+      "name": "Num Banh Chok",
+      "localName": "នំបញ្ចុក",
+      "description": "Khmer rice noodles with fish curry gravy and fresh vegetables.",
+      "localDescription": "នំបញ្ចុកខ្មែរ ជាមួយទឹកសម្លការី និងបន្លែស្រស់។",
+      "thumbnail": "/Image/food/food6.png",
+      "gallery": [
+        "/Image/food/food6.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 11,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "3f2afb14-7219-449b-9e4d-141544b1d0ec",
+        "name": "Sovann Restaurant",
+        "localName": "ភោជនីយដ្ឋាន សុវណ្ណ",
+        "logoUrl": "/images/stores/sovann-logo.webp",
+        "coverImageUrl": "/images/stores/sovann-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5686,
+        "longitude": 104.9214,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.9,
+        "totalReviews": 328
+      },
+      "food": {
+        "uuid": "e0a3d0a0-c2cf-4100-b461-fb394277a83d",
+        "canonicalName": "Num Banh Chok",
+        "category": {
+          "code": "FAST_FOOD",
+          "name": "Fast Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "PESCATARIAN",
+          "name": "បរិភោគត្រី",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "DAIRY_FREE",
+          "name": "គ្មានទឹកដោះគោ",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Rice Noodles",
+        "Fish",
+        "Kroeung",
+        "Fresh Vegetables",
+        "Bean Sprouts"
+      ],
+      "beveragePairings": ["ទឹកអំពៅ"],
+      "nutrition": {
+        "calories": 410,
+        "protein": 20,
+        "carbohydrate": 58,
+        "fat": 10,
+        "fiber": 7,
+        "sodium": 560
+      },
+      "distanceKm": 1.5,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 2,
+        "finalScore": 0.94,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "TRADITIONAL"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.75,
+          "popularity": 0.98,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.92,
+          "eventMatch": 0.97,
+          "provincePopularityMatch": 0.95,
+          "weatherMatch": 0.93
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": true
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "HOT_DRY_SEASON",
+            "name": "Hot Dry Season",
+            "localName": "រដូវប្រាំងក្តៅ",
+            "suitabilityScore": 0.92,
+            "reasonText": "Fresh vegetables and noodles suit hot weather."
+          },
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.86,
+            "reasonText": "A popular morning meal during the dry season."
+          }
+        ],
+        "events": [
+          {
+            "code": "KHMER_NEW_YEAR",
+            "name": "Khmer New Year",
+            "localName": "បុណ្យចូលឆ្នាំខ្មែរ",
+            "relevanceScore": 0.97,
+            "reasonText": "Strongly associated with Khmer family celebrations and morning meals."
+          },
+          {
+            "code": "PCHUM_BEN",
+            "name": "Pchum Ben",
+            "localName": "បុណ្យភ្ជុំបិណ្ឌ",
+            "relevanceScore": 0.9,
+            "reasonText": "Suitable for family and community gatherings."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "KAMPOT",
+            "provinceName": "Kampot",
+            "provinceLocalName": "កំពត",
+            "popularityScore": 0.95,
+            "popularityRank": 1,
+            "isTraditionalToProvince": true,
+            "reasonText": "Mock recommendation signal showing popularity for Num Banh Chok in Kampot."
+          },
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.93,
+            "popularityRank": 2,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Num Banh Chok in Phnom Penh."
+          },
+          {
+            "provinceCode": "SIEM_REAP",
+            "provinceName": "Siem Reap",
+            "provinceLocalName": "សៀមរាប",
+            "popularityScore": 0.9,
+            "popularityRank": 3,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Num Banh Chok in Siem Reap."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "HOT",
+            "name": "Hot",
+            "localName": "អាកាសធាតុក្តៅ",
+            "suitabilityScore": 0.93,
+            "reasonText": "Fresh herbs and vegetables suit hot days."
+          },
+          {
+            "code": "SUNNY",
+            "name": "Sunny",
+            "localName": "អាកាសធាតុមានពន្លឺថ្ងៃ",
+            "suitabilityScore": 0.89,
+            "reasonText": "A light meal for sunny mornings."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "2316f6f7-93a6-4338-a431-2219be696177",
+      "legacyId": 6,
+      "name": "Samlor Machu Kreung",
+      "localName": "សម្លម្ជូរគ្រឿង",
+      "description": "Sour fish soup with Khmer herb paste and fresh vegetables.",
+      "localDescription": "សម្លម្ជូរគ្រឿងត្រី ជាមួយបន្លែស្រស់ និងគ្រឿងខ្មែរ។",
+      "thumbnail": "/Image/food/food7.png",
+      "gallery": [
+        "/Image/food/food7.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 5.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 18,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "4fb6ca53-910c-4a09-8eb8-af455521257f",
+        "name": "Mlih Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ម្លិះ",
+        "logoUrl": "/images/stores/mlih-logo.webp",
+        "coverImageUrl": "/images/stores/mlih-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5478,
+        "longitude": 104.9331,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 176
+      },
+      "food": {
+        "uuid": "fddd654f-f757-4415-b5fe-b8abf5363c80",
+        "canonicalName": "Samlor Machu Kreung",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 2,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "គ្មានជាតិស្អិត",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Fish",
+        "Kroeung",
+        "Vegetables",
+        "Tamarind",
+        "Lemongrass"
+      ],
+      "beveragePairings": ["ទឹកក្រូច"],
+      "nutrition": {
+        "calories": 340,
+        "protein": 23,
+        "carbohydrate": 30,
+        "fat": 11,
+        "fiber": 6,
+        "sodium": 650
+      },
+      "distanceKm": 2.0,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 5,
+        "finalScore": 0.88,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "TRADITIONAL"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.7,
+          "distanceMatch": 0.67,
+          "popularity": 0.96,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.93,
+          "eventMatch": 0.91,
+          "provincePopularityMatch": 0.91,
+          "weatherMatch": 0.94
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": true
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "RAINY_SEASON",
+            "name": "Rainy Season",
+            "localName": "រដូវវស្សា",
+            "suitabilityScore": 0.93,
+            "reasonText": "Warm sour soup is suitable for rainy weather."
+          },
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.87,
+            "reasonText": "A warming dish for cooler evenings."
+          }
+        ],
+        "events": [
+          {
+            "code": "PCHUM_BEN",
+            "name": "Pchum Ben",
+            "localName": "បុណ្យភ្ជុំបិណ្ឌ",
+            "relevanceScore": 0.91,
+            "reasonText": "A traditional soup suitable for family meals during Pchum Ben."
+          },
+          {
+            "code": "FAMILY_GATHERING",
+            "name": "Family Gathering",
+            "localName": "ការជួបជុំគ្រួសារ",
+            "relevanceScore": 0.9,
+            "reasonText": "Designed for sharing with rice in family meals."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "BATTAMBANG",
+            "provinceName": "Battambang",
+            "provinceLocalName": "បាត់ដំបង",
+            "popularityScore": 0.91,
+            "popularityRank": 2,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Samlor Machu Kreung in Battambang."
+          },
+          {
+            "provinceCode": "KAMPONG_CHAM",
+            "provinceName": "Kampong Cham",
+            "provinceLocalName": "កំពង់ចាម",
+            "popularityScore": 0.89,
+            "popularityRank": 3,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Samlor Machu Kreung in Kampong Cham."
+          },
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.86,
+            "popularityRank": 5,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Samlor Machu Kreung in Phnom Penh."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "RAINY",
+            "name": "Rainy",
+            "localName": "អាកាសធាតុភ្លៀង",
+            "suitabilityScore": 0.94,
+            "reasonText": "Warm soup is comforting during rain."
+          },
+          {
+            "code": "COOL",
+            "name": "Cool",
+            "localName": "អាកាសធាតុត្រជាក់",
+            "suitabilityScore": 0.88,
+            "reasonText": "Suitable for cool evenings."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "651949fe-afdf-4810-9dd7-438679c2e3eb",
+      "legacyId": 7,
+      "name": "Beef Lok Lak",
+      "localName": "សាច់គោឡុកឡាក់",
+      "description": "Stir-fried diced beef served with rice and a fried egg.",
+      "localDescription": "សាច់គោឡុកឡាក់ បម្រើជាមួយបាយ និងស៊ុតចៀន។",
+      "thumbnail": "/Image/food/food8.png",
+      "gallery": [
+        "/Image/food/food8.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 6.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 17,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "90d20858-8d97-4eb2-aa62-a1e2996c0097",
+        "name": "Angkor Thom Restaurant",
+        "localName": "ភោជនីយដ្ឋាន អង្គរធំ",
+        "logoUrl": "/images/stores/angkor-thom-logo.webp",
+        "coverImageUrl": "/images/stores/angkor-thom-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5412,
+        "longitude": 104.9089,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.7,
+        "totalReviews": 489
+      },
+      "food": {
+        "uuid": "a7424845-df7a-4065-8ef1-98149f366f85",
+        "canonicalName": "Beef Lok Lak",
+        "category": {
+          "code": "CHINESE_FOOD",
+          "name": "Chinese Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "ប្រូតេអ៊ីនខ្ពស់",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "NUT_FREE",
+          "name": "គ្មានគ្រាប់ធញ្ញជាតិ",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "EGG",
+          "name": "Egg",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": [
+        "Beef",
+        "Rice",
+        "Fried Egg",
+        "Lettuce",
+        "Tomato",
+        "Pepper-Lime Sauce"
+      ],
+      "beveragePairings": ["ទឹកក្រូចឆ្មា"],
+      "nutrition": {
+        "calories": 560,
+        "protein": 32,
+        "carbohydrate": 55,
+        "fat": 20,
+        "fiber": 3,
+        "sodium": 780
+      },
+      "distanceKm": 2.3,
+      "recommendation": {
+        "isRecommended": false,
+        "rankPosition": 8,
+        "finalScore": 0.82,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "POPULAR"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.54,
+          "distanceMatch": 0.62,
+          "popularity": 0.94,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.91,
+          "eventMatch": 0.9,
+          "provincePopularityMatch": 0.95,
+          "weatherMatch": 0.92
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": true
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.91,
+            "reasonText": "A hearty beef dish for cooler evenings."
+          },
+          {
+            "code": "HOT_DRY_SEASON",
+            "name": "Hot Dry Season",
+            "localName": "រដូវប្រាំងក្តៅ",
+            "suitabilityScore": 0.8,
+            "reasonText": "Suitable for evening dining during the dry season."
+          }
+        ],
+        "events": [
+          {
+            "code": "WATER_FESTIVAL",
+            "name": "Water Festival",
+            "localName": "បុណ្យអុំទូក",
+            "relevanceScore": 0.88,
+            "reasonText": "A popular restaurant dish for festival dining."
+          },
+          {
+            "code": "FAMILY_GATHERING",
+            "name": "Family Gathering",
+            "localName": "ការជួបជុំគ្រួសារ",
+            "relevanceScore": 0.9,
+            "reasonText": "A shareable favorite for group meals."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.95,
+            "popularityRank": 1,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Beef Lok Lak in Phnom Penh."
+          },
+          {
+            "provinceCode": "SIEM_REAP",
+            "provinceName": "Siem Reap",
+            "provinceLocalName": "សៀមរាប",
+            "popularityScore": 0.91,
+            "popularityRank": 2,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Beef Lok Lak in Siem Reap."
+          },
+          {
+            "provinceCode": "BATTAMBANG",
+            "provinceName": "Battambang",
+            "provinceLocalName": "បាត់ដំបង",
+            "popularityScore": 0.87,
+            "popularityRank": 4,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Beef Lok Lak in Battambang."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "COOL",
+            "name": "Cool",
+            "localName": "អាកាសធាតុត្រជាក់",
+            "suitabilityScore": 0.92,
+            "reasonText": "A hearty choice for cooler weather."
+          },
+          {
+            "code": "SUNNY",
+            "name": "Sunny",
+            "localName": "អាកាសធាតុមានពន្លឺថ្ងៃ",
+            "suitabilityScore": 0.8,
+            "reasonText": "Suitable for restaurant dining on clear days."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "5fdbd7c6-5986-418e-bb76-cc82ed634f51",
+      "legacyId": 8,
+      "name": "Grilled Fish with Sweet Fish Sauce",
+      "localName": "ត្រីអាំងជាមួយទឹកត្រីផ្អែម",
+      "description": "Freshly grilled fish served with vegetables and sweet fish sauce.",
+      "localDescription": "ត្រីអាំងថ្មីៗ បម្រើជាមួយបន្លែ និងទឹកត្រីផ្អែម។",
+      "thumbnail": "/Image/food/food9.png",
+      "gallery": [
+        "/Image/food/food9.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 7.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 20,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "4da8c872-714a-4940-92cb-0c514f6ccc32",
+        "name": "Prek Leap Restaurant",
+        "localName": "ភោជនីយដ្ឋាន ព្រែកលាភ",
+        "logoUrl": "/images/stores/prek-leap-logo.webp",
+        "coverImageUrl": "/images/stores/prek-leap-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.6208,
+        "longitude": 104.9401,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 231
+      },
+      "food": {
+        "uuid": "b1b11d2f-4ae8-474e-ac19-2a7c19fe7f8c",
+        "canonicalName": "Trey Ang",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "PESCATARIAN",
+          "name": "បរិភោគត្រី",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "ប្រូតេអ៊ីនខ្ពស់",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["Fish", "Fresh Vegetables", "Sweet Fish Sauce", "Herbs"],
+      "beveragePairings": ["ទឹកដូង"],
+      "nutrition": {
+        "calories": 390,
+        "protein": 34,
+        "carbohydrate": 22,
+        "fat": 16,
+        "fiber": 4,
+        "sodium": 690
+      },
+      "distanceKm": 2.8,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 6,
+        "finalScore": 0.86,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "HEALTHY"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 0.5,
+          "distanceMatch": 0.53,
+          "popularity": 0.96,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.92,
+          "eventMatch": 0.94,
+          "provincePopularityMatch": 0.95,
+          "weatherMatch": 0.93
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": true
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "HOT_DRY_SEASON",
+            "name": "Hot Dry Season",
+            "localName": "រដូវប្រាំងក្តៅ",
+            "suitabilityScore": 0.92,
+            "reasonText": "Grilled fish and fresh vegetables suit dry-season dining."
+          },
+          {
+            "code": "COOL_DRY_SEASON",
+            "name": "Cool Dry Season",
+            "localName": "រដូវរំហើយ",
+            "suitabilityScore": 0.85,
+            "reasonText": "Pleasant for outdoor dining in cooler weather."
+          }
+        ],
+        "events": [
+          {
+            "code": "WATER_FESTIVAL",
+            "name": "Water Festival",
+            "localName": "បុណ្យអុំទូក",
+            "relevanceScore": 0.94,
+            "reasonText": "Fish dishes fit riverside and water-related celebrations."
+          },
+          {
+            "code": "FAMILY_GATHERING",
+            "name": "Family Gathering",
+            "localName": "ការជួបជុំគ្រួសារ",
+            "relevanceScore": 0.87,
+            "reasonText": "A large grilled fish is suitable for sharing."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "KANDAL",
+            "provinceName": "Kandal",
+            "provinceLocalName": "កណ្ដាល",
+            "popularityScore": 0.95,
+            "popularityRank": 1,
+            "isTraditionalToProvince": true,
+            "reasonText": "Mock recommendation signal showing popularity for Grilled Fish with Sweet Fish Sauce in Kandal."
+          },
+          {
+            "provinceCode": "KAMPONG_CHAM",
+            "provinceName": "Kampong Cham",
+            "provinceLocalName": "កំពង់ចាម",
+            "popularityScore": 0.92,
+            "popularityRank": 2,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Grilled Fish with Sweet Fish Sauce in Kampong Cham."
+          },
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.88,
+            "popularityRank": 4,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Grilled Fish with Sweet Fish Sauce in Phnom Penh."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "SUNNY",
+            "name": "Sunny",
+            "localName": "អាកាសធាតុមានពន្លឺថ្ងៃ",
+            "suitabilityScore": 0.93,
+            "reasonText": "Good for outdoor and riverside dining."
+          },
+          {
+            "code": "HOT",
+            "name": "Hot",
+            "localName": "អាកាសធាតុក្តៅ",
+            "suitabilityScore": 0.88,
+            "reasonText": "Fresh vegetables balance the grilled dish in hot weather."
+          }
+        ]
+      }
+    },
+    {
+      "uuid": "2aaeb0f3-2f8c-4fb8-b054-564c5cc3f4fa",
+      "legacyId": 9,
+      "name": "Khmer Fried Rice",
+      "localName": "បាយឆាខ្មែរ",
+      "description": "Khmer-style fried rice with pork and vegetables.",
+      "localDescription": "បាយឆារសជាតិបែបខ្មែរ ជាមួយសាច់ជ្រូក និងបន្លែ។",
+      "thumbnail": "/Image/food/food10.png",
+      "gallery": [
+        "/Image/food/food10.png",
+        "/Image/food/food1.png",
+        "/Image/food/food2.png"
+      ],
+      "price": 3.0,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 9,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "be14411c-8800-461c-a954-389dc00eb415",
+        "name": "Bay Khmer Restaurant",
+        "localName": "ភោជនីយដ្ឋាន បាយខ្មែរ",
+        "logoUrl": "/images/stores/bay-khmer-logo.webp",
+        "coverImageUrl": "/images/stores/bay-khmer-cover.webp",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "latitude": 11.5749,
+        "longitude": 104.9226,
+        "operatingStatus": "OPEN",
+        "averageRating": 4.6,
+        "totalReviews": 384
+      },
+      "food": {
+        "uuid": "772f0039-2856-482e-80e0-43a8541bebf7",
+        "canonicalName": "Bai Cha Khmer",
+        "category": {
+          "code": "CHINESE_FOOD",
+          "name": "Chinese Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1,
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "BREAKFAST",
+          "name": "Breakfast"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "DAIRY_FREE",
+          "name": "គ្មានទឹកដោះគោ",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "ប្រូតេអ៊ីនខ្ពស់",
+          "verificationStatus": "UNVERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "EGG",
+          "name": "Egg",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        },
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["Rice", "Pork", "Mixed Vegetables", "Egg", "Soy Sauce"],
+      "beveragePairings": ["តែទឹកកក"],
+      "nutrition": {
+        "calories": 480,
+        "protein": 19,
+        "carbohydrate": 68,
+        "fat": 14,
+        "fiber": 3,
+        "sodium": 720
+      },
+      "distanceKm": 0.65,
+      "recommendation": {
+        "isRecommended": false,
+        "rankPosition": 9,
+        "finalScore": 0.8,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "QUICK_PREP"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1.0,
+          "budgetMatch": 1.0,
+          "distanceMatch": 0.89,
+          "popularity": 0.92,
+          "dietaryMatch": 0.9,
+          "allergySafetyMatch": 0.82,
+          "seasonMatch": 0.84,
+          "eventMatch": 0.82,
+          "provincePopularityMatch": 0.9,
+          "weatherMatch": 0.84
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z",
+      "origin": {
+        "countryCode": "KH",
+        "countryName": "Cambodia",
+        "countryLocalName": "កម្ពុជា",
+        "provinceCode": null,
+        "provinceName": null,
+        "provinceLocalName": null,
+        "isTraditional": false
+      },
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "HOT_DRY_SEASON",
+            "name": "Hot Dry Season",
+            "localName": "រដូវប្រាំងក្តៅ",
+            "suitabilityScore": 0.84,
+            "reasonText": "A quick meal suited to busy dry-season days."
+          },
+          {
+            "code": "RAINY_SEASON",
+            "name": "Rainy Season",
+            "localName": "រដូវវស្សា",
+            "suitabilityScore": 0.8,
+            "reasonText": "A warm and convenient dish during rain."
+          }
+        ],
+        "events": [
+          {
+            "code": "KHMER_NEW_YEAR",
+            "name": "Khmer New Year",
+            "localName": "បុណ្យចូលឆ្នាំខ្មែរ",
+            "relevanceScore": 0.82,
+            "reasonText": "A convenient meal during travel and holiday activities."
+          },
+          {
+            "code": "WATER_FESTIVAL",
+            "name": "Water Festival",
+            "localName": "បុណ្យអុំទូក",
+            "relevanceScore": 0.8,
+            "reasonText": "Quick and familiar food for busy festival days."
+          }
+        ],
+        "provincePopularity": [
+          {
+            "provinceCode": "PHNOM_PENH",
+            "provinceName": "Phnom Penh",
+            "provinceLocalName": "ភ្នំពេញ",
+            "popularityScore": 0.9,
+            "popularityRank": 3,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Khmer Fried Rice in Phnom Penh."
+          },
+          {
+            "provinceCode": "PREY_VENG",
+            "provinceName": "Prey Veng",
+            "provinceLocalName": "ព្រៃវែង",
+            "popularityScore": 0.82,
+            "popularityRank": 6,
+            "isTraditionalToProvince": false,
+            "reasonText": "Mock recommendation signal showing popularity for Khmer Fried Rice in Prey Veng."
+          }
+        ],
+        "suitableWeather": [
+          {
+            "code": "SUNNY",
+            "name": "Sunny",
+            "localName": "អាកាសធាតុមានពន្លឺថ្ងៃ",
+            "suitabilityScore": 0.84,
+            "reasonText": "Convenient for daytime meals."
+          },
+          {
+            "code": "RAINY",
+            "name": "Rainy",
+            "localName": "អាកាសធាតុភ្លៀង",
+            "suitabilityScore": 0.8,
+            "reasonText": "A warm quick-preparation choice during rain."
+          }
+        ]
+      }
+    }
+  ]
+}

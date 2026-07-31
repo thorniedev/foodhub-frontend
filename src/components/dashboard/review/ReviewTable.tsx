@@ -50,7 +50,7 @@ export default function ReviewTable({
                 <div>
                   <p className="font-semibold text-slate-800">{item.name}</p>
                   <span
-                    className={`mt-1 inline-block rounded-md px-2 py-0.5 text-xs font-medium ${
+                    className={`mt-1 inline-block rounded-md px-2 py-0.5 text-base font-medium ${
                       categoryStyles[item.category] ??
                       "bg-slate-100 text-slate-600"
                     }`}
@@ -119,14 +119,14 @@ export default function ReviewTable({
                   </div>
                   <div className="mt-1 flex items-center gap-2">
                     <span
-                      className={`inline-block rounded-md px-2 py-0.5 text-xs font-medium ${
+                      className={`inline-block rounded-md px-2 py-0.5 text-base font-medium ${
                         categoryStyles[item.category] ??
                         "bg-slate-100 text-slate-600"
                       }`}
                     >
                       {item.categoryLabel}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-base text-slate-400">
                       {item.date}
                     </span>
                   </div>

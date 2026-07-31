@@ -39,7 +39,7 @@ export default function NotificationFilters({
               )}
               {tab.label}
               {typeof tab.count === "number" && (
-                <span className="text-xs text-slate-400">{tab.count}</span>
+                <span className="text-base text-slate-400">{tab.count}</span>
               )}
             </button>
           );

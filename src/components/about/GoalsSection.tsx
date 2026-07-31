@@ -59,7 +59,7 @@ export default function GoalsSection() {
             <div>
               {/* Badge Header */}
               <div className="inline-flex items-center gap-2 rounded-full bg-[#6dbf82] py-1.5 pl-2 pr-4">
-                <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#4ba361] text-xs font-extrabold text-white">
+                <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#4ba361] text-base font-extrabold text-white">
                   1
                 </span>
                 <span className="font-['Kantumruy_Pro',sans-serif] text-base font-bold text-[#1a4427] sm:text-lg lg:text-xl">
@@ -94,7 +94,7 @@ export default function GoalsSection() {
             <div className="flex min-h-[200px] sm:min-h-[220px] flex-1 flex-col justify-start rounded-3xl border border-slate-100 bg-[#f8fafc] p-5 sm:p-6 lg:p-8 shadow-sm">
               <div>
                 <div className="inline-flex items-center gap-2.5 self-start rounded-full bg-[#d8f3e1] py-1.5 pl-2 pr-4">
-                  <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#34a853] text-xs font-bold text-white">
+                  <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#34a853] text-base font-bold text-white">
                     2
                   </span>
                   <span className="font-['Kantumruy_Pro',sans-serif] text-base font-extrabold text-[#136c34] sm:text-lg lg:text-xl">
@@ -112,7 +112,7 @@ export default function GoalsSection() {
             <div className="flex min-h-[200px] sm:min-h-[220px] flex-1 flex-col justify-start rounded-3xl border border-orange-100/50 bg-[#fff7ed] p-5 sm:p-6 lg:p-8">
               <div>
                 <div className="inline-flex items-center gap-2.5 self-start rounded-full bg-[#ffedd5] py-1.5 pl-2 pr-4">
-                  <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#f97316] text-xs font-bold text-white">
+                  <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#f97316] text-base font-bold text-white">
                     3
                   </span>
                   <span className="font-['Kantumruy_Pro',sans-serif] text-base font-extrabold text-[#f97316] sm:text-lg lg:text-xl">

@@ -5,7 +5,7 @@ export default function SeasonSection() {
   return (
     <section>
       {" "}
-      <div className="  flex pt-8 flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
+      <div className=" z-0 flex pt-8 flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
         <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center font-semibold text-primary-800">
           ចំណីអាហារ
           <span className="text-secondary-500">ប្រចាំតំបន់</span>{" "}

@@ -89,7 +89,7 @@ export default function LocationSection() {
           <div className="w-40 md:w-52  ab aspect-3/3.5 bg-white lg:backdrop-blur-xs  rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[12deg] shadow-md border border-gray-100 hover:rotate-0 transition-transform duration-500">
             <div className="w-16 h-16  md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
               <img
-                src="https://api.dicebear.com/7.x/pixel-art/svg?seed=John"
+                src="/Image/icon map.png"
                 alt="Avatar"
                 className="w-full h-full object-cover scale-150"
               />
@@ -98,7 +98,7 @@ export default function LocationSection() {
               <p className="font-bold text-sm md:text-lg  ">
                 1.ម្ហូបគ្រប់ប្រភេទ
               </p>
-              <p className="text-[10px] md:text-xs  /80 mt-1">
+              <p className="text-[10px] md:text-base  /80 mt-1">
                 23 422 មុខសម្រាប់ជ្រើសរើស
               </p>
             </div>

@@ -76,7 +76,7 @@ export default function StatsSection() {
                 </h3>
 
                 {/* Main Label */}
-                <div className="text-xs sm:text-sm leading-relaxed font-medium">
+                <div className="text-base sm:text-sm leading-relaxed font-medium">
                   <p>
                     {stat.highlightText && (
                       <span className="text-[#E58348]">

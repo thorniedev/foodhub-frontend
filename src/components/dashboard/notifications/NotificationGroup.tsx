@@ -19,7 +19,7 @@ export default function NotificationGroup({ group, notifications }: Props) {
         <p className="text-2xl font-semibold uppercase tracking-wide text-[#F97316]">
           {groupLabels[group]}
         </p>
-        <span className="text-xs text-slate-400">{notifications.length}</span>
+        <span className="text-base text-slate-400">{notifications.length}</span>
       </div>
 
       <div className="space-y-3">
