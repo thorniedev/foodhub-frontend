@@ -10,6 +10,8 @@ import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import FoodCard from "@/components/dynamic-card/FoodCard";
 
 import type { MenuItem } from "@/types/manu";
+import FoodSearch from "@/components/food-page/FoodSearch";
+import { IoSearchOutline } from "react-icons/io5";
 
 type FilterGroupKey = "category" | "cuisine" | "dietary" | "age";
 
@@ -132,20 +134,28 @@ function ChevronIcon({ className }: { className?: string }) {
 
 export default function FoodSearchBar() {
   const [query, setQuery] = useState("");
-
+  const [searchInput, setSearchInput] = useState("");
+  const {
+    data: menuItems = [],
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useGetMenuItemsQuery();
   const [isOpen, setIsOpen] = useState(false);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const {
-    data: menuItems = [],
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useGetMenuItemsQuery();
+  // const {
+  //   data: menuItems = [],
+  //   isLoading,
+  //   isError,
+  //   error,
+  //   refetch,
+  // } = useGetMenuItemsQuery();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -347,8 +357,9 @@ export default function FoodSearchBar() {
 
   return (
     <div className="mx-auto container w-full max-w-7xl text-[#3d3d3a]">
-      <div className="flex container max-w-7xl px-4 sticky top-18 z-10 flex-wrap items-stretch gap-3.5">
-        <div className="flex h-[60px] min-w-[280px] flex-1 items-center gap-2.5 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition-all focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec] hover:border-[#cfcec6]">
+      {/* <div className="flex container max-w-7xl px-4 sticky top-18 z-10 flex-wrap items-stretch gap-3.5"> */}
+      <div className="sticky top-12 z-[200] mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5  px-4 py-3 ">
+        {/* <div className="flex h-[60px] min-w-[280px] flex-1 items-center gap-2.5 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition-all focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec] hover:border-[#cfcec6]">
           <SearchIcon className="h-5 w-5 shrink-0 text-[#1c6b45]" />
 
           <input
@@ -358,9 +369,13 @@ export default function FoodSearchBar() {
             placeholder="ស្វែងរកម្ហូបអាហារ..."
             className="h-full w-full bg-transparent text-[15px] text-[#3d3d3a] outline-none placeholder:text-[#a3a29a]"
           />
-        </div>
-
-        <div ref={wrapRef} className="relative z-30 min-w-[220px] flex-none">
+        </div> */}
+        <FoodSearch
+          menuItems={menuItems}
+          value={searchInput}
+          onChange={setSearchInput}
+        />
+        <div ref={wrapRef} className="relative z-99 min-w-[220px] flex-none">
           <button
             type="button"
             onClick={() => setIsOpen((previous) => !previous)}
@@ -388,13 +403,31 @@ export default function FoodSearchBar() {
           </button>
 
           <div
-            className={`absolute right-0 top-[calc(100%+10px)] z-20 w-[380px] max-w-[90vw] rounded-[18px] border border-[#e7e6e1] bg-white p-5 shadow-xl transition-all ${
+            className={`absolute right-0 top-[calc(100%+10px)] z-90 w-[380px] max-w-[80vw] rounded-[18px] border border-[#e7e6e1] bg-white p-5 shadow-xl transition-all ${
               isOpen
                 ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none -translate-y-2 scale-[0.98] opacity-0"
             }`}
           >
-            <div className="scrollbar-hide max-h-[70vh] overflow-y-auto">
+            {" "}
+            <div className="mt-1 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={clearAll}
+                className="text-sm self-end bg-secondary-50 px-3 py-1 rounded-full  cursor-pointer text-secondary-500 underline underline-offset-2 hover:text-secondary-800"
+              >
+                សម្អាតទាំងអស់
+              </button>
+
+              {/* <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full bg-[#1c6b45] px-[22px] py-2.5 text-sm font-semibold text-white hover:bg-[#14502f] active:scale-[0.97]"
+              >
+                អនុវត្ត
+              </button> */}
+            </div>
+            <div className="scrollbar-hide z-99 max-h-[70vh] overflow-y-auto">
               {chipGroups.map((group, index) => (
                 <div
                   key={group.key}
@@ -420,7 +453,7 @@ export default function FoodSearchBar() {
                           key={selectionKey}
                           type="button"
                           onClick={() => toggleChip(group.key, option.code)}
-                          className={`rounded-full border px-4 py-2 text-sm transition-all ${
+                          className={`rounded-full cursor-pointer border px-4 py-2 text-sm transition-all ${
                             isSelected
                               ? "border-[#1c6b45] bg-[#1c6b45] text-white"
                               : "border-[#e7e6e1] bg-white text-[#3d3d3a] hover:border-[#1c6b45]"
@@ -433,24 +466,6 @@ export default function FoodSearchBar() {
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-5 flex items-center justify-between border-t border-[#e7e6e1] pt-4">
-              <button
-                type="button"
-                onClick={clearAll}
-                className="text-sm text-[#a3a29a] underline underline-offset-2 hover:text-[#3d3d3a]"
-              >
-                សម្អាតទាំងអស់
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full bg-[#1c6b45] px-[22px] py-2.5 text-sm font-semibold text-white hover:bg-[#14502f] active:scale-[0.97]"
-              >
-                អនុវត្ត
-              </button>
             </div>
           </div>
         </div>
@@ -496,6 +511,7 @@ export default function FoodSearchBar() {
               }}
               className="col-span-full py-10 text-center text-gray-400"
             >
+              <IoSearchOutline className="mx-auto   pb-8 text-[34px] text-gray-300" />
               រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
             </motion.p>
           )}

@@ -571,9 +571,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   FoodHub AI
                 </p>
 
-                <h2 className="mt-1 text-2xl font-semibold text-primary-900">
+                <p className="mt-1 text-2xl font-semibold text-primary-900">
                   កម្រិតសមស្របសម្រាប់អ្នក
-                </h2>
+                </p>
               </div>
 
               <div className="text-right">
@@ -630,9 +630,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
           {/* Rating card */}
           <article className="rounded-[26px] border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
-            <h2 className="text-2xl font-semibold text-primary-900">
+            <p className="text-2xl font-semibold text-primary-900">
               ការវាយតម្លៃភោជនីយដ្ឋាន
-            </h2>
+            </p>
 
             <div className="mt-6 flex items-center gap-6">
               <div>
@@ -707,9 +707,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 <IoRestaurantOutline className="text-2xl text-primary-700" />
               </div>
 
-              <h2 className="text-xl font-semibold text-primary-900">
+              <p className="text-xl font-semibold text-primary-900">
                 គ្រឿងផ្សំ
-              </h2>
+              </p>
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -745,9 +745,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 <IoNutritionOutline className="text-2xl text-green-700" />
               </div>
 
-              <h2 className="text-xl font-semibold text-primary-900">
+              <p className="text-xl font-semibold text-primary-900">
                 តម្លៃអាហារូបត្ថម្ភ
-              </h2>
+              </p>
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
@@ -798,9 +798,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 <IoAlertCircleOutline className="text-2xl text-orange-500" />
               </div>
 
-              <h2 className="text-xl font-semibold text-primary-900">
+              <p className="text-xl font-semibold text-primary-900">
                 អាឡែស៊ី និងសុវត្ថិភាព
-              </h2>
+              </p>
             </div>
 
             {food.allergenDeclarations.length === 0 ? (
@@ -890,9 +890,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   អ្នកប្រហែលជាចូលចិត្ត
                 </p>
 
-                <h2 className="mt-2 text-3xl font-bold text-primary-900">
+                <p className="mt-2 text-3xl font-bold text-primary-900">
                   មុខម្ហូបស្រដៀងគ្នា
-                </h2>
+                </p>
               </div>
 
               <Link

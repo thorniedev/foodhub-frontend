@@ -47,7 +47,7 @@ export const menuApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMenuItems: builder.query<MenuItem[], void>({
       query: () => ({
-        url: "/data/manuItem.json",
+        url: "/data/manuItem1.json",
         method: "GET",
       }),
 

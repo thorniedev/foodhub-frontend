@@ -1,0 +1,283 @@
+{
+  "menuItems": [
+    {
+      "uuid": "food-001",
+      "itemType": "FOOD",
+
+      "name": "Fish Amok",
+      "localName": "អាម៉ុកត្រី",
+      "description": "Steamed fish curry with coconut milk and Khmer herbs.",
+      "localDescription": "អាម៉ុកត្រីចំហុយជាមួយខ្ទិះដូង និងគ្រឿងខ្មែរ។",
+
+      "imageUrl": "/images/menu-items/fish-amok.webp",
+      "gallery": ["/images/menu-items/fish-amok.webp"],
+
+      "price": 5.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 25,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+
+      "store": {
+        "uuid": "store-001",
+        "name": "Sovann Khmer Kitchen",
+        "localName": "សុវណ្ណ ខ្មែរ",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "operatingStatus": "OPEN",
+        "averageRating": 4.7,
+        "totalReviews": 328
+      },
+
+      "food": {
+        "uuid": "food-definition-001",
+        "canonicalName": "Fish Amok",
+
+        "dishCategory": {
+          "code": "CURRY",
+          "name": "Curry",
+          "localName": "ការី"
+        },
+
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer",
+          "localName": "ខ្មែរ"
+        },
+
+        "spiceLevel": 2,
+
+        "ageGroups": [
+          {
+            "code": "ADULT",
+            "name": "Adult",
+            "localName": "មនុស្សពេញវ័យ"
+          }
+        ]
+      },
+
+      "drink": null,
+
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch",
+          "localName": "អាហារថ្ងៃត្រង់"
+        },
+        {
+          "code": "DINNER",
+          "name": "Dinner",
+          "localName": "អាហារពេលល្ងាច"
+        }
+      ],
+
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "localName": "គ្មានជាតិស្អិត",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "localName": "ត្រី",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+
+      "ingredients": ["Fish", "Coconut Milk", "Kroeung", "Egg", "Banana Leaf"],
+
+      "distanceKm": 1.2,
+
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 1,
+        "finalScore": 0.94,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "HIGH_RATING"],
+        "reasonText": "Matches your Khmer cuisine preference.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1,
+          "budgetMatch": 0.91,
+          "distanceMatch": 0.95,
+          "popularity": 0.86
+        }
+      }
+    },
+
+    {
+      "uuid": "drink-001",
+      "itemType": "DRINK",
+
+      "name": "Iced Palm Juice",
+      "localName": "ទឹកត្នោតត្រជាក់",
+      "description": "Refreshing Cambodian palm juice served with ice.",
+      "localDescription": "ទឹកត្នោតខ្មែរត្រជាក់ ផ្តល់ភាពស្រស់ស្រាយ។",
+
+      "imageUrl": "/images/menu-items/iced-palm-juice.webp",
+      "gallery": ["/images/menu-items/iced-palm-juice.webp"],
+
+      "price": 1.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 5,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+
+      "store": {
+        "uuid": "store-001",
+        "name": "Sovann Khmer Kitchen",
+        "localName": "សុវណ្ណ ខ្មែរ",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "operatingStatus": "OPEN",
+        "averageRating": 4.7,
+        "totalReviews": 328
+      },
+
+      "food": null,
+
+      "drink": {
+        "uuid": "drink-definition-001",
+        "canonicalName": "Palm Juice",
+
+        "drinkCategory": {
+          "code": "TRADITIONAL_DRINK",
+          "name": "Traditional Drink",
+          "localName": "ភេសជ្ជៈប្រពៃណី"
+        },
+
+        "baseIngredient": {
+          "code": "PALM",
+          "name": "Palm",
+          "localName": "ត្នោត"
+        },
+
+        "servingTemperature": "COLD",
+        "sweetnessLevel": 2,
+        "caffeineLevel": "NONE",
+        "carbonationLevel": "NONE",
+        "isAlcoholic": false,
+
+        "ageGroups": [
+          {
+            "code": "CHILD",
+            "name": "Child",
+            "localName": "កុមារ"
+          },
+          {
+            "code": "TEEN",
+            "name": "Teen",
+            "localName": "យុវវ័យ"
+          },
+          {
+            "code": "ADULT",
+            "name": "Adult",
+            "localName": "មនុស្សពេញវ័យ"
+          }
+        ]
+      },
+
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch",
+          "localName": "អាហារថ្ងៃត្រង់"
+        },
+        {
+          "code": "DINNER",
+          "name": "Dinner",
+          "localName": "អាហារពេលល្ងាច"
+        }
+      ],
+
+      "dietaryTypes": [
+        {
+          "code": "DAIRY_FREE",
+          "name": "Dairy Free",
+          "localName": "គ្មានទឹកដោះគោ",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+
+      "allergenDeclarations": [],
+      "ingredients": ["Palm Juice", "Ice"],
+
+      "distanceKm": 1.2,
+
+      "recommendationContext": {
+        "seasons": [
+          {
+            "code": "HOT_DRY_SEASON",
+            "name": "Hot Dry Season",
+            "localName": "រដូវប្រាំងក្តៅ",
+            "suitabilityScore": 0.98,
+            "reasonText": "A refreshing drink for hot weather."
+          }
+        ],
+
+        "events": [
+          {
+            "code": "KHMER_NEW_YEAR",
+            "name": "Khmer New Year",
+            "localName": "បុណ្យចូលឆ្នាំខ្មែរ",
+            "relevanceScore": 0.9,
+            "reasonText": "A Cambodian drink suitable for New Year celebrations."
+          }
+        ],
+
+        "provincePopularity": [
+          {
+            "provinceCode": "KAMPONG_SPEU",
+            "provinceName": "Kampong Speu",
+            "provinceLocalName": "កំពង់ស្ពឺ",
+            "popularityScore": 0.96,
+            "popularityRank": 1,
+            "isTraditionalToProvince": true,
+            "reasonText": "Palm products are strongly associated with the province."
+          }
+        ],
+
+        "suitableWeather": [
+          {
+            "code": "HOT",
+            "name": "Hot",
+            "localName": "អាកាសធាតុក្តៅ",
+            "suitabilityScore": 0.98,
+            "reasonText": "Served cold and suitable for hot weather."
+          }
+        ]
+      },
+
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 2,
+        "finalScore": 0.91,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["HOT_WEATHER_MATCH", "TRADITIONAL", "NEARBY"],
+        "reasonText": "Recommended because it suits the current hot weather.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.8,
+          "cuisineMatch": 0.95,
+          "budgetMatch": 1,
+          "distanceMatch": 0.95,
+          "popularity": 0.9
+        }
+      }
+    }
+  ]
+}

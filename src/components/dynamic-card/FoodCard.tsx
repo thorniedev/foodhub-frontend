@@ -45,9 +45,9 @@ export default function FoodCard({ food }: FoodCardProps) {
           className="object-cover"
         />
 
-        <span className="absolute left-2 top-2 rounded-full bg-primary-800 px-3 py-1 text-sm text-white">
+        {/* <span className="absolute left-2 top-2 rounded-full bg-primary-800 px-3 py-1 text-sm text-white">
           {matchPercentage}% Match
-        </span>
+        </span> */}
 
         <button
           type="button"
@@ -82,10 +82,10 @@ export default function FoodCard({ food }: FoodCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-4">
-          <div className="flex items-center gap-2 text-accent-400">
+          {/* <div className="flex items-center gap-2 text-accent-400">
             <FaStar />
             <span>{food.store.averageRating}</span>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-2 text-primary-400">
             <IoMdTime />

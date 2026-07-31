@@ -21,8 +21,61 @@ type FoodSearchProps = {
   onChange: (value: string) => void;
 };
 
+type ContextOption = {
+  code: string;
+  name: string;
+  localName: string;
+};
+
+type SeasonalContext = ContextOption & {
+  suitabilityScore: number;
+  reasonText: string;
+};
+
+type EventContext = ContextOption & {
+  relevanceScore: number;
+  reasonText: string;
+};
+
+type ProvincePopularity = {
+  provinceCode: string;
+  provinceName: string;
+  provinceLocalName: string;
+  popularityScore: number;
+  popularityRank?: number;
+  isTraditionalToProvince: boolean;
+  reasonText: string;
+};
+
+type WeatherContext = ContextOption & {
+  suitabilityScore: number;
+  reasonText: string;
+};
+
+type FoodOrigin = {
+  countryCode: string;
+  countryName: string;
+  countryLocalName?: string;
+  provinceCode?: string | null;
+  provinceName?: string | null;
+  provinceLocalName?: string | null;
+  isTraditional: boolean;
+};
+
+type RecommendationContext = {
+  seasons: SeasonalContext[];
+  events: EventContext[];
+  provincePopularity: ProvincePopularity[];
+  suitableWeather: WeatherContext[];
+};
+
+type SearchableMenuItem = MenuItem & {
+  origin?: FoodOrigin;
+  recommendationContext?: RecommendationContext;
+};
+
 type SearchDocument = {
-  food: MenuItem;
+  food: SearchableMenuItem;
 
   uuid: string;
   name: string;
@@ -45,7 +98,7 @@ function normalizeSearchText(value: unknown): string {
   return String(value).trim().toLowerCase().normalize("NFKC");
 }
 
-function formatPriceSearchTerms(food: MenuItem): string[] {
+function formatPriceSearchTerms(food: SearchableMenuItem): string[] {
   const price = food.price;
 
   return [
@@ -65,7 +118,7 @@ function formatPriceSearchTerms(food: MenuItem): string[] {
   ];
 }
 
-function createSearchDocument(food: MenuItem): SearchDocument {
+function createSearchDocument(food: SearchableMenuItem): SearchDocument {
   const searchableValues: unknown[] = [
     // IDs
     food.uuid,
@@ -100,13 +153,6 @@ function createSearchDocument(food: MenuItem): SearchDocument {
     `distance ${food.distanceKm}`,
     `ចម្ងាយ ${food.distanceKm}`,
 
-    // Delivery fee
-    food.deliveryFee,
-    `$${food.deliveryFee}`,
-    `$${food.deliveryFee.toFixed(2)}`,
-    `delivery fee ${food.deliveryFee}`,
-    `ថ្លៃដឹក ${food.deliveryFee}`,
-
     // Store
     food.store.uuid,
     food.store.name,
@@ -139,7 +185,7 @@ function createSearchDocument(food: MenuItem): SearchDocument {
 
     // Ingredients and beverages
     ...food.ingredients,
-    ...food.beveragePairings,
+    ...(food.beveragePairings ?? []),
 
     // Meal types
     ...food.mealTypes.flatMap((mealType) => [mealType.code, mealType.name]),
@@ -161,37 +207,37 @@ function createSearchDocument(food: MenuItem): SearchDocument {
     ]),
 
     // Age groups
-    ...food.food.ageGroups.flatMap((ageGroup) => [
+    ...(food.food.ageGroups ?? []).flatMap((ageGroup) => [
       ageGroup.code,
       ageGroup.name,
     ]),
 
     // Nutrition
-    food.nutrition.calories,
-    `${food.nutrition.calories} calories`,
-    `${food.nutrition.calories} kcal`,
-    `calories ${food.nutrition.calories}`,
+    food.nutrition?.calories,
+    food.nutrition ? `${food.nutrition.calories} calories` : "",
+    food.nutrition ? `${food.nutrition.calories} kcal` : "",
+    food.nutrition ? `calories ${food.nutrition.calories}` : "",
 
-    food.nutrition.protein,
-    `${food.nutrition.protein} protein`,
-    `${food.nutrition.protein}g protein`,
+    food.nutrition?.protein,
+    food.nutrition ? `${food.nutrition.protein} protein` : "",
+    food.nutrition ? `${food.nutrition.protein}g protein` : "",
 
-    food.nutrition.carbohydrate,
-    `${food.nutrition.carbohydrate} carbohydrate`,
-    `${food.nutrition.carbohydrate} carbs`,
-    `${food.nutrition.carbohydrate}g carbs`,
+    food.nutrition?.carbohydrate,
+    food.nutrition ? `${food.nutrition.carbohydrate} carbohydrate` : "",
+    food.nutrition ? `${food.nutrition.carbohydrate} carbs` : "",
+    food.nutrition ? `${food.nutrition.carbohydrate}g carbs` : "",
 
-    food.nutrition.fat,
-    `${food.nutrition.fat} fat`,
-    `${food.nutrition.fat}g fat`,
+    food.nutrition?.fat,
+    food.nutrition ? `${food.nutrition.fat} fat` : "",
+    food.nutrition ? `${food.nutrition.fat}g fat` : "",
 
-    food.nutrition.fiber,
-    `${food.nutrition.fiber} fiber`,
-    `${food.nutrition.fiber}g fiber`,
+    food.nutrition?.fiber,
+    food.nutrition ? `${food.nutrition.fiber} fiber` : "",
+    food.nutrition ? `${food.nutrition.fiber}g fiber` : "",
 
-    food.nutrition.sodium,
-    `${food.nutrition.sodium} sodium`,
-    `${food.nutrition.sodium}mg sodium`,
+    food.nutrition?.sodium,
+    food.nutrition ? `${food.nutrition.sodium} sodium` : "",
+    food.nutrition ? `${food.nutrition.sodium}mg sodium` : "",
 
     // Recommendation
     food.recommendation.isRecommended ? "recommended AI recommendation" : "",
@@ -216,6 +262,63 @@ function createSearchDocument(food: MenuItem): SearchDocument {
     food.recommendation.scoreBreakdown.distanceMatch,
 
     food.recommendation.scoreBreakdown.popularity,
+
+    // Food origin
+    food.origin?.countryCode,
+    food.origin?.countryName,
+    food.origin?.countryLocalName,
+    food.origin?.provinceCode,
+    food.origin?.provinceName,
+    food.origin?.provinceLocalName,
+    food.origin?.isTraditional ? "traditional food ម្ហូបប្រពៃណី" : "",
+
+    // Cambodian seasons
+    ...(food.recommendationContext?.seasons ?? []).flatMap((season) => [
+      season.code,
+      season.name,
+      season.localName,
+      season.reasonText,
+      season.suitabilityScore,
+      `${Math.round(season.suitabilityScore * 100)}% season match`,
+    ]),
+
+    // Festivals and events
+    ...(food.recommendationContext?.events ?? []).flatMap((event) => [
+      event.code,
+      event.name,
+      event.localName,
+      event.reasonText,
+      event.relevanceScore,
+      `${Math.round(event.relevanceScore * 100)}% event match`,
+    ]),
+
+    // Popularity by province
+    ...(food.recommendationContext?.provincePopularity ?? []).flatMap(
+      (province) => [
+        province.provinceCode,
+        province.provinceName,
+        province.provinceLocalName,
+        province.reasonText,
+        province.popularityScore,
+        province.popularityRank,
+        province.isTraditionalToProvince
+          ? "traditional in province ម្ហូបប្រពៃណីតាមខេត្ត"
+          : "",
+        `${Math.round(province.popularityScore * 100)}% province popularity`,
+      ],
+    ),
+
+    // Suitable weather
+    ...(food.recommendationContext?.suitableWeather ?? []).flatMap(
+      (weather) => [
+        weather.code,
+        weather.name,
+        weather.localName,
+        weather.reasonText,
+        weather.suitabilityScore,
+        `${Math.round(weather.suitabilityScore * 100)}% weather match`,
+      ],
+    ),
   ];
 
   return {
@@ -229,7 +332,9 @@ function createSearchDocument(food: MenuItem): SearchDocument {
 
     storeName: normalizeSearchText(food.store.name),
 
-    storeLocalName: normalizeSearchText(food.store.localName),
+    storeLocalName: normalizeSearchText(
+      food.store.localName ?? food.store.name,
+    ),
 
     category: normalizeSearchText(food.food.category.name),
 
@@ -252,7 +357,7 @@ export default function FoodSearch({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const searchDocuments = useMemo(
-    () => menuItems.map(createSearchDocument),
+    () => (menuItems as SearchableMenuItem[]).map(createSearchDocument),
     [menuItems],
   );
 
@@ -342,7 +447,7 @@ export default function FoodSearch({
           value={value}
           onFocus={() => setIsFocused(true)}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="ស្វែងរកម្ហូប តម្លៃ ហាង ប្រភេទ គ្រឿងផ្សំ ឬទីតាំង..."
+          placeholder="ស្វែងរកម្ហូប តម្លៃ រដូវ បុណ្យ ខេត្ត អាកាសធាតុ ឬទីតាំង..."
           aria-label="Search all food information"
           autoComplete="off"
           className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400"
@@ -405,7 +510,8 @@ export default function FoodSearch({
                 </p>
 
                 <p className="mt-1 text-[16px] leading-7 text-gray-400">
-                  សូមសាកល្បងឈ្មោះ តម្លៃ ហាង ប្រភេទ គ្រឿងផ្សំ ឬទីតាំងផ្សេងទៀត។
+                  សូមសាកល្បងឈ្មោះ តម្លៃ រដូវកាល បុណ្យ ខេត្ត អាកាសធាតុ
+                  ឬទីតាំងផ្សេងទៀត។
                 </p>
               </div>
             ) : (
@@ -432,7 +538,11 @@ export default function FoodSearch({
                     <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-gray-100">
                       <Image
                         fill
-                        src={food.thumbnail}
+                        src={
+                          food.thumbnail ??
+                          food.imageUrl ??
+                          "/images/placeholder-food.webp"
+                        }
                         alt={food.localName || food.name}
                         sizes="64px"
                         className="object-cover"
@@ -450,7 +560,7 @@ export default function FoodSearch({
                             <FaStore className="shrink-0 text-secondary-500" />
 
                             <span className="truncate">
-                              {food.store.localName}
+                              {food.store.localName ?? food.store.name}
                             </span>
                           </div>
                         </div>
