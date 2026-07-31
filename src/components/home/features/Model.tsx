@@ -265,7 +265,7 @@ export default function Model() {
         whileTap={{
           scale: 0.92,
         }}
-        className="group fixed bottom-6 right-6 z-[900] cursor-pointer border-0 bg-transparent p-0 outline-none md:bottom-10 md:right-10"
+        className="group fixed bottom-6 right-6 z-[900] cursor-pointer border-0 bg-transparent p-0 outline-none md:bottom-1z0 md:right-10"
       >
         {/* AI recommendation preview */}
         <motion.div

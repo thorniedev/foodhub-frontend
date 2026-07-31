@@ -43,6 +43,57 @@ type SortBy =
 
 type PriceTier = "$" | "$$" | "$$$" | null;
 
+type RecommendationContextOption = {
+  code: string;
+  name: string;
+  localName: string;
+};
+
+type SeasonalContext = RecommendationContextOption & {
+  suitabilityScore: number;
+  reasonText: string;
+};
+
+type EventContext = RecommendationContextOption & {
+  relevanceScore: number;
+  reasonText: string;
+};
+
+type ProvincePopularity = {
+  provinceCode: string;
+  provinceName: string;
+  provinceLocalName: string;
+  popularityScore: number;
+  popularityRank?: number;
+  isTraditionalToProvince: boolean;
+  reasonText: string;
+};
+
+type WeatherContext = RecommendationContextOption & {
+  suitabilityScore: number;
+  reasonText: string;
+};
+
+type FoodOrigin = {
+  countryCode: string;
+  countryName: string;
+  countryLocalName?: string;
+  provinceCode?: string | null;
+  provinceName?: string | null;
+  provinceLocalName?: string | null;
+  isTraditional: boolean;
+};
+
+type MenuItemWithContext = MenuItem & {
+  origin?: FoodOrigin;
+  recommendationContext?: {
+    seasons: SeasonalContext[];
+    events: EventContext[];
+    provincePopularity: ProvincePopularity[];
+    suitableWeather: WeatherContext[];
+  };
+};
+
 type FilterState = {
   query: string;
   sortBy: SortBy;
@@ -53,10 +104,34 @@ type FilterState = {
   dietaryTypeCodes: string[];
   ageGroupCodes: string[];
 
+  excludedAllergenCodes: string[];
+  storeIds: string[];
+  ingredientNames: string[];
+  spiceLevels: number[];
+
+  seasonCodes: string[];
+  eventCodes: string[];
+  provinceCodes: string[];
+  weatherCodes: string[];
+  originProvinceCodes: string[];
+
   availabilityOnly: boolean;
   recommendedOnly: boolean;
+  featuredOnly: boolean;
 
   priceTier: PriceTier;
+
+  maximumPreparationMinutes: number | null;
+  maximumDistanceKm: number | null;
+
+  minimumRating: number | null;
+  minimumRecommendationScore: number | null;
+
+  lowCalorieOnly: boolean;
+  highProteinOnly: boolean;
+  lowFatOnly: boolean;
+  highFiberOnly: boolean;
+  lowSodiumOnly: boolean;
 };
 
 type FilterOption = {
@@ -64,6 +139,44 @@ type FilterOption = {
   name: string;
   count: number;
 };
+
+type StoreFilterOption = FilterOption;
+
+type NumericOption = {
+  value: number;
+  label: string;
+};
+
+const SPICE_OPTIONS: NumericOption[] = [
+  { value: 0, label: "មិនហឹរ" },
+  { value: 1, label: "ហឹរតិច" },
+  { value: 2, label: "ហឹរមធ្យម" },
+  { value: 3, label: "ហឹរខ្លាំង" },
+];
+
+const PREPARATION_OPTIONS: NumericOption[] = [
+  { value: 10, label: "ក្រោម 10 នាទី" },
+  { value: 15, label: "ក្រោម 15 នាទី" },
+  { value: 20, label: "ក្រោម 20 នាទី" },
+];
+
+const DISTANCE_OPTIONS: NumericOption[] = [
+  { value: 1, label: "ក្រោម 1 km" },
+  { value: 2, label: "ក្រោម 2 km" },
+  { value: 3, label: "ក្រោម 3 km" },
+];
+
+const RATING_OPTIONS: NumericOption[] = [
+  { value: 4.7, label: "4.7 ឡើងទៅ" },
+  { value: 4.8, label: "4.8 ឡើងទៅ" },
+  { value: 4.9, label: "4.9 ឡើងទៅ" },
+];
+
+const MATCH_SCORE_OPTIONS: NumericOption[] = [
+  { value: 0.8, label: "80% ឡើងទៅ" },
+  { value: 0.9, label: "90% ឡើងទៅ" },
+  { value: 0.95, label: "95% ឡើងទៅ" },
+];
 
 const DEFAULT_FILTERS: FilterState = {
   query: "",
@@ -75,10 +188,34 @@ const DEFAULT_FILTERS: FilterState = {
   dietaryTypeCodes: [],
   ageGroupCodes: [],
 
+  excludedAllergenCodes: [],
+  storeIds: [],
+  ingredientNames: [],
+  spiceLevels: [],
+
+  seasonCodes: [],
+  eventCodes: [],
+  provinceCodes: [],
+  weatherCodes: [],
+  originProvinceCodes: [],
+
   availabilityOnly: true,
   recommendedOnly: false,
+  featuredOnly: false,
 
   priceTier: null,
+
+  maximumPreparationMinutes: null,
+  maximumDistanceKm: null,
+
+  minimumRating: null,
+  minimumRecommendationScore: null,
+
+  lowCalorieOnly: false,
+  highProteinOnly: false,
+  lowFatOnly: false,
+  highFiberOnly: false,
+  lowSodiumOnly: false,
 };
 
 function toggleInList(list: string[], value: string): string[] {
@@ -119,6 +256,21 @@ function matchesSearch(food: MenuItem, query: string): boolean {
     food.description,
     food.localDescription,
     food.source,
+    String(food.price),
+    food.price.toFixed(2),
+    `$${food.price}`,
+    `$${food.price.toFixed(2)}`,
+    food.currencyCode,
+    String(food.preparationTimeMinutes),
+    `${food.preparationTimeMinutes} min`,
+    String(food.distanceKm),
+    `${food.distanceKm} km`,
+    String(food.nutrition.calories),
+    `${food.nutrition.calories} calories`,
+    String(food.nutrition.protein),
+    `${food.nutrition.protein} protein`,
+    String(food.store.averageRating),
+    `${food.store.averageRating} rating`,
 
     // Store information
     food.store.name,
@@ -163,6 +315,44 @@ function matchesSearch(food: MenuItem, query: string): boolean {
       ageGroup.code,
       ageGroup.name,
     ]),
+
+    // Cambodian recommendation context
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.seasons ?? []
+    ).flatMap((season) => [
+      season.code,
+      season.name,
+      season.localName,
+      season.reasonText,
+    ]),
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.events ?? []
+    ).flatMap((event) => [
+      event.code,
+      event.name,
+      event.localName,
+      event.reasonText,
+    ]),
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.provincePopularity ??
+      []
+    ).flatMap((province) => [
+      province.provinceCode,
+      province.provinceName,
+      province.provinceLocalName,
+      province.reasonText,
+    ]),
+    ...(
+      (food as MenuItemWithContext).recommendationContext?.suitableWeather ?? []
+    ).flatMap((weather) => [
+      weather.code,
+      weather.name,
+      weather.localName,
+      weather.reasonText,
+    ]),
+    (food as MenuItemWithContext).origin?.provinceCode,
+    (food as MenuItemWithContext).origin?.provinceName,
+    (food as MenuItemWithContext).origin?.provinceLocalName,
 
     // Recommendation information
     food.recommendation.reasonText,
@@ -214,6 +404,10 @@ function applyFilters(foods: MenuItem[], filters: FilterState): MenuItem[] {
       return false;
     }
 
+    if (filters.featuredOnly && !food.isFeatured) {
+      return false;
+    }
+
     if (!matchesSearch(food, filters.query)) {
       return false;
     }
@@ -259,7 +453,138 @@ function applyFilters(foods: MenuItem[], filters: FilterState): MenuItem[] {
       return false;
     }
 
+    // Exclude foods containing selected allergens
+    if (
+      filters.excludedAllergenCodes.length > 0 &&
+      food.allergenDeclarations.some((allergen) =>
+        filters.excludedAllergenCodes.includes(allergen.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.storeIds.length > 0 &&
+      !filters.storeIds.includes(food.store.uuid)
+    ) {
+      return false;
+    }
+
+    // Requires every selected ingredient
+    if (
+      filters.ingredientNames.length > 0 &&
+      !filters.ingredientNames.every((selectedIngredient) =>
+        food.ingredients.some((ingredient) =>
+          normalizeText(ingredient).includes(normalizeText(selectedIngredient)),
+        ),
+      )
+    ) {
+      return false;
+    }
+
+    const contextFood = food as MenuItemWithContext;
+    const recommendationContext = contextFood.recommendationContext;
+
+    if (
+      filters.seasonCodes.length > 0 &&
+      !recommendationContext?.seasons.some((season) =>
+        filters.seasonCodes.includes(season.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.eventCodes.length > 0 &&
+      !recommendationContext?.events.some((event) =>
+        filters.eventCodes.includes(event.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.provinceCodes.length > 0 &&
+      !recommendationContext?.provincePopularity.some((province) =>
+        filters.provinceCodes.includes(province.provinceCode),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.weatherCodes.length > 0 &&
+      !recommendationContext?.suitableWeather.some((weather) =>
+        filters.weatherCodes.includes(weather.code),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.originProvinceCodes.length > 0 &&
+      (!contextFood.origin?.provinceCode ||
+        !filters.originProvinceCodes.includes(contextFood.origin.provinceCode))
+    ) {
+      return false;
+    }
+
+    if (
+      filters.spiceLevels.length > 0 &&
+      !filters.spiceLevels.includes(food.food.spiceLevel)
+    ) {
+      return false;
+    }
+
     if (!matchesPriceTier(food.price, filters.priceTier)) {
+      return false;
+    }
+
+    if (
+      filters.maximumPreparationMinutes !== null &&
+      food.preparationTimeMinutes > filters.maximumPreparationMinutes
+    ) {
+      return false;
+    }
+
+    if (
+      filters.maximumDistanceKm !== null &&
+      food.distanceKm > filters.maximumDistanceKm
+    ) {
+      return false;
+    }
+
+    if (
+      filters.minimumRating !== null &&
+      food.store.averageRating < filters.minimumRating
+    ) {
+      return false;
+    }
+
+    if (
+      filters.minimumRecommendationScore !== null &&
+      food.recommendation.finalScore < filters.minimumRecommendationScore
+    ) {
+      return false;
+    }
+
+    if (filters.lowCalorieOnly && food.nutrition.calories >= 400) {
+      return false;
+    }
+
+    if (filters.highProteinOnly && food.nutrition.protein < 25) {
+      return false;
+    }
+
+    if (filters.lowFatOnly && food.nutrition.fat >= 10) {
+      return false;
+    }
+
+    if (filters.highFiberOnly && food.nutrition.fiber < 5) {
+      return false;
+    }
+
+    if (filters.lowSodiumOnly && food.nutrition.sodium >= 600) {
       return false;
     }
 
@@ -302,8 +627,27 @@ function countActiveFilters(filters: FilterState): number {
     filters.mealTypeCodes.length +
     filters.dietaryTypeCodes.length +
     filters.ageGroupCodes.length +
+    filters.excludedAllergenCodes.length +
+    filters.storeIds.length +
+    filters.ingredientNames.length +
+    filters.spiceLevels.length +
+    filters.seasonCodes.length +
+    filters.eventCodes.length +
+    filters.provinceCodes.length +
+    filters.weatherCodes.length +
+    filters.originProvinceCodes.length +
     (filters.priceTier ? 1 : 0) +
-    (filters.recommendedOnly ? 1 : 0)
+    (filters.maximumPreparationMinutes !== null ? 1 : 0) +
+    (filters.maximumDistanceKm !== null ? 1 : 0) +
+    (filters.minimumRating !== null ? 1 : 0) +
+    (filters.minimumRecommendationScore !== null ? 1 : 0) +
+    (filters.recommendedOnly ? 1 : 0) +
+    (filters.featuredOnly ? 1 : 0) +
+    (filters.lowCalorieOnly ? 1 : 0) +
+    (filters.highProteinOnly ? 1 : 0) +
+    (filters.lowFatOnly ? 1 : 0) +
+    (filters.highFiberOnly ? 1 : 0) +
+    (filters.lowSodiumOnly ? 1 : 0)
   );
 }
 
@@ -412,6 +756,41 @@ function CheckboxOption({
   );
 }
 
+type SingleChoiceProps<T extends string | number> = {
+  options: { value: T; label: string }[];
+  selected: T | null;
+  onChange: (value: T | null) => void;
+};
+
+function SingleChoice<T extends string | number>({
+  options,
+  selected,
+  onChange,
+}: SingleChoiceProps<T>) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => {
+        const isSelected = selected === option.value;
+
+        return (
+          <button
+            key={String(option.value)}
+            type="button"
+            onClick={() => onChange(isSelected ? null : option.value)}
+            className={`rounded-full border px-3 py-2 text-[16px] transition ${
+              isSelected
+                ? "border-primary-800 bg-primary-800 text-white"
+                : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50"
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 type FilterSidebarProps = {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
@@ -421,6 +800,16 @@ type FilterSidebarProps = {
   mealTypeOptions: FilterOption[];
   dietaryTypeOptions: FilterOption[];
   ageGroupOptions: FilterOption[];
+
+  allergenOptions: FilterOption[];
+  storeOptions: StoreFilterOption[];
+  ingredientOptions: FilterOption[];
+
+  seasonOptions: FilterOption[];
+  eventOptions: FilterOption[];
+  provinceOptions: FilterOption[];
+  weatherOptions: FilterOption[];
+  originProvinceOptions: FilterOption[];
 };
 
 function FilterSidebar({
@@ -431,6 +820,14 @@ function FilterSidebar({
   mealTypeOptions,
   dietaryTypeOptions,
   ageGroupOptions,
+  allergenOptions,
+  storeOptions,
+  ingredientOptions,
+  seasonOptions,
+  eventOptions,
+  provinceOptions,
+  weatherOptions,
+  originProvinceOptions,
 }: FilterSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -442,6 +839,22 @@ function FilterSidebar({
     mealType: true,
     dietaryType: false,
     ageGroup: false,
+
+    allergens: false,
+    spice: false,
+    preparation: false,
+    distance: false,
+    seasons: true,
+    events: true,
+    provinces: false,
+    weather: false,
+    originProvince: false,
+    rating: false,
+    matchScore: false,
+    stores: false,
+    ingredients: false,
+    nutrition: false,
+
     price: true,
     availability: true,
   });
@@ -839,6 +1252,387 @@ function FilterSidebar({
             </FilterSection>
 
             <FilterSection
+              title="មិនរួមបញ្ចូលអាឡែស៊ី"
+              icon={<IoNutritionOutline />}
+              isOpen={openSections.allergens}
+              onToggle={() => toggleSection("allergens")}
+            >
+              <p className="mb-3 text-[16px] leading-7 text-orange-600">
+                មុខម្ហូបដែលមានអាឡែស៊ីដែលបានជ្រើសនឹងត្រូវដកចេញ។
+              </p>
+              <div className="space-y-1">
+                {allergenOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={`គ្មាន ${option.name}`}
+                    count={option.count}
+                    checked={filters.excludedAllergenCodes.includes(
+                      option.code,
+                    )}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        excludedAllergenCodes: toggleInList(
+                          filters.excludedAllergenCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="កម្រិតហឹរ"
+              icon={<FaFire />}
+              isOpen={openSections.spice}
+              onToggle={() => toggleSection("spice")}
+            >
+              <div className="space-y-1">
+                {SPICE_OPTIONS.map((option) => (
+                  <CheckboxOption
+                    key={option.value}
+                    label={option.label}
+                    checked={filters.spiceLevels.includes(option.value)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        spiceLevels: filters.spiceLevels.includes(option.value)
+                          ? filters.spiceLevels.filter(
+                              (level) => level !== option.value,
+                            )
+                          : [...filters.spiceLevels, option.value],
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="ពេលរៀបចំ"
+              icon={<IoTimeOutline />}
+              isOpen={openSections.preparation}
+              onToggle={() => toggleSection("preparation")}
+            >
+              <SingleChoice
+                options={PREPARATION_OPTIONS}
+                selected={filters.maximumPreparationMinutes}
+                onChange={(value) =>
+                  onChange({
+                    ...filters,
+                    maximumPreparationMinutes: value,
+                  })
+                }
+              />
+            </FilterSection>
+
+            <FilterSection
+              title="ចម្ងាយ"
+              icon={<IoTimeOutline />}
+              isOpen={openSections.distance}
+              onToggle={() => toggleSection("distance")}
+            >
+              <SingleChoice
+                options={DISTANCE_OPTIONS}
+                selected={filters.maximumDistanceKm}
+                onChange={(value) =>
+                  onChange({
+                    ...filters,
+                    maximumDistanceKm: value,
+                  })
+                }
+              />
+            </FilterSection>
+
+            <FilterSection
+              title="រដូវកាលនៅកម្ពុជា"
+              icon={<FaFire />}
+              isOpen={openSections.seasons}
+              onToggle={() => toggleSection("seasons")}
+            >
+              <div className="space-y-1">
+                {seasonOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.seasonCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        seasonCodes: toggleInList(
+                          filters.seasonCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="ពិធីបុណ្យ និងព្រឹត្តិការណ៍"
+              icon={<FaStar />}
+              isOpen={openSections.events}
+              onToggle={() => toggleSection("events")}
+            >
+              <div className="space-y-1">
+                {eventOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.eventCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        eventCodes: toggleInList(
+                          filters.eventCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="ពេញនិយមតាមខេត្ត"
+              icon={<MdOutlineCategory />}
+              isOpen={openSections.provinces}
+              onToggle={() => toggleSection("provinces")}
+            >
+              <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                {provinceOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.provinceCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        provinceCodes: toggleInList(
+                          filters.provinceCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="សមស្របតាមអាកាសធាតុ"
+              icon={<FaFire />}
+              isOpen={openSections.weather}
+              onToggle={() => toggleSection("weather")}
+            >
+              <div className="space-y-1">
+                {weatherOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.weatherCodes.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        weatherCodes: toggleInList(
+                          filters.weatherCodes,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            {originProvinceOptions.length > 0 && (
+              <FilterSection
+                title="ប្រភពដើមតាមខេត្ត"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.originProvince}
+                onToggle={() => toggleSection("originProvince")}
+              >
+                <div className="space-y-1">
+                  {originProvinceOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.originProvinceCodes.includes(
+                        option.code,
+                      )}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          originProvinceCodes: toggleInList(
+                            filters.originProvinceCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            <FilterSection
+              title="ការវាយតម្លៃ"
+              icon={<FaStar />}
+              isOpen={openSections.rating}
+              onToggle={() => toggleSection("rating")}
+            >
+              <SingleChoice
+                options={RATING_OPTIONS}
+                selected={filters.minimumRating}
+                onChange={(value) =>
+                  onChange({
+                    ...filters,
+                    minimumRating: value,
+                  })
+                }
+              />
+            </FilterSection>
+
+            <FilterSection
+              title="កម្រិតសមស្រប AI"
+              icon={<FaStar />}
+              isOpen={openSections.matchScore}
+              onToggle={() => toggleSection("matchScore")}
+            >
+              <SingleChoice
+                options={MATCH_SCORE_OPTIONS}
+                selected={filters.minimumRecommendationScore}
+                onChange={(value) =>
+                  onChange({
+                    ...filters,
+                    minimumRecommendationScore: value,
+                  })
+                }
+              />
+            </FilterSection>
+
+            <FilterSection
+              title="ហាងអាហារ"
+              icon={<MdOutlineCategory />}
+              isOpen={openSections.stores}
+              onToggle={() => toggleSection("stores")}
+            >
+              <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                {storeOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.storeIds.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        storeIds: toggleInList(filters.storeIds, option.code),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="គ្រឿងផ្សំ"
+              icon={<IoNutritionOutline />}
+              isOpen={openSections.ingredients}
+              onToggle={() => toggleSection("ingredients")}
+            >
+              <div className="max-h-[260px] space-y-1 overflow-y-auto pr-2">
+                {ingredientOptions.map((option) => (
+                  <CheckboxOption
+                    key={option.code}
+                    label={option.name}
+                    count={option.count}
+                    checked={filters.ingredientNames.includes(option.code)}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        ingredientNames: toggleInList(
+                          filters.ingredientNames,
+                          option.code,
+                        ),
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </FilterSection>
+
+            <FilterSection
+              title="អាហារូបត្ថម្ភ"
+              icon={<IoNutritionOutline />}
+              isOpen={openSections.nutrition}
+              onToggle={() => toggleSection("nutrition")}
+            >
+              <div className="space-y-1">
+                <CheckboxOption
+                  label="កាឡូរីក្រោម 400"
+                  checked={filters.lowCalorieOnly}
+                  onChange={() =>
+                    onChange({
+                      ...filters,
+                      lowCalorieOnly: !filters.lowCalorieOnly,
+                    })
+                  }
+                />
+                <CheckboxOption
+                  label="ប្រូតេអ៊ីន 25g ឡើងទៅ"
+                  checked={filters.highProteinOnly}
+                  onChange={() =>
+                    onChange({
+                      ...filters,
+                      highProteinOnly: !filters.highProteinOnly,
+                    })
+                  }
+                />
+                <CheckboxOption
+                  label="ជាតិខ្លាញ់ក្រោម 10g"
+                  checked={filters.lowFatOnly}
+                  onChange={() =>
+                    onChange({
+                      ...filters,
+                      lowFatOnly: !filters.lowFatOnly,
+                    })
+                  }
+                />
+                <CheckboxOption
+                  label="Fiber 5g ឡើងទៅ"
+                  checked={filters.highFiberOnly}
+                  onChange={() =>
+                    onChange({
+                      ...filters,
+                      highFiberOnly: !filters.highFiberOnly,
+                    })
+                  }
+                />
+                <CheckboxOption
+                  label="Sodium ក្រោម 600mg"
+                  checked={filters.lowSodiumOnly}
+                  onChange={() =>
+                    onChange({
+                      ...filters,
+                      lowSodiumOnly: !filters.lowSodiumOnly,
+                    })
+                  }
+                />
+              </div>
+            </FilterSection>
+
+            <FilterSection
               title="តម្លៃ"
               icon={<IoPricetagOutline />}
               isOpen={openSections.price}
@@ -877,7 +1671,7 @@ function FilterSidebar({
               </div>
             </FilterSection>
 
-            <FilterSection
+            {/* <FilterSection
               title="ភាពអាចរកបាន"
               icon={<FaFire />}
               isOpen={openSections.availability}
@@ -905,8 +1699,19 @@ function FilterSidebar({
                     })
                   }
                 />
+
+                <CheckboxOption
+                  label="បង្ហាញតែម្ហូបពិសេស"
+                  checked={filters.featuredOnly}
+                  onChange={() =>
+                    onChange({
+                      ...filters,
+                      featuredOnly: !filters.featuredOnly,
+                    })
+                  }
+                />
               </div>
-            </FilterSection>
+            </FilterSection> */}
 
             {/* Bottom spacing keeps the last option away from the edge */}
             <div className="h-4" />
@@ -1006,7 +1811,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid grid-cols-1 gap-x-10 gap-y-3  sm:grid-cols-2 xl:grid-cols-3"
+      className="grid grid-cols-1 gap-x-10 gap-y-3 max-w-4xl sm:grid-cols-2 xl:grid-cols-3"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -1074,6 +1879,7 @@ export default function FoodPage() {
     error,
     refetch,
   } = useGetMenuItemsQuery();
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setFilters((current) => ({
@@ -1145,6 +1951,137 @@ export default function FoodPage() {
         ),
       ),
     [menuItems],
+  );
+
+  const allergenOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.flatMap((item) =>
+          item.allergenDeclarations.map((allergen) => ({
+            code: allergen.code,
+            name: allergen.name,
+          })),
+        ),
+      ),
+    [menuItems],
+  );
+
+  const storeOptions = useMemo<StoreFilterOption[]>(() => {
+    const map = new Map<string, StoreFilterOption>();
+
+    menuItems.forEach((item) => {
+      const existing = map.get(item.store.uuid);
+
+      if (existing) {
+        existing.count += 1;
+        return;
+      }
+
+      map.set(item.store.uuid, {
+        code: item.store.uuid,
+        name: item.store.localName || item.store.name,
+        count: 1,
+      });
+    });
+
+    return Array.from(map.values()).sort((first, second) =>
+      first.name.localeCompare(second.name),
+    );
+  }, [menuItems]);
+
+  const ingredientOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.flatMap((item) =>
+          item.ingredients.map((ingredient) => ({
+            code: ingredient,
+            name: ingredient,
+          })),
+        ),
+      ),
+    [menuItems],
+  );
+
+  const contextualMenuItems = menuItems as MenuItemWithContext[];
+
+  const seasonOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.seasons ?? []).map((season) => ({
+            code: season.code,
+            name: season.localName || season.name,
+          })),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const eventOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.events ?? []).map((event) => ({
+            code: event.code,
+            name: event.localName || event.name,
+          })),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const provinceOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.provincePopularity ?? []).map(
+            (province) => ({
+              code: province.provinceCode,
+              name: province.provinceLocalName || province.provinceName,
+            }),
+          ),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const weatherOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) =>
+          (item.recommendationContext?.suitableWeather ?? []).map(
+            (weather) => ({
+              code: weather.code,
+              name: weather.localName || weather.name,
+            }),
+          ),
+        ),
+      ),
+    [contextualMenuItems],
+  );
+
+  const originProvinceOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        contextualMenuItems.flatMap((item) => {
+          const origin = item.origin;
+
+          if (!origin?.provinceCode) {
+            return [];
+          }
+
+          return [
+            {
+              code: origin.provinceCode,
+              name:
+                origin.provinceLocalName ||
+                origin.provinceName ||
+                origin.provinceCode,
+            },
+          ];
+        }),
+      ),
+    [contextualMenuItems],
   );
 
   const filteredFoods = useMemo(
@@ -1227,7 +2164,7 @@ export default function FoodPage() {
                 }}
               >
                 {/* Search */}
-                <section className="rounded-[26px] border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
+                <section className="rounded-full  border border-gray-100 bg-white p-4 shadow-sm sm:p-1">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     {/* <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-full border border-gray-200 px-5 transition focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
                       <IoSearchOutline className="shrink-0 text-[22px] text-primary-700" />
@@ -1298,6 +2235,14 @@ export default function FoodPage() {
                     mealTypeOptions={mealTypeOptions}
                     dietaryTypeOptions={dietaryTypeOptions}
                     ageGroupOptions={ageGroupOptions}
+                    allergenOptions={allergenOptions}
+                    storeOptions={storeOptions}
+                    ingredientOptions={ingredientOptions}
+                    seasonOptions={seasonOptions}
+                    eventOptions={eventOptions}
+                    provinceOptions={provinceOptions}
+                    weatherOptions={weatherOptions}
+                    originProvinceOptions={originProvinceOptions}
                   />
 
                   <main className="min-w-0 flex-1">
@@ -1372,7 +2317,26 @@ export default function FoodPage() {
 
             {/* LOCATION TAB */}
             {activePageTab === "location" && (
-              <LocationContent key="location-tab" menuItems={menuItems} />
+              <div className="mt-6 flex gap-8">
+                <FilterSidebar
+                  filters={filters}
+                  onChange={setFilters}
+                  categoryOptions={categoryOptions}
+                  cuisineOptions={cuisineOptions}
+                  mealTypeOptions={mealTypeOptions}
+                  dietaryTypeOptions={dietaryTypeOptions}
+                  ageGroupOptions={ageGroupOptions}
+                  allergenOptions={allergenOptions}
+                  storeOptions={storeOptions}
+                  ingredientOptions={ingredientOptions}
+                  seasonOptions={seasonOptions}
+                  eventOptions={eventOptions}
+                  provinceOptions={provinceOptions}
+                  weatherOptions={weatherOptions}
+                  originProvinceOptions={originProvinceOptions}
+                />
+                <LocationContent key="location-tab" menuItems={menuItems} />
+              </div>
             )}
 
             {/* STORE TAB */}

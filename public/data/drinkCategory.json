@@ -1,0 +1,54 @@
+{
+  "drinkCategories": [
+    {
+      "code": "WATER",
+      "name": "Water",
+      "localName": "ទឹក"
+    },
+    {
+      "code": "COFFEE",
+      "name": "Coffee",
+      "localName": "កាហ្វេ"
+    },
+    {
+      "code": "TEA",
+      "name": "Tea",
+      "localName": "តែ"
+    },
+    {
+      "code": "JUICE",
+      "name": "Juice",
+      "localName": "ទឹកផ្លែឈើ"
+    },
+    {
+      "code": "SMOOTHIE",
+      "name": "Smoothie",
+      "localName": "ស្មូតធី"
+    },
+    {
+      "code": "MILK_DRINK",
+      "name": "Milk Drink",
+      "localName": "ភេសជ្ជៈទឹកដោះគោ"
+    },
+    {
+      "code": "SOFT_DRINK",
+      "name": "Soft Drink",
+      "localName": "ភេសជ្ជៈមានហ្គាស"
+    },
+    {
+      "code": "ENERGY_DRINK",
+      "name": "Energy Drink",
+      "localName": "ភេសជ្ជៈប៉ូវកម្លាំង"
+    },
+    {
+      "code": "HERBAL_DRINK",
+      "name": "Herbal Drink",
+      "localName": "ភេសជ្ជៈរុក្ខជាតិ"
+    },
+    {
+      "code": "TRADITIONAL_DRINK",
+      "name": "Traditional Drink",
+      "localName": "ភេសជ្ជៈប្រពៃណី"
+    }
+  ]
+}

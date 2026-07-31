@@ -1,0 +1,225 @@
+{
+  "uuid": "1168290d-9bfd-4af2-a0a2-2d7cb7514451",
+  "name": "Fish Amok",
+  "localName": "អាម៉ុកត្រី",
+  "description": "Steamed fish curry with coconut milk and Khmer herbs.",
+  "localDescription": "អាម៉ុកត្រីចំហុយជាមួយខ្ទិះដូង និងគ្រឿងខ្មែរ។",
+
+  "imageUrl": "/images/menu-items/fish-amok.webp",
+  "gallery": [
+    "/images/menu-items/fish-amok.webp",
+    "/images/menu-items/fish-amok-2.webp",
+    "/images/menu-items/fish-amok-3.webp"
+  ],
+
+  "price": 5.5,
+  "currencyCode": "USD",
+
+  "preparationTimeMinutes": 25,
+
+  "availabilityStatus": "AVAILABLE",
+
+  "isFeatured": true,
+
+  "source": "MANUAL",
+
+  "store": {
+    "uuid": "fd5575d5-ab5a-44fd-ae9f-ed100707bf55",
+    "name": "Sovann Khmer Kitchen",
+    "localName": "សុវណ្ណ ខ្មែរ",
+
+    "logoUrl": "/images/store/sovann-logo.webp",
+    "coverImageUrl": "/images/store/sovann-cover.webp",
+
+    "addressLine": "Street 178",
+    "district": "Daun Penh",
+    "city": "Phnom Penh",
+
+    "latitude": 11.561,
+    "longitude": 104.923,
+
+    "operatingStatus": "OPEN",
+
+    "averageRating": 4.7,
+    "totalReviews": 328
+  },
+
+  "food": {
+    "uuid": "4cf40782-0a54-45f5-bd7b-d6d986f5ee4b",
+
+    "canonicalName": "Fish Amok",
+
+    "dishCategory": {
+      "code": "CURRY",
+      "name": "Curry",
+      "localName": "ការី"
+    },
+
+    "category": {
+      "code": "KHMER_FOOD",
+      "name": "Khmer Food",
+      "localName": "ម្ហូបខ្មែរ"
+    },
+
+    "cuisine": {
+      "code": "KHMER",
+      "name": "Khmer",
+      "localName": "ខ្មែរ"
+    },
+
+    "spiceLevel": 2,
+
+    "ageGroups": [
+      {
+        "code": "ADULT",
+        "name": "Adult"
+      },
+      {
+        "code": "SENIOR",
+        "name": "Senior"
+      }
+    ]
+  },
+
+  "mealTypes": [
+    {
+      "code": "LUNCH",
+      "name": "Lunch"
+    },
+    {
+      "code": "DINNER",
+      "name": "Dinner"
+    }
+  ],
+
+  "dietaryTypes": [
+    {
+      "code": "GLUTEN_FREE",
+      "name": "Gluten Free",
+      "verificationStatus": "VERIFIED"
+    }
+  ],
+
+  "allergenDeclarations": [
+    {
+      "code": "FISH",
+      "name": "Fish",
+      "declarationType": "CONTAINS",
+      "riskLevel": "HIGH",
+      "verificationStatus": "VERIFIED"
+    }
+  ],
+
+  "ingredients": ["Fish", "Coconut Milk", "Kroeung", "Egg", "Banana Leaf"],
+
+  "nutrition": {
+    "calories": 450,
+    "protein": 32,
+    "carbohydrate": 15,
+    "fat": 25,
+    "fiber": 2,
+    "sodium": 520
+  },
+
+  "distanceKm": 1.2,
+
+  "recommendationContext": {
+    "seasons": [
+      {
+        "code": "RAINY",
+        "name": "Rainy Season",
+        "localName": "រដូវវស្សា",
+        "suitabilityScore": 0.95,
+        "reasonText": "Best enjoyed during Cambodia's rainy season."
+      }
+    ],
+
+    "events": [
+      {
+        "code": "PCHUM_BEN",
+        "name": "Pchum Ben Festival",
+        "localName": "បុណ្យភ្ជុំបិណ្ឌ",
+        "relevanceScore": 0.91,
+        "reasonText": "A popular traditional dish during Pchum Ben."
+      }
+    ],
+
+    "provincePopularity": [
+      {
+        "provinceCode": "PP",
+        "provinceName": "Phnom Penh",
+        "provinceLocalName": "ភ្នំពេញ",
+        "popularityScore": 0.96,
+        "popularityRank": 1,
+        "isTraditionalToProvince": false,
+        "reasonText": "One of the most popular Khmer dishes in Phnom Penh."
+      },
+      {
+        "provinceCode": "SR",
+        "provinceName": "Siem Reap",
+        "provinceLocalName": "សៀមរាប",
+        "popularityScore": 0.89,
+        "popularityRank": 2,
+        "isTraditionalToProvince": true,
+        "reasonText": "Frequently recommended by local restaurants."
+      }
+    ],
+
+    "suitableWeather": [
+      {
+        "code": "RAIN",
+        "name": "Rainy Weather",
+        "localName": "អាកាសធាតុភ្លៀង",
+        "suitabilityScore": 0.93,
+        "reasonText": "Warm curry is ideal during rainy weather."
+      }
+    ]
+  },
+
+  "origin": {
+    "countryCode": "KH",
+    "countryName": "Cambodia",
+    "countryLocalName": "កម្ពុជា",
+
+    "provinceCode": "KD",
+    "provinceName": "Kandal",
+    "provinceLocalName": "កណ្ដាល",
+
+    "isTraditional": true
+  },
+
+  "recommendation": {
+    "isRecommended": true,
+
+    "rankPosition": 1,
+
+    "finalScore": 0.94,
+
+    "safetyStatus": "SAFE",
+
+    "candidateSource": "CONTENT_BASED",
+
+    "reasonCodes": [
+      "CUISINE_MATCH",
+      "MEAL_MATCH",
+      "HIGH_RATING",
+      "RAINY_SEASON",
+      "TRADITIONAL"
+    ],
+
+    "reasonText": "Matches your Khmer cuisine preference and is perfect for the current rainy season.",
+
+    "isExploration": false,
+
+    "scoreBreakdown": {
+      "mealMatch": 0.98,
+      "cuisineMatch": 1.0,
+      "budgetMatch": 0.91,
+      "distanceMatch": 0.95,
+      "popularity": 0.86
+    }
+  },
+
+  "createdAt": "2025-01-01T10:00:00Z",
+  "updatedAt": "2025-01-01T10:00:00Z"
+}

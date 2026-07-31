@@ -2,7 +2,7 @@
 
 import { Provider } from "react-redux";
 import { store } from "./store";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "next-themes";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (

@@ -271,32 +271,321 @@ PS D:\ISTAD\ITE3rd\ITE-FOODHUB-3rd-Frontend\foodhub-frontend> git branch
   test/before-merge
 
 
-USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge|MERGING)
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin test/before-merge 
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            test/before-merge -> FETCH_HEAD
+Updating 38feb2e..630e074
+Fast-forward
+ Git-commands.log                                   |   54 +
+ package-lock.json                                  | 5375 +++-----------------
+ package.json                                       |   22 +-
+ public/Image/carousel/food1.jpeg                   |  Bin 0 -> 142874 bytes
+ public/Image/carousel/food10.jpg                   |  Bin 0 -> 129364 bytes
+ public/Image/carousel/food11.jpg                   |  Bin 0 -> 88008 bytes
+ public/Image/carousel/food2.jpg                    |  Bin 0 -> 252151 bytes
+ public/Image/carousel/food3.avif                   |  Bin 0 -> 278054 bytes
+ public/Image/carousel/food4.jpg                    |  Bin 0 -> 968030 bytes
+ public/Image/carousel/food5.jpg                    |  Bin 0 -> 372436 bytes
+ public/Image/carousel/food6.jpg                    |  Bin 0 -> 857196 bytes
+ public/Image/carousel/food7.png                    |  Bin 0 -> 4194941 bytes
+ public/Image/carousel/food8.webp                   |  Bin 0 -> 46140 bytes
+ public/Image/carousel/food9.webp                   |  Bin 0 -> 116798 bytes
+ public/Image/default-avatar.png                    |  Bin 0 -> 282927 bytes
+ public/Image/food-picture/food 31.jpg              |  Bin 0 -> 73839 bytes
+ public/Image/food-picture/food-19.jpg              |  Bin 0 -> 41093 bytes
+ public/Image/food-picture/food-20.jpg              |  Bin 0 -> 73466 bytes
+ public/Image/food-picture/food-21.webp             |  Bin 0 -> 764556 bytes
+ public/Image/food-picture/food-22.jpg              |  Bin 0 -> 149662 bytes
+ public/Image/food-picture/food-24.jpg              |  Bin 0 -> 121198 bytes
+ public/Image/food-picture/food-25.jpg              |  Bin 0 -> 104402 bytes
+ public/Image/food-picture/food-32.jpg              |  Bin 0 -> 65777 bytes
+ public/Image/food-picture/food-33.jpg              |  Bin 0 -> 62904 bytes
+ public/Image/food-picture/food-34.jpg              |  Bin 0 -> 82794 bytes
+ public/Image/food-picture/food-36.jpg              |  Bin 0 -> 82494 bytes
+ public/Image/food02.png                            |  Bin 0 -> 146131 bytes
+ public/Image/food04.png                            |  Bin 0 -> 128253 bytes
+ public/Image/icon map.png                          |  Bin 0 -> 5189 bytes
+ public/Image/kid icon2.png                         |  Bin 0 -> 6939 bytes
+ public/data/data.json                              |  249 +
+ public/data/data1.json                             |  136 +
+ public/data/manuItem.json                          | 1169 +++++
+ run-git-note.md                                    |  382 ++
+ .../(dashboard)/dashboard/family-profile/page.tsx  |    3 +
+ src/app/(dashboard)/dashboard/review/page.tsx      |    6 +-
+ src/app/(site)/food/[uuid]/page.tsx                |   13 +
+ src/app/(site)/food/page.tsx                       | 1905 ++++---
+ src/app/(site)/layout.tsx                          |    5 +-
+ src/app/(site)/page.tsx                            |  479 +-
+ src/app/{ => (site)}/restaurant/[id]/page.tsx      |    0
+ src/app/{ => (site)}/restaurant/layout.tsx         |    0
+ src/app/food/[id]/page.tsx                         |  248 -
+ src/app/globals.css                                |   44 +-
+ src/app/layout.tsx                                 |   13 +-
+ src/app/store/Providers.tsx                        |   16 +-
+ src/app/store/baseApi.ts                           |   11 +-
+ src/app/store/foodApi-1.ts                         |   28 +
+ src/app/store/menuApi.ts                           |  104 +
+ src/app/store/restaurantApi.ts                     |    4 +-
+ .../google-sans/GoogleSans-Italic-VariableFont.ttf |  Bin 5000836 -> 0 bytes
+ .../fonts/google-sans/GoogleSans-VariableFont.ttf  |  Bin 4712272 -> 0 bytes
+ src/assets/fonts/google-sans/OFL.txt               |   91 -
+ src/components/FoodCard.tsx                        |  160 +
+ src/components/about/GoalsSection.tsx              |    6 +-
+ src/components/about/HeroSection.tsx               |    2 +-
+ src/components/about/StatsSection.tsx              |    2 +-
+ src/components/dashboard/FoodChipInput.tsx         |    6 +-
+ src/components/dashboard/UserDashboard.tsx         |    8 +-
+ .../dashboard/family-profile/FamilyMemberList.tsx  |    2 +-
+ .../family-profile/UserProfileDropdown.tsx         |  204 +
+ .../dashboard/favorites/FavoriteFoodRow.tsx        |    8 +-
+ .../dashboard/notifications/NotificationCard.tsx   |    6 +-
+ .../notifications/NotificationFilters.tsx          |    2 +-
+ .../dashboard/notifications/NotificationGroup.tsx  |    2 +-
+ .../notifications/NotificationSummaryCards.tsx     |    2 +-
+ .../notifications/NotificationsEmptyState.tsx      |    2 +-
+ .../dashboard/review/ReviewFilterTabs.tsx          |    2 +-
+ src/components/dashboard/review/ReviewTable.tsx    |    6 +-
+ src/components/dynamic-card/FoodCard.tsx           |  114 +
+ src/components/dynamic-card/FoodCardList.tsx       |   46 +
+ src/components/food-detail/FoodDetailPage.tsx      |  943 ++++
+ src/components/food-page/FoodNavTabs.tsx           |  100 +
+ src/components/food-page/FoodSearch.tsx            |  495 ++
+ src/components/food-page/LocationContent.tsx       |  394 ++
+ src/components/food-page/StoreContent.tsx          |  215 +
+ src/components/home/FoodCard.tsx                   |   80 +-
+ src/components/home/FoodSearchBar.tsx              |    4 +-
+ src/components/home/Hero.tsx                       |  325 ++
+ src/components/home/RecommendationStack.tsx        |    4 +-
+ src/components/home/SectionModal.tsx               |   19 +-
+ src/components/home/Spinwheel.tsx                  |    4 +-
+ src/components/home/event.tsx                      |   12 +-
+ src/components/home/features/DisplaySwipeCard.tsx  |   18 +
+ src/components/home/features/FilterByMealTime.tsx  |  334 ++
+ .../home/features/FoodSearchBarComponent.tsx       |  532 ++
+ .../home/features/GeneralFilterOptions.tsx         |    0
+ .../home/features/MealTimeRecommendation.tsx       |  219 +
+ src/components/home/features/Model.tsx             |  879 ++++
+ src/components/home/features/ModelFloating.tsx     |  584 +++
+ src/components/home/features/SpinFood.tsx          | 1230 +++++
+ .../home/features/SwipeCardTinderStyle.tsx         |  238 +
+ src/components/home/fitfood.tsx                    |    4 +-
+ src/components/home/location.tsx                   |    4 +-
+ src/components/home/popular.tsx                    |   13 +-
+ src/components/home/recommand.tsx                  |    2 +-
+ src/components/layout/Aside.tsx                    |    2 +-
+ src/components/layout/NavItem.tsx                  |   21 +-
+ src/components/layout/Navbar.tsx                   |    2 +-
+ src/components/theme-provider.tsx                  |   11 +
+ src/components/theme-toggle.tsx                    |   29 +
+ src/components/ui/Carosel.tsx                      |   14 +-
+ src/components/ui/Hero.tsx                         |   20 +-
+ src/components/ui/button.tsx                       |    2 +-
+ src/components/ui/dialog.tsx                       |  160 +
+ src/components/ui/popover.tsx                      |   90 +
+ src/components/ui/skiper-ui/skiper26.tsx           |    4 +-
+ src/components/ui/skiper-ui/skiper30.tsx           |    4 +-
+ src/components/ui/skiper-ui/skiper31.tsx           |    2 +-
+ src/config/dashboardNav.ts                         |   17 +-
+ src/data/site.json                                 |   35 -
+ src/data/users.json                                |    8 -
+ src/hooks/useAppDispatch.ts                        |    7 -
+ src/lib/auth/auth.ts                               |   35 -
+ src/test/spinv1.tsx                                |    4 +-
+ src/types/family-profile.ts                        |    1 +
+ src/types/food.ts                                  |    1 +
+ src/types/manu.ts                                  |  156 +
+ src/types/menu-item.ts                             |  141 +
+ src/types/notifications.ts                         |    2 +-
+ structure.txt                                      |   55 +
+ 121 files changed, 12082 insertions(+), 6330 deletions(-)
+ create mode 100644 public/Image/carousel/food1.jpeg
+ create mode 100644 public/Image/carousel/food10.jpg
+ create mode 100644 public/Image/carousel/food11.jpg
+ create mode 100644 public/Image/carousel/food2.jpg
+ create mode 100644 public/Image/carousel/food3.avif
+ create mode 100644 public/Image/carousel/food4.jpg
+ create mode 100644 public/Image/carousel/food5.jpg
+ create mode 100644 public/Image/carousel/food6.jpg
+ create mode 100644 public/Image/carousel/food7.png
+ create mode 100644 public/Image/carousel/food8.webp
+ create mode 100644 public/Image/carousel/food9.webp
+ create mode 100644 public/Image/default-avatar.png
+ create mode 100644 public/Image/food-picture/food 31.jpg
+ create mode 100644 public/Image/food-picture/food-19.jpg
+ create mode 100644 public/Image/food-picture/food-20.jpg
+ create mode 100644 public/Image/food-picture/food-21.webp
+ create mode 100644 public/Image/food-picture/food-22.jpg
+ create mode 100644 public/Image/food-picture/food-24.jpg
+ create mode 100644 public/Image/food-picture/food-25.jpg
+ create mode 100644 public/Image/food-picture/food-32.jpg
+ create mode 100644 public/Image/food-picture/food-33.jpg
+ create mode 100644 public/Image/food-picture/food-34.jpg
+ create mode 100644 public/Image/food-picture/food-36.jpg
+ create mode 100644 public/Image/food02.png
+ create mode 100644 public/Image/food04.png
+ create mode 100644 public/Image/icon map.png
+ create mode 100644 public/Image/kid icon2.png
+ create mode 100644 public/data/data.json
+ create mode 100644 public/data/data1.json
+ create mode 100644 public/data/manuItem.json
+ create mode 100644 run-git-note.md
+ create mode 100644 src/app/(site)/food/[uuid]/page.tsx
+ rename src/app/{ => (site)}/restaurant/[id]/page.tsx (100%)
+ rename src/app/{ => (site)}/restaurant/layout.tsx (100%)
+ delete mode 100644 src/app/food/[id]/page.tsx
+ create mode 100644 src/app/store/foodApi-1.ts
+ create mode 100644 src/app/store/menuApi.ts
+ delete mode 100644 src/assets/fonts/google-sans/GoogleSans-Italic-VariableFont.ttf
+ delete mode 100644 src/assets/fonts/google-sans/GoogleSans-VariableFont.ttf
+ delete mode 100644 src/assets/fonts/google-sans/OFL.txt
+ create mode 100644 src/components/FoodCard.tsx
+ create mode 100644 src/components/dashboard/family-profile/UserProfileDropdown.tsx
+ create mode 100644 src/components/dynamic-card/FoodCard.tsx
+ create mode 100644 src/components/dynamic-card/FoodCardList.tsx
+ create mode 100644 src/components/food-detail/FoodDetailPage.tsx
+ create mode 100644 src/components/food-page/FoodNavTabs.tsx
+ create mode 100644 src/components/food-page/FoodSearch.tsx
+ create mode 100644 src/components/food-page/LocationContent.tsx
+ create mode 100644 src/components/food-page/StoreContent.tsx
+ create mode 100644 src/components/home/Hero.tsx
+ create mode 100644 src/components/home/features/DisplaySwipeCard.tsx
+ create mode 100644 src/components/home/features/FilterByMealTime.tsx
+ create mode 100644 src/components/home/features/FoodSearchBarComponent.tsx
+ create mode 100644 src/components/home/features/GeneralFilterOptions.tsx
+ create mode 100644 src/components/home/features/MealTimeRecommendation.tsx
+ create mode 100644 src/components/home/features/Model.tsx
+ create mode 100644 src/components/home/features/ModelFloating.tsx
+ create mode 100644 src/components/home/features/SpinFood.tsx
+ create mode 100644 src/components/home/features/SwipeCardTinderStyle.tsx
+ create mode 100644 src/components/theme-provider.tsx
+ create mode 100644 src/components/theme-toggle.tsx
+ create mode 100644 src/components/ui/dialog.tsx
+ create mode 100644 src/components/ui/popover.tsx
+ delete mode 100644 src/data/site.json
+ delete mode 100644 src/data/users.json
+ delete mode 100644 src/lib/auth/auth.ts
+ create mode 100644 src/types/manu.ts
+ create mode 100644 src/types/menu-item.ts
+ create mode 100644 structure.txt
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git fetch origin souheng
+remote: Enumerating objects: 52, done.
+remote: Counting objects: 100% (15/15), done.
+remote: Total 52 (delta 15), reused 15 (delta 15), pack-reused 37 (from 1)
+Unpacking objects: 100% (52/52), 48.20 KiB | 186.00 KiB/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            souheng    -> FETCH_HEAD
+   2c24cba..33e6e63  souheng    -> origin/souheng
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git fetch
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 1), reused 1 (delta 1), pack-reused 0 (from 0)
+Unpacking objects: 100% (1/1), 76 bytes | 1024 bytes/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   2c24cba..33e6e63  main       -> origin/main
+ * [new branch]      master     -> origin/master
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin souheng
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            souheng    -> FETCH_HEAD
+Auto-merging src/app/(site)/food/page.tsx
+Auto-merging src/components/food-page/FoodSearch.tsx
+Auto-merging src/components/layout/Navbar.tsx
+Merge made by the 'ort' strategy.
+ public/data/drinkCategory.json                     |   54 +
+ public/data/foodAndDrink.json                      |  283 +++
+ public/data/manuItem1.json                         | 1975 ++++++++++++++++++++
+ public/data/mockup.json                            |  225 +++
+ src/app/(site)/food/page.tsx                       |  976 +++++++++-
+ src/app/(site)/page.tsx                            |    6 +-
+ src/app/store/menuApi.ts                           |    2 +-
+ src/components/dynamic-card/FoodCard.tsx           |    8 +-
+ src/components/food-detail/FoodDetailPage.tsx      |   24 +-
+ src/components/food-page/FoodNavTabs.tsx           |   50 +-
+ src/components/food-page/FoodSearch.tsx            |  186 +-
+ src/components/food-page/LocationContent.tsx       |  343 ++--
+ .../home/features/FoodSearchBarComponent.tsx       |   82 +-
+ src/components/home/features/Model.tsx             |    2 +-
+ src/components/home/season.tsx                     |    2 +-
+ src/components/layout/Navbar.tsx                   |    2 +-
+ src/components/ui/Carosel.tsx                      |   14 +-
+ 17 files changed, 3886 insertions(+), 348 deletions(-)
+ create mode 100644 public/data/drinkCategory.json
+ create mode 100644 public/data/foodAndDrink.json
+ create mode 100644 public/data/manuItem1.json
+ create mode 100644 public/data/mockup.json
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "chore: relayout page restaurant detail with no discount"
+[longfou 2c09513] chore: relayout page restaurant detail with no discount
+ 7 files changed, 723 insertions(+), 182 deletions(-)
+ create mode 100644 src/components/restaurant/Restaurantherocarousel.tsx
+
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git commit -m "chore: update mockup data page restaurant detail"
+[longfou f65cf2b] chore: update mockup data page restaurant detail
+ 4 files changed, 519 insertions(+), 41 deletions(-)
+ create mode 100644 public/Image.zip
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git push origin longfou
+Enumerating objects: 90, done.
+Counting objects: 100% (90/90), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (44/44), done.
+Writing objects:  15% (7/45), 1.48 MiB | 29.00 KiB/s
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git push origin longfou
+Enumerating objects: 90, done.
+Counting objects: 100% (90/90), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (44/44), done.
+Writing objects: 100% (45/45), 93.40 MiB | 375.00 KiB/s, done.
+Total 45 (delta 31), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (31/31), completed with 18 local objects.
+remote: warning: See https://gh.io/lfs for more information.
+remote: warning: File public/Image.zip is 93.37 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
+   763b653..f65cf2b  longfou -> longfou
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git fetch
+remote: Enumerating objects: 17, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Total 17 (delta 10), reused 10 (delta 10), pack-reused 7 (from 2)
+Unpacking objects: 100% (17/17), 5.41 KiB | 89.00 KiB/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   33e6e63..ce889c7  main       -> origin/main
+   e9cad21..a74ec31  mingyeak   -> origin/mingyeak
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin main
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            main       -> FETCH_HEAD
+Auto-merging src/app/globals.css
+Auto-merging src/app/store/Providers.tsx
+CONFLICT (content): Merge conflict in src/app/store/Providers.tsx
+Auto-merging src/components/food-page/FoodSearch.tsx
+Auto-merging src/components/layout/Navbar.tsx
+Auto-merging src/components/theme-provider.tsx
+CONFLICT (add/add): Merge conflict in src/components/theme-provider.tsx
+Auto-merging src/components/theme-toggle.tsx
+CONFLICT (add/add): Merge conflict in src/components/theme-toggle.tsx
+Automatic merge failed; fix conflicts and then commit the result.
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou|MERGING)
 $ git add .
 
-USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge|MERGING)
-$ git commit -m "chore: Update pull latest code merge branch main and fix conflict with errors"
-[test/before-merge 630e074] chore: Update pull latest code merge branch main and fix conflict with errors
-
-USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (test/before-merge)
-$ git push origin test/before-merge 
-Enumerating objects: 95, done.
-Counting objects: 100% (94/94), done.
-Delta compression using up to 16 threads
-Compressing objects: 100% (37/37), done.
-Writing objects: 100% (38/38), 7.10 KiB | 346.00 KiB/s, done.
-Total 38 (delta 24), reused 1 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (24/24), completed with 24 local objects.
-To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
-   ebf7b8a..630e074  test/before-merge -> test/before-merge
-
-USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
-$ git stash
-Saved working directory and index state WIP on longfou: 85adec0 chore: save process before change branch
-
-USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
-$ git checkout test/before-merge
-Switched to branch 'test/before-merge'
-Your branch is ahead of 'origin/test/before-merge' by 1 commit.
-  (use "git push" to publish your local commits)
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou|MERGING)
+$ git commit -m "chore: merge branch with mingyeak and fix conflict errors"
+[longfou 03897fb] chore: merge branch with mingyeak and fix conflict errors
 
