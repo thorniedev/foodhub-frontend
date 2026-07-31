@@ -557,3 +557,35 @@ remote: warning: GH001: Large files detected. You may want to try Git Large File
 To https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend.git
    763b653..f65cf2b  longfou -> longfou
 
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git fetch
+remote: Enumerating objects: 17, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Total 17 (delta 10), reused 10 (delta 10), pack-reused 7 (from 2)
+Unpacking objects: 100% (17/17), 5.41 KiB | 89.00 KiB/s, done.
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+   33e6e63..ce889c7  main       -> origin/main
+   e9cad21..a74ec31  mingyeak   -> origin/mingyeak
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou)
+$ git pull origin main
+From https://github.com/ITE-GEN03-BASIC-COURSE/foodhub-frontend
+ * branch            main       -> FETCH_HEAD
+Auto-merging src/app/globals.css
+Auto-merging src/app/store/Providers.tsx
+CONFLICT (content): Merge conflict in src/app/store/Providers.tsx
+Auto-merging src/components/food-page/FoodSearch.tsx
+Auto-merging src/components/layout/Navbar.tsx
+Auto-merging src/components/theme-provider.tsx
+CONFLICT (add/add): Merge conflict in src/components/theme-provider.tsx
+Auto-merging src/components/theme-toggle.tsx
+CONFLICT (add/add): Merge conflict in src/components/theme-toggle.tsx
+Automatic merge failed; fix conflicts and then commit the result.
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou|MERGING)
+$ git add .
+
+USER@DESKTOP-M1TVSAR MINGW64 /d/ISTAD/ITE3rd/ITE-FOODHUB-3rd-Frontend/foodhub-frontend (longfou|MERGING)
+$ git commit -m "chore: merge branch with mingyeak and fix conflict errors"
+[longfou 03897fb] chore: merge branch with mingyeak and fix conflict errors
+
