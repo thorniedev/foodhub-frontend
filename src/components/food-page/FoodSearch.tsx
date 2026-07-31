@@ -538,11 +538,7 @@ export default function FoodSearch({
                     <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-gray-100">
                       <Image
                         fill
-                        src={
-                          food.thumbnail ??
-                          food.imageUrl ??
-                          "/images/placeholder-food.webp"
-                        }
+                        src={food.thumbnail ?? "/images/placeholder-food.webp"}
                         alt={food.localName || food.name}
                         sizes="64px"
                         className="object-cover"
