@@ -2341,7 +2341,9 @@ export default function FoodPage() {
 
             {/* STORE TAB */}
             {activePageTab === "store" && (
-              <StoreContent key="store-tab" menuItems={menuItems} />
+              <div>
+                {/* <StoreContent key="store-tab" menuItems={menuItems} /> */}
+              </div>
             )}
           </AnimatePresence>
         )}

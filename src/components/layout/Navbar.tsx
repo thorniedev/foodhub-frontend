@@ -61,7 +61,7 @@ export default function Navbar() {
       <div className="flex xl:mx-auto xl:w-7xl lg:justify-between max-lg:justify-around max-md:justify-between max-md:gap-1.5 max-md:px-3 items-center">
         <Link href="/" onClick={() => setOpen(false)}>
           <img
-            className="py-1 md:h-[65px] block dark:hidden max-md:h-[40px] max-sm:h-[35px]"
+            className="py-1 md:h-[65px] block  max-md:h-[40px] max-sm:h-[35px]"
             src="/Image/logo.png"
             alt="logo"
           />
