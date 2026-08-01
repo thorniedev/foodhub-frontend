@@ -30,6 +30,7 @@ import FoodSearch from "@/components/food-page/FoodSearch";
 import { useGetMenuItemsQuery } from "../store/menuApi";
 import { useState } from "react";
 import ModelFloating from "@/components/home/features/ModelFloating";
+import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommendationSection";
 
 export default function Home() {
   return (
@@ -48,6 +49,7 @@ export default function Home() {
       <section className="">
         {/* <Skiper30 /> */}
         <Hero />
+        <FoodHubSmartRecommendationSection />
         <FilterByMealTime />
         {/* <PopularSection /> */}
         {/* <Skiper19/> */}
