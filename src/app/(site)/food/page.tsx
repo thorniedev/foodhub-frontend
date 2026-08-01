@@ -26,7 +26,7 @@ import FoodCard from "@/components/dynamic-card/FoodCard";
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
 import type { MenuItem } from "@/types/manu";
-import LocationContent from "@/components/food-page/LocationContent";
+import LocationContent from "@/components/food-page/location/LocationContent";
 import StoreContent from "@/components/food-page/StoreContent";
 import FoodNavTabs, {
   type FoodPageTab,
@@ -2317,6 +2317,40 @@ export default function FoodPage() {
 
             {/* LOCATION TAB */}
             {activePageTab === "location" && (
+              <motion.div
+                key="location-tab"
+                initial={{
+                  opacity: 0,
+                  x: 24,
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  x: -24,
+                }}
+                transition={{
+                  duration: 0.25,
+                  ease: "easeOut",
+                }}
+              >
+                <section className="rounded-full border border-gray-100 bg-white p-4 shadow-sm sm:p-1">
+                  <FoodSearch
+                    menuItems={menuItems}
+                    value={searchInput}
+                    onChange={setSearchInput}
+                  />
+                </section>
+
+                <LocationContent
+                  menuItems={menuItems}
+                  searchQuery={searchInput}
+                />
+              </motion.div>
+            )}
+            {/* {activePageTab === "location" && (
               <div className="mt-6 flex gap-8">
                 <FilterSidebar
                   filters={filters}
@@ -2337,7 +2371,7 @@ export default function FoodPage() {
                 />
                 <LocationContent key="location-tab" menuItems={menuItems} />
               </div>
-            )}
+            )} */}
 
             {/* STORE TAB */}
             {activePageTab === "store" && (
