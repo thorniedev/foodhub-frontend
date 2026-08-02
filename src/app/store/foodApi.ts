@@ -1,7 +1,6 @@
 import { FoodItem } from "@/types/food";
 import { baseApi } from "./baseApi";
 
-
 export const foodApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFoods: builder.query<FoodItem[], void>({

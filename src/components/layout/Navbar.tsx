@@ -59,7 +59,7 @@ export default function Navbar() {
       className="bg-white/2 dark:bg-gray-600/5 w-full fixed top-0 z-99 backdrop-blur-xs shadow-xs"
     >
       <div className="flex xl:mx-auto xl:w-7xl lg:justify-between max-lg:justify-around max-md:justify-between max-md:gap-1.5 max-md:px-3 items-center">
-        <Link href="/" onClick={() => setOpen(false)}>
+        <Link href="/">
           <img
             className="py-1 md:h-[65px] block  max-md:h-[40px] max-sm:h-[35px]"
             src="/Image/logo.png"
@@ -85,7 +85,7 @@ export default function Navbar() {
         <div className="flex md:gap-4 max-md:gap-0.5 justify-center max-md:hidden items-center">
           <ThemeToggle />
           <Link
-            href="/dashboard"
+            href="/register"
             className="md:px-4 dark:text-primary text-secondary md:py-2 dark:bg-white max-md:w-[80px] max-sm:w-fit max-md:px-2 max-md:py-1.5 text-white bg-primary-800 rounded-full"
           >
             បង្កេីតគណនី

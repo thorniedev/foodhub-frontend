@@ -482,9 +482,9 @@ export default function FoodSearchBar() {
           <div className="col-span-full flex flex-col items-center gap-3 py-10 text-center">
             <p className="text-red-500">មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ</p>
 
-            <pre className="max-w-full overflow-auto text-base text-red-500">
+            {/* <pre className="max-w-full overflow-auto text-base text-red-500">
               {JSON.stringify(error, null, 2)}
-            </pre>
+            </pre> */}
 
             <button
               type="button"
