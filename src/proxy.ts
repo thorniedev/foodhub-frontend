@@ -10,7 +10,7 @@ export function proxy(request: NextRequest) {
   });
 
   if (!accessToken) {
-    const loginUrl = new URL("api/auth/login", request.url);
+    const loginUrl = new URL("/api/auth/login", request.url);
 
     loginUrl.searchParams.set("returnTo", request.nextUrl.pathname);
 

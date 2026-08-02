@@ -1,421 +1,1082 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
+  Check,
+  ChefHat,
   Clock3,
   HeartPulse,
   Leaf,
   MapPin,
   Navigation,
   ShieldCheck,
-  SlidersHorizontal,
-  Sparkles,
   Star,
-  Users,
   UtensilsCrossed,
+  Users,
+  Zap,
 } from "lucide-react";
 
-interface FeatureCardProps {
-  icon: LucideIcon;
-  eyebrow: string;
-  title: string;
+interface SignalNode {
+  label: string;
   description: string;
-  badge: string;
-  delay?: number;
+  icon: LucideIcon;
+  angle: number;
+  color: "green" | "orange";
 }
 
-const leftFeatures: FeatureCardProps[] = [
-  {
-    icon: SlidersHorizontal,
-    eyebrow: "Personalized for you",
-    title: "Preference Match",
-    description:
-      "FoodHub learns your favorite tastes, meal types, and dietary choices.",
-    badge: "98% match",
-  },
-  {
-    icon: ShieldCheck,
-    eyebrow: "Eat with confidence",
-    title: "Allergy Safety",
-    description:
-      "Meals are checked against the allergens saved in each family profile.",
-    badge: "Safety checked",
-  },
-];
+interface LightningBoltData {
+  left: string;
+  top: string;
+  width: number;
+  rotate: number;
+  delay: number;
+  duration: number;
+  opacity: number;
+}
 
-const rightFeatures: FeatureCardProps[] = [
+const SIGNALS: SignalNode[] = [
   {
-    icon: MapPin,
-    eyebrow: "Available around you",
-    title: "Nearby Food",
-    description:
-      "Discover suitable meals from nearby restaurants based on your location.",
-    badge: "1.2 km away",
-  },
-  {
-    icon: HeartPulse,
-    eyebrow: "Built around your goal",
-    title: "Nutrition Goals",
-    description:
-      "Balance calories, protein, and meal choices without losing great taste.",
-    badge: "Goal friendly",
-  },
-];
-
-const preferenceNodes = [
-  { label: "Diet", icon: Leaf, position: "left-[5%] top-[17%]", delay: 0 },
-  {
-    label: "Family",
-    icon: Users,
-    position: "right-[3%] top-[20%]",
-    delay: 0.35,
+    label: "Diet",
+    description: "Meals selected around your dietary preferences.",
+    icon: Leaf,
+    angle: 0,
+    color: "green",
   },
   {
     label: "Allergy",
+    description: "Ingredients checked against your allergies.",
     icon: ShieldCheck,
-    position: "left-[1%] bottom-[22%]",
-    delay: 0.7,
+    angle: 72,
+    color: "orange",
   },
   {
     label: "Location",
+    description: "Recommendations from restaurants near you.",
     icon: Navigation,
-    position: "right-[1%] bottom-[20%]",
-    delay: 1.05,
+    angle: 144,
+    color: "green",
+  },
+  {
+    label: "Family",
+    description: "A personal recommendation for every family profile.",
+    icon: Users,
+    angle: 216,
+    color: "orange",
+  },
+  {
+    label: "Nutrition",
+    description: "Meals matched with your nutrition goals.",
+    icon: HeartPulse,
+    angle: 288,
+    color: "green",
   },
 ];
 
-const foodTags = [
+const BACKGROUND_PARTICLES = [
+  { left: "8%", top: "18%", size: 6, duration: 6, delay: 0 },
+  { left: "17%", top: "72%", size: 4, duration: 7, delay: 1.2 },
+  { left: "29%", top: "10%", size: 5, duration: 5.5, delay: 2.1 },
+  { left: "74%", top: "14%", size: 5, duration: 6.5, delay: 0.8 },
+  { left: "87%", top: "35%", size: 7, duration: 7.5, delay: 1.7 },
+  { left: "82%", top: "78%", size: 4, duration: 5.8, delay: 2.5 },
+  { left: "57%", top: "88%", size: 6, duration: 6.8, delay: 0.4 },
+  { left: "42%", top: "17%", size: 3, duration: 4.8, delay: 1.8 },
+  { left: "65%", top: "64%", size: 5, duration: 6.1, delay: 0.9 },
+];
+
+const LIGHTNING_BOLTS: LightningBoltData[] = [
   {
-    emoji: "🥗",
-    label: "Healthy",
-    position: "left-[11%] top-[44%]",
-    delay: 0.1,
+    left: "6%",
+    top: "10%",
+    width: 54,
+    rotate: -18,
+    delay: 0.2,
+    duration: 4.3,
+    opacity: 0.9,
   },
-  { emoji: "🍜", label: "Khmer", position: "right-[8%] top-[43%]", delay: 0.5 },
   {
-    emoji: "🍲",
-    label: "Warm",
-    position: "left-[24%] bottom-[5%]",
-    delay: 0.9,
+    left: "84%",
+    top: "12%",
+    width: 48,
+    rotate: 16,
+    delay: 1.35,
+    duration: 4.9,
+    opacity: 0.82,
   },
   {
-    emoji: "🥑",
-    label: "Fresh",
-    position: "right-[22%] bottom-[4%]",
-    delay: 1.3,
+    left: "10%",
+    top: "68%",
+    width: 44,
+    rotate: -8,
+    delay: 2.2,
+    duration: 4.6,
+    opacity: 0.72,
+  },
+  {
+    left: "81%",
+    top: "66%",
+    width: 58,
+    rotate: 20,
+    delay: 0.85,
+    duration: 5.2,
+    opacity: 0.86,
   },
 ];
 
-const beamRows = [
-  { top: "18%", duration: 8, delay: 0 },
-  { top: "48%", duration: 10, delay: 2.2 },
-  { top: "78%", duration: 9, delay: 4.1 },
-];
+const STREAM_PARTICLES = [0, 1, 2, 3];
+const ORBIT_DURATION = 34;
 
-function FeatureCard({
-  icon: Icon,
-  eyebrow,
-  title,
-  description,
-  badge,
-  delay = 0,
-}: FeatureCardProps) {
-  const reduceMotion = useReducedMotion();
-
+function BackgroundEffects({ reduceMotion }: { reduceMotion: boolean }) {
   return (
-    <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 24, scale: 0.97 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={reduceMotion ? undefined : { y: -7, scale: 1.015 }}
-      className="group relative overflow-hidden rounded-[28px] border border-emerald-200/70 bg-white/80 p-5 shadow-[0_18px_55px_-30px_rgba(15,23,42,0.35)] backdrop-blur-xl transition-colors duration-300 hover:border-orange-300 dark:border-white/10 dark:bg-slate-950/70"
-    >
-      <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/80 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <div className="absolute -right-14 -top-14 h-32 w-32 rounded-full bg-orange-400/10 blur-2xl transition-transform duration-500 group-hover:scale-150" />
+    <>
+      <div className="absolute inset-0 -z-40 bg-[#f7fbf8] dark:bg-[#020806]" />
 
-      <div className="relative flex items-start gap-4">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
-          <Icon className="size-6" aria-hidden="true" />
-        </div>
+      <div className="absolute inset-0 -z-30 bg-[radial-gradient(circle_at_50%_42%,rgba(16,185,129,0.2),transparent_42%)] dark:bg-[radial-gradient(circle_at_50%_42%,rgba(16,185,129,0.15),transparent_45%)]" />
 
-        <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-600 dark:text-orange-400">
-            {eyebrow}
-          </p>
-          <h3 className="mt-1 text-xl font-bold text-slate-950 dark:text-white">
-            {title}
-          </h3>
-        </div>
-      </div>
+      <div className="absolute inset-0 -z-30 opacity-[0.04] [background-image:linear-gradient(rgba(15,23,42,0.8)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.8)_1px,transparent_1px)] [background-size:48px_48px] dark:opacity-[0.075] dark:[background-image:linear-gradient(rgba(255,255,255,0.55)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.55)_1px,transparent_1px)]" />
 
-      <p className="relative mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
-        {description}
-      </p>
+      <div className="absolute left-[-190px] top-[12%] -z-30 size-[450px] rounded-full bg-emerald-400/12 blur-[110px]" />
+      <div className="absolute right-[-180px] top-[40%] -z-30 size-[420px] rounded-full bg-orange-400/12 blur-[120px]" />
 
-      <div className="relative mt-5 flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-          <Sparkles className="size-4" aria-hidden="true" />
-          {badge}
-        </span>
-        <span className="h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_16px_4px_rgba(249,115,22,0.45)]" />
-      </div>
-    </motion.article>
+      {!reduceMotion && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-20 bg-white dark:bg-emerald-50"
+          animate={{
+            opacity: [0, 0, 0.1, 0, 0, 0.045, 0],
+          }}
+          transition={{
+            duration: 5.4,
+            repeat: Infinity,
+            ease: "linear",
+            times: [0, 0.44, 0.455, 0.475, 0.76, 0.775, 1],
+          }}
+        />
+      )}
+
+      {BACKGROUND_PARTICLES.map((particle, index) => (
+        <motion.span
+          key={index}
+          aria-hidden
+          className={`absolute -z-10 rounded-full ${
+            index % 3 === 0
+              ? "bg-orange-400/45 shadow-[0_0_18px_rgba(251,146,60,0.6)]"
+              : "bg-emerald-400/45 shadow-[0_0_18px_rgba(52,211,153,0.6)]"
+          }`}
+          style={{
+            left: particle.left,
+            top: particle.top,
+            width: particle.size,
+            height: particle.size,
+          }}
+          animate={
+            reduceMotion
+              ? undefined
+              : {
+                  x: [0, index % 2 === 0 ? 12 : -12, 0],
+                  y: [0, -20, 0],
+                  opacity: [0.18, 0.9, 0.18],
+                  scale: [1, 1.55, 1],
+                }
+          }
+          transition={{
+            duration: particle.duration,
+            delay: particle.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </>
   );
 }
 
-function RecommendationCore() {
-  const reduceMotion = useReducedMotion();
-
+function LightningBolt({
+  data,
+  reduceMotion,
+}: {
+  data: LightningBoltData;
+  reduceMotion: boolean;
+}) {
   return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mx-auto aspect-square w-full max-w-[560px]"
+    <motion.svg
+      aria-hidden
+      viewBox="0 0 80 180"
+      fill="none"
+      className="pointer-events-none absolute -z-10 overflow-visible"
+      style={{
+        left: data.left,
+        top: data.top,
+        width: data.width,
+        rotate: data.rotate,
+      }}
+      animate={
+        reduceMotion
+          ? { opacity: 0.18 }
+          : {
+              opacity: [0, 0, data.opacity, 0.22, 0, 0],
+              scale: [0.92, 0.92, 1.08, 1, 0.98, 0.92],
+              filter: [
+                "drop-shadow(0 0 0 rgba(255,255,255,0))",
+                "drop-shadow(0 0 0 rgba(255,255,255,0))",
+                "drop-shadow(0 0 13px rgba(255,255,255,1))",
+                "drop-shadow(0 0 8px rgba(52,211,153,0.85))",
+                "drop-shadow(0 0 0 rgba(255,255,255,0))",
+                "drop-shadow(0 0 0 rgba(255,255,255,0))",
+              ],
+            }
+      }
+      transition={{
+        duration: data.duration,
+        delay: data.delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+        times: [0, 0.46, 0.49, 0.53, 0.57, 1],
+      }}
     >
-      <div className="absolute inset-[5%] rounded-full bg-[radial-gradient(circle,rgba(34,197,94,0.16),transparent_62%)] blur-2xl" />
-
-      <motion.div
-        animate={reduceMotion ? undefined : { rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-[8%] rounded-full border border-dashed border-emerald-400/35"
+      <motion.path
+        d="M49 4 18 78h25l-17 44 39-60H40L67 4H49Z"
+        stroke="url(#lightning-stroke)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                pathLength: [0, 0, 1, 1, 0],
+                opacity: [0, 0, 1, 0.8, 0],
+              }
+        }
+        transition={{
+          duration: data.duration,
+          delay: data.delay,
+          repeat: Infinity,
+          ease: "easeOut",
+          times: [0, 0.45, 0.5, 0.56, 1],
+        }}
       />
-      <motion.div
-        animate={reduceMotion ? undefined : { rotate: -360 }}
-        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-        className="absolute inset-[18%] rounded-full border border-dashed border-orange-400/45"
+      <path
+        d="M49 4 18 78h25l-17 44 39-60H40L67 4H49Z"
+        fill="url(#lightning-fill)"
+        opacity="0.34"
       />
-
-      <div className="absolute inset-[28%] rounded-full border border-white/70 bg-white/85 shadow-[0_30px_100px_-35px_rgba(22,163,74,0.65)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/85">
-        <motion.div
-          animate={reduceMotion ? undefined : { scale: [1, 1.045, 1] }}
-          transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-3 rounded-full bg-gradient-to-br from-emerald-500 via-green-500 to-orange-500 p-[2px]"
+      <defs>
+        <linearGradient
+          id="lightning-stroke"
+          x1="42"
+          y1="4"
+          x2="42"
+          y2="122"
+          gradientUnits="userSpaceOnUse"
         >
-          <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-white px-4 text-center dark:bg-slate-950">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-orange-500 text-white shadow-lg shadow-emerald-500/20">
-              <UtensilsCrossed className="size-7" aria-hidden="true" />
-            </div>
-            <p className="mt-3 text-sm font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
-              FoodHub AI
-            </p>
-            <p className="mt-1 text-xl font-black text-slate-950 dark:text-white sm:text-2xl">
-              Your best meal
-            </p>
-            <div className="mt-3 flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-sm font-bold text-orange-600 dark:bg-orange-500/10 dark:text-orange-300">
-              <Star className="size-4 fill-current" aria-hidden="true" />
-              98% match
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {preferenceNodes.map(({ label, icon: Icon, position, delay }) => (
-        <motion.div
-          key={label}
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  y: [0, -9, 0],
-                  scale: [1, 1.04, 1],
-                }
-          }
-          transition={{
-            duration: 4,
-            delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className={`absolute ${position} z-20`}
+          <stop stopColor="white" />
+          <stop offset="0.55" stopColor="#6ee7b7" />
+          <stop offset="1" stopColor="#fb923c" />
+        </linearGradient>
+        <linearGradient
+          id="lightning-fill"
+          x1="42"
+          y1="4"
+          x2="42"
+          y2="122"
+          gradientUnits="userSpaceOnUse"
         >
-          <div className="flex items-center gap-2 rounded-2xl border border-white/70 bg-white/85 px-3 py-2 text-sm font-bold text-slate-700 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/85 dark:text-slate-100">
-            <span className="flex size-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <Icon className="size-4" aria-hidden="true" />
-            </span>
-            {label}
-          </div>
-        </motion.div>
+          <stop stopColor="white" />
+          <stop offset="0.6" stopColor="#34d399" />
+          <stop offset="1" stopColor="#f97316" />
+        </linearGradient>
+      </defs>
+    </motion.svg>
+  );
+}
+
+function LightningField({ reduceMotion }: { reduceMotion: boolean }) {
+  return (
+    <>
+      {LIGHTNING_BOLTS.map((bolt, index) => (
+        <LightningBolt key={index} data={bolt} reduceMotion={reduceMotion} />
       ))}
 
-      {foodTags.map(({ emoji, label, position, delay }) => (
+      {!reduceMotion && (
         <motion.div
-          key={label}
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  y: [0, 8, 0],
-                  rotate: [-1.5, 1.5, -1.5],
-                }
-          }
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-[43%] -z-20 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.28),rgba(16,185,129,0.12)_32%,transparent_68%)] blur-3xl"
+          animate={{
+            opacity: [0.12, 0.36, 0.14, 0.48, 0.12],
+            scale: [0.9, 1.06, 0.96, 1.1, 0.9],
+          }}
           transition={{
             duration: 4.8,
-            delay,
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className={`absolute ${position} z-10`}
-        >
-          <div className="flex items-center gap-2 rounded-full border border-orange-200/80 bg-white/80 px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-md backdrop-blur-md dark:border-orange-500/20 dark:bg-slate-900/80 dark:text-slate-200">
-            <span className="text-lg" aria-hidden="true">
-              {emoji}
-            </span>
-            {label}
-          </div>
-        </motion.div>
-      ))}
+        />
+      )}
+    </>
+  );
+}
 
-      <motion.div
-        animate={reduceMotion ? undefined : { opacity: [0.35, 0.9, 0.35] }}
-        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute left-1/2 top-[14%] h-[72%] w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-orange-400 to-transparent"
+function ElectricRing({
+  inset,
+  duration,
+  reverse = false,
+  color = "green",
+  reduceMotion,
+}: {
+  inset: string;
+  duration: number;
+  reverse?: boolean;
+  color?: "green" | "orange";
+  reduceMotion: boolean;
+}) {
+  const mainStroke = color === "green" ? "#34d399" : "#fb923c";
+  const softStroke = color === "green" ? "#a7f3d0" : "#fed7aa";
+
+  return (
+    <motion.svg
+      aria-hidden
+      viewBox="0 0 100 100"
+      className="absolute overflow-visible"
+      style={{ inset }}
+      animate={reduceMotion ? undefined : { rotate: reverse ? -360 : 360 }}
+      transition={{
+        duration,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+    >
+      <circle
+        cx="50"
+        cy="50"
+        r="48"
+        fill="none"
+        stroke={softStroke}
+        strokeOpacity="0.16"
+        strokeWidth="0.45"
       />
 
-      <div className="absolute bottom-[13%] left-1/2 z-30 w-[68%] -translate-x-1/2 rounded-2xl border border-white/70 bg-white/90 p-3 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/90">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-300">
-              <Clock3 className="size-5" aria-hidden="true" />
+      <motion.circle
+        cx="50"
+        cy="50"
+        r="48"
+        fill="none"
+        stroke={mainStroke}
+        strokeWidth="0.8"
+        strokeLinecap="round"
+        strokeDasharray="13 18 4 25"
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                strokeDashoffset: reverse ? [0, 120] : [0, -120],
+                opacity: [0.35, 1, 0.35],
+              }
+        }
+        transition={{
+          duration: duration / 2,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        style={{
+          filter: `drop-shadow(0 0 3px ${mainStroke})`,
+        }}
+      />
+
+      <motion.circle
+        cx="50"
+        cy="2"
+        r="1.1"
+        fill="white"
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                scale: [0.65, 1.65, 0.65],
+                opacity: [0.4, 1, 0.4],
+              }
+        }
+        transition={{
+          duration: 1.6,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        style={{
+          filter: `drop-shadow(0 0 5px ${mainStroke})`,
+        }}
+      />
+    </motion.svg>
+  );
+}
+
+function OrbitRings({ reduceMotion }: { reduceMotion: boolean }) {
+  return (
+    <>
+      <motion.div
+        aria-hidden
+        animate={reduceMotion ? undefined : { rotate: 360 }}
+        transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-[12%] rounded-full"
+      >
+        <div className="absolute inset-0 rounded-full border border-dashed border-emerald-500/25" />
+
+        <motion.div
+          className="absolute left-1/2 top-[-5px] size-3 -translate-x-1/2 rounded-full bg-white shadow-[0_0_8px_2px_white,0_0_24px_7px_rgba(52,211,153,0.75)]"
+          animate={
+            reduceMotion
+              ? undefined
+              : { scale: [0.75, 1.45, 0.75], opacity: [0.5, 1, 0.5] }
+          }
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        <motion.div
+          className="absolute bottom-[-4px] left-1/2 size-2.5 -translate-x-1/2 rounded-full bg-orange-300 shadow-[0_0_8px_2px_white,0_0_22px_6px_rgba(251,146,60,0.75)]"
+          animate={
+            reduceMotion
+              ? undefined
+              : { scale: [1.4, 0.7, 1.4], opacity: [1, 0.45, 1] }
+          }
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.div>
+
+      <ElectricRing
+        inset="17%"
+        duration={13}
+        color="green"
+        reduceMotion={reduceMotion}
+      />
+
+      <ElectricRing
+        inset="22%"
+        duration={17}
+        reverse
+        color="orange"
+        reduceMotion={reduceMotion}
+      />
+
+      <motion.div
+        aria-hidden
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                rotate: 360,
+                scale: [0.98, 1.035, 0.98],
+                opacity: [0.45, 0.95, 0.45],
+              }
+        }
+        transition={{
+          rotate: { duration: 6.5, repeat: Infinity, ease: "linear" },
+          scale: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+          opacity: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+        }}
+        className="absolute inset-[27%] rounded-full [background:conic-gradient(from_0deg,transparent_0deg,rgba(255,255,255,0.95)_10deg,rgba(52,211,153,0.9)_22deg,transparent_50deg,transparent_145deg,rgba(251,146,60,0.9)_168deg,transparent_205deg)] [mask:radial-gradient(farthest-side,transparent_calc(100%-4px),#000_calc(100%-2px))]"
+      />
+    </>
+  );
+}
+
+interface SignalOrbitProps {
+  activeSignal: string;
+  setActiveSignal: (signal: string) => void;
+  reduceMotion: boolean;
+}
+
+function SignalOrbit({
+  activeSignal,
+  setActiveSignal,
+  reduceMotion,
+}: SignalOrbitProps) {
+  return (
+    <motion.div
+      animate={reduceMotion ? undefined : { rotate: 360 }}
+      transition={{
+        duration: ORBIT_DURATION,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+      className="absolute inset-[1%]"
+    >
+      {SIGNALS.map((signal) => {
+        const SignalIcon = signal.icon;
+        const isActive = activeSignal === signal.label;
+        const particleClass =
+          signal.color === "green"
+            ? "bg-emerald-300 shadow-[0_0_8px_2px_white,0_0_16px_6px_rgba(52,211,153,0.68)]"
+            : "bg-orange-300 shadow-[0_0_8px_2px_white,0_0_16px_6px_rgba(251,146,60,0.68)]";
+
+        return (
+          <div
+            key={signal.label}
+            className="absolute inset-0"
+            style={{ transform: `rotate(${signal.angle}deg)` }}
+          >
+            <div className="absolute bottom-1/2 left-1/2 top-[7%] w-px -translate-x-1/2 overflow-visible bg-gradient-to-b from-transparent via-emerald-500/25 to-white/70">
+              {!reduceMotion &&
+                STREAM_PARTICLES.map((particle) => (
+                  <motion.span
+                    key={particle}
+                    className={`absolute left-1/2 size-1.5 -translate-x-1/2 rounded-full ${particleClass}`}
+                    initial={{ top: "0%", opacity: 0 }}
+                    animate={{
+                      top: ["0%", "96%"],
+                      opacity: [0, 1, 0.9, 0],
+                      scale: [0.5, 1.45, 1, 0.4],
+                    }}
+                    transition={{
+                      duration: 1.65,
+                      delay: particle * 0.32 + (signal.angle / 360) * 1.1,
+                      repeat: Infinity,
+                      repeatDelay: 0.65,
+                      ease: "easeIn",
+                    }}
+                  />
+                ))}
+
+              {isActive && !reduceMotion && (
+                <motion.span
+                  className="absolute bottom-[4%] left-1/2 h-12 w-4 -translate-x-1/2 rounded-full bg-white/70 blur-md"
+                  animate={{
+                    opacity: [0, 0.9, 0],
+                    scaleY: [0.25, 1.3, 0.25],
+                  }}
+                  transition={{
+                    duration: 1.1,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                  }}
+                />
+              )}
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                Ready nearby
-              </p>
-              <p className="text-base font-bold text-slate-950 dark:text-white">
-                Chicken Amok Bowl
-              </p>
+
+            <div className="absolute left-1/2 top-0 -translate-x-1/2">
+              <div style={{ transform: `rotate(${-signal.angle}deg)` }}>
+                <motion.div
+                  animate={reduceMotion ? undefined : { rotate: -360 }}
+                  transition={{
+                    duration: ORBIT_DURATION,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                >
+                  <motion.button
+                    type="button"
+                    aria-label={`${signal.label}: ${signal.description}`}
+                    aria-pressed={isActive}
+                    onPointerEnter={() => setActiveSignal(signal.label)}
+                    onFocus={() => setActiveSignal(signal.label)}
+                    whileHover={
+                      reduceMotion
+                        ? undefined
+                        : {
+                            scale: 1.12,
+                            y: -5,
+                            rotate: signal.color === "green" ? -1 : 1,
+                          }
+                    }
+                    whileTap={{ scale: 0.95 }}
+                    animate={
+                      reduceMotion || !isActive
+                        ? undefined
+                        : {
+                            y: [0, -2, 0],
+                            boxShadow: [
+                              "0 0 0 rgba(16,185,129,0)",
+                              "0 0 30px rgba(16,185,129,0.5)",
+                              "0 0 24px rgba(249,115,22,0.35)",
+                              "0 0 0 rgba(16,185,129,0)",
+                            ],
+                          }
+                    }
+                    transition={{
+                      duration: 2.1,
+                      repeat: isActive ? Infinity : 0,
+                      ease: "easeInOut",
+                    }}
+                    className={`group relative flex items-center gap-2 overflow-hidden rounded-2xl border px-2.5 py-2 text-base font-bold backdrop-blur-xl transition-colors duration-300 sm:px-3.5 ${
+                      isActive
+                        ? "border-white/80 bg-gradient-to-r from-white via-emerald-50 to-orange-50 text-slate-950 shadow-[0_18px_48px_-18px_rgba(16,185,129,0.9)] dark:border-emerald-300/80 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(6,78,59,0.9),rgba(124,45,18,0.82))] dark:text-white"
+                        : "border-emerald-200/75 bg-white/80 text-slate-700 shadow-[0_12px_34px_-20px_rgba(15,23,42,0.7)] hover:border-emerald-400 dark:border-white/10 dark:bg-slate-900/80 dark:text-slate-200"
+                    }`}
+                  >
+                    {isActive && (
+                      <>
+                        <motion.span
+                          layoutId="active-signal-glow"
+                          className="absolute inset-0 -z-10 rounded-2xl bg-emerald-400/15"
+                        />
+
+                        {!reduceMotion && (
+                          <motion.span
+                            aria-hidden
+                            className="absolute -left-10 top-0 h-full w-10 skew-x-[-18deg] bg-white/75 blur-sm"
+                            animate={{ left: ["-25%", "125%"] }}
+                            transition={{
+                              duration: 1.55,
+                              repeat: Infinity,
+                              repeatDelay: 0.85,
+                              ease: "easeInOut",
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+
+                    <span
+                      className={`relative flex size-10 items-center justify-center rounded-xl transition-colors ${
+                        signal.color === "green"
+                          ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-200"
+                          : "bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-200"
+                      }`}
+                    >
+                      <SignalIcon className="size-5" aria-hidden />
+
+                      {isActive && !reduceMotion && (
+                        <motion.span
+                          aria-hidden
+                          className="absolute inset-0 rounded-xl border border-white/80"
+                          animate={{ scale: [1, 1.55], opacity: [0.75, 0] }}
+                          transition={{
+                            duration: 1.35,
+                            repeat: Infinity,
+                            ease: "easeOut",
+                          }}
+                        />
+                      )}
+                    </span>
+
+                    <span className="hidden whitespace-nowrap min-[430px]:inline">
+                      {signal.label}
+                    </span>
+
+                    <span
+                      className={`absolute -right-1 -top-1 size-3 rounded-full ${
+                        isActive
+                          ? "bg-white shadow-[0_0_7px_2px_white,0_0_16px_5px_rgba(52,211,153,0.75)]"
+                          : "bg-slate-300 dark:bg-slate-600"
+                      }`}
+                    />
+                  </motion.button>
+                </motion.div>
+              </div>
             </div>
           </div>
-          <span className="rounded-full bg-emerald-500 px-3 py-1.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20">
-            18 min
-          </span>
+        );
+      })}
+    </motion.div>
+  );
+}
+
+function RecommendationCore({ reduceMotion }: { reduceMotion: boolean }) {
+  return (
+    <div className="absolute inset-[28%] grid place-items-center">
+      {!reduceMotion && (
+        <>
+          <motion.span
+            aria-hidden
+            className="absolute inset-[-5%] rounded-full border border-white/70"
+            animate={{ scale: [0.88, 1.38], opacity: [0.72, 0] }}
+            transition={{ duration: 2.1, repeat: Infinity, ease: "easeOut" }}
+          />
+
+          <motion.span
+            aria-hidden
+            className="absolute inset-[-5%] rounded-full border border-emerald-300/70"
+            animate={{ scale: [0.9, 1.45], opacity: [0.55, 0] }}
+            transition={{
+              duration: 2.1,
+              delay: 0.7,
+              repeat: Infinity,
+              ease: "easeOut",
+            }}
+          />
+
+          <motion.span
+            aria-hidden
+            className="absolute inset-[-5%] rounded-full border border-orange-300/60"
+            animate={{ scale: [0.92, 1.5], opacity: [0.45, 0] }}
+            transition={{
+              duration: 2.1,
+              delay: 1.4,
+              repeat: Infinity,
+              ease: "easeOut",
+            }}
+          />
+
+          <motion.div
+            aria-hidden
+            className="absolute inset-[4%] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.52),rgba(52,211,153,0.22)_35%,rgba(249,115,22,0.12)_55%,transparent_74%)] blur-2xl"
+            animate={{
+              scale: [0.82, 1.2, 0.88],
+              opacity: [0.28, 0.82, 0.28],
+            }}
+            transition={{ duration: 2.35, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </>
+      )}
+
+      <motion.div
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                y: [0, -4, 0],
+                scale: [1, 1.035, 1],
+              }
+        }
+        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+        className="relative size-full rounded-full bg-[conic-gradient(from_0deg,#34d399,#ffffff,#f97316,#ffffff,#34d399)] p-[2px] shadow-[0_0_30px_rgba(255,255,255,0.5),0_32px_100px_-28px_rgba(16,185,129,0.95)]"
+      >
+        {!reduceMotion && (
+          <motion.div
+            aria-hidden
+            className="absolute inset-[-4px] rounded-full [background:conic-gradient(from_0deg,transparent,rgba(255,255,255,0.95),transparent_18%,transparent_47%,rgba(52,211,153,0.85),transparent_62%,rgba(251,146,60,0.85),transparent_82%)] blur-[2px]"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4.8, repeat: Infinity, ease: "linear" }}
+          />
+        )}
+
+        <div className="relative flex size-full flex-col items-center justify-center overflow-hidden rounded-full bg-white px-3 text-center dark:bg-[#04100b]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_16%,rgba(255,255,255,0.9),rgba(16,185,129,0.16)_34%,transparent_62%)] dark:bg-[radial-gradient(circle_at_50%_16%,rgba(255,255,255,0.14),rgba(16,185,129,0.15)_34%,transparent_64%)]" />
+
+          {!reduceMotion && (
+            <>
+              <motion.div
+                aria-hidden
+                className="absolute inset-x-[8%] h-12 rounded-full bg-gradient-to-r from-transparent via-white/90 to-transparent blur-md"
+                animate={{ top: ["-24%", "112%"], opacity: [0, 0.95, 0] }}
+                transition={{
+                  duration: 2.15,
+                  repeat: Infinity,
+                  repeatDelay: 0.5,
+                  ease: "linear",
+                }}
+              />
+
+              <motion.div
+                aria-hidden
+                className="absolute inset-0 rounded-full [background:conic-gradient(from_0deg,transparent,rgba(16,185,129,0.16),transparent_20%,rgba(249,115,22,0.14),transparent_42%,transparent)]"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+              />
+            </>
+          )}
+
+          <motion.div
+            animate={
+              reduceMotion
+                ? undefined
+                : {
+                    rotate: [0, -2, 2, 0],
+                    scale: [1, 1.08, 1],
+                  }
+            }
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="relative flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-orange-500 text-white shadow-[0_0_12px_2px_rgba(255,255,255,0.45),0_14px_30px_-8px_rgba(16,185,129,0.9)] sm:size-14"
+          >
+            <ChefHat className="size-6 sm:size-7" aria-hidden />
+
+            {!reduceMotion && (
+              <>
+                <motion.span
+                  aria-hidden
+                  className="absolute inset-0 rounded-2xl border border-white/80"
+                  animate={{ scale: [1, 1.75], opacity: [0.75, 0] }}
+                  transition={{
+                    duration: 1.45,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                  }}
+                />
+
+                <motion.span
+                  aria-hidden
+                  className="absolute -right-2 -top-2 text-white drop-shadow-[0_0_7px_rgba(255,255,255,1)]"
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0.65, 1.25, 0.65],
+                    rotate: [-12, 10, -12],
+                  }}
+                  transition={{
+                    duration: 1.35,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Zap className="size-5 fill-white" />
+                </motion.span>
+              </>
+            )}
+          </motion.div>
+
+          <p className="relative mt-2 text-base font-black leading-tight text-slate-950 sm:text-xl dark:text-white">
+            Fish Amok
+          </p>
+
+          <div className="relative mt-1 hidden items-center gap-1.5 text-base font-semibold text-slate-500 min-[430px]:flex dark:text-slate-300">
+            <Star
+              className="size-4 fill-orange-400 text-orange-400"
+              aria-hidden
+            />
+            <span>4.9</span>
+            <span>•</span>
+            <Clock3 className="size-4" aria-hidden />
+            <span>25 min</span>
+          </div>
+
+          <motion.span
+            animate={
+              reduceMotion
+                ? undefined
+                : {
+                    boxShadow: [
+                      "0 0 0 0 rgba(16,185,129,0)",
+                      "0 0 24px 5px rgba(16,185,129,0.42)",
+                      "0 0 16px 3px rgba(249,115,22,0.26)",
+                      "0 0 0 0 rgba(16,185,129,0)",
+                    ],
+                  }
+            }
+            transition={{ duration: 2.1, repeat: Infinity }}
+            className="relative mt-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-1 text-base font-black text-white"
+          >
+            <Check className="size-4" aria-hidden />
+            98% match
+          </motion.span>
         </div>
-      </div>
+      </motion.div>
+    </div>
+  );
+}
+
+interface InteractiveOrbitProps {
+  activeSignal: string;
+  setActiveSignal: (signal: string) => void;
+  reduceMotion: boolean;
+  rotateX: ReturnType<typeof useSpring>;
+  rotateY: ReturnType<typeof useSpring>;
+}
+
+function InteractiveOrbit({
+  activeSignal,
+  setActiveSignal,
+  reduceMotion,
+  rotateX,
+  rotateY,
+}: InteractiveOrbitProps) {
+  return (
+    <motion.div
+      style={
+        reduceMotion
+          ? undefined
+          : {
+              rotateX,
+              rotateY,
+              transformPerspective: 1150,
+            }
+      }
+      className="relative mx-auto aspect-square w-full max-w-[680px] [transform-style:preserve-3d]"
+    >
+      <motion.div
+        aria-hidden
+        animate={
+          reduceMotion
+            ? undefined
+            : {
+                scale: [0.9, 1.08, 0.9],
+                opacity: [0.28, 0.7, 0.28],
+              }
+        }
+        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-[7%] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.35),rgba(16,185,129,0.24)_27%,rgba(16,185,129,0.07)_48%,transparent_70%)] blur-3xl"
+      />
+
+      {!reduceMotion && (
+        <motion.div
+          aria-hidden
+          className="absolute inset-[14%] rounded-full bg-[conic-gradient(from_0deg,transparent,rgba(255,255,255,0.55),transparent_12%,rgba(52,211,153,0.16),transparent_40%,rgba(251,146,60,0.15),transparent_70%)] blur-2xl"
+          animate={{ rotate: 360, opacity: [0.25, 0.7, 0.25] }}
+          transition={{
+            rotate: { duration: 9, repeat: Infinity, ease: "linear" },
+            opacity: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+          }}
+        />
+      )}
+
+      <OrbitRings reduceMotion={reduceMotion} />
+
+      <SignalOrbit
+        activeSignal={activeSignal}
+        setActiveSignal={setActiveSignal}
+        reduceMotion={reduceMotion}
+      />
+
+      <RecommendationCore reduceMotion={reduceMotion} />
+
+      <motion.div
+        aria-hidden
+        animate={reduceMotion ? undefined : { rotate: -360 }}
+        transition={{ duration: 42, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-[8%] rounded-full"
+      >
+        <motion.div
+          animate={
+            reduceMotion ? undefined : { y: [0, -6, 0], rotate: [0, -4, 0] }
+          }
+          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-[12%] top-[16%] flex size-10 items-center justify-center rounded-xl border border-white/75 bg-white/90 text-orange-500 shadow-[0_0_16px_rgba(251,146,60,0.3)] backdrop-blur dark:border-white/10 dark:bg-slate-900/80"
+        >
+          <UtensilsCrossed className="size-5" aria-hidden />
+        </motion.div>
+
+        <motion.div
+          animate={
+            reduceMotion ? undefined : { y: [0, 6, 0], rotate: [0, 4, 0] }
+          }
+          transition={{
+            duration: 3.5,
+            delay: 0.7,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute bottom-[10%] right-[16%] flex size-10 items-center justify-center rounded-xl border border-white/75 bg-white/90 text-emerald-500 shadow-[0_0_16px_rgba(52,211,153,0.3)] backdrop-blur dark:border-white/10 dark:bg-slate-900/80"
+        >
+          <MapPin className="size-5" aria-hidden />
+        </motion.div>
+      </motion.div>
     </motion.div>
   );
 }
 
 export default function FoodHubSmartRecommendationSection() {
-  const reduceMotion = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduceMotion = Boolean(useReducedMotion());
+  const [activeSignal, setActiveSignal] = useState(SIGNALS[0].label);
+
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+
+  const rotateXInput = useTransform(pointerY, [-0.5, 0.5], [8, -8]);
+  const rotateYInput = useTransform(pointerX, [-0.5, 0.5], [-8, 8]);
+  const glowXInput = useTransform(pointerX, [-0.5, 0.5], [-115, 115]);
+  const glowYInput = useTransform(pointerY, [-0.5, 0.5], [-80, 80]);
+
+  const rotateX = useSpring(rotateXInput, {
+    stiffness: 120,
+    damping: 22,
+    mass: 0.7,
+  });
+
+  const rotateY = useSpring(rotateYInput, {
+    stiffness: 120,
+    damping: 22,
+    mass: 0.7,
+  });
+
+  const glowX = useSpring(glowXInput, {
+    stiffness: 90,
+    damping: 24,
+  });
+
+  const glowY = useSpring(glowYInput, {
+    stiffness: 90,
+    damping: 24,
+  });
+
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveSignal((current) => {
+        const currentIndex = SIGNALS.findIndex(
+          (signal) => signal.label === current,
+        );
+        return SIGNALS[(currentIndex + 1) % SIGNALS.length].label;
+      });
+    }, 2600);
+
+    return () => window.clearInterval(intervalId);
+  }, [reduceMotion]);
+
+  function handlePointerMove(event: React.PointerEvent<HTMLElement>) {
+    if (reduceMotion || !sectionRef.current) return;
+
+    const bounds = sectionRef.current.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+
+    pointerX.set(x);
+    pointerY.set(y);
+  }
+
+  function resetPointer() {
+    pointerX.set(0);
+    pointerY.set(0);
+  }
 
   return (
-    <section className="relative isolate w-full overflow-hidden border-y border-emerald-200/70 bg-[#f8fff9] py-20 text-slate-950 dark:border-white/10 dark:bg-[#06110b] dark:text-white sm:py-24 lg:py-28">
-      <div className="absolute inset-0 -z-30 bg-[radial-gradient(circle_at_50%_32%,rgba(34,197,94,0.18),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(249,115,22,0.14),transparent_25%),radial-gradient(circle_at_15%_78%,rgba(34,197,94,0.12),transparent_28%)]" />
-      <div className="absolute inset-0 -z-20 opacity-[0.35] [background-image:linear-gradient(rgba(22,163,74,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(22,163,74,0.10)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)] dark:opacity-[0.12]" />
+    <section
+      ref={sectionRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={resetPointer}
+      className="relative isolate w-full overflow-hidden py-20 text-slate-950 sm:py-28 lg:py-32 dark:text-white"
+    >
+      <BackgroundEffects reduceMotion={reduceMotion} />
+      <LightningField reduceMotion={reduceMotion} />
 
       {!reduceMotion && (
-        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          {beamRows.map((beam) => (
-            <motion.div
-              key={beam.top}
-              initial={{ x: "-35vw", opacity: 0 }}
-              animate={{ x: "130vw", opacity: [0, 0.75, 0.75, 0] }}
-              transition={{
-                duration: beam.duration,
-                delay: beam.delay,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              style={{ top: beam.top }}
-              className="absolute left-0 h-px w-56 bg-gradient-to-r from-transparent via-orange-400 to-transparent shadow-[0_0_22px_5px_rgba(249,115,22,0.18)]"
-            />
-          ))}
-        </div>
+        <motion.div
+          aria-hidden
+          style={{ x: glowX, y: glowY }}
+          className="pointer-events-none absolute left-1/2 top-[42%] -z-10 size-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-300/15 blur-[95px]"
+        />
       )}
 
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-3xl text-center"
+          initial={
+            reduceMotion
+              ? false
+              : {
+                  opacity: 0,
+                  scale: 0.9,
+                  y: 24,
+                  filter: "blur(12px)",
+                }
+          }
+          whileInView={
+            reduceMotion
+              ? undefined
+              : {
+                  opacity: 1,
+                  scale: 1,
+                  y: 0,
+                  filter: "blur(0px)",
+                }
+          }
+          viewport={{ once: true, amount: 0.22 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="relative"
         >
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm backdrop-blur dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-            <Sparkles className="size-4" aria-hidden="true" />
-            Smart food discovery
-          </div>
-
-          <h2 className="mt-6 text-balance text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
-            One recommendation, built from{" "}
-            <span className="bg-gradient-to-r from-emerald-600 via-green-500 to-orange-500 bg-clip-text text-transparent">
-              everything that matters
-            </span>
-          </h2>
-
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-            FoodHub combines your food preferences, dietary needs, allergy
-            information, nutrition goals, family profiles, and location to find
-            meals that truly fit you.
-          </p>
-        </motion.div>
-
-        <div className="relative mt-14 grid items-center gap-8 lg:mt-20 lg:grid-cols-12 lg:gap-6">
-          <div className="order-2 grid gap-6 sm:grid-cols-2 lg:order-1 lg:col-span-3 lg:grid-cols-1">
-            {leftFeatures.map((feature, index) => (
-              <FeatureCard
-                key={feature.title}
-                {...feature}
-                delay={index * 0.12}
-              />
-            ))}
-          </div>
-
-          <div className="order-1 lg:order-2 lg:col-span-6">
-            <RecommendationCore />
-          </div>
-
-          <div className="order-3 grid gap-6 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
-            {rightFeatures.map((feature, index) => (
-              <FeatureCard
-                key={feature.title}
-                {...feature}
-                delay={0.15 + index * 0.12}
-              />
-            ))}
-          </div>
-        </div>
-
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-3 rounded-[28px] border border-emerald-200/80 bg-white/75 p-4 shadow-[0_18px_60px_-38px_rgba(15,23,42,0.4)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60"
-        >
-          {[
-            "Dietary preferences",
-            "Food allergies",
-            "Religious restrictions",
-            "Nutrition goals",
-            "Family profiles",
-            "Current location",
-          ].map((item, index) => (
-            <motion.span
-              key={item}
-              whileHover={reduceMotion ? undefined : { y: -3, scale: 1.03 }}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-            >
-              <span className="mr-2 text-emerald-500">0{index + 1}</span>
-              {item}
-            </motion.span>
-          ))}
+          <InteractiveOrbit
+            activeSignal={activeSignal}
+            setActiveSignal={setActiveSignal}
+            reduceMotion={reduceMotion}
+            rotateX={rotateX}
+            rotateY={rotateY}
+          />
         </motion.div>
       </div>
-
-      <style jsx>{`
-        @media (prefers-reduced-motion: reduce) {
-          *,
-          *::before,
-          *::after {
-            scroll-behavior: auto !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }

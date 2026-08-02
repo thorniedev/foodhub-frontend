@@ -374,7 +374,7 @@ function StoresErrorState({ onRetry }: StoresErrorStateProps) {
 
       <p className="mx-auto mt-2 max-w-lg text-[16px] leading-7 text-gray-500">
         សូមពិនិត្យថាឯកសារ{" "}
-        <span className="font-medium text-gray-700">
+        <span className="font-medium text-gray-700 dark:text-gray-100">
           public/data/stores.json
         </span>{" "}
         មានទីតាំងត្រឹមត្រូវ។

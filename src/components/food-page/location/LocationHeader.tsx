@@ -104,7 +104,7 @@ export default function LocationHeader({
               <button
                 type="button"
                 onClick={onOpenFilters}
-                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[16px] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] xl:hidden"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[16px] dark:text-emerald-400 font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] xl:hidden"
               >
                 <IoOptionsOutline className="text-[20px]" />
                 តម្រង
@@ -115,7 +115,7 @@ export default function LocationHeader({
               type="button"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[16px] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[16px] dark:text-emerald-400 font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <motion.span
                 animate={

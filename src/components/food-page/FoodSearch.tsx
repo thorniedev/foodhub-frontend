@@ -450,7 +450,7 @@ export default function FoodSearch({
           placeholder="ស្វែងរកម្ហូប តម្លៃ រដូវ បុណ្យ ខេត្ត អាកាសធាតុ ឬទីតាំង..."
           aria-label="Search all food information"
           autoComplete="off"
-          className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400"
+          className="w-full bg-transparent text-[16px] text-gray-700 dark:text-gray-100 outline-none placeholder:text-gray-400"
         />
 
         {value && (
@@ -561,7 +561,7 @@ export default function FoodSearch({
                           </div>
                         </div>
 
-                        <p className="shrink-0 text-[16px] font-semibold text-primary-800">
+                        <p className="shrink-0 text-[16px] dark:text-emerald-400 font-semibold text-primary-800">
                           {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: food.currencyCode || "USD",

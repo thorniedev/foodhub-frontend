@@ -206,20 +206,20 @@ export default function FilterByMealTime({
   return (
     <div className="my-15 flex flex-col gap-12.5">
       <section className="container mx-auto flex max-w-7xl flex-col items-center justify-center gap-6 px-4 pt-4 md:gap-12.5 lg:pt-0">
-        <p className="text-center text-2xl font-semibold text-primary-800 md:text-4xl lg:text-5xl">
-          បទពិសោធន៍ថ្មីក្នុង{" "}
+        <p className="text-center  text-2xl dark:text-emerald-400 font-semibold text-primary-800 md:text-4xl lg:text-5xl">
+          បទពិសោធន៍ថ្មីក្នុង
           <TypingAnimation
             words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
             blinkCursor
             pauseDelay={2000}
             loop
-            className="text-secondary-500"
+            className="text-secondary-500 dark:text-orange-400"
           >
             ការស្វែងរកអាហារ
           </TypingAnimation>
         </p>
 
-        <p className="text-center text-[16px] font-light text-gray-700 md:text-[20px] lg:text-[24px]">
+        <p className="text-center text-[16px] font-light text-gray-700 dark:text-gray-100 md:text-[20px] lg:text-[24px]">
           ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ
           <br />
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា

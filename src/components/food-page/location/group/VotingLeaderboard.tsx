@@ -393,7 +393,7 @@ function VotingStoreRow({
             rank === 1
               ? "bg-yellow-100 text-yellow-700"
               : rank === 2
-                ? "bg-gray-200 text-gray-700"
+                ? "bg-gray-200 text-gray-700 dark:text-gray-100"
                 : rank === 3
                   ? "bg-orange-100 text-orange-700"
                   : "bg-primary-50 text-primary-700"
@@ -427,7 +427,7 @@ function VotingStoreRow({
             </h3>
 
             {selected && (
-              <span className="rounded-full bg-primary-100 px-2.5 py-1 text-[14px] font-semibold text-primary-800">
+              <span className="rounded-full bg-primary-100 px-2.5 py-1 text-[14px] dark:text-emerald-400 font-semibold text-primary-800">
                 សំឡេងរបស់អ្នក
               </span>
             )}

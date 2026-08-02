@@ -103,7 +103,7 @@ export default function StoreContent({ menuItems }: StoreContentProps) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="ស្វែងរកហាងអាហារ..."
-          className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400"
+          className="w-full bg-transparent text-[16px] text-gray-700 dark:text-gray-100 outline-none placeholder:text-gray-400"
         />
       </div>
 

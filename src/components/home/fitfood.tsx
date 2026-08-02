@@ -41,11 +41,11 @@ export default function FitFoodSection() {
       className=" py-15 max-lg:px-2 max-w-7xl mx-auto text-center"
     >
       <section className="  flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
-        <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center font-semibold text-primary-800">
+        <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-emerald-400 font-semibold text-primary-800">
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>{" "}
         </p>
-        <p className="lg:text-[24px] md:text-[20px] text-center  font-light text-gray-700 max-md:text-[16px]">
+        <p className="lg:text-[24px] md:text-[20px] text-center  font-light text-gray-700 dark:text-gray-100 max-md:text-[16px]">
           ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ <br />
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
@@ -74,7 +74,9 @@ export default function FitFoodSection() {
               />
             </div>
             <h3 className="text-white font-bold text-xl mb-3">{item.title}</h3>
-            <p className="text-accent text-xl px-4">{item.description}</p>
+            <p className="text-gray-100 text-xl px-4">
+              {item.description}
+            </p>
           </div>
         ))}
       </div>

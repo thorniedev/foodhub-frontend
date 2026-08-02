@@ -3,12 +3,13 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { HeroComponent } from "@/components/ui/Hero";
 import { motion } from "motion/react";
-export default function Hero() {
+export default function HeroSection() {
   return (
     <div>
       {" "}
       <div className="">
         {/* <div className="h-screen">hi</div> */}
+        {/* hero */}
         <section>
           <div className="flex relative lg:pb-13 max-w-305.25 container mx-auto flex-col items-center justify-center gap-4  lg:py-0 md:py-20   max-md:py-55 lg:min-h-screen">
             <motion.div
@@ -25,6 +26,12 @@ export default function Hero() {
             >
               <img className="" src="/Image/decorate.png" alt="" />
             </motion.div>
+            <motion.div
+              aria-hidden
+              animate={{ rotate: 360 }}
+              transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-[8%] -z-10 rounded-full opacity-40 [background:conic-gradient(from_0deg,transparent,rgba(83,181,103,0.35),transparent_40%,rgba(255,159,64,0.3),transparent_75%)] [mask:radial-gradient(farthest-side,transparent_calc(100%-3px),#000_calc(100%-2px))]"
+            />
             <motion.div
               animate={{ y: [0, -15, 0], rotate: [0, 1, 0] }}
               transition={{
@@ -113,7 +120,7 @@ export default function Hero() {
               className="font-extrabold dark:text-white z-1 max-md:w-full lg:text-[50px] md:text-[48px] max-md:text-[38px] lg:ml-55 lg:-mt-35 md:text-center md:leading-17  text-primary-800"
             >
               ណែនាំអាហារដែលត្រូវនឹង <br className="md:block max-md:hidden" />{" "}
-              <span className="dark:text-[#f1ff27]">ចំណូលចិត្តរបស់អ្នក !</span>
+              ចំណូលចិត្តរបស់អ្នក !
             </p>
             <div className="absolute md:w-full ">
               <motion.div

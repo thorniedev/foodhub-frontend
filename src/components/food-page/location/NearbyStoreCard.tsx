@@ -273,7 +273,7 @@ export default function NearbyStoreCard({
               ${
                 selected
                   ? "border-primary-200 bg-primary-50 text-primary-800"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800"
+                  : "border-gray-200 bg-white text-gray-700 dark:text-gray-100 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800"
               }
             `}
           >

@@ -20,7 +20,7 @@ import EventSection from "@/components/home/event";
 import LocationSection from "@/components/home/location";
 import PopularSection from "@/components/home/popular";
 import RecommandSection from "@/components/home/recommand";
-import Hero from "@/components/home/Hero";
+
 import FilterByMealTime from "@/components/home/features/FilterByMealTime";
 import FoodSearchBar from "@/components/home/features/FoodSearchBarComponent";
 import SwipeCardTinderStyle from "@/components/home/features/SwipeCardTinderStyle";
@@ -31,6 +31,9 @@ import { useGetMenuItemsQuery } from "../store/menuApi";
 import { useState } from "react";
 import ModelFloating from "@/components/home/features/ModelFloating";
 import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommendationSection";
+import MinimalFoodHubRecommendationSection from "@/components/Component";
+import HeroComponentOO1 from "@/components/home/Hero";
+import Hero from "@/components/home/Hero";
 
 export default function Home() {
   return (
@@ -49,7 +52,10 @@ export default function Home() {
       <section className="">
         {/* <Skiper30 /> */}
         <Hero />
+
+        {/* <HeroComponentOO1 /> */}
         <FoodHubSmartRecommendationSection />
+        <MinimalFoodHubRecommendationSection />
         <FilterByMealTime />
         {/* <PopularSection /> */}
         {/* <Skiper19/> */}
@@ -74,7 +80,7 @@ export default function Home() {
         {/* <CreatePost />
         <PostsList /> */}
         {/* <Skiper19/> */}
-        <div className="h-screen"></div>
+        {/* <div className="h-screen"></div> */}
         <EventSection />
         <LocationSection />
         <MealsByAgeSection />

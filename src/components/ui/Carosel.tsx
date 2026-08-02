@@ -93,27 +93,45 @@ export default function Carousel({
   // copy, silently reposition to the equivalent card in the middle copy.
   const normalizeLoop = useCallback(() => {
     const el = trackRef.current;
-    if (!el || !isLooping) return;
-    if (dragState.current.dragging) return;
+
+    if (!el || !isLooping || dragState.current.dragging) return;
 
     const cardEls = Array.from(el.children) as HTMLElement[];
-    const idx = activeIndexRef.current;
+    const currentIndex = activeIndexRef.current;
 
-    if (idx < n) {
-      const target = cardEls[idx + n];
-      if (target) {
-        el.scrollLeft = target.offsetLeft;
-        activeIndexRef.current = idx + n;
-        targetIndexRef.current = { index: idx + n, at: 0 };
-      }
-    } else if (idx >= 2 * n) {
-      const target = cardEls[idx - n];
-      if (target) {
-        el.scrollLeft = target.offsetLeft;
-        activeIndexRef.current = idx - n;
-        targetIndexRef.current = { index: idx - n, at: 0 };
-      }
+    let normalizedIndex: number | null = null;
+
+    // First copy -> middle copy
+    if (currentIndex < n) {
+      normalizedIndex = currentIndex + n;
     }
+
+    // Third copy -> middle copy
+    if (currentIndex >= n * 2) {
+      normalizedIndex = currentIndex - n;
+    }
+
+    if (normalizedIndex === null) return;
+
+    const target = cardEls[normalizedIndex];
+    if (!target) return;
+
+    // Important: reposition instantly without animating backward.
+    const previousScrollBehavior = el.style.scrollBehavior;
+    el.style.scrollBehavior = "auto";
+    el.scrollLeft = target.offsetLeft;
+
+    activeIndexRef.current = normalizedIndex;
+    targetIndexRef.current = {
+      index: normalizedIndex,
+      at: 0,
+    };
+
+    requestAnimationFrame(() => {
+      if (trackRef.current) {
+        trackRef.current.style.scrollBehavior = previousScrollBehavior;
+      }
+    });
   }, [isLooping, n]);
 
   const updateArrows = useCallback(() => {
@@ -410,7 +428,7 @@ export default function Carousel({
   } absolute top-1/2 -translate-y-1/2 z-10
      h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-full
      bg-white/90 backdrop-blur-sm shadow-md border border-gray-200
-     text-gray-700 hover:bg-white
+     text-gray-700 dark:text-gray-100 hover:bg-white
      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700
      disabled:opacity-0 disabled:pointer-events-none transition-opacity`;
 

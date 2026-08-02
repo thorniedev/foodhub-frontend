@@ -56,7 +56,7 @@ export default function GroupMemberList({
         <button
           type="button"
           onClick={copyCode}
-          className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 text-[16px] font-semibold text-primary-800"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 text-[16px] dark:text-emerald-400 font-semibold text-primary-800"
         >
           <IoCopyOutline className="text-[20px]" />
           {inviteCode}
@@ -103,7 +103,7 @@ export default function GroupMemberList({
           <button
             type="button"
             onClick={onSimulateLocations}
-            className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-primary-200 px-5 text-[16px] font-semibold text-primary-800 transition hover:bg-primary-50"
+            className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-primary-200 px-5 text-[16px] dark:text-emerald-400 font-semibold text-primary-800 transition hover:bg-primary-50"
           >
             <IoLocationOutline className="text-[21px]" />
             Demo: receive member locations

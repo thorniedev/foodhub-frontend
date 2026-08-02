@@ -30,7 +30,7 @@ export default function GroupSetup({
           midpoint, and recommend stores for everyone.
         </p>
 
-        <label className="mt-6 block text-[16px] font-semibold text-gray-700">
+        <label className="mt-6 block text-[16px] font-semibold text-gray-700 dark:text-gray-100">
           Group name
         </label>
         <input
@@ -62,7 +62,7 @@ export default function GroupSetup({
           recommendation and voting session.
         </p>
 
-        <label className="mt-6 block text-[16px] font-semibold text-gray-700">
+        <label className="mt-6 block text-[16px] font-semibold text-gray-700 dark:text-gray-100">
           Invitation code
         </label>
         <input

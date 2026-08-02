@@ -96,7 +96,7 @@ export default function FoodNavTabs({
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
             aria-label={placeholder}
-            className="w-full rounded-full border border-gray-200 bg-white py-3 pl-14 pr-5 text-base text-gray-700 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-primary-800 focus:ring-2 focus:ring-primary-800/20"
+            className="w-full rounded-full border border-gray-200 bg-white py-3 pl-14 pr-5 text-base text-gray-700 dark:text-gray-100 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-primary-800 focus:ring-2 focus:ring-primary-800/20"
           />
         </form>
       </div>
