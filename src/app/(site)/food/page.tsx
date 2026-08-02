@@ -27,7 +27,7 @@ import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
 import type { MenuItem } from "@/types/manu";
 import LocationContent from "@/components/food-page/location/LocationContent";
-import StoreContent from "@/components/food-page/StoreContent";
+import StoreContent from "@/components/food-page/store/StoreContent";
 import FoodNavTabs, {
   type FoodPageTab,
 } from "@/components/food-page/FoodNavTabs";
@@ -2350,32 +2350,42 @@ export default function FoodPage() {
                 />
               </motion.div>
             )}
-            {/* {activePageTab === "location" && (
-              <div className="mt-6 flex gap-8">
-                <FilterSidebar
-                  filters={filters}
-                  onChange={setFilters}
-                  categoryOptions={categoryOptions}
-                  cuisineOptions={cuisineOptions}
-                  mealTypeOptions={mealTypeOptions}
-                  dietaryTypeOptions={dietaryTypeOptions}
-                  ageGroupOptions={ageGroupOptions}
-                  allergenOptions={allergenOptions}
-                  storeOptions={storeOptions}
-                  ingredientOptions={ingredientOptions}
-                  seasonOptions={seasonOptions}
-                  eventOptions={eventOptions}
-                  provinceOptions={provinceOptions}
-                  weatherOptions={weatherOptions}
-                  originProvinceOptions={originProvinceOptions}
-                />
-                <LocationContent key="location-tab" menuItems={menuItems} />
-              </div>
-            )} */}
 
             {/* STORE TAB */}
             {activePageTab === "store" && (
-              <StoreContent key="store-tab" menuItems={menuItems} />
+              <motion.div
+                key="store-tab"
+                initial={{
+                  opacity: 0,
+                  x: 24,
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  x: -24,
+                }}
+                transition={{
+                  duration: 0.25,
+                  ease: "easeOut",
+                }}
+              >
+                <section className="rounded-full border border-gray-100 bg-white p-4 shadow-sm sm:p-1">
+                  <FoodSearch
+                    menuItems={menuItems}
+                    value={searchInput}
+                    onChange={setSearchInput}
+                  />
+                </section>
+
+                <StoreContent
+                  menuItems={menuItems}
+                  searchQuery={searchInput}
+                  onClearSearch={() => setSearchInput("")}
+                />
+              </motion.div>
             )}
           </AnimatePresence>
         )}

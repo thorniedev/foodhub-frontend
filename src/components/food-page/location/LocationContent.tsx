@@ -83,15 +83,8 @@ export default function LocationContent({
 
   const [resultCount, setResultCount] = useState(0);
 
-  /*
-   * Browser location
-   */
   const { coordinates, status, error, refreshLocation } = useUserLocation();
 
-  /*
-   * Restaurant mock data from:
-   * public/data/stores.json
-   */
   const {
     data: stores = [],
     isLoading: isStoresLoading,
@@ -168,50 +161,38 @@ export default function LocationContent({
         duration: 0.25,
         ease: "easeOut",
       }}
-      className="
-        mt-6 min-w-0
-        xl:h-[calc(100dvh-10rem)]
-        xl:overflow-hidden
-      "
+      className="mt-6 min-w-0"
     >
       <div
         className="
-          flex min-w-0 flex-col gap-6
-          xl:h-full
-          xl:min-h-0
-          xl:flex-row
-          xl:items-stretch
-          xl:gap-8
-        "
+        flex min-w-0 flex-col gap-6
+        xl:flex-row
+        xl:items-start
+        xl:gap-8
+      "
       >
-        {/* Desktop fixed filter sidebar */}
-        <div className="hidden h-full min-h-0 shrink-0 xl:block">
+        {/* Sticky desktop filter */}
+        <aside
+          className="
+    hidden shrink-0 self-start
+    xl:sticky
+    xl:top-24
+    xl:block
+    xl:h-[calc(100dvh-7rem)]
+    xl:max-h-[calc(100dvh-7rem)]
+    xl:overflow-hidden
+  "
+        >
           <LocationFilters
             mode={mode}
             filters={filters}
             onModeChange={handleModeChange}
             onChange={handleFiltersChange}
           />
-        </div>
+        </aside>
 
-        {/* Only this area scrolls on desktop */}
-        <main
-          className="
-            min-w-0 flex-1
-            xl:h-full
-            xl:min-h-0
-            xl:overflow-y-auto
-            xl:overscroll-contain
-            xl:pr-2
-            xl:[scrollbar-width:thin]
-            xl:[scrollbar-color:#d1d5db_transparent]
-            xl:[&::-webkit-scrollbar]:w-1.5
-            xl:[&::-webkit-scrollbar-track]:bg-transparent
-            xl:[&::-webkit-scrollbar-thumb]:rounded-full
-            xl:[&::-webkit-scrollbar-thumb]:bg-gray-300
-            xl:hover:[&::-webkit-scrollbar-thumb]:bg-primary-700
-          "
-        >
+        {/* Normal page content — no internal scrollbar */}
+        <main className="min-w-0 flex-1">
           <LocationHeader
             mode={mode}
             storeCount={resultCount}
@@ -225,7 +206,7 @@ export default function LocationContent({
             onOpenFilters={() => setFiltersOpen(true)}
           />
 
-          <div className="mt-6 pb-8">
+          <div className="mt-6 pb-10">
             {isStoresLoading ? (
               <StoresLoadingState />
             ) : isStoresError ? (
@@ -313,19 +294,19 @@ export default function LocationContent({
                 damping: 32,
               }}
               className="
-                absolute inset-x-0 bottom-0
-                h-[88dvh] overflow-hidden
-                rounded-t-[30px] bg-white shadow-2xl
+              absolute inset-x-0 bottom-0
+              h-[88dvh] overflow-hidden
+              rounded-t-[30px] bg-white shadow-2xl
 
-                md:bottom-auto
-                md:left-0
-                md:right-auto
-                md:top-0
-                md:h-full
-                md:w-[370px]
-                md:rounded-none
-                md:rounded-r-[30px]
-              "
+              md:bottom-auto
+              md:left-0
+              md:right-auto
+              md:top-0
+              md:h-full
+              md:w-[370px]
+              md:rounded-none
+              md:rounded-r-[30px]
+            "
             >
               <LocationFilters
                 mode={mode}

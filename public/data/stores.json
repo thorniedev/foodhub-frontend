@@ -62,5 +62,1275 @@
     "socialLinks": [],
     "openingHours": [],
     "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000003",
+    "storeName": "Cuisine Wat Damnak Siem Reap",
+    "description": "Cambodian fine-dining restaurant combining authentic Cambodian flavors with French culinary techniques and locally sourced ingredients.",
+    "addressLine": "Street 7 Makara, between Psa Dey Hoy Market and Angkor High School, Wat Damnak Village",
+    "commune": "Sala Kamreuk",
+    "district": "Siem Reap Municipality",
+    "city": "Siem Reap",
+    "province": "Siem Reap",
+    "countryCode": "KH",
+    "postalCode": "93108",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 13.34965,
+    "longitude": 103.86017,
+    "phoneNumber": "+85577347762",
+    "email": "info@cuisinewatdamnak.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": null,
+    "coverImageUrl": "/Image/store/cuisine-wat-damnak.jpg",
+    "priceLevel": null,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000004",
+    "storeName": "The Sugar Palm Siem Reap",
+    "description": "Authentic Cambodian restaurant by Chef Kethana serving traditional Khmer dishes in a relaxed wooden-house setting.",
+    "addressLine": "Street 27, opposite Pannasastra University",
+    "commune": "Sala Kamreuk",
+    "district": "Siem Reap Municipality",
+    "city": "Siem Reap",
+    "province": "Siem Reap",
+    "countryCode": "KH",
+    "postalCode": null,
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 13.35243,
+    "longitude": 103.86025,
+    "phoneNumber": "+85512818143",
+    "email": null,
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": null,
+    "coverImageUrl": "/Image/store/sugar-palm-siem-reap.jpg",
+    "priceLevel": null,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000005",
+    "storeName": "Mahob Khmer Cuisine",
+    "description": "Khmer restaurant located in a traditional wooden house with a garden, trees, flowers, and a lotus pond.",
+    "addressLine": "#137, Traing Village, Group 3",
+    "commune": "Sla Kram",
+    "district": "Siem Reap Municipality",
+    "city": "Siem Reap",
+    "province": "Siem Reap",
+    "countryCode": "KH",
+    "postalCode": "17251",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 13.37303,
+    "longitude": 103.86301,
+    "phoneNumber": "+85517376038",
+    "email": "info@mahobkhmer.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": null,
+    "coverImageUrl": "/Image/store/mahob-khmer-cuisine.jpg",
+    "priceLevel": null,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000006",
+    "storeName": "HAVEN Cambodia",
+    "description": "Social-enterprise training restaurant supporting disadvantaged young adults while serving Cambodian, Asian, international, vegetarian, and vegan dishes.",
+    "addressLine": "Chocolate Road",
+    "commune": "Sala Kamreuk",
+    "district": "Siem Reap Municipality",
+    "city": "Siem Reap",
+    "province": "Siem Reap",
+    "countryCode": "KH",
+    "postalCode": "17254",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 13.34974,
+    "longitude": 103.8608,
+    "phoneNumber": "+85578342404",
+    "email": "eat@havencambodia.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": null,
+    "coverImageUrl": "/Image/store/haven-cambodia.jpg",
+    "priceLevel": null,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000007",
+    "storeName": "Khmer Surin Restaurant",
+    "description": "Long-running Phnom Penh restaurant established in 1996 and known for Khmer and regional cuisine in a traditional atmosphere.",
+    "addressLine": "#8E0, Street 57",
+    "commune": "Boeng Keng Kang 1",
+    "district": "Boeng Keng Kang",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12302",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.55502,
+    "longitude": 104.92458,
+    "phoneNumber": "+85512887320",
+    "email": "booking@khmersurinrestaurant.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": null,
+    "coverImageUrl": "/Image/store/khmer-surin.jpg",
+    "priceLevel": null,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000008",
+    "storeName": "Friends the Restaurant",
+    "description": "Popular Phnom Penh restaurant on Street 13 near the National Museum of Cambodia.",
+    "addressLine": "F3, #215 Street 13, near the National Museum",
+    "commune": "Phsar Kandal Muoy",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": null,
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.56691,
+    "longitude": 104.92906,
+    "phoneNumber": "+85517704354",
+    "email": null,
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": null,
+    "coverImageUrl": "/Image/store/friends-restaurant.jpg",
+    "priceLevel": null,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000009",
+    "storeName": "Jaan Bai Restaurant",
+    "description": "Battambang social-enterprise restaurant serving traditional Khmer cuisine prepared with seasonal produce sourced from local farmers and the nearby market.",
+    "addressLine": "Street 2, next to Phsar Nat",
+    "commune": "Svay Por",
+    "district": "Battambang Municipality",
+    "city": "Battambang",
+    "province": "Battambang",
+    "countryCode": "KH",
+    "postalCode": null,
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 13.10152,
+    "longitude": 103.19872,
+    "phoneNumber": "+85578263144",
+    "email": null,
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": null,
+    "coverImageUrl": "/Image/store/jaan-bai.jpg",
+    "priceLevel": null,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": null
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000010",
+    "storeName": "Sombok Restaurant",
+    "description": "Khmer fine-dining restaurant on the Phnom Penh riverside, serving breakfast, lunch and dinner with modern presentations of Cambodian cuisine.",
+    "addressLine": "No. 1, Street 154, Preah Sisowath Quay",
+    "commune": "Phsar Kandal Muoy",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12200",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.56862,
+    "longitude": 104.92988,
+    "phoneNumber": "+85593575157",
+    "email": "info@sombok.asia",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/sombok-logo.png",
+    "coverImageUrl": "/Image/store/sombok-restaurant.jpg",
+    "priceLevel": 4,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://sombok.asia/"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "06:30",
+        "closeTime": "10:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "11:30",
+        "closeTime": "14:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "18:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "06:30",
+        "closeTime": "10:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "11:30",
+        "closeTime": "14:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "18:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "06:30",
+        "closeTime": "10:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "11:30",
+        "closeTime": "14:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "18:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "06:30",
+        "closeTime": "10:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "11:30",
+        "closeTime": "14:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "18:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "06:30",
+        "closeTime": "10:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "11:30",
+        "closeTime": "14:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "18:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "06:30",
+        "closeTime": "10:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "11:30",
+        "closeTime": "14:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "18:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "06:30",
+        "closeTime": "10:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "11:30",
+        "closeTime": "14:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "18:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://sombok.asia/contact/"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000011",
+    "storeName": "Eleven One Kitchen BKK1",
+    "description": "Environmentally responsible Cambodian restaurant serving homemade Khmer cuisine with no added MSG and a strong focus on reducing single-use plastic.",
+    "addressLine": "No. 20, Street 334",
+    "commune": "Boeng Keng Kang 1",
+    "district": "Boeng Keng Kang",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12302",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.5488,
+    "longitude": 104.92335,
+    "phoneNumber": "+85586516111",
+    "email": "elevenonekitchen@gmail.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/eleven-one-kitchen-logo.png",
+    "coverImageUrl": "/Image/store/eleven-one-kitchen-bkk1.jpg",
+    "priceLevel": 2,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://www.elevenone-kitchen.com/"
+      },
+      {
+        "platform": "FACEBOOK",
+        "url": "https://www.facebook.com/elevenonekitchen/"
+      },
+      {
+        "platform": "INSTAGRAM",
+        "url": "https://www.instagram.com/elevenonekitchen/"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "07:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "07:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "07:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "07:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "07:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "07:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "07:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://www.elevenone-kitchen.com/"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000012",
+    "storeName": "Khéma Pasteur",
+    "description": "French café-restaurant and delicatessen inside Arunreas Hotel, known for baked goods, breakfast, brunch, cheese, charcuterie and classic French dishes.",
+    "addressLine": "Corner of Street 228 and Street 51, Arunreas Hotel",
+    "commune": "Chakto Mukh",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12211",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.55941,
+    "longitude": 104.92501,
+    "phoneNumber": "+85515823888",
+    "email": "reservation.khemapasteur@thalias.com.kh",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/khema-logo.png",
+    "coverImageUrl": "/Image/store/khema-pasteur.jpg",
+    "priceLevel": 3,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://khema.thalias.com.kh/khema-pasteur/"
+      },
+      {
+        "platform": "FACEBOOK",
+        "url": "https://www.facebook.com/KhemaPasteur/"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://khema.thalias.com.kh/khema-pasteur/"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000013",
+    "storeName": "Khéma La Poste",
+    "description": "French café-restaurant and gourmet delicatessen beside the historic Phnom Penh Post Office in the city's colonial quarter.",
+    "addressLine": "No. 41, Corner of Street 13 and Street 98",
+    "commune": "Wat Phnom",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12202",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.57611,
+    "longitude": 104.9239,
+    "phoneNumber": "+85515841888",
+    "email": "reservation.khemalaposte@thalias.com.kh",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/khema-logo.png",
+    "coverImageUrl": "/Image/store/khema-la-poste.jpg",
+    "priceLevel": 3,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://khema.thalias.com.kh/khema-la-poste/"
+      },
+      {
+        "platform": "FACEBOOK",
+        "url": "https://www.facebook.com/KhemaLaPoste/"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "06:00",
+        "closeTime": "23:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "06:00",
+        "closeTime": "23:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "06:00",
+        "closeTime": "23:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "06:00",
+        "closeTime": "23:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "06:00",
+        "closeTime": "23:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "06:00",
+        "closeTime": "23:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "06:00",
+        "closeTime": "23:00",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://khema.thalias.com.kh/khema-la-poste/"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000014",
+    "storeName": "Khéma Flatiron",
+    "description": "French café-restaurant and gourmet delicatessen on the 28th floor of Flatiron by Meridian, offering panoramic views across Phnom Penh.",
+    "addressLine": "28th Floor, Flatiron by Meridian",
+    "commune": "Srah Chak",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12257",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.57456,
+    "longitude": 104.90674,
+    "phoneNumber": "+85570888274",
+    "email": "reservation.khemaflatiron@thalias.com.kh",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/khema-logo.png",
+    "coverImageUrl": "/Image/store/khema-flatiron.jpg",
+    "priceLevel": 3,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://khema.thalias.com.kh/khema-flatiron/"
+      },
+      {
+        "platform": "FACEBOOK",
+        "url": "https://www.facebook.com/KhemaFlatiron/"
+      },
+      {
+        "platform": "INSTAGRAM",
+        "url": "https://www.instagram.com/khemaflatiron/"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "07:00",
+        "closeTime": "22:00",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://khema.thalias.com.kh/khema-flatiron/"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000015",
+    "storeName": "Cuts at Rosewood Phnom Penh",
+    "description": "Steak and seafood grill on the 38th floor of Rosewood Phnom Penh, featuring premium cuts, fresh seafood and an extensive wine selection.",
+    "addressLine": "Level 38, Vattanac Capital Tower, 66 Monivong Boulevard",
+    "commune": "Wat Phnom",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12202",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.57512,
+    "longitude": 104.92285,
+    "phoneNumber": "+85523936860",
+    "email": "phnompenh.fnbreservation@rosewoodhotels.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/rosewood-phnom-penh-logo.png",
+    "coverImageUrl": "/Image/store/cuts-rosewood-phnom-penh.jpg",
+    "priceLevel": 4,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://www.rosewoodhotels.com/en/phnom-penh/dining/cuts"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://www.rosewoodhotels.com/en/phnom-penh/dining/cuts"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000016",
+    "storeName": "Brasserie Louis",
+    "description": "French and Cambodian brasserie on level 35 of Rosewood Phnom Penh, serving breakfast and all-day dining with panoramic city views.",
+    "addressLine": "Level 35, Vattanac Capital Tower, 66 Monivong Boulevard",
+    "commune": "Wat Phnom",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12202",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.57512,
+    "longitude": 104.92285,
+    "phoneNumber": "+85523936860",
+    "email": "phnompenh.fnbreservation@rosewoodhotels.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/rosewood-phnom-penh-logo.png",
+    "coverImageUrl": "/Image/store/brasserie-louis.jpg",
+    "priceLevel": 4,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://www.rosewoodhotels.com/en/phnom-penh/dining/brasserie-louis"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "06:30",
+        "closeTime": "10:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "11:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "06:30",
+        "closeTime": "10:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "11:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "06:30",
+        "closeTime": "10:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "11:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "06:30",
+        "closeTime": "10:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "11:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "06:30",
+        "closeTime": "10:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "11:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "06:30",
+        "closeTime": "10:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "11:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "06:30",
+        "closeTime": "10:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "11:00",
+        "closeTime": "21:30",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://www.rosewoodhotels.com/en/phnom-penh/dining/brasserie-louis"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000017",
+    "storeName": "Iza at Rosewood Phnom Penh",
+    "description": "Japanese dining venue at Rosewood Phnom Penh offering robatayaki, sushi, sashimi and noodle dishes in a lively contemporary setting.",
+    "addressLine": "Vattanac Capital Tower, 66 Monivong Boulevard",
+    "commune": "Wat Phnom",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12202",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.57512,
+    "longitude": 104.92285,
+    "phoneNumber": "+85523936860",
+    "email": "phnompenh.fnbreservation@rosewoodhotels.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/rosewood-phnom-penh-logo.png",
+    "coverImageUrl": "/Image/store/iza-rosewood-phnom-penh.jpg",
+    "priceLevel": 4,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://www.rosewoodhotels.com/en/phnom-penh/dining/iza"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "11:00",
+        "closeTime": "22:30",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://www.rosewoodhotels.com/en/phnom-penh/dining/iza"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000018",
+    "storeName": "Restaurant Le Royal",
+    "description": "Elegant dining room at Raffles Hotel Le Royal serving traditional royal Khmer recipes alongside modern Cambodian cuisine.",
+    "addressLine": "92 Rukhak Vithei Daun Penh",
+    "commune": "Wat Phnom",
+    "district": "Doun Penh",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12302",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.57683,
+    "longitude": 104.92021,
+    "phoneNumber": "+85523981888",
+    "email": "bookus.phnompenh@raffles.com",
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/raffles-hotel-le-royal-logo.png",
+    "coverImageUrl": "/Image/store/restaurant-le-royal.jpg",
+    "priceLevel": 4,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "WEBSITE",
+        "url": "https://www.raffles.com/phnom-penh/dining/restaurant-le-royal/"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": null,
+        "closeTime": null,
+        "isClosed": true
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "18:30",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "18:30",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "18:30",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "18:30",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "18:30",
+        "closeTime": "22:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "18:30",
+        "closeTime": "22:00",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://www.raffles.com/phnom-penh/dining/restaurant-le-royal/"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000019",
+    "storeName": "Burger Moon Vanda",
+    "description": "Burger and fast-food restaurant branch located on Street 402 near VANDA University.",
+    "addressLine": "#38, Street 402",
+    "commune": "Tumnob Tuek",
+    "district": "Boeng Keng Kang",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12306",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.54715,
+    "longitude": 104.9072,
+    "phoneNumber": null,
+    "email": null,
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/burger-moon-logo.png",
+    "coverImageUrl": "/Image/store/burger-moon-vanda.jpg",
+    "priceLevel": 1,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [
+      {
+        "platform": "FOODPANDA",
+        "url": "https://www.foodpanda.com.kh/en/restaurant/t5cv/burger-moon-vanda"
+      }
+    ],
+    "openingHours": [
+      {
+        "dayOfWeek": "MONDAY",
+        "openTime": "09:00",
+        "closeTime": "21:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "TUESDAY",
+        "openTime": "09:00",
+        "closeTime": "21:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "WEDNESDAY",
+        "openTime": "09:00",
+        "closeTime": "21:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "THURSDAY",
+        "openTime": "09:00",
+        "closeTime": "21:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "FRIDAY",
+        "openTime": "09:00",
+        "closeTime": "21:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SATURDAY",
+        "openTime": "09:00",
+        "closeTime": "21:00",
+        "isClosed": false
+      },
+      {
+        "dayOfWeek": "SUNDAY",
+        "openTime": "09:00",
+        "closeTime": "21:00",
+        "isClosed": false
+      }
+    ],
+    "externalSource": "https://www.foodpanda.com.kh/en/chain/cz9iq/burger-moon"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000020",
+    "storeName": "Café Chapayom Vanda",
+    "description": "Thai-style tea and coffee shop on Street 402 near VANDA University.",
+    "addressLine": "#29, Street 402",
+    "commune": "Tumnob Tuek",
+    "district": "Boeng Keng Kang",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12306",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.54709,
+    "longitude": 104.90703,
+    "phoneNumber": null,
+    "email": null,
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/cafe-chapayom-logo.png",
+    "coverImageUrl": "/Image/store/cafe-chapayom-vanda.jpg",
+    "priceLevel": 1,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": "https://cambodia.worldplaces.me/view-place/82620239-cafe-chapayom-vanda-st-402.html"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000021",
+    "storeName": "QueenBee Café & Caramel Cake Vanda",
+    "description": "Neighborhood café and cake shop on Street 187 near the VANDA University area.",
+    "addressLine": "No. 02, Street 187",
+    "commune": "Tumnob Tuek",
+    "district": "Boeng Keng Kang",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12306",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.54599,
+    "longitude": 104.90733,
+    "phoneNumber": null,
+    "email": null,
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/queenbee-cafe-logo.png",
+    "coverImageUrl": "/Image/store/queenbee-cafe-vanda.jpg",
+    "priceLevel": 1,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": "https://cambodia.worldplaces.me/view-place/68719802-queenbee-cafe-and-caremel-cake-vanda.html"
+  },
+  {
+    "uuid": "30000000-0000-4000-8000-000000000028",
+    "storeName": "Yummy Korean Vanda",
+    "description": "Korean buffet and casual dining branch near Street 193 in the VANDA University area.",
+    "addressLine": "Near Street 193 and VANDA University",
+    "commune": "Tumnob Tuek",
+    "district": "Boeng Keng Kang",
+    "city": "Phnom Penh",
+    "province": "Phnom Penh",
+    "countryCode": "KH",
+    "postalCode": "12306",
+    "timezone": "Asia/Phnom_Penh",
+    "latitude": 11.548,
+    "longitude": 104.9068,
+    "phoneNumber": null,
+    "email": null,
+    "logoMediaUuid": null,
+    "coverMediaUuid": null,
+    "logoUrl": "/Image/store/logo/yummy-korean-logo.png",
+    "coverImageUrl": "/Image/store/yummy-korean-vanda.jpg",
+    "priceLevel": 2,
+    "hygieneRating": null,
+    "averageRating": 0,
+    "totalReviews": 0,
+    "reviewStatus": "APPROVED",
+    "operatingStatus": "UNKNOWN",
+    "accountStatus": "ACTIVE",
+    "isOpenNow": null,
+    "socialLinks": [],
+    "openingHours": [],
+    "externalSource": "https://www.instagram.com/reel/DJD88rlBMPl/"
   }
 ]

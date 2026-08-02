@@ -1,79 +1,75 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
 import { createPortal } from "react-dom";
-import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
   IoCheckmarkCircle,
   IoCloseOutline,
+  IoCopyOutline,
+  IoGameControllerOutline,
   IoLocationOutline,
   IoPeopleOutline,
-  IoRefreshOutline,
+  IoShareSocialOutline,
+  IoSparklesOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
-
 import { FaStar, FaStore } from "react-icons/fa";
 
-import {
-  useGetGroupVotingQuery,
-  useSubmitGroupVoteMutation,
-} from "@/app/store/groupRecommendationApi";
+import type { GroupMember, GroupVote } from "@/types/group-recommendation";
+import type { RecommendedStore } from "@/types/location";
 
-import type { VotingPanelStore } from "@/types/group-recommendation";
-
-type VotingLeaderboardProps = {
+interface VotingLeaderboardProps {
   open: boolean;
-  groupId: string;
-  stores: VotingPanelStore[];
-
-  initialStoreId?: string | null;
-
+  stores: RecommendedStore[];
+  members: GroupMember[];
+  votes: GroupVote[];
+  currentMemberUuid: string;
+  shareUrl: string;
+  canFinish?: boolean;
+  isSubmittingVote?: boolean;
+  isFinishing?: boolean;
+  onVote: (storeUuid: string) => void;
+  onFinish?: () => void;
   onClose: () => void;
-};
+}
 
-type RankedStore = VotingPanelStore & {
+type RankedStore = RecommendedStore & {
   voteCount: number;
   percentage: number;
 };
 
+function getRecommendationPercentage(score: number): number {
+  const normalizedScore = score <= 1 ? score * 100 : score;
+
+  return Math.max(0, Math.min(100, Math.round(normalizedScore)));
+}
+
 export default function VotingLeaderboard({
   open,
-  groupId,
   stores,
-  initialStoreId = null,
+  members,
+  votes,
+  currentMemberUuid,
+  shareUrl,
+  canFinish = true,
+  isSubmittingVote = false,
+  isFinishing = false,
+  onVote,
+  onFinish,
   onClose,
 }: VotingLeaderboardProps) {
   const [mounted, setMounted] = useState(false);
 
-  const [submittingStoreId, setSubmittingStoreId] = useState<string | null>(
-    null,
-  );
-
-  const {
-    data: votingData,
-    isLoading,
-    isFetching,
-    isError,
-    refetch,
-  } = useGetGroupVotingQuery(groupId, {
-    skip: !open || !groupId,
-    pollingInterval: open ? 5_000 : 0,
-  });
-
-  const [submitVote, { isLoading: isSubmittingVote }] =
-    useSubmitGroupVoteMutation();
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
 
@@ -94,24 +90,28 @@ export default function VotingLeaderboard({
     };
   }, [open, onClose]);
 
+  const currentVote = useMemo(
+    () => votes.find((vote) => vote.memberUuid === currentMemberUuid),
+    [currentMemberUuid, votes],
+  );
+
+  const votedCount = useMemo(
+    () => new Set(votes.map((vote) => vote.memberUuid)).size,
+    [votes],
+  );
+
   const rankedStores = useMemo<RankedStore[]>(() => {
-    const voteMap = new Map(
-      votingData?.stores.map((store) => [store.storeId, store.voteCount]) ?? [],
-    );
-
-    const totalVotes = votingData?.totalVotes ?? 0;
-
     return stores
       .map((store) => {
-        const voteCount = voteMap.get(store.uuid) ?? store.voteCount ?? 0;
-
-        const percentage =
-          totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+        const voteCount = votes.filter(
+          (vote) => vote.storeUuid === store.uuid,
+        ).length;
 
         return {
           ...store,
           voteCount,
-          percentage,
+          percentage:
+            votedCount > 0 ? Math.round((voteCount / votedCount) * 100) : 0,
         };
       })
       .sort((first, second) => {
@@ -125,119 +125,111 @@ export default function VotingLeaderboard({
 
         return first.distanceKm - second.distanceKm;
       });
-  }, [stores, votingData]);
+  }, [stores, votedCount, votes]);
 
-  const selectedStoreId = votingData?.myVoteStoreId ?? initialStoreId;
+  const leadingStore = rankedStores[0];
 
-  const handleVote = async (storeId: string) => {
-    if (!groupId || !votingData?.votingOpen) {
-      return;
-    }
+  const remainingVotes = Math.max(members.length - votedCount, 0);
+
+  const copyVotingLink = async () => {
+    if (!shareUrl) return;
 
     try {
-      setSubmittingStoreId(storeId);
+      await navigator.clipboard.writeText(shareUrl);
 
-      await submitVote({
-        groupId,
-        storeId,
-      }).unwrap();
-    } catch (error) {
-      console.error("Failed to submit group vote:", error);
-    } finally {
-      setSubmittingStoreId(null);
+      setCopied(true);
+
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
     }
   };
 
-  if (!mounted) {
-    return null;
-  }
+  const shareVotingLink = async () => {
+    if (!shareUrl) return;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: "FoodHub group voting",
+        text: "Join our FoodHub restaurant vote.",
+        url: shareUrl,
+      });
+
+      return;
+    }
+
+    await copyVotingLink();
+  };
+
+  if (!mounted) return null;
 
   return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
-          key="voting-panel-overlay"
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
-          exit={{
-            opacity: 0,
-          }}
-          transition={{
-            duration: 0.2,
-          }}
-          className="
-            fixed inset-0 z-[200]
-            flex items-end justify-center
-            bg-black/50 backdrop-blur-[3px]
-            md:items-center md:p-6
-          "
+          key="vote-party-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[220] flex items-end justify-center bg-black/45 backdrop-blur-[3px] md:items-center md:p-6"
         >
           <button
             type="button"
             aria-label="Close voting panel"
             onClick={onClose}
-            className="absolute inset-0 cursor-default"
+            className="absolute inset-0"
           />
 
           <motion.section
             role="dialog"
             aria-modal="true"
-            aria-labelledby="voting-panel-title"
+            aria-labelledby="vote-party-title"
             initial={{
-              y: "100%",
               opacity: 0,
+              y: "100%",
+              scale: 0.98,
             }}
             animate={{
-              y: 0,
               opacity: 1,
+              y: 0,
+              scale: 1,
             }}
             exit={{
-              y: "100%",
               opacity: 0,
+              y: "100%",
+              scale: 0.98,
             }}
             transition={{
               type: "spring",
-              stiffness: 300,
-              damping: 30,
+              stiffness: 280,
+              damping: 28,
             }}
-            className="
-              relative z-10 flex
-              h-[92dvh] w-full
-              flex-col overflow-hidden
-              rounded-t-[28px]
-              border border-gray-100
-              bg-[#fafaf8]
-              shadow-2xl
-
-              md:h-auto
-              md:max-h-[88dvh]
-              md:max-w-5xl
-              md:rounded-[28px]
-            "
+            className="relative z-10 flex h-[94dvh] w-full flex-col overflow-hidden rounded-t-[30px] border border-white/70 bg-[#fffdf8] shadow-2xl md:h-auto md:max-h-[90dvh] md:max-w-6xl md:rounded-[30px]"
           >
-            {/* Fixed header */}
-            <header className="shrink-0 border-b border-gray-100 bg-white px-4 py-4 sm:px-6">
+            <header className="shrink-0 border-b border-orange-100 bg-gradient-to-br from-orange-50 via-white to-primary-50 px-4 py-5 sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-primary-700">
-                    <IoTrophyOutline className="shrink-0 text-[21px]" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="flex items-center gap-2 rounded-full bg-secondary-100 px-3 py-1.5 text-[17px] font-semibold text-secondary-600">
+                      <IoGameControllerOutline className="text-[20px]" />
+                      Vote party
+                    </span>
 
-                    <p className="text-[16px] font-semibold">Group voting</p>
+                    <span className="rounded-full bg-white px-3 py-1.5 text-[17px] font-semibold text-primary-700 shadow-sm">
+                      {votedCount}/{members.length} បានបោះឆ្នោត
+                    </span>
                   </div>
 
                   <h2
-                    id="voting-panel-title"
-                    className="mt-1 text-[21px] font-semibold leading-8 text-primary-900 sm:text-[23px]"
+                    id="vote-party-title"
+                    className="mt-3 text-[23px] font-bold leading-[1.45] text-primary-900 sm:text-[25px]"
                   >
-                    ជ្រើសរើសហាងសម្រាប់ក្រុម
+                    ជ្រើសរើសហាងដែលក្រុមអ្នកចង់ទៅ
                   </h2>
 
-                  <p className="mt-1 text-[16px] leading-7 text-gray-500">
-                    បោះឆ្នោតជ្រើសរើសហាងមួយដែលក្រុមចង់ទៅ។
+                  <p className="mt-2 max-w-3xl text-[17px] leading-7 text-gray-600">
+                    បោះឆ្នោតមួយសំឡេង ហើយអាចផ្លាស់ប្ដូរជម្រើសបាន
+                    រហូតដល់ការបោះឆ្នោតបញ្ចប់។
                   </p>
                 </div>
 
@@ -245,324 +237,223 @@ export default function VotingLeaderboard({
                   type="button"
                   onClick={onClose}
                   aria-label="Close voting panel"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm transition hover:bg-gray-100 hover:text-primary-700"
                 >
-                  <IoCloseOutline className="text-[24px]" />
+                  <IoCloseOutline className="text-[25px]" />
                 </button>
               </div>
 
-              {/* Summary */}
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <SummaryCard
-                  icon={<IoPeopleOutline />}
-                  label="បានបោះឆ្នោត"
-                  value={`${votingData?.totalVotes ?? 0} / ${
-                    votingData?.totalMembers ?? 0
-                  }`}
-                />
+              <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+                <div className="flex min-w-0 items-center gap-3 rounded-[18px] border border-white bg-white/85 px-4 py-3 shadow-sm">
+                  <IoSparklesOutline className="shrink-0 text-[22px] text-secondary-500" />
 
-                <SummaryCard
-                  icon={<FaStore />}
-                  label="ហាងណែនាំ"
-                  value={String(stores.length)}
-                />
+                  <p className="min-w-0 text-[17px] leading-7 text-gray-600">
+                    {remainingVotes > 0
+                      ? `${remainingVotes} សំឡេងទៀតដើម្បីឱ្យសមាជិកគ្រប់គ្នាបានចូលរួម។`
+                      : "អស្ចារ្យ! សមាជិកគ្រប់គ្នាបានបោះឆ្នោតរួចរាល់។"}
 
-                <div className="col-span-2 sm:col-span-1">
-                  <SummaryCard
-                    icon={
-                      votingData?.votingOpen ? (
-                        <IoCheckmarkCircle />
-                      ) : (
-                        <IoTrophyOutline />
-                      )
-                    }
-                    label="ស្ថានភាព"
-                    value={
-                      votingData?.votingOpen ? "កំពុងបោះឆ្នោត" : "បានបញ្ចប់"
-                    }
-                  />
+                    {leadingStore && votedCount > 0
+                      ? ` កំពុងនាំមុខ៖ ${
+                          leadingStore.localName || leadingStore.name
+                        }`
+                      : ""}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={copyVotingLink}
+                    className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-4 text-[17px] font-semibold text-primary-800 transition hover:bg-primary-50"
+                  >
+                    {copied ? (
+                      <IoCheckmarkCircle className="text-[21px]" />
+                    ) : (
+                      <IoCopyOutline className="text-[21px]" />
+                    )}
+
+                    {copied ? "បានចម្លង" : "ចម្លងតំណ"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={shareVotingLink}
+                    className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary-800 px-4 text-[17px] font-semibold text-white transition hover:bg-primary-700"
+                  >
+                    <IoShareSocialOutline className="text-[21px]" />
+                    ចែករំលែក
+                  </button>
                 </div>
               </div>
             </header>
 
-            {/* Scrollable voting content */}
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
-              {isLoading ? (
-                <VotingLoadingState />
-              ) : isError ? (
-                <VotingErrorState onRetry={refetch} />
-              ) : rankedStores.length === 0 ? (
-                <div className="rounded-[20px] border border-dashed border-gray-200 bg-white px-5 py-12 text-center">
-                  <FaStore className="mx-auto text-[40px] text-primary-300" />
+              <div className="grid gap-4 xl:grid-cols-2">
+                {rankedStores.map((store, index) => {
+                  const selected = currentVote?.storeUuid === store.uuid;
 
-                  <h3 className="mt-3 text-[19px] font-semibold text-primary-900">
-                    មិនមានហាងសម្រាប់បោះឆ្នោត
-                  </h3>
+                  const displayName = store.localName?.trim() || store.name;
 
-                  <p className="mt-2 text-[16px] leading-7 text-gray-500">
-                    សូមគណនាការណែនាំសម្រាប់ក្រុមជាមុនសិន។
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {rankedStores.map((store, index) => {
-                    const selected = selectedStoreId === store.uuid;
+                  const imageUrl =
+                    store.coverImageUrl ||
+                    store.logoUrl ||
+                    "/Image/store/default-store.png";
 
-                    const submitting =
-                      isSubmittingVote && submittingStoreId === store.uuid;
+                  return (
+                    <motion.article
+                      layout
+                      key={store.uuid}
+                      className={`overflow-hidden rounded-[22px] border bg-white transition ${
+                        selected
+                          ? "border-secondary-400 ring-2 ring-secondary-100"
+                          : "border-gray-100 hover:border-primary-200 hover:shadow-md"
+                      }`}
+                    >
+                      <div className="grid min-w-0 sm:grid-cols-[150px_minmax(0,1fr)]">
+                        <div
+                          className="relative min-h-[170px] bg-gray-100 bg-cover bg-center sm:min-h-full"
+                          style={{
+                            backgroundImage: `url("${imageUrl}")`,
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
 
-                    return (
-                      <VotingStoreRow
-                        key={store.uuid}
-                        rank={index + 1}
-                        store={store}
-                        selected={selected}
-                        votingOpen={votingData?.votingOpen ?? false}
-                        submitting={submitting}
-                        onVote={() => handleVote(store.uuid)}
-                      />
-                    );
-                  })}
-                </div>
-              )}
+                          <span className="absolute left-3 top-3 flex h-10 min-w-10 items-center justify-center rounded-full bg-white px-3 text-[17px] font-bold text-primary-800 shadow-sm">
+                            #{index + 1}
+                          </span>
+
+                          {index === 0 && votedCount > 0 && (
+                            <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-yellow-400 px-3 py-2 text-[17px] font-bold text-yellow-950 shadow-sm">
+                              <IoTrophyOutline className="text-[20px]" />
+                              នាំមុខ
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex min-w-0 flex-col p-4">
+                          <div className="flex min-w-0 items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="line-clamp-2 text-[20px] font-bold leading-[1.45] text-primary-900 sm:text-[22px]">
+                                {displayName}
+                              </h3>
+
+                              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-[17px] text-gray-600">
+                                <span className="flex items-center gap-1.5 text-yellow-600">
+                                  <FaStar />
+                                  {store.averageRating > 0
+                                    ? store.averageRating.toFixed(1)
+                                    : "ថ្មី"}
+                                </span>
+
+                                <span className="flex items-center gap-1.5">
+                                  <IoLocationOutline />
+                                  {store.distanceKm.toFixed(1)} km
+                                </span>
+
+                                <span className="flex items-center gap-1.5">
+                                  <FaStore />
+                                  {store.menuCount} មុខម្ហូប
+                                </span>
+                              </div>
+                            </div>
+
+                            {selected && (
+                              <IoCheckmarkCircle className="shrink-0 text-[25px] text-secondary-500" />
+                            )}
+                          </div>
+
+                          <div className="mt-4">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                              <span className="text-[17px] font-semibold text-gray-700">
+                                {store.voteCount} សំឡេង
+                              </span>
+
+                              <span className="text-[17px] font-bold text-primary-700">
+                                {store.percentage}%
+                              </span>
+                            </div>
+
+                            <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
+                              <motion.div
+                                initial={{
+                                  width: 0,
+                                }}
+                                animate={{
+                                  width: `${store.percentage}%`,
+                                }}
+                                className="h-full rounded-full bg-gradient-to-r from-primary-600 to-secondary-500"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex items-center justify-between gap-3">
+                            <span className="rounded-full bg-primary-50 px-3 py-2 text-[17px] font-semibold text-primary-700">
+                              {getRecommendationPercentage(
+                                store.recommendationScore,
+                              )}
+                              % សមស្រប
+                            </span>
+
+                            <button
+                              type="button"
+                              disabled={isSubmittingVote}
+                              onClick={() => onVote(store.uuid)}
+                              className={`min-h-11 rounded-full px-5 text-[17px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                                selected
+                                  ? "border border-secondary-200 bg-secondary-50 text-secondary-600"
+                                  : "bg-secondary-500 text-white hover:bg-secondary-600"
+                              }`}
+                            >
+                              {selected ? "ជម្រើសរបស់អ្នក" : "បោះឆ្នោត"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.article>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Fixed footer */}
             <footer className="shrink-0 border-t border-gray-100 bg-white px-4 py-4 sm:px-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-[16px] leading-7 text-gray-500">
-                  {selectedStoreId
-                    ? "អ្នកអាចផ្លាស់ប្ដូរសំឡេងឆ្នោតបាន រហូតដល់ការបោះឆ្នោតត្រូវបានបញ្ចប់។"
-                    : "សូមជ្រើសរើសហាងមួយដើម្បីបោះឆ្នោត។"}
-                </p>
+                <div className="flex items-center gap-3">
+                  <IoPeopleOutline className="text-[22px] text-primary-700" />
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="min-h-11 shrink-0 rounded-full bg-primary-800 px-6 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-[0.98]"
-                >
-                  រួចរាល់
-                </button>
+                  <p className="text-[17px] leading-7 text-gray-600">
+                    {currentVote
+                      ? "អ្នកបានបោះឆ្នោត។ អ្នកនៅតែអាចផ្លាស់ប្ដូរជម្រើស។"
+                      : "ជ្រើសរើសហាងមួយ មុនពេលចាកចេញ។"}
+                  </p>
+                </div>
+
+                {canFinish && onFinish ? (
+                  <button
+                    type="button"
+                    disabled={!currentVote || isFinishing}
+                    onClick={onFinish}
+                    className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <IoTrophyOutline className="text-[21px]" />
+                    {isFinishing
+                      ? "កំពុងប្រកាស..."
+                      : "បញ្ចប់ និងប្រកាសអ្នកឈ្នះ"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="min-h-12 shrink-0 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700"
+                  >
+                    រួចរាល់
+                  </button>
+                )}
               </div>
             </footer>
-
-            {isFetching && !isLoading && (
-              <div className="absolute right-5 top-5 hidden items-center gap-2 rounded-full bg-primary-50 px-3 py-1.5 text-primary-700 lg:flex">
-                <IoRefreshOutline className="animate-spin" />
-
-                <span className="text-[14px]">Updating</span>
-              </div>
-            )}
           </motion.section>
         </motion.div>
       )}
     </AnimatePresence>,
     document.body,
-  );
-}
-
-type VotingStoreRowProps = {
-  rank: number;
-  store: RankedStore;
-  selected: boolean;
-  votingOpen: boolean;
-  submitting: boolean;
-  onVote: () => void;
-};
-
-function VotingStoreRow({
-  rank,
-  store,
-  selected,
-  votingOpen,
-  submitting,
-  onVote,
-}: VotingStoreRowProps) {
-  return (
-    <article
-      className={`rounded-[20px] border bg-white p-3 transition sm:p-4 ${
-        selected
-          ? "border-primary-600 ring-2 ring-primary-100"
-          : "border-gray-100 hover:border-primary-200 hover:shadow-sm"
-      }`}
-    >
-      <div className="grid min-w-0 gap-4 sm:grid-cols-[auto_80px_minmax(0,1fr)_auto] sm:items-center">
-        {/* Rank */}
-        <div
-          className={`flex h-9 w-9 items-center justify-center rounded-full text-[16px] font-semibold ${
-            rank === 1
-              ? "bg-yellow-100 text-yellow-700"
-              : rank === 2
-                ? "bg-gray-200 text-gray-700"
-                : rank === 3
-                  ? "bg-orange-100 text-orange-700"
-                  : "bg-primary-50 text-primary-700"
-          }`}
-        >
-          {rank}
-        </div>
-
-        {/* Store image */}
-        <div className="relative hidden h-16 w-20 overflow-hidden rounded-[14px] bg-primary-50 sm:block">
-          {store.coverImageUrl ? (
-            <Image
-              fill
-              src={store.coverImageUrl}
-              alt={store.localName || store.name}
-              sizes="80px"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <FaStore className="text-[24px] text-primary-600" />
-            </div>
-          )}
-        </div>
-
-        {/* Store information */}
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-[17px] font-semibold text-primary-900">
-              {store.localName || store.name}
-            </h3>
-
-            {selected && (
-              <span className="rounded-full bg-primary-100 px-2.5 py-1 text-[14px] font-semibold text-primary-800">
-                សំឡេងរបស់អ្នក
-              </span>
-            )}
-          </div>
-
-          {store.localName && (
-            <p className="mt-0.5 truncate text-[16px] text-gray-500">
-              {store.name}
-            </p>
-          )}
-
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px] text-gray-500">
-            <span className="flex items-center gap-1.5 text-yellow-500">
-              <FaStar />
-              {store.averageRating}
-            </span>
-
-            <span className="flex items-center gap-1.5">
-              <IoLocationOutline />
-              {store.distanceKm.toFixed(1)} km
-            </span>
-
-            <span>{store.menuCount} មុខម្ហូប</span>
-
-            <span>{Math.round(store.recommendationScore * 100)}% match</span>
-          </div>
-
-          {/* Vote progress */}
-          <div className="mt-3">
-            <div className="mb-1.5 flex items-center justify-between gap-3">
-              <span className="text-[15px] font-medium text-gray-600">
-                {store.voteCount} votes
-              </span>
-
-              <span className="text-[15px] font-semibold text-primary-700">
-                {store.percentage}%
-              </span>
-            </div>
-
-            <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-              <motion.div
-                initial={{
-                  width: 0,
-                }}
-                animate={{
-                  width: `${store.percentage}%`,
-                }}
-                transition={{
-                  duration: 0.35,
-                }}
-                className="h-full rounded-full bg-primary-700"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Vote button on the right */}
-        <button
-          type="button"
-          onClick={onVote}
-          disabled={!votingOpen || submitting}
-          className={`min-h-11 w-full shrink-0 rounded-full px-5 text-[16px] font-semibold transition sm:w-auto ${
-            selected
-              ? "border border-primary-200 bg-primary-50 text-primary-800"
-              : "bg-primary-800 text-white hover:bg-primary-700"
-          } disabled:cursor-not-allowed disabled:opacity-60`}
-        >
-          {submitting
-            ? "កំពុងបោះឆ្នោត..."
-            : selected
-              ? "បានបោះឆ្នោត"
-              : votingOpen
-                ? "បោះឆ្នោត"
-                : "បិទ"}
-        </button>
-      </div>
-    </article>
-  );
-}
-
-function SummaryCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-[16px] border border-gray-100 bg-gray-50 px-3 py-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-[18px] text-primary-700">
-        {icon}
-      </div>
-
-      <div className="min-w-0">
-        <p className="text-[14px] text-gray-500">{label}</p>
-
-        <p className="truncate text-[16px] font-semibold text-primary-900">
-          {value}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function VotingLoadingState() {
-  return (
-    <div className="space-y-3">
-      {Array.from({
-        length: 4,
-      }).map((_, index) => (
-        <div
-          key={index}
-          className="h-[145px] animate-pulse rounded-[20px] bg-gray-100"
-        />
-      ))}
-    </div>
-  );
-}
-
-function VotingErrorState({ onRetry }: { onRetry: () => void }) {
-  return (
-    <div className="rounded-[20px] border border-red-100 bg-white px-5 py-12 text-center">
-      <p className="text-[18px] font-semibold text-red-500">
-        មិនអាចទាញយកការបោះឆ្នោតបានទេ
-      </p>
-
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-4 rounded-full bg-primary-800 px-5 py-2.5 text-[16px] font-semibold text-white"
-      >
-        ព្យាយាមម្តងទៀត
-      </button>
-    </div>
   );
 }

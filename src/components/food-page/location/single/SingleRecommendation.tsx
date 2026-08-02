@@ -4,7 +4,8 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 
 import type { MenuItem } from "@/types/manu";
-import type { Store } from "@/types/store";
+import type { LocationStore } from "@/types/location-store";
+
 import type {
   Coordinates,
   LocationFiltersState,
@@ -21,6 +22,7 @@ import NearbyStoreList from "../NearbyStoreList";
 
 const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
   ssr: false,
+
   loading: () => (
     <div className="h-[62dvh] min-h-[480px] animate-pulse rounded-[26px] bg-gray-100 md:h-[680px]" />
   ),
@@ -28,7 +30,7 @@ const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
 
 interface SingleRecommendationProps {
   menuItems: MenuItem[];
-  stores: Store[];
+  stores: LocationStore[];
   userLocation: Coordinates | null;
   filters: LocationFiltersState;
   searchQuery: string;
@@ -38,7 +40,7 @@ interface SingleRecommendationProps {
 
 export default function SingleRecommendation({
   menuItems,
-  stores: backendStores,
+  stores: sourceStores,
   userLocation,
   filters,
   searchQuery,
@@ -46,41 +48,44 @@ export default function SingleRecommendation({
   onResultCountChange,
 }: SingleRecommendationProps) {
   const [view, setView] = useState<LocationViewMode>("list");
+
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
   const recommendedStores = useMemo(
     () =>
       buildRecommendedStores({
         menuItems,
-        stores: backendStores,
+        stores: sourceStores,
         referencePoint: userLocation,
       }),
-    [backendStores, menuItems, userLocation],
+    [sourceStores, menuItems, userLocation],
   );
 
-  const filteredStores = useMemo(
-    () =>
-      filterAndSortRecommendedStores({
-        stores: recommendedStores,
-        filters,
-        mode: "single",
-        searchQuery,
-      }),
-    [filters, recommendedStores, searchQuery],
-  );
+  const filteredStores = useMemo(() => {
+    return filterAndSortRecommendedStores({
+      stores: recommendedStores,
+      filters,
+      mode: "single",
+      searchQuery,
+    });
+  }, [filters, recommendedStores, searchQuery]);
 
   useEffect(() => {
     onResultCountChange(filteredStores.length);
   }, [filteredStores.length, onResultCountChange]);
 
   useEffect(() => {
-    if (!selectedStoreId) return;
+    if (!selectedStoreId) {
+      return;
+    }
 
-    const stillVisible = filteredStores.some(
+    const selectedStoreStillVisible = filteredStores.some(
       (store) => store.uuid === selectedStoreId,
     );
 
-    if (!stillVisible) setSelectedStoreId(null);
+    if (!selectedStoreStillVisible) {
+      setSelectedStoreId(null);
+    }
   }, [filteredStores, selectedStoreId]);
 
   const list = (
@@ -115,6 +120,7 @@ export default function SingleRecommendation({
 
       <div className="hidden min-w-0 gap-5 2xl:grid 2xl:grid-cols-[minmax(380px,42%)_minmax(0,58%)]">
         <div className="min-w-0">{list}</div>
+
         <div className="min-w-0">
           <div className="sticky top-24">{map}</div>
         </div>

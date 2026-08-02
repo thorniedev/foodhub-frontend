@@ -1,66 +1,183 @@
 import { baseApi } from "./baseApi";
 
 import type {
-  GroupVotingResponse,
-  SubmitGroupVoteRequest,
+  CreateGroupSessionRequest,
+  CreateGroupSessionResponse,
+  FinishSharedVotingRequest,
+  JoinGroupSessionRequest,
+  JoinGroupSessionResponse,
+  SharedGroupSession,
+  SubmitSharedVoteRequest,
 } from "@/types/group-recommendation";
+
+interface ApiErrorBody {
+  message?: string;
+}
+
+async function requestJson<T>(
+  url: string,
+  init?: RequestInit,
+): Promise<
+  | { data: T }
+  | {
+      error: {
+        status: number;
+        data: ApiErrorBody;
+      };
+    }
+> {
+  try {
+    const response = await fetch(url, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...init?.headers,
+      },
+      cache: "no-store",
+    });
+
+    const data = (await response.json()) as T | ApiErrorBody;
+
+    if (!response.ok) {
+      return {
+        error: {
+          status: response.status,
+          data: data as ApiErrorBody,
+        },
+      };
+    }
+
+    return {
+      data: data as T,
+    };
+  } catch (error) {
+    return {
+      error: {
+        status: 500,
+        data: {
+          message:
+            error instanceof Error ? error.message : "Network request failed.",
+        },
+      },
+    };
+  }
+}
 
 export const groupRecommendationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getGroupVoting: builder.query<GroupVotingResponse, string>({
-      query: (groupId) => ({
-        url: `/groups/${groupId}/votes`,
-        method: "GET",
-      }),
-
-      providesTags: (_result, _error, groupId) => [
-        {
-          type: "GroupVoting",
-          id: groupId,
-        },
-      ],
-    }),
-
-    submitGroupVote: builder.mutation<
-      GroupVotingResponse,
-      SubmitGroupVoteRequest
+    createMockGroupSession: builder.mutation<
+      CreateGroupSessionResponse,
+      CreateGroupSessionRequest
     >({
-      query: ({ groupId, storeId }) => ({
-        url: `/groups/${groupId}/votes`,
-        method: "POST",
-        body: {
-          storeId,
-        },
-      }),
+      queryFn: (body) =>
+        requestJson<CreateGroupSessionResponse>("/api/mock/group-sessions", {
+          method: "POST",
+          body: JSON.stringify(body),
+        }),
 
-      invalidatesTags: (_result, _error, { groupId }) => [
+      invalidatesTags: [
         {
           type: "GroupVoting",
-          id: groupId,
+          id: "LIST",
         },
       ],
     }),
 
-    finishGroupVoting: builder.mutation<GroupVotingResponse, string>({
-      query: (groupId) => ({
-        url: `/groups/${groupId}/votes/finish`,
-        method: "POST",
-      }),
+    getMockGroupSession: builder.query<SharedGroupSession, string>({
+      queryFn: (inviteCode) =>
+        requestJson<SharedGroupSession>(
+          `/api/mock/group-sessions/${encodeURIComponent(inviteCode)}`,
+        ),
 
-      invalidatesTags: (_result, _error, groupId) => [
+      providesTags: (_result, _error, inviteCode) => [
         {
           type: "GroupVoting",
-          id: groupId,
+          id: inviteCode,
+        },
+      ],
+    }),
+
+    joinMockGroupSession: builder.mutation<
+      JoinGroupSessionResponse,
+      JoinGroupSessionRequest
+    >({
+      queryFn: ({ inviteCode, name }) =>
+        requestJson<JoinGroupSessionResponse>(
+          `/api/mock/group-sessions/${encodeURIComponent(inviteCode)}`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              action: "join",
+              name,
+            }),
+          },
+        ),
+
+      invalidatesTags: (_result, _error, { inviteCode }) => [
+        {
+          type: "GroupVoting",
+          id: inviteCode,
+        },
+      ],
+    }),
+
+    submitMockGroupVote: builder.mutation<
+      SharedGroupSession,
+      SubmitSharedVoteRequest
+    >({
+      queryFn: ({ inviteCode, participantToken, storeUuid }) =>
+        requestJson<SharedGroupSession>(
+          `/api/mock/group-sessions/${encodeURIComponent(inviteCode)}`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              action: "vote",
+              participantToken,
+              storeUuid,
+            }),
+          },
+        ),
+
+      invalidatesTags: (_result, _error, { inviteCode }) => [
+        {
+          type: "GroupVoting",
+          id: inviteCode,
+        },
+      ],
+    }),
+
+    finishMockGroupVoting: builder.mutation<
+      SharedGroupSession,
+      FinishSharedVotingRequest
+    >({
+      queryFn: ({ inviteCode, ownerToken }) =>
+        requestJson<SharedGroupSession>(
+          `/api/mock/group-sessions/${encodeURIComponent(inviteCode)}`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              action: "finish",
+              ownerToken,
+            }),
+          },
+        ),
+
+      invalidatesTags: (_result, _error, { inviteCode }) => [
+        {
+          type: "GroupVoting",
+          id: inviteCode,
         },
       ],
     }),
   }),
 
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
-  useGetGroupVotingQuery,
-  useSubmitGroupVoteMutation,
-  useFinishGroupVotingMutation,
+  useCreateMockGroupSessionMutation,
+  useGetMockGroupSessionQuery,
+  useJoinMockGroupSessionMutation,
+  useSubmitMockGroupVoteMutation,
+  useFinishMockGroupVotingMutation,
 } = groupRecommendationApi;
