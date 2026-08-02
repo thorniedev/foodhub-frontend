@@ -34,6 +34,11 @@ import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommen
 import MinimalFoodHubRecommendationSection from "@/components/Component";
 import HeroComponentOO1 from "@/components/home/Hero";
 import Hero from "@/components/home/Hero";
+import { IconCloudDemo } from "@/components/IconCloudDemo";
+import {
+  IconCloudDemoWithIcons,
+  IconCloudDemoWithImageLogo,
+} from "@/components/ui/icon-cloud-demo-3";
 
 export default function Home() {
   return (
@@ -52,7 +57,25 @@ export default function Home() {
       <section className="">
         {/* <Skiper30 /> */}
         <Hero />
-
+        <div className=" container mx-auto max-w-7xl flex items-center justify-between ">
+          <div className="flex text-start   flex-col gap-12.5">
+            <p className="lg:text-5xl text-start md:text-[38px] max-md:text-[30px] font-bold dark:text-emerald-400 text-primary-800">
+              បច្ចេកវិទ្យា
+              <span className="text-secondary-400">ដែលពួកយើងប្រើ</span>
+            </p>
+            <p className="md:text-[20px]  text-gray-700 dark:text-gray-100">
+              ទទួលបានការណែនាំអំពីមុខម្ហូប និងហាងអាហារនៅជិតទីតាំងរបស់អ្នក
+              <br className="md:block max-md:hidden" />
+              ដើម្បីសន្សំពេលវេលា និងរីករាយជាមួយអាហារដែលអ្នកចូលចិត្ត។
+            </p>
+            <button className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full texxt-[20px]">
+              ទីតាំងនៅជិតនេះ{" "}
+            </button>{" "}
+            {/*  */}
+          </div>
+          <IconCloudDemoWithImageLogo />
+        </div>
+        {/* <IconCloudDemo /> */}
         {/* <HeroComponentOO1 /> */}
         <FoodHubSmartRecommendationSection />
         {/* <MinimalFoodHubRecommendationSection /> */}
