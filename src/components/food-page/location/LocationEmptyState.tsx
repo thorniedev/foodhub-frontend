@@ -17,9 +17,9 @@ export default function LocationEmptyState({
     <div className="rounded-[26px] border border-dashed border-gray-200 bg-white px-6 py-16 text-center">
       <IoLocationOutline className="mx-auto text-[54px] text-primary-300" />
 
-      <h2 className="mt-4 text-[22px] font-semibold text-primary-900">
+      <p className="mt-4 text-[22px] font-semibold text-primary-900">
         {title}
-      </h2>
+      </p>
 
       <p className="mx-auto mt-2 max-w-lg text-[16px] leading-7 text-gray-500">
         {description}

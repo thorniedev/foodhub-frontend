@@ -1,31 +1,34 @@
 import CommunitySection from "@/components/about/CommunitySection";
 import GoalsSection from "@/components/about/GoalsSection";
-import HeroSection from "@/components/about/HeroSection";
 import HowToUseSection from "@/components/about/HowToUseSection";
-import MarqueeSection, { MarqueeSectionOrange } from "@/components/about/MarqueeSection";
+import MarqueeSection from "@/components/about/MarqueeSection";
 import StatsSection from "@/components/about/StatsSection";
 import WhyChooseUsSection from "@/components/about/WhyChooseUsSection";
-import ConstantSection from "@/components/about/ContactSection";
+import ContactSection from "@/components/about/ContactSection";
 import MentorSection from "@/components/about/MentorSection";
 import MarqueeSectionOrangeRtl from "@/components/about/MarqueeSectionOrangeReverse";
+import AboutHeroClient from "@/components/about/AboutHeroClient";
+import TechnologiesSection from "@/components/about/TechnologiesSection";
 
 export default function AboutPage() {
   return (
-    <div className="w-full min-h-screen overflow-x-hidden bg-slate-50">
-      <div className="relative mx-auto w-full max-w-8xl">
-        <HeroSection />
+    <main className="min-h-screen w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="relative mx-auto w-full max-w-[1536px]">
+        <AboutHeroClient />
+
         <StatsSection />
-        <WhyChooseUsSection />
+        <TechnologiesSection/>
+        {/* <WhyChooseUsSection /> */}
         <MarqueeSection />
         <GoalsSection />
         <HowToUseSection />
-        <MarqueeSection />
-        <MentorSection />
-        <CommunitySection />
-        <MarqueeSection />
-        <MarqueeSectionOrangeRtl />
-        <ConstantSection />
+        {/* <MarqueeSection /> */}
+        {/* <MentorSection /> */}
+        {/* <CommunitySection />
+        <MarqueeSection /> */}
+        {/* <MarqueeSectionOrangeRtl /> */}
+        <ContactSection />
       </div>
-    </div>
+    </main>
   );
 }

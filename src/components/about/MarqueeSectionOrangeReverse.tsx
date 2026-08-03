@@ -21,7 +21,7 @@ function DiamondIcon() {
 
 export default function MarqueeSectionOrangeLtr() {
   return (
-    <div className="bg-[#e36914] w-full overflow-hidden py-3">
+    <div className="bg-primary-800 w-full overflow-hidden py-3">
       <div className="flex animate-marquee-ltr whitespace-nowrap">
         {/* Tripled array to ensure continuous coverage for LTR movement */}
         {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, i) => (

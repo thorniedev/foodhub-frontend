@@ -21,7 +21,7 @@ function DiamondIcon() {
 
 export default function MarqueeSection() {
   return (
-    <div className="bg-[#1fb356] w-full overflow-hidden py-3">
+    <div className="bg-primary-700 w-full overflow-hidden py-3">
       <div className="flex animate-marquee whitespace-nowrap">
         {[...marqueeItems, ...marqueeItems].map((item, i) => (
           <div key={i} className="flex items-center gap-8 shrink-0 mx-4">

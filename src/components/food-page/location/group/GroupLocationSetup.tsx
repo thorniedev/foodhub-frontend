@@ -466,9 +466,9 @@ export default function GroupLocationSetup({
             </span>
 
             <div className="min-w-0">
-              <h2 className="text-[23px] font-bold leading-[1.45] text-primary-900 sm:text-[27px]">
+              <p className="text-[23px] font-bold leading-[1.45] text-primary-900 sm:text-[27px]">
                 បន្ថែមទីតាំងសម្រាប់ក្រុម
-              </h2>
+              </p>
 
               <p className="mt-1 max-w-2xl text-[16px] leading-7 text-slate-500">
                 បញ្ចូល Google Maps link របស់មិត្តភក្តិម្នាក់ៗ។ FoodHub
@@ -514,7 +514,7 @@ export default function GroupLocationSetup({
           បន្ថែមមិត្តភក្តិ
         </button>
       </div>
-{/* 
+      {/* 
       <div className="mt-4 rounded-[18px] border border-amber-100 bg-amber-50 px-4 py-3 sm:px-5">
         <div className="flex items-start gap-3">
           <IoInformationCircleOutline className="mt-0.5 shrink-0 text-[22px] text-amber-600" />

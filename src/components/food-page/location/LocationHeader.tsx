@@ -87,9 +87,9 @@ export default function LocationHeader({
             <p className="text-[16px] font-semibold">ទីតាំង</p>
           </div>
 
-          <h1 className="mt-1.5 text-[22px] font-semibold leading-15 text-primary-900 sm:text-[24px]">
+          <p className="mt-1.5 text-[22px] font-semibold leading-15 text-primary-900 sm:text-[24px]">
             ហាងនៅជិតអ្នក
-          </h1>
+          </p>
           <p className="mt-1 max-w-2xl text-[16px] leading-7 text-gray-500">
             ស្វែងរកហាង និងមុខម្ហូបនៅជិតទីតាំងរបស់អ្នក
           </p>
@@ -192,10 +192,7 @@ export default function LocationHeader({
           }}
           className="mt-5"
         >
-          <div
-            role="alert"
-            className="flex items-start gap-3 px-4 py-3.5"
-          >
+          <div role="alert" className="flex items-start gap-3 px-4 py-3.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center ">
               <IoAlertCircleOutline className="text-[22px] text-orange-600" />
             </div>

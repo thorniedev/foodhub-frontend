@@ -10,7 +10,7 @@ export default function Hero() {
       <div className="">
         {/* <div className="h-screen">hi</div> */}
         <section>
-          <div className="flex relative lg:pb-13 max-w-305.25 container mx-auto flex-col items-center justify-center gap-4  lg:py-0 md:py-20   max-md:py-55 lg:min-h-screen">
+          <div className="flex relative lg:pb-13 max-w-305.25 container mx-auto flex-col items-center justify-center gap-4  lg:py-0 md:py-20 md:mt-10   max-md:py-55 lg:min-h-screen">
             <motion.div
               animate={{
                 y: [0, -10, 0],
@@ -113,7 +113,7 @@ export default function Hero() {
               className="font-extrabold dark:text-white z-1 max-md:w-full lg:text-[50px] md:text-[48px] max-md:text-[38px] lg:ml-55 lg:-mt-35 md:text-center md:leading-17  text-primary-800"
             >
               ណែនាំអាហារដែលត្រូវនឹង <br className="md:block max-md:hidden" />{" "}
-              <span className="dark:text-[#f1ff27]">ចំណូលចិត្តរបស់អ្នក !</span>
+              <span className="">ចំណូលចិត្តរបស់អ្នក !</span>
             </p>
             <div className="absolute md:w-full ">
               <motion.div

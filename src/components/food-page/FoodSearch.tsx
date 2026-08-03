@@ -453,7 +453,7 @@ export default function FoodSearch({
           className="w-full bg-transparent text-[16px] text-gray-700 dark:text-gray-100 outline-none placeholder:text-gray-400"
         />
 
-        {value && (
+        {/* {value && (
           <button
             type="button"
             aria-label="Clear search"
@@ -465,7 +465,7 @@ export default function FoodSearch({
           >
             <IoClose className="text-[20px]" />
           </button>
-        )}
+        )} */}
       </div>
 
       <AnimatePresence>

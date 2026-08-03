@@ -820,7 +820,7 @@ function RecommendationCore({ reduceMotion }: { reduceMotion: boolean }) {
           </motion.div>
 
           <p className="relative mt-2 text-base font-black leading-tight text-slate-950 sm:text-xl dark:text-white">
-            Fish Amok
+            FoodHub
           </p>
 
           <div className="relative mt-1 hidden items-center gap-1.5 text-base font-semibold text-slate-500 min-[430px]:flex dark:text-slate-300">
@@ -1029,7 +1029,7 @@ export default function FoodHubSmartRecommendationSection() {
       ref={sectionRef}
       onPointerMove={handlePointerMove}
       onPointerLeave={resetPointer}
-      className="relative isolate w-full overflow-hidden py-20 text-slate-950 sm:py-28 lg:py-32 dark:text-white"
+      className="relative isolate w-full overflow-hidden py-20 text-slate-950 sm:py-28 lg:py-12.5 dark:text-white"
     >
       <BackgroundEffects reduceMotion={reduceMotion} />
       <LightningField reduceMotion={reduceMotion} />

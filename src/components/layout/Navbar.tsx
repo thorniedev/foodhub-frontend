@@ -101,7 +101,7 @@ export default function Navbar() {
       ref={navRef}
       className="fixed top-0 z-99 w-full bg-white/80 shadow-xs backdrop-blur-md dark:bg-gray-950/70"
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-3 md:px-6">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between ">
         <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0">
           <img
             src="/Image/logo.png"

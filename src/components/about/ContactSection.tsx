@@ -13,22 +13,26 @@ const faqData: FaqItem[] = [
   {
     id: 1,
     question: "១. តើកម្មវិធីនេះជួយណែនាំម្ហូបអាហារដល់ខ្ញុំដោយរបៀបណា?",
-    answer: "កម្មវិធីប្រើប្រាស់ប្រព័ន្ធណែនាំឆ្លាតវៃ ដើម្បីវិភាគចំណូលចិត្ត និងបង្ហាញជម្រើសអាហារដែលសមស្របបំផុតសម្រាប់អ្នក។",
+    answer:
+      "កម្មវិធីប្រើប្រាស់ប្រព័ន្ធណែនាំឆ្លាតវៃ ដើម្បីវិភាគចំណូលចិត្ត និងបង្ហាញជម្រើសអាហារដែលសមស្របបំផុតសម្រាប់អ្នក។",
   },
   {
     id: 2,
     question: "២. តើធ្វើម៉េចទើបកម្មវិធីដឹងថា ខ្ញុំចូលចិត្តញ៉ាំអ្វី? ?",
-    answer: "តាមរយៈការជ្រើសរើសប្រភេទអាហារដែលអ្នកចូលចិត្ត និងប្រវត្តិស្វែងរករបស់អ្នកនៅក្នុងកម្មវិធី។",
+    answer:
+      "តាមរយៈការជ្រើសរើសប្រភេទអាហារដែលអ្នកចូលចិត្ត និងប្រវត្តិស្វែងរករបស់អ្នកនៅក្នុងកម្មវិធី។",
   },
   {
     id: 3,
     question: "៣. តើខ្ញុំប្រើប្រាស់កូដបញ្ចុះតម្លៃ (Promo Code) របៀបណា?",
-    answer: "អ្នកអាចបញ្ចូល Promo Code នៅក្នុងទំព័រទូទាត់ប្រាក់ មុនពេលបញ្ជាក់ការកុម្មង់។",
+    answer:
+      "អ្នកអាចបញ្ចូល Promo Code នៅក្នុងទំព័រទូទាត់ប្រាក់ មុនពេលបញ្ជាក់ការកុម្មង់។",
   },
   {
     id: 4,
     question: "៤. តើកម្មវិធីមានគិតថ្លៃសេវាដឹកជញ្ជូនយ៉ាងដូចម្តេចដែរ?",
-    answer: "ថ្លៃសេវាដឹកជញ្ជូនគណនាផ្អែកលើចម្ងាយផ្លូវពីហាងអាហារទៅកាន់ទីតាំងរបស់អ្នក។",
+    answer:
+      "ថ្លៃសេវាដឹកជញ្ជូនគណនាផ្អែកលើចម្ងាយផ្លូវពីហាងអាហារទៅកាន់ទីតាំងរបស់អ្នក។",
   },
 ];
 
@@ -41,8 +45,7 @@ export default function ContactSection() {
 
   return (
     <section className="relative w-full bg-[#fafbfc] py-16 px-4 sm:px-6 lg:px-8 font-['Kantumruy_Pro',sans-serif]">
-      <div className="max-w-6xl mx-auto">
-        
+      <div className="max-w-7xl container mx-auto px-4">
         {/* Header Title */}
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight">
@@ -57,9 +60,7 @@ export default function ContactSection() {
 
         {/* Main Outer Card Container */}
         <div className="relative bg-[#fbf3eb] rounded-[36px] p-6 sm:p-10 lg:p-12">
-          
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
             {/* Left Side: FAQ Accordion */}
             <div className="lg:col-span-6 flex flex-col justify-between h-full">
               <div>
@@ -136,7 +137,6 @@ export default function ContactSection() {
             {/* Right Side: Contact Form Card */}
             <div className="lg:col-span-6 bg-white rounded-[28px] p-6 sm:p-8 shadow-sm">
               <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                
                 {/* Input 1: Name */}
                 <div>
                   <label className="block text-sm sm:text-base font-bold text-slate-600 mb-2">
@@ -196,14 +196,16 @@ export default function ContactSection() {
                 </button>
               </form>
             </div>
-
           </div>
 
           {/* Circular Badge at Bottom Left */}
           <div className="absolute -bottom-8 -left-6 sm:-left-8 hidden md:block">
             <div className="relative w-28 h-28 bg-[#5bb06e] rounded-full flex items-center justify-center shadow-lg border-4 border-white">
               {/* Circular Curved Text SVG */}
-              <svg className="w-full h-full absolute inset-0 animate-spin-slow" viewBox="0 0 100 100">
+              <svg
+                className="w-full h-full absolute inset-0 animate-spin-slow"
+                viewBox="0 0 100 100"
+              >
                 <path
                   id="textPath"
                   d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
@@ -232,7 +234,6 @@ export default function ContactSection() {
               </svg>
             </div>
           </div>
-
         </div>
       </div>
     </section>

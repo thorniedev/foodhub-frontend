@@ -8,10 +8,16 @@ function CarouselAnimationStyles() {
   return (
     <style jsx global>{`
       @keyframes progressFill {
-        from { width: 0%; }
-        to { width: 100%; }
+        from {
+          width: 0%;
+        }
+        to {
+          width: 100%;
+        }
       }
-      .animate-progress-fill { animation: progressFill linear forwards; }
+      .animate-progress-fill {
+        animation: progressFill linear forwards;
+      }
     `}</style>
   );
 }
@@ -44,8 +50,20 @@ function ArrowIcon() {
   return (
     <div className="flex-shrink-0 rounded-full bg-[#136c34] p-2">
       <svg className="size-5" fill="none" viewBox="0 0 20 20">
-        <path d={svgPaths.p3610fb80} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-        <path d={svgPaths.p3e47bd00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+        <path
+          d={svgPaths.p3610fb80}
+          stroke="white"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.66667"
+        />
+        <path
+          d={svgPaths.p3e47bd00}
+          stroke="white"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.66667"
+        />
       </svg>
     </div>
   );
@@ -116,8 +134,20 @@ function Card2({ isActive }: { isActive: boolean }) {
       {/* Orange button */}
       <div className="absolute -left-3 bottom-12 z-10 flex size-13 items-center justify-center rounded-full border-4 border-black bg-[#e36914] sm:size-16">
         <svg className="size-6 sm:size-7" fill="none" viewBox="0 0 28 28">
-          <path d={svgPaths.p379dca80} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" />
-          <path d={svgPaths.p3b3e9900} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" />
+          <path
+            d={svgPaths.p379dca80}
+            stroke="white"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="3.5"
+          />
+          <path
+            d={svgPaths.p3b3e9900}
+            stroke="white"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="3.5"
+          />
         </svg>
       </div>
     </div>
@@ -177,9 +207,9 @@ export default function HowToUseSection() {
   }, [isPaused]);
 
   return (
-    <section className="bg-[#f8fafc] px-4 py-12 sm:px-8 md:py-20">
+    <section className="bg-[#f8fafc] px-6 ">
       <CarouselAnimationStyles />
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto container max-w-7xl">
         {/* Header */}
         <div className="mb-10 text-center md:mb-14">
           <h2 className="font-['Kantumruy_Pro',sans-serif] text-3xl font-semibold tracking-wide sm:text-4xl md:text-[48px]">
@@ -217,4 +247,4 @@ export default function HowToUseSection() {
       </div>
     </section>
   );
-} 
+}

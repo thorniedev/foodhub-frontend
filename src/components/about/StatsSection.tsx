@@ -39,11 +39,10 @@ const statsData: StatItem[] = [
 
 export default function StatsSection() {
   return (
-    <section className="relative w-full bg-[#E58348] pt-10 sm:pt-14 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 md:mt-20 overflow-visible">
-      <div className="max-w-7xl mx-auto relative flex flex-col lg:flex-row items-center justify-end">
-        
+    <section className="relative w-full bg-primary-800 pt-10 sm:pt-14 pb-10 sm:pb-14 px-4 sm:px-6 lg:px-8  overflow-visible">
+      <div className="max-w-7xl container px-2  mx-auto relative flex flex-col lg:flex-row items-center justify-end">
         {/* Sushi Image - Hidden on small screens (below lg) */}
-        <div className="hidden lg:block absolute lg:-left-4 xl:-left-6 lg:-bottom-16 z-20 lg:w-[340px] xl:w-[390px] pointer-events-none">
+        <div className="hidden z-2  lg:block absolute lg:-left-4 xl:-left-18 lg:-bottom-14 z-20 lg:w-[340px] xl:w-[390px] pointer-events-none">
           <Image
             src="/about/su.png"
             alt="Sushi with chopsticks"
@@ -62,9 +61,7 @@ export default function StatsSection() {
                 key={index}
                 className={`flex flex-col justify-start ${
                   index !== 0 ? "lg:pl-5 xl:pl-6" : ""
-                } ${
-                  index % 2 !== 0 ? "pl-2 sm:pl-4 lg:pl-5 xl:pl-6" : ""
-                }`}
+                } ${index % 2 !== 0 ? "pl-2 sm:pl-4 lg:pl-5 xl:pl-6" : ""}`}
               >
                 {/* Stat Value */}
                 <h3
@@ -76,7 +73,7 @@ export default function StatsSection() {
                 </h3>
 
                 {/* Main Label */}
-                <div className="text-base sm:text-sm leading-relaxed font-medium">
+                <div className="text-base sm:text-lg leading-relaxed font-medium">
                   <p>
                     {stat.highlightText && (
                       <span className="text-[#E58348]">
@@ -106,7 +103,6 @@ export default function StatsSection() {
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );

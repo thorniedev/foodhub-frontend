@@ -2104,7 +2104,7 @@ export default function FoodPage() {
       <div className="pt-15" />
 
       {/* Tabs stay on the same FoodPage */}
-      <div className="sticky top-15 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md">
+      <div className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md">
         <FoodNavTabs activeTab={activePageTab} onTabChange={setActivePageTab} />
       </div>
 
@@ -2300,7 +2300,7 @@ export default function FoodPage() {
                       <FoodGrid foods={filteredFoods} />
                     </section>
 
-                    <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 via-primary-800 to-secondary-500 px-6 py-12 text-center text-white">
+                    <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900  to-primary-500 px-6 py-12 text-center text-white">
                       <p className="text-[28px] font-semibold md:text-[36px]">
                         បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
                       </p>

@@ -63,7 +63,7 @@ export function TypingAnimation({
   children,
   words,
   className,
-  duration = 65,
+  duration = 55,
   typeSpeed,
   deleteSpeed,
   delay = 0,

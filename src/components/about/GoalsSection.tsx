@@ -43,8 +43,8 @@ const goalsData: GoalCardProps[] = [
 
 export default function GoalsSection() {
   return (
-    <section className="relative w-full bg-[#f8fafc] py-8 sm:py-12 md:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative w-full bg-[#f8fafc] py-8 sm:py-12 md:py-12.5">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-4">
         {/* Section Header */}
         <h2 className="mb-8 sm:mb-12 text-center font-['Kantumruy_Pro',sans-serif] text-2xl font-extrabold sm:text-4xl md:text-5xl">
           <span className="text-[#f97316]">គោលបំណង</span>
@@ -53,7 +53,6 @@ export default function GoalsSection() {
 
         {/* Responsive Grid Layout: 1 col (mobile) -> 2 cols (tablet) -> 12 cols (desktop) */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-12 lg:items-stretch">
-          
           {/* Card 1: Mission */}
           <div className="relative flex min-h-[380px] sm:min-h-[440px] flex-col justify-between overflow-hidden sm:overflow-visible rounded-3xl sm:rounded-[2.5rem] bg-[#E9F9EF] p-5 sm:p-6 lg:p-8 md:col-span-1 lg:col-span-4">
             <div>
@@ -138,7 +137,6 @@ export default function GoalsSection() {
               unoptimized
             />
           </div>
-
         </div>
       </div>
     </section>
