@@ -1,52 +1,57 @@
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-
+import { LocationStore } from "@/types/location-store";
 import { baseApi } from "./baseApi";
-import {
-  mapBackendStore,
-  type BackendStoreDto,
-  type Store,
-} from "@/types/store";
+
+
+
+function isLocationStore(value: unknown): value is LocationStore {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const store = value as Partial<LocationStore>;
+
+  return (
+    typeof store.uuid === "string" &&
+    typeof store.storeName === "string" &&
+    typeof store.latitude === "number" &&
+    Number.isFinite(store.latitude) &&
+    typeof store.longitude === "number" &&
+    Number.isFinite(store.longitude)
+  );
+}
 
 export const locationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getStores: builder.query<Store[], void>({
-      // queryFn is used so this always reads Next.js public/data/stores.json,
-      // even when baseApi points to a different backend base URL.
-      queryFn: async () => {
-        try {
-          const response = await fetch("/data/stores.json", {
-            cache: "no-store",
-          });
+    getStores: builder.query<LocationStore[], void>({
+      query: () => "data/stores.json",
 
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data: await response.text(),
-              } as FetchBaseQueryError,
-            };
-          }
+      transformResponse: (response: unknown): LocationStore[] => {
+        if (!Array.isArray(response)) {
+          console.error(
+            "[locationApi] Expected stores.json to contain an array.",
+            response,
+          );
 
-          const payload = (await response.json()) as BackendStoreDto[];
-
-          return {
-            data: payload.map(mapBackendStore),
-          };
-        } catch (error) {
-          return {
-            error: {
-              status: "CUSTOM_ERROR",
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "Unable to load stores.json",
-            } as FetchBaseQueryError,
-          };
+          return [];
         }
+
+        const validStores = response.filter(isLocationStore);
+
+        if (validStores.length !== response.length) {
+          console.warn(
+            `[locationApi] Ignored ${
+              response.length - validStores.length
+            } invalid store record(s).`,
+          );
+        }
+
+        return validStores;
       },
     }),
   }),
-  overrideExisting: false,
+
+  // Helpful while editing with Next.js Fast Refresh.
+  overrideExisting: true,
 });
 
 export const { useGetStoresQuery } = locationApi;

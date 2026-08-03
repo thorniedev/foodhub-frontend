@@ -1,4 +1,4 @@
-import type { Coordinates, RecommendedStore } from "./location";
+import type { Coordinates, RecommendedStore } from "@/types/location";
 
 export type GroupStage =
   | "setup"
@@ -7,12 +7,11 @@ export type GroupStage =
   | "voting"
   | "completed";
 
-export type GroupMemberLocationStatus = "ready" | "waiting" | "unavailable";
+export type GroupMemberLocationStatus = "waiting" | "ready" | "unavailable";
 
 export interface GroupMember {
   uuid: string;
   name: string;
-  avatarUrl?: string;
   coordinates: Coordinates | null;
   locationStatus: GroupMemberLocationStatus;
   requiredDietaryCodes: string[];
@@ -26,17 +25,6 @@ export interface GroupVote {
   createdAt: string;
 }
 
-export interface GroupSession {
-  uuid: string;
-  name: string;
-  inviteCode: string;
-  leaderUuid: string;
-  stage: GroupStage;
-  members: GroupMember[];
-  meetingPoint: Coordinates | null;
-  votes: GroupVote[];
-}
-
 export interface VotingLeaderboardEntry {
   rank: number;
   store: RecommendedStore;
@@ -44,26 +32,51 @@ export interface VotingLeaderboardEntry {
   percentage: number;
 }
 
-export type VotingStoreResult = {
-  storeId: string;
-  voteCount: number;
-};
+export type SharedGroupSessionStatus = "VOTING" | "COMPLETED";
 
-export type GroupVotingResponse = {
-  groupId: string;
-  totalMembers: number;
-  totalVotes: number;
-  votingOpen: boolean;
-  myVoteStoreId: string | null;
-  stores: VotingStoreResult[];
-};
+export interface SharedGroupSession {
+  inviteCode: string;
+  groupName: string;
+  status: SharedGroupSessionStatus;
+  members: GroupMember[];
+  stores: RecommendedStore[];
+  votes: GroupVote[];
+  winnerStoreUuid: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-export type SubmitGroupVoteRequest = {
-  groupId: string;
-  storeId: string;
-};
+export interface CreateGroupSessionRequest {
+  groupName: string;
+  members: GroupMember[];
+  stores: RecommendedStore[];
+}
 
-export type VotingPanelStore = RecommendedStore & {
-  averageMemberDistanceKm?: number;
-  maximumMemberDistanceKm?: number;
-};
+export interface CreateGroupSessionResponse {
+  session: SharedGroupSession;
+  ownerToken: string;
+  participantToken: string;
+  participantUuid: string;
+}
+
+export interface JoinGroupSessionRequest {
+  inviteCode: string;
+  name: string;
+}
+
+export interface JoinGroupSessionResponse {
+  session: SharedGroupSession;
+  participantToken: string;
+  participantUuid: string;
+}
+
+export interface SubmitSharedVoteRequest {
+  inviteCode: string;
+  participantToken: string;
+  storeUuid: string;
+}
+
+export interface FinishSharedVotingRequest {
+  inviteCode: string;
+  ownerToken: string;
+}

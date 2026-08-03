@@ -1,13 +1,13 @@
-import type { GroupMember } from "@/types/group-recommendation";
 import type { Coordinates } from "@/types/location";
+import type { GroupLocationMember } from "@/types/group-location";
 
 const EARTH_RADIUS_KM = 6371.0088;
 
-function degreesToRadians(value: number): number {
+function toRadians(value: number): number {
   return (value * Math.PI) / 180;
 }
 
-export function isValidCoordinates(
+export function isValidGroupCoordinates(
   coordinates: Coordinates | null | undefined,
 ): coordinates is Coordinates {
   if (!coordinates) {
@@ -24,19 +24,19 @@ export function isValidCoordinates(
   );
 }
 
-
-export function calculateDistanceKm(
+/**
+ * Haversine straight-line distance in kilometres.
+ */
+export function calculateGroupDistanceKm(
   first: Coordinates,
   second: Coordinates,
 ): number {
-  const latitudeDifference = degreesToRadians(second.latitude - first.latitude);
+  const latitudeDifference = toRadians(second.latitude - first.latitude);
 
-  const longitudeDifference = degreesToRadians(
-    second.longitude - first.longitude,
-  );
+  const longitudeDifference = toRadians(second.longitude - first.longitude);
 
-  const firstLatitude = degreesToRadians(first.latitude);
-  const secondLatitude = degreesToRadians(second.latitude);
+  const firstLatitude = toRadians(first.latitude);
+  const secondLatitude = toRadians(second.latitude);
 
   const haversine =
     Math.sin(latitudeDifference / 2) ** 2 +
@@ -50,17 +50,24 @@ export function calculateDistanceKm(
   return EARTH_RADIUS_KM * angularDistance;
 }
 
+/**
+ * Arithmetic geographic midpoint.
+ *
+ * This is suitable for members located within the same city.
+ * Your two test coordinates return approximately:
+ * 11.563950832590766, 104.90830600321041
+ */
 export function calculateGroupMidpoint(
-  members: GroupMember[],
+  members: GroupLocationMember[],
 ): Coordinates | null {
   const readyMembers = members.filter(
     (
       member,
-    ): member is GroupMember & {
+    ): member is GroupLocationMember & {
       coordinates: Coordinates;
     } =>
       member.locationStatus === "ready" &&
-      isValidCoordinates(member.coordinates),
+      isValidGroupCoordinates(member.coordinates),
   );
 
   if (readyMembers.length < 2) {
@@ -81,16 +88,5 @@ export function calculateGroupMidpoint(
   return {
     latitude: total.latitude / readyMembers.length,
     longitude: total.longitude / readyMembers.length,
-  };
-}
-
-export function offsetCoordinates(
-  origin: Coordinates,
-  latitudeOffset: number,
-  longitudeOffset: number,
-): Coordinates {
-  return {
-    latitude: origin.latitude + latitudeOffset,
-    longitude: origin.longitude + longitudeOffset,
   };
 }

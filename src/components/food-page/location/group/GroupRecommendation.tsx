@@ -1,66 +1,61 @@
 "use client";
-import type { Store } from "@/types/store";
-import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { IoFilterOutline, IoRestaurantOutline } from "react-icons/io5";
 
 import {
-  IoCheckmarkCircleOutline,
-  IoCloseOutline,
-  IoLocationOutline,
-  IoPeopleOutline,
-  IoTrophyOutline,
-} from "react-icons/io5";
+  useCreateMockGroupSessionMutation,
+  useFinishMockGroupVotingMutation,
+  useGetMockGroupSessionQuery,
+  useSubmitMockGroupVoteMutation,
+} from "@/app/store/groupRecommendationApi";
 
-import { FaStar, FaStore } from "react-icons/fa";
-
+import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
-
-import type {
-  GroupMember,
-  GroupStage,
-  GroupVote,
-} from "@/types/group-recommendation";
-
 import type {
   Coordinates,
   LocationFiltersState,
   LocationViewMode,
-  RecommendedStore,
 } from "@/types/location";
+import type {
+  GroupLocationMember,
+  GroupRecommendationStage,
+} from "@/types/group-location";
+import type {
+  GroupMember,
+  SharedGroupSession,
+} from "@/types/group-recommendation";
 
-import { calculateGroupMidpoint, offsetCoordinates } from "@/lib/location/geo";
-
+import { calculateGroupMidpoint } from "@/lib/location/group-geo";
 import {
-  buildRecommendedStores,
-  filterAndSortRecommendedStores,
-} from "@/lib/location/recommendation";
-
-import { castOrReplaceVote, resolveWinningStore } from "@/lib/location/voting";
+  buildGroupRecommendedStores,
+  filterAndSortGroupStores,
+} from "@/lib/location/group-recommendation";
 
 import MobileLocationToolbar from "../MobileLocationToolbar";
-import LocationEmptyState from "../LocationEmptyState";
-
-import GroupMemberList from "./GroupMemberList";
+import GroupLocationSetup from "./GroupLocationSetup";
 import GroupMeetingPoint from "./GroupMeetingPoint";
-import GroupSetup from "./GroupSetup";
-import GroupStoreCard from "./GroupStoreCard";
-import VotingResult from "./VotingResult";
+import GroupRecommendationStoreCard from "./GroupRecommendationStoreCard";
+import GroupResultsHeader from "./GroupResultsHeader";
+import GroupVotingPanel from "./GroupVotingPanel";
+import GroupWinnerResult from "./GroupWinnerResult";
 
 const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
   ssr: false,
+
   loading: () => (
-    <div className="h-[62dvh] min-h-[480px] animate-pulse rounded-[26px] bg-gray-100 md:h-[680px]" />
+    <div className="h-[58dvh] min-h-[440px] animate-pulse rounded-[26px] bg-gray-100 md:h-[620px]" />
   ),
 });
 
 const CURRENT_MEMBER_UUID = "current-user";
 
+const MAX_VOTING_CANDIDATES = 8;
+
 interface GroupRecommendationProps {
   menuItems: MenuItem[];
-  stores: Store[];
+  stores: LocationStore[];
   userLocation: Coordinates | null;
   filters: LocationFiltersState;
   searchQuery: string;
@@ -68,16 +63,13 @@ interface GroupRecommendationProps {
   onResultCountChange: (count: number) => void;
 }
 
-interface VotingStore extends RecommendedStore {
-  voteCount: number;
-  percentage: number;
-}
-
-function createInitialMembers(userLocation: Coordinates | null): GroupMember[] {
+function createInitialMembers(
+  userLocation: Coordinates | null,
+): GroupLocationMember[] {
   return [
     {
       uuid: CURRENT_MEMBER_UUID,
-      name: "You",
+      name: "អ្នក",
       coordinates: userLocation,
       locationStatus: userLocation ? "ready" : "waiting",
       requiredDietaryCodes: [],
@@ -85,26 +77,8 @@ function createInitialMembers(userLocation: Coordinates | null): GroupMember[] {
       hasVoted: false,
     },
     {
-      uuid: "member-dara",
-      name: "Dara",
-      coordinates: null,
-      locationStatus: "waiting",
-      requiredDietaryCodes: [],
-      blockedAllergenCodes: ["peanut"],
-      hasVoted: false,
-    },
-    {
-      uuid: "member-lyta",
-      name: "Lyta",
-      coordinates: null,
-      locationStatus: "waiting",
-      requiredDietaryCodes: [],
-      blockedAllergenCodes: ["shellfish"],
-      hasVoted: false,
-    },
-    {
-      uuid: "member-souheng",
-      name: "Souheng",
+      uuid: "friend-1",
+      name: "មិត្តភក្តិ 1",
       coordinates: null,
       locationStatus: "waiting",
       requiredDietaryCodes: [],
@@ -114,50 +88,106 @@ function createInitialMembers(userLocation: Coordinates | null): GroupMember[] {
   ];
 }
 
-function getRecommendationPercentage(score: number): number {
-  const normalizedScore = score <= 1 ? score * 100 : score;
+function toSharedMember(member: GroupLocationMember): GroupMember {
+  return {
+    uuid: member.uuid,
+    name: member.name.trim() || "Friend",
+    coordinates: member.coordinates,
+    locationStatus: member.locationStatus,
+    requiredDietaryCodes: [...member.requiredDietaryCodes],
+    blockedAllergenCodes: [...member.blockedAllergenCodes],
+    hasVoted: false,
+  };
+}
 
-  return Math.max(0, Math.min(100, Math.round(normalizedScore)));
+function getApiErrorMessage(error: unknown): string {
+  if (error && typeof error === "object" && "data" in error) {
+    const data = (
+      error as {
+        data?: {
+          message?: string;
+        };
+      }
+    ).data;
+
+    if (data?.message) {
+      return data.message;
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Something went wrong. Please try again.";
 }
 
 export default function GroupRecommendation({
   menuItems,
-  stores: backendStores,
+  stores: sourceStores,
   userLocation,
   filters,
   searchQuery,
   onOpenFilters,
   onResultCountChange,
 }: GroupRecommendationProps) {
-  const [stage, setStage] = useState<GroupStage>("setup");
+  const [stage, setStage] = useState<GroupRecommendationStage>("setup");
 
   const [groupName, setGroupName] = useState("FoodHub Dinner Group");
 
-  const [inviteCode, setInviteCode] = useState("FH-28A9");
-
-  const [members, setMembers] = useState<GroupMember[]>(() =>
+  const [members, setMembers] = useState<GroupLocationMember[]>(() =>
     createInitialMembers(userLocation),
   );
 
   const [meetingPoint, setMeetingPoint] = useState<Coordinates | null>(null);
 
-  const [votes, setVotes] = useState<GroupVote[]>([]);
-
   const [view, setView] = useState<LocationViewMode>("list");
 
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
-  const [winner, setWinner] = useState<RecommendedStore | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
-  const [votingPanelOpen, setVotingPanelOpen] = useState(false);
+  const [ownerToken, setOwnerToken] = useState<string | null>(null);
+
+  const [participantToken, setParticipantToken] = useState<string | null>(null);
+
+  const [participantUuid, setParticipantUuid] = useState<string | null>(null);
+
+  const [createdSession, setCreatedSession] =
+    useState<SharedGroupSession | null>(null);
+
+  const [shareUrl, setShareUrl] = useState("");
+
+  const [votingOpen, setVotingOpen] = useState(false);
+
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
+  const autoCreateAttemptedRef = useRef(false);
+
+  const [createSession, { isLoading: isCreatingSession }] =
+    useCreateMockGroupSessionMutation();
+
+  const [submitVote, { isLoading: isSubmittingVote }] =
+    useSubmitMockGroupVoteMutation();
+
+  const [finishVoting, { isLoading: isFinishingVoting }] =
+    useFinishMockGroupVotingMutation();
+
+  const { data: queriedSession, refetch: refetchSession } =
+    useGetMockGroupSessionQuery(inviteCode ?? "", {
+      skip: !inviteCode,
+      pollingInterval: 3_000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    });
+
+  const activeSession = queriedSession ?? createdSession;
 
   useEffect(() => {
-    if (!userLocation) {
-      return;
-    }
+    if (!userLocation) return;
 
-    setMembers((currentMembers) =>
-      currentMembers.map((member) =>
+    setMembers((current) =>
+      current.map((member) =>
         member.uuid === CURRENT_MEMBER_UUID
           ? {
               ...member,
@@ -171,140 +201,60 @@ export default function GroupRecommendation({
 
   const recommendedStores = useMemo(
     () =>
-      buildRecommendedStores({
+      buildGroupRecommendedStores({
+        sourceStores,
         menuItems,
-        stores: backendStores,
-        referencePoint: meetingPoint,
-        groupMembers: members,
-        votes,
+        midpoint: meetingPoint,
+        members,
       }),
-    [backendStores, meetingPoint, members, menuItems, votes],
+    [sourceStores, menuItems, meetingPoint, members],
   );
 
   const filteredStores = useMemo(
     () =>
-      filterAndSortRecommendedStores({
+      filterAndSortGroupStores({
         stores: recommendedStores,
         filters,
-        mode: "group",
         searchQuery,
       }),
-    [filters, recommendedStores, searchQuery],
+    [recommendedStores, filters, searchQuery],
   );
+
+  const winner = useMemo(() => {
+    if (!activeSession?.winnerStoreUuid) {
+      return null;
+    }
+
+    return (
+      activeSession.stores.find(
+        (store) => store.uuid === activeSession.winnerStoreUuid,
+      ) ?? null
+    );
+  }, [activeSession]);
+
+  const winnerVoteCount = useMemo(() => {
+    if (!activeSession || !winner) {
+      return 0;
+    }
+
+    return activeSession.votes.filter((vote) => vote.storeUuid === winner.uuid)
+      .length;
+  }, [activeSession, winner]);
 
   useEffect(() => {
-    const canShowResults = stage === "recommendations" || stage === "voting";
+    const showResults = stage === "recommendations" || stage === "voting";
 
-    onResultCountChange(canShowResults ? filteredStores.length : 0);
+    onResultCountChange(showResults ? filteredStores.length : 0);
   }, [filteredStores.length, onResultCountChange, stage]);
 
-  const currentVote = useMemo(
-    () => votes.find((vote) => vote.memberUuid === CURRENT_MEMBER_UUID),
-    [votes],
-  );
+  useEffect(() => {
+    if (activeSession?.status === "COMPLETED") {
+      setStage("completed");
+      setVotingOpen(true);
+    }
+  }, [activeSession?.status]);
 
-  const votedCount = useMemo(
-    () => new Set(votes.map((vote) => vote.memberUuid)).size,
-    [votes],
-  );
-
-  const votingStores = useMemo<VotingStore[]>(() => {
-    return filteredStores
-      .map((store) => {
-        const voteCount = votes.filter(
-          (vote) => vote.storeUuid === store.uuid,
-        ).length;
-
-        const percentage =
-          votedCount > 0 ? Math.round((voteCount / votedCount) * 100) : 0;
-
-        return {
-          ...store,
-          voteCount,
-          percentage,
-        };
-      })
-      .sort((first, second) => {
-        if (second.voteCount !== first.voteCount) {
-          return second.voteCount - first.voteCount;
-        }
-
-        if (second.recommendationScore !== first.recommendationScore) {
-          return second.recommendationScore - first.recommendationScore;
-        }
-
-        return first.distanceKm - second.distanceKm;
-      });
-  }, [filteredStores, votedCount, votes]);
-
-  const startGroup = (name: string) => {
-    setGroupName(name);
-
-    setInviteCode(`FH-${Math.random().toString(36).slice(2, 6).toUpperCase()}`);
-
-    setMembers(createInitialMembers(userLocation));
-
-    setVotes([]);
-    setMeetingPoint(null);
-    setWinner(null);
-    setSelectedStoreId(null);
-    setStage("waiting");
-  };
-
-  const joinGroup = (code: string) => {
-    setGroupName("Joined FoodHub Group");
-    setInviteCode(code);
-
-    setMembers(createInitialMembers(userLocation));
-
-    setVotes([]);
-    setMeetingPoint(null);
-    setWinner(null);
-    setSelectedStoreId(null);
-    setStage("waiting");
-  };
-
-  const simulateMemberLocations = () => {
-    const origin =
-      userLocation ??
-      ({
-        latitude: 11.5564,
-        longitude: 104.9282,
-      } satisfies Coordinates);
-
-    const offsets = [
-      {
-        latitude: 0,
-        longitude: 0,
-      },
-      {
-        latitude: 0.018,
-        longitude: -0.015,
-      },
-      {
-        latitude: -0.014,
-        longitude: 0.02,
-      },
-      {
-        latitude: 0.01,
-        longitude: 0.024,
-      },
-    ];
-
-    setMembers((currentMembers) =>
-      currentMembers.map((member, index) => ({
-        ...member,
-        coordinates: offsetCoordinates(
-          origin,
-          offsets[index]?.latitude ?? 0,
-          offsets[index]?.longitude ?? 0,
-        ),
-        locationStatus: "ready",
-      })),
-    );
-  };
-
-  const calculateMidpointAndRecommend = () => {
+  const calculateAndShowRecommendations = () => {
     const midpoint = calculateGroupMidpoint(members);
 
     if (!midpoint) {
@@ -312,133 +262,273 @@ export default function GroupRecommendation({
     }
 
     setMeetingPoint(midpoint);
-    setStage("recommendations");
-  };
-
-  const createSeededVotes = (): GroupVote[] => {
-    const seededVotes: GroupVote[] = [];
-
-    members
-      .filter((member) => member.uuid !== CURRENT_MEMBER_UUID)
-      .forEach((member, index) => {
-        const store =
-          filteredStores[index % Math.max(filteredStores.length, 1)];
-
-        if (!store) {
-          return;
-        }
-
-        seededVotes.push({
-          memberUuid: member.uuid,
-          storeUuid: store.uuid,
-          createdAt: new Date().toISOString(),
-        });
-      });
-
-    return seededVotes;
-  };
-
-  const beginVotingIfNeeded = () => {
-    if (stage === "voting") {
-      return;
-    }
-
-    setVotes(createSeededVotes());
-    setStage("voting");
-  };
-
-  const openVotingPanel = (storeUuid?: string) => {
-    if (filteredStores.length === 0) {
-      return;
-    }
-
-    beginVotingIfNeeded();
-
-    if (storeUuid) {
-      setSelectedStoreId(storeUuid);
-    }
-
-    setVotingPanelOpen(true);
-  };
-
-  const closeVotingPanel = () => {
-    setVotingPanelOpen(false);
-  };
-
-  const castVote = (storeUuid: string) => {
-    setSelectedStoreId(storeUuid);
-
-    setVotes((currentVotes) =>
-      castOrReplaceVote(currentVotes, CURRENT_MEMBER_UUID, storeUuid),
-    );
-  };
-
-  const finishVoting = () => {
-    const winningStore = resolveWinningStore(filteredStores, votes);
-
-    if (!winningStore) {
-      return;
-    }
-
-    setWinner(winningStore);
-    setVotingPanelOpen(false);
-    setStage("completed");
-  };
-
-  const restart = () => {
-    setStage("setup");
-    setMeetingPoint(null);
-    setVotes([]);
-    setWinner(null);
     setSelectedStoreId(null);
-    setVotingPanelOpen(false);
+    setView("list");
+
+    autoCreateAttemptedRef.current = false;
+
+    setStage("recommendations");
+
+    setSessionError(null);
+  };
+
+  const createVotingSession = useCallback(
+    async (openPanel = false) => {
+      const candidateStores = filteredStores.slice(0, MAX_VOTING_CANDIDATES);
+
+      if (candidateStores.length === 0) {
+        setSessionError("No candidate stores are available for voting.");
+
+        return;
+      }
+
+      try {
+        setSessionError(null);
+
+        const result = await createSession({
+          groupName: groupName.trim() || "FoodHub Group",
+
+          members: members.map(toSharedMember),
+
+          stores: candidateStores,
+        }).unwrap();
+
+        const url = `${window.location.origin}/group-vote/${encodeURIComponent(
+          result.session.inviteCode,
+        )}`;
+
+        setInviteCode(result.session.inviteCode);
+
+        setOwnerToken(result.ownerToken);
+
+        setParticipantToken(result.participantToken);
+
+        setParticipantUuid(result.participantUuid);
+
+        setCreatedSession(result.session);
+
+        setShareUrl(url);
+
+        setStage("voting");
+
+        setVotingOpen(openPanel);
+
+        window.localStorage.setItem(
+          `foodhub-vote-token-${result.session.inviteCode}`,
+          result.participantToken,
+        );
+
+        window.localStorage.setItem(
+          `foodhub-vote-member-${result.session.inviteCode}`,
+          result.participantUuid,
+        );
+      } catch (error) {
+        setSessionError(getApiErrorMessage(error));
+      }
+    },
+    [createSession, filteredStores, groupName, members],
+  );
+
+  useEffect(() => {
+    const shouldPrepareVoting =
+      stage === "recommendations" &&
+      filteredStores.length > 0 &&
+      !inviteCode &&
+      !isCreatingSession &&
+      !autoCreateAttemptedRef.current;
+
+    if (!shouldPrepareVoting) {
+      return;
+    }
+
+    autoCreateAttemptedRef.current = true;
+
+    void createVotingSession(false);
+  }, [
+    createVotingSession,
+    filteredStores.length,
+    inviteCode,
+    isCreatingSession,
+    stage,
+  ]);
+
+  const voteAsHost = async (storeUuid: string) => {
+    if (!inviteCode || !participantToken) {
+      setSessionError("Voting access is not ready yet.");
+
+      return;
+    }
+
+    try {
+      setSessionError(null);
+
+      const session = await submitVote({
+        inviteCode,
+        participantToken,
+        storeUuid,
+      }).unwrap();
+
+      setCreatedSession(session);
+
+      void refetchSession();
+    } catch (error) {
+      setSessionError(getApiErrorMessage(error));
+    }
+  };
+
+  const finishSharedVoting = async () => {
+    if (!inviteCode || !ownerToken) {
+      setSessionError("Owner access is not ready yet.");
+
+      return;
+    }
+
+    try {
+      setSessionError(null);
+
+      const session = await finishVoting({
+        inviteCode,
+        ownerToken,
+      }).unwrap();
+
+      setCreatedSession(session);
+
+      setStage("completed");
+
+      setVotingOpen(true);
+
+      void refetchSession();
+    } catch (error) {
+      setSessionError(getApiErrorMessage(error));
+    }
+  };
+
+  const clearSharedSession = () => {
+    autoCreateAttemptedRef.current = false;
+
+    setInviteCode(null);
+    setOwnerToken(null);
+    setParticipantToken(null);
+    setParticipantUuid(null);
+    setCreatedSession(null);
+    setShareUrl("");
+    setVotingOpen(false);
+    setSessionError(null);
+  };
+
+  const changeLocations = () => {
+    clearSharedSession();
+
+    setMeetingPoint(null);
+    setSelectedStoreId(null);
+    setView("list");
+    setStage("setup");
 
     onResultCountChange(0);
   };
 
-  if (stage === "setup") {
-    return <GroupSetup onCreateGroup={startGroup} onJoinGroup={joinGroup} />;
-  }
+  const restart = () => {
+    clearSharedSession();
 
-  if (stage === "waiting") {
+    setGroupName("FoodHub Dinner Group");
+
+    setMembers(createInitialMembers(userLocation));
+
+    setMeetingPoint(null);
+    setSelectedStoreId(null);
+    setView("list");
+    setStage("setup");
+
+    onResultCountChange(0);
+  };
+
+  const votingPanel = (
+    <GroupVotingPanel
+      open={votingOpen}
+      session={activeSession}
+      shareUrl={shareUrl}
+      currentMemberUuid={participantUuid}
+      isSubmittingVote={isSubmittingVote}
+      isFinishing={isFinishingVoting}
+      errorMessage={sessionError}
+      onVote={(storeUuid) => void voteAsHost(storeUuid)}
+      onFinish={() => void finishSharedVoting()}
+      onClose={() => setVotingOpen(false)}
+      onRestart={restart}
+    />
+  );
+
+  if (stage === "setup") {
     return (
-      <GroupMemberList
-        groupName={groupName}
-        inviteCode={inviteCode}
-        members={members}
-        onSimulateLocations={simulateMemberLocations}
-        onCalculateMidpoint={calculateMidpointAndRecommend}
-      />
+      <>
+        <GroupLocationSetup
+          groupName={groupName}
+          members={members}
+          currentLocation={userLocation}
+          sourceStoreCount={sourceStores.length}
+          onGroupNameChange={setGroupName}
+          onMembersChange={setMembers}
+          onCalculate={calculateAndShowRecommendations}
+        />
+
+        {votingPanel}
+      </>
     );
   }
 
-  if (stage === "completed" && winner) {
-    return <VotingResult winner={winner} onRestart={restart} />;
+  if (stage === "completed" && winner && activeSession) {
+    return (
+      <>
+        <GroupWinnerResult
+          winner={winner}
+          winnerVoteCount={winnerVoteCount}
+          memberCount={activeSession.members.length}
+          shareUrl={shareUrl}
+          onRestart={restart}
+        />
+
+        {votingPanel}
+      </>
+    );
   }
 
   if (!meetingPoint) {
     return (
-      <LocationEmptyState
-        title="មិនអាចគណនាចំណុចកណ្ដាល"
-        description="សូមរង់ចាំរហូតដល់សមាជិកក្រុមបានចែករំលែកទីតាំងរួចរាល់។"
-      />
+      <section className="rounded-[24px] border border-red-100 bg-red-50 p-6 text-center">
+        <h2 className="text-[21px] font-bold text-primary-900">
+          មិនអាចគណនាចំណុចកណ្ដាលបានទេ
+        </h2>
+
+        <p className="mt-2 text-[17px] leading-8 text-gray-600">
+          សូមបញ្ចូល Latitude និង Longitude ត្រឹមត្រូវ យ៉ាងហោចណាស់ពីរនាក់។
+        </p>
+
+        <button
+          type="button"
+          onClick={changeLocations}
+          className="mt-5 min-h-12 rounded-full bg-primary-800 px-6 text-[17px] font-bold text-white"
+        >
+          ត្រឡប់ទៅបញ្ចូលទីតាំង
+        </button>
+      </section>
     );
   }
 
   const storeList = (
-    <div className="space-y-4 2xl:max-h-[calc(100vh-330px)] 2xl:overflow-y-auto 2xl:pr-1 2xl:[scrollbar-width:none] 2xl:[&::-webkit-scrollbar]:hidden">
+    <div className="space-y-4">
       {filteredStores.length === 0 ? (
-        <LocationEmptyState />
+        <EmptyResults
+          sourceStoreCount={sourceStores.length}
+          recommendedStoreCount={recommendedStores.length}
+          onOpenFilters={onOpenFilters}
+        />
       ) : (
         filteredStores.map((store) => (
-          <GroupStoreCard
+          <GroupRecommendationStoreCard
             key={store.uuid}
             store={store}
             selected={selectedStoreId === store.uuid}
-            votingEnabled={stage === "recommendations" || stage === "voting"}
-            hasVoted={currentVote?.storeUuid === store.uuid}
             onSelect={() => setSelectedStoreId(store.uuid)}
-            onVote={() => openVotingPanel(store.uuid)}
           />
         ))
       )}
@@ -460,58 +550,32 @@ export default function GroupRecommendation({
 
   return (
     <section>
-      <GroupMeetingPoint meetingPoint={meetingPoint} members={members} />
+      <GroupMeetingPoint
+        meetingPoint={meetingPoint}
+        members={members}
+        storeCount={filteredStores.length}
+        radiusKm={filters.radiusKm}
+      />
 
-      {stage === "recommendations" && (
-        <div className="mb-5 flex flex-col gap-4 rounded-[22px] border border-primary-100 bg-primary-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-[17px] font-semibold text-primary-900">
-              {filteredStores.length} group-safe stores found
-            </p>
+      <GroupResultsHeader
+        groupName={groupName}
+        resultCount={filteredStores.length}
+        shareUrl={shareUrl}
+        hasVotingSession={Boolean(inviteCode)}
+        isCreatingSession={isCreatingSession}
+        onOpenFilters={onOpenFilters}
+        onChangeLocations={changeLocations}
+        onCreateVotingSession={() => {
+          autoCreateAttemptedRef.current = true;
 
-            <p className="mt-1 text-[16px] leading-7 text-gray-600">
-              ពិនិត្យមើលហាងដែលបានណែនាំ ហើយបើកផ្ទាំងបោះឆ្នោតសម្រាប់ក្រុម។
-            </p>
-          </div>
+          void createVotingSession(false);
+        }}
+        onOpenVoting={() => setVotingOpen(true)}
+      />
 
-          <button
-            type="button"
-            disabled={filteredStores.length === 0}
-            onClick={() => openVotingPanel()}
-            className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-secondary-500 px-5 text-[16px] font-semibold text-white transition hover:bg-secondary-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <IoTrophyOutline className="text-[20px]" />
-            បើកផ្ទាំងបោះឆ្នោត
-          </button>
-        </div>
-      )}
-
-      {stage === "voting" && (
-        <div className="mb-5 flex flex-col gap-4 rounded-[22px] border border-primary-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700">
-              <IoTrophyOutline className="text-[22px]" />
-            </div>
-
-            <div>
-              <p className="text-[17px] font-semibold text-primary-900">
-                ការបោះឆ្នោតកំពុងដំណើរការ
-              </p>
-
-              <p className="mt-1 text-[16px] leading-7 text-gray-500">
-                {votedCount} ក្នុងចំណោម {members.length} សមាជិកបានបោះឆ្នោត។
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => openVotingPanel()}
-            className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-primary-800 px-5 text-[16px] font-semibold text-white transition hover:bg-primary-700"
-          >
-            <IoPeopleOutline className="text-[20px]" />
-            មើលការបោះឆ្នោត
-          </button>
+      {sessionError && !votingOpen && (
+        <div className="mb-5 rounded-[18px] border border-red-100 bg-red-50 px-4 py-3 text-[16px] leading-7 text-red-600">
+          {sessionError}
         </div>
       )}
 
@@ -523,7 +587,7 @@ export default function GroupRecommendation({
 
       <div className="2xl:hidden">{view === "list" ? storeList : map}</div>
 
-      <div className="hidden min-w-0 gap-5 2xl:grid 2xl:grid-cols-[minmax(380px,42%)_minmax(0,58%)]">
+      <div className="hidden min-w-0 gap-6 2xl:grid 2xl:grid-cols-[minmax(420px,46%)_minmax(0,54%)]">
         <div className="min-w-0">{storeList}</div>
 
         <div className="min-w-0">
@@ -531,373 +595,65 @@ export default function GroupRecommendation({
         </div>
       </div>
 
-      <VotingPanel
-        open={votingPanelOpen}
-        stores={votingStores}
-        memberCount={members.length}
-        votedCount={votedCount}
-        selectedStoreId={currentVote?.storeUuid ?? null}
-        onVote={castVote}
-        onFinish={finishVoting}
-        onClose={closeVotingPanel}
-      />
+      {votingPanel}
     </section>
   );
 }
 
-interface VotingPanelProps {
-  open: boolean;
-  stores: VotingStore[];
-  memberCount: number;
-  votedCount: number;
-  selectedStoreId: string | null;
-  onVote: (storeUuid: string) => void;
-  onFinish: () => void;
-  onClose: () => void;
-}
+function EmptyResults({
+  sourceStoreCount,
+  recommendedStoreCount,
+  onOpenFilters,
+}: {
+  sourceStoreCount: number;
+  recommendedStoreCount: number;
+  onOpenFilters: () => void;
+}) {
+  return (
+    <section className="rounded-[24px] border border-amber-100 bg-amber-50 p-5 sm:p-6">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-primary-700 shadow-sm">
+        <IoRestaurantOutline className="text-[27px]" />
+      </div>
 
-function VotingPanel({
-  open,
-  stores,
-  memberCount,
-  votedCount,
-  selectedStoreId,
-  onVote,
-  onFinish,
-  onClose,
-}: VotingPanelProps) {
-  const [mounted, setMounted] = useState(false);
+      <h3 className="mt-4 text-[21px] font-bold text-primary-900">
+        មិនមានហាងដែលត្រូវនឹងតម្រង
+      </h3>
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+      <p className="mt-2 text-[17px] leading-8 text-gray-600">
+        ក្នុងពេលសាកល្បង សូមប្រើកាំស្វែងរក 5 km ឬ 10 km ហើយបិទ Open now, Rating,
+        Delivery, Pickup និង Group safety។
+      </p>
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <DebugMetric
+          label=""
+          value={String(sourceStoreCount)}
+        />
 
-    const previousOverflow = document.body.style.overflow;
+        <DebugMetric
+          label="ហាងមុនតម្រង"
+          value={String(recommendedStoreCount)}
+        />
+      </div>
 
-    document.body.style.overflow = "hidden";
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, [onClose, open]);
-
-  if (!mounted) {
-    return null;
-  }
-
-  return createPortal(
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          key="group-voting-panel"
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
-          exit={{
-            opacity: 0,
-          }}
-          transition={{
-            duration: 0.2,
-          }}
-          className="fixed inset-0 z-[200] flex items-end justify-center bg-black/50 backdrop-blur-[3px] md:items-center md:p-6"
-        >
-          <button
-            type="button"
-            aria-label="Close voting panel"
-            onClick={onClose}
-            className="absolute inset-0 cursor-default"
-          />
-
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="group-voting-title"
-            initial={{
-              y: "100%",
-              opacity: 0,
-            }}
-            animate={{
-              y: 0,
-              opacity: 1,
-            }}
-            exit={{
-              y: "100%",
-              opacity: 0,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-            }}
-            className="relative z-10 flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-[28px] border border-gray-100 bg-[#fafaf8] shadow-2xl md:h-auto md:max-h-[88dvh] md:max-w-5xl md:rounded-[28px]"
-          >
-            <header className="shrink-0 border-b border-gray-100 bg-white px-4 py-4 sm:px-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-primary-700">
-                    <IoTrophyOutline className="text-[21px]" />
-
-                    <p className="text-[16px] font-semibold">Group voting</p>
-                  </div>
-
-                  <h2
-                    id="group-voting-title"
-                    className="mt-1 text-[21px] font-semibold leading-8 text-primary-900 sm:text-[23px]"
-                  >
-                    ជ្រើសរើសហាងសម្រាប់ក្រុម
-                  </h2>
-
-                  <p className="mt-1 text-[16px] leading-7 text-gray-500">
-                    សមាជិកម្នាក់អាចបោះឆ្នោតបានមួយសំឡេង
-                    និងអាចផ្លាស់ប្ដូរបានមុនបញ្ចប់។
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Close voting panel"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
-                >
-                  <IoCloseOutline className="text-[24px]" />
-                </button>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <VotingSummary
-                  icon={<IoPeopleOutline />}
-                  label="បានបោះឆ្នោត"
-                  value={`${votedCount} / ${memberCount}`}
-                />
-
-                <VotingSummary
-                  icon={<FaStore />}
-                  label="ហាងណែនាំ"
-                  value={String(stores.length)}
-                />
-
-                <div className="col-span-2 sm:col-span-1">
-                  <VotingSummary
-                    icon={<IoCheckmarkCircleOutline />}
-                    label="សំឡេងរបស់អ្នក"
-                    value={selectedStoreId ? "បានបោះឆ្នោត" : "មិនទាន់បោះឆ្នោត"}
-                  />
-                </div>
-              </div>
-            </header>
-
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
-              {stores.length === 0 ? (
-                <LocationEmptyState
-                  title="មិនមានហាងសម្រាប់បោះឆ្នោត"
-                  description="សូមពិនិត្យតម្រង ឬគណនាការណែនាំសម្រាប់ក្រុមម្តងទៀត។"
-                />
-              ) : (
-                <div className="space-y-3">
-                  {stores.map((store, index) => (
-                    <VotingStoreRow
-                      key={store.uuid}
-                      rank={index + 1}
-                      store={store}
-                      selected={selectedStoreId === store.uuid}
-                      onVote={() => onVote(store.uuid)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <footer className="shrink-0 border-t border-gray-100 bg-white px-4 py-4 sm:px-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-[16px] leading-7 text-gray-500">
-                  {selectedStoreId
-                    ? "អ្នកអាចផ្លាស់ប្ដូរសំឡេងឆ្នោតរបស់អ្នកបាន។"
-                    : "សូមជ្រើសរើសហាងមួយដើម្បីបោះឆ្នោត។"}
-                </p>
-
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="min-h-11 rounded-full border border-gray-200 bg-white px-5 text-[16px] font-semibold text-gray-600 transition hover:bg-gray-50"
-                  >
-                    បិទ
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={votedCount === 0}
-                    onClick={onFinish}
-                    className="min-h-11 rounded-full bg-primary-800 px-5 text-[16px] font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    បញ្ចប់ការបោះឆ្នោត
-                  </button>
-                </div>
-              </div>
-            </footer>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>,
-    document.body,
+      <button
+        type="button"
+        onClick={onOpenFilters}
+        className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary-800 px-6 text-[17px] font-bold text-white transition hover:bg-primary-700 sm:w-fit"
+      >
+        <IoFilterOutline className="text-[20px]" />
+        បើកតម្រង
+      </button>
+    </section>
   );
 }
 
-interface VotingStoreRowProps {
-  rank: number;
-  store: VotingStore;
-  selected: boolean;
-  onVote: () => void;
-}
-
-function VotingStoreRow({
-  rank,
-  store,
-  selected,
-  onVote,
-}: VotingStoreRowProps) {
+function DebugMetric({ label, value }: { label: string; value: string }) {
   return (
-    <article
-      className={`rounded-[20px] border bg-white p-4 transition ${
-        selected
-          ? "border-primary-600 ring-2 ring-primary-100"
-          : "border-gray-100 hover:border-primary-200 hover:shadow-sm"
-      }`}
-    >
-      <div className="grid min-w-0 gap-4 sm:grid-cols-[44px_minmax(0,1fr)_auto] sm:items-center">
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-full text-[16px] font-semibold ${
-            rank === 1
-              ? "bg-yellow-100 text-yellow-700"
-              : rank === 2
-                ? "bg-gray-200 text-gray-700 dark:text-gray-100"
-                : rank === 3
-                  ? "bg-orange-100 text-orange-700"
-                  : "bg-primary-50 text-primary-700"
-          }`}
-        >
-          {rank}
-        </div>
+    <div className="rounded-2xl bg-white p-4">
+      <p className="text-[16px] text-gray-400">{label}</p>
 
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-[17px] font-semibold text-primary-900">
-              {store.localName || store.name}
-            </h3>
-
-            {selected && (
-              <span className="rounded-full bg-primary-100 px-2.5 py-1 text-[14px] dark:text-emerald-400 font-semibold text-primary-800">
-                សំឡេងរបស់អ្នក
-              </span>
-            )}
-          </div>
-
-          {store.localName && (
-            <p className="mt-0.5 truncate text-[16px] text-gray-500">
-              {store.name}
-            </p>
-          )}
-
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px] text-gray-500">
-            <span className="flex items-center gap-1.5 text-yellow-500">
-              <FaStar />
-              {store.averageRating}
-            </span>
-
-            <span className="flex items-center gap-1.5">
-              <IoLocationOutline />
-              {store.distanceKm.toFixed(1)} km
-            </span>
-
-            <span>{store.menuCount} មុខម្ហូប</span>
-
-            <span>
-              {getRecommendationPercentage(store.recommendationScore)}% match
-            </span>
-          </div>
-
-          <div className="mt-3">
-            <div className="mb-1.5 flex items-center justify-between gap-3">
-              <span className="text-[15px] font-medium text-gray-600">
-                {store.voteCount} votes
-              </span>
-
-              <span className="text-[15px] font-semibold text-primary-700">
-                {store.percentage}%
-              </span>
-            </div>
-
-            <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-              <motion.div
-                initial={{
-                  width: 0,
-                }}
-                animate={{
-                  width: `${store.percentage}%`,
-                }}
-                transition={{
-                  duration: 0.35,
-                }}
-                className="h-full rounded-full bg-primary-700"
-              />
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onVote}
-          className={`min-h-11 w-full shrink-0 rounded-full px-5 text-[16px] font-semibold transition sm:w-auto ${
-            selected
-              ? "border border-primary-200 bg-primary-50 text-primary-800"
-              : "bg-primary-800 text-white hover:bg-primary-700"
-          }`}
-        >
-          {selected ? "បានបោះឆ្នោត" : "បោះឆ្នោត"}
-        </button>
-      </div>
-    </article>
-  );
-}
-
-interface VotingSummaryProps {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}
-
-function VotingSummary({ icon, label, value }: VotingSummaryProps) {
-  return (
-    <div className="flex items-center gap-3 rounded-[16px] border border-gray-100 bg-gray-50 px-3 py-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-[18px] text-primary-700">
-        {icon}
-      </div>
-
-      <div className="min-w-0">
-        <p className="text-[14px] text-gray-500">{label}</p>
-
-        <p className="truncate text-[16px] font-semibold text-primary-900">
-          {value}
-        </p>
-      </div>
+      <p className="mt-1 text-[21px] font-bold text-primary-900">{value}</p>
     </div>
   );
 }
