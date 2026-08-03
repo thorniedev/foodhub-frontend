@@ -240,8 +240,8 @@ export default function FilterByMealTime({
               }}
               className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
                 activeTab === tab.id
-                  ? "text-primary-700"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "text-primary-700 dark:text-emerald-400"
+                  : "text-gray-400 dark:text-gray-200 hark:hover:text-gray-400 hover:text-gray-600"
               }`}
             >
               {tab.label}
@@ -262,72 +262,76 @@ export default function FilterByMealTime({
         </div>
       </div>
 
-      <div className="container mx-auto grid max-w-7xl grid-cols-1 place-items-center gap-4 px-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
-        {isLoading && (
-          <p className="col-span-full py-10 text-center text-gray-400">
-            កំពុងផ្ទុក...
-          </p>
-        )}
-
-        {/* {isError && (
-          <div className="col-span-full flex flex-col items-center gap-3 py-10 text-center">
-            <p className="text-red-400">មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ</p>
-
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="rounded-lg bg-primary-800 px-4 py-2 text-white"
-            >
-              ព្យាយាមម្តងទៀត
-            </button>
-          </div>
-        )} */}
-
-        <AnimatePresence mode="popLayout">
-          {!isLoading && !isError && filteredFoods.length === 0 && (
-            <motion.p
-              key="empty"
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              className="col-span-full py-10 text-center text-gray-400"
-            >
-              រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
-            </motion.p>
+      <div className="container mx-auto lg:max-w-7xl   px-4 ">
+        <div
+          className="
+      grid
+      grid-cols-1
+      lg:gap-4
+      sm:grid-cols-2
+      md:grid-cols-3
+      lg:grid-cols-4
+     
+     md:
+    
+      lg:max-w-7xl
+    "
+        >
+          {isLoading && (
+            <p className="col-span-full py-10 text-center text-gray-400">
+              កំពុងផ្ទុក...
+            </p>
           )}
 
-          {!isLoading &&
-            !isError &&
-            filteredFoods.map((food) => (
-              <motion.div
-                layout
-                key={food.uuid}
-                initial={{
-                  opacity: 0,
-                  scale: 0.96,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.96,
-                }}
-                className="w-full"
+          <AnimatePresence mode="popLayout">
+            {!isLoading && !isError && filteredFoods.length === 0 && (
+              <motion.p
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="col-span-full py-10 text-center text-gray-400"
               >
-                <Link href={`/food/${food.uuid}`} className="block w-full">
-                  <FoodCard food={food} />
-                </Link>
-              </motion.div>
-            ))}
-        </AnimatePresence>
+                រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
+              </motion.p>
+            )}
+
+            {!isLoading &&
+              !isError &&
+              filteredFoods.map((food) => (
+                <motion.div
+                  layout
+                  key={food.uuid}
+                  initial={{
+                    opacity: 0,
+                    y: 20,
+                    scale: 0.96,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: 20,
+                    scale: 0.96,
+                  }}
+                  transition={{
+                    duration: 0.25,
+                  }}
+                  className="w-full"
+                >
+                  <Link
+                    href={`/food/${food.uuid}`}
+                    className="block h-full self-center place-items-center w-full"
+                  >
+                    <FoodCard food={food} />
+                  </Link>
+                </motion.div>
+              ))}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

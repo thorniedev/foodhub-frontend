@@ -109,12 +109,12 @@ export default function RegisterPage() {
   const errorMessage = registerError ? getErrorMessage(registerError) : "";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10">
+    <main className="flex min-h-screen items-center justify-center  px-4 py-10">
       <section className="w-full max-w-2xl rounded-3xl border bg-background p-6 shadow-sm sm:p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <p className="text-3xl font-bold tracking-tight">
             Create your account
-          </h1>
+          </p>
 
           <p className="mt-2 text-base text-muted-foreground">
             Enter your information to register for FoodHub.

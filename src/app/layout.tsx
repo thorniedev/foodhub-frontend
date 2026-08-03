@@ -37,7 +37,7 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-full dark:bg-[#030423]  max-md:px-4 overflow-x-hidden flex flex-col"
+        className="min-h-full dark:bg-[#030423]   overflow-x-hidden flex flex-col"
       >
         {/* <AOSInit /> */}
         {/* <Navbar /> */}

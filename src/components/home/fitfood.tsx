@@ -40,7 +40,7 @@ export default function FitFoodSection() {
       id="menu"
       className=" py-15 max-lg:px-2 max-w-7xl mx-auto text-center"
     >
-      <section className="  flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
+      <section className="  flex flex-col items-center justify-center md:gap-12.5  max-md:gap-10 sm:gap- container  max-7-xl mx-auto   relative z-20   w-full">
         <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-emerald-400 font-semibold text-primary-800">
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>{" "}
@@ -62,7 +62,7 @@ export default function FitFoodSection() {
             key={item.id}
             data-aos="zoom-in"
             data-aos-delay={item.aosDelay}
-            className="flex flex-col items-center max-md:-mt-24 sm:-mt-35"
+            className="flex flex-col items-center max-md:-mt-24 max-sm:mt-5 "
           >
             <div className="relative w-60 h-60 mb-6">
               <Image
@@ -74,9 +74,7 @@ export default function FitFoodSection() {
               />
             </div>
             <h3 className="text-white font-bold text-xl mb-3">{item.title}</h3>
-            <p className="text-gray-100 text-xl px-4">
-              {item.description}
-            </p>
+            <p className="text-gray-100 text-xl px-4">{item.description}</p>
           </div>
         ))}
       </div>

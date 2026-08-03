@@ -34,9 +34,9 @@ export default function FoodCard({ food }: FoodCardProps) {
       transition={{
         duration: 0.3,
       }}
-      className="flex w-[300px] flex-col gap-2.5 rounded-[24px] border border-gray-100 bg-white p-2.5 shadow-sm border border-gray-100"
+      className="flex lg:w-[300px] md:w-[230px] flex-col gap-2.5 rounded-[24px] border border-gray-100 bg-white p-2.5 shadow-sm border border-gray-100"
     >
-      <div className="relative h-[185px] w-full overflow-hidden rounded-[14px]">
+      <div className="relative lg:h-[185px] md:h-[140px]  w-full overflow-hidden rounded-[14px]">
         <Image
           fill
           src={food.thumbnail}

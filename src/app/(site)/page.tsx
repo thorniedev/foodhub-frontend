@@ -35,11 +35,9 @@ import MinimalFoodHubRecommendationSection from "@/components/Component";
 import HeroComponentOO1 from "@/components/home/Hero";
 import Hero from "@/components/home/Hero";
 import { IconCloudDemo } from "@/components/IconCloudDemo";
-import {
-  IconCloudDemoWithIcons,
-  IconCloudDemoWithImageLogo,
-} from "@/components/ui/icon-cloud-demo-3";
+
 import { Skiper31 } from "@/components/ui/skiper-ui/skiper31";
+import { IconCloudDemoWithImageLogo } from "@/components/ui/icon-cloud-demo-3";
 
 export default function Home() {
   return (

@@ -358,7 +358,7 @@ export default function FoodSearchBar() {
   return (
     <div className="mx-auto container w-full max-w-7xl text-[#3d3d3a]">
       {/* <div className="flex container max-w-7xl px-4 sticky top-18 z-10 flex-wrap items-stretch gap-3.5"> */}
-      <div className="sticky top-12 z-[200] mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5  px-4 py-3 ">
+      <div className="sticky top-12 z-98 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5  px-4 py-3 ">
         {/* <div className="flex h-[60px] min-w-[280px] flex-1 items-center gap-2.5 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition-all focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec] hover:border-[#cfcec6]">
           <SearchIcon className="h-5 w-5 shrink-0 text-[#1c6b45]" />
 
