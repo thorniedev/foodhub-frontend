@@ -39,6 +39,7 @@ import {
   IconCloudDemoWithIcons,
   IconCloudDemoWithImageLogo,
 } from "@/components/ui/icon-cloud-demo-3";
+import { Skiper31 } from "@/components/ui/skiper-ui/skiper31";
 
 export default function Home() {
   return (
@@ -57,7 +58,7 @@ export default function Home() {
       <section className="">
         {/* <Skiper30 /> */}
         <Hero />
-        <div className=" container pt-12.5 mx-auto max-w-7xl flex items-center justify-between ">
+        <div className=" container py-12.5 mx-auto max-w-7xl flex items-center justify-between ">
           <div className="flex text-start   flex-col gap-12.5">
             <p className="lg:text-7xl text-start md:text-[38px] max-md:text-[30px] font-bold dark:text-emerald-400 text-primary-800">
               បច្ចេកវិទ្យា
@@ -78,7 +79,7 @@ export default function Home() {
         </div>
         {/* <IconCloudDemo /> */}
         {/* <HeroComponentOO1 /> */}
-        {/* <FoodHubSmartRecommendationSection /> */}
+        <FoodHubSmartRecommendationSection />
         {/* <MinimalFoodHubRecommendationSection /> */}
         <FilterByMealTime />
         {/* <PopularSection /> */}
@@ -108,7 +109,7 @@ export default function Home() {
         <EventSection />
         <LocationSection />
         <MealsByAgeSection />
-        {/* <SectionModal /> */}
+
         {/* <RecommendCardStack foods={recommendedFoods} /> */}
         {/* <Skiper48/> */}
         {/* <TinderFoodStack foods={recommendedFoods} /> */}

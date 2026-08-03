@@ -48,8 +48,8 @@ const ICON_PADDING = 0;
  *
  * These values are applied at approximately 60 FPS.
  */
-const AUTO_ROTATION_SPEED_X = 0.02;
-const AUTO_ROTATION_SPEED_Y = 0.005;
+const AUTO_ROTATION_SPEED_X = 0.025;
+const AUTO_ROTATION_SPEED_Y = 0.004;
 
 /*
  * Speed while the mouse is hovering.

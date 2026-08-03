@@ -7,7 +7,7 @@ import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import Providers from "@/app/store/Providers";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
-import SectionModal from "@/components/home/SectionModal";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,7 +43,7 @@ export default function RootLayout({
         {/* <Navbar /> */}
         <Providers>
           {children}
-          {/* <SectionModal /> */}
+         
         </Providers>
         {/* <footer>
           <DrawCircleText />
