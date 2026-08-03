@@ -19,6 +19,10 @@ const images = [
   "/tech-icons/pgsql.png",
   "/tech-icons/redis.png",
   "/tech-icons/ts.png",
+  "/tech-icons/minio.png",
+  "/tech-icons/grafana.png",
+  "/tech-icons/loki.png",
+  "/tech-icons/prometheus.png",
 ];
 
 export function IconCloudDemoWithImageLogo() {

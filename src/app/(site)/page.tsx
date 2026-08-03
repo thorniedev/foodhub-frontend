@@ -57,16 +57,17 @@ export default function Home() {
       <section className="">
         {/* <Skiper30 /> */}
         <Hero />
-        <div className=" container mx-auto max-w-7xl flex items-center justify-between ">
+        <div className=" container pt-12.5 mx-auto max-w-7xl flex items-center justify-between ">
           <div className="flex text-start   flex-col gap-12.5">
-            <p className="lg:text-5xl text-start md:text-[38px] max-md:text-[30px] font-bold dark:text-emerald-400 text-primary-800">
+            <p className="lg:text-7xl text-start md:text-[38px] max-md:text-[30px] font-bold dark:text-emerald-400 text-primary-800">
               បច្ចេកវិទ្យា
               <span className="text-secondary-400">ដែលពួកយើងប្រើ</span>
             </p>
             <p className="md:text-[20px]  text-gray-700 dark:text-gray-100">
-              ទទួលបានការណែនាំអំពីមុខម្ហូប និងហាងអាហារនៅជិតទីតាំងរបស់អ្នក
+              ប្រើប្រាស់បច្ចេកវិទ្យាទំនើប
+              និងប្រព័ន្ធឆ្លាតវៃដើម្បីផ្តល់បទពិសោធន៍លឿន
               <br className="md:block max-md:hidden" />
-              ដើម្បីសន្សំពេលវេលា និងរីករាយជាមួយអាហារដែលអ្នកចូលចិត្ត។
+              ងាយស្រួល និងមានសុវត្ថិភាពសម្រាប់អ្នកប្រើប្រាស់។
             </p>
             <button className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full texxt-[20px]">
               ទីតាំងនៅជិតនេះ{" "}
@@ -77,7 +78,7 @@ export default function Home() {
         </div>
         {/* <IconCloudDemo /> */}
         {/* <HeroComponentOO1 /> */}
-        <FoodHubSmartRecommendationSection />
+        {/* <FoodHubSmartRecommendationSection /> */}
         {/* <MinimalFoodHubRecommendationSection /> */}
         <FilterByMealTime />
         {/* <PopularSection /> */}

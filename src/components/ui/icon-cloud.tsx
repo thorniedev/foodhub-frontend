@@ -33,18 +33,15 @@ interface TargetRotation {
  */
 const LOGICAL_CANVAS_SIZE = 500;
 
-/*
- * High-resolution internal image size.
- */
+const CLOUD_RADIUS = 200;
+
 const ICON_SOURCE_SIZE = 256;
-
-/*
- * Visible icon size.
- * Change this to 46 or 50 for larger icons.
- */
-const ICON_DISPLAY_SIZE = 40;
-
-const ICON_PADDING = 20;
+const ICON_DISPLAY_SIZE = 60;
+const MIN_ICON_SCALE = 0.65;
+const MAX_ICON_SCALE = 1.15;
+const MIN_ICON_OPACITY = 0.55;
+// Remove extra space inside each icon
+const ICON_PADDING = 0;
 
 /*
  * Automatic rotation speed.
@@ -69,8 +66,20 @@ const HOVER_SPEED_MULTIPLIER = 0.5;
  */
 const DRAG_SPEED = 0.002;
 
+// function easeOutCubic(t: number): number {
+//   return 1 - Math.pow(1 - t, 3);
+// }
 function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
+}
+
+function getDepthScale(z: number): number {
+  const normalizedDepth = Math.max(
+    0,
+    Math.min(1, (z + CLOUD_RADIUS) / (CLOUD_RADIUS * 2)),
+  );
+
+  return MIN_ICON_SCALE + normalizedDepth * (MAX_ICON_SCALE - MIN_ICON_SCALE);
 }
 
 export function IconCloud({
@@ -126,9 +135,9 @@ export function IconCloud({
       const angle = index * increment;
 
       positions.push({
-        x: Math.cos(angle) * radius * 100,
-        y: y * 100,
-        z: Math.sin(angle) * radius * 100,
+        x: Math.cos(angle) * radius * CLOUD_RADIUS,
+        y: y * CLOUD_RADIUS,
+        z: Math.sin(angle) * radius * CLOUD_RADIUS,
         id: index,
       });
     }
@@ -370,8 +379,10 @@ export function IconCloud({
 
       const screenY = LOGICAL_CANVAS_SIZE / 2 + rotated.y;
 
-      const scale = (rotated.z + 200) / 300;
+      // const scale = (rotated.z + 200) / 300;
+      const scale = getDepthScale(rotated.z);
 
+      // const hitRadius = (ICON_DISPLAY_SIZE / 2) * scale;
       const hitRadius = (ICON_DISPLAY_SIZE / 2) * scale;
 
       const deltaX = pointer.x - screenX;
@@ -532,9 +543,15 @@ export function IconCloud({
       iconPositions.forEach((icon, index) => {
         const rotated = getRotatedPosition(icon);
 
-        const scale = (rotated.z + 200) / 300;
+        const scale = getDepthScale(rotated.z);
 
-        const opacity = Math.max(0.2, Math.min(1, (rotated.z + 150) / 200));
+        const normalizedDepth = Math.max(
+          0,
+          Math.min(1, (rotated.z + CLOUD_RADIUS) / (CLOUD_RADIUS * 2)),
+        );
+
+        const opacity =
+          MIN_ICON_OPACITY + normalizedDepth * (1 - MIN_ICON_OPACITY);
 
         context.save();
 
@@ -615,7 +632,7 @@ export function IconCloud({
         onPointerCancel={handlePointerUp}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
-        className="w-[550px]  h-[550px] bg-accent-600 cursor-grab touch-none select-none rounded-lg active:cursor-grabbing"
+        className=" size-100  cursor-grab touch-none select-none rounded-lg active:cursor-grabbing"
         // aria-label="Interactive 3D technology icon cloud"
         role="img"
       />
