@@ -626,7 +626,7 @@ function EmptyResults({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <DebugMetric
-          label="ហាងពី stores.json"
+          label=""
           value={String(sourceStoreCount)}
         />
 
