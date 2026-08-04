@@ -8,7 +8,7 @@ import { TypingAnimation } from "@/components/ui/typing-animation";
 import { EMPTY_FILTERS, FilterState } from "@/types/food";
 import { MenuItem } from "@/types/menu-item";
 
-import { useGetMenuItemsQuery } from "@/redux/api/fooodApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
 type TabId = "all" | "breakfast" | "lunch" | "dinner";
 
@@ -34,7 +34,7 @@ function matchesQuery(food: MenuItem, query?: string) {
     food.localName.toLowerCase().includes(q) ||
     food.name.toLowerCase().includes(q) ||
     food.description.toLowerCase().includes(q) ||
-    food.store.name.toLowerCase().includes(q) ||
+    food.store.localName.toLowerCase().includes(q) ||
     food.food.category.name.toLowerCase().includes(q)
   );
 }
