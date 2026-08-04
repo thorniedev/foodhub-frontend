@@ -1,4 +1,8 @@
-export type StoreOperatingStatus = "OPEN" | "CLOSED" | "UNKNOWN";
+export type StoreOperatingStatus =
+  | "OPEN"
+  | "CLOSED"
+  | "TEMPORARILY_CLOSED"
+  | "UNKNOWN";
 
 export interface BackendStoreDto {
   uuid: string;
@@ -33,9 +37,12 @@ export interface BackendStoreDto {
   externalSource: string | null;
 }
 
+export type StorePriceLevel = "$" | "$$" | "$$$" | "$$$$";
+
 /** Normalized model used by the location UI. */
 export interface Store {
   uuid: string;
+  storeName: string;
   name: string;
   localName: string | null;
   description: string | null;
@@ -70,9 +77,12 @@ export interface Store {
   pickupAvailable?: boolean;
 }
 
+export interface FoodStore extends Store {}
+
 export function mapBackendStore(store: BackendStoreDto): Store {
   return {
     uuid: store.uuid,
+    storeName: store.storeName,
     name: store.storeName,
     localName: null,
     description: store.description,

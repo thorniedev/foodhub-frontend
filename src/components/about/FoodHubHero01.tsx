@@ -944,7 +944,7 @@ function InteractiveVisual({
       <ConnectionLines activeKey={activeKey} reduceMotion={reduceMotion} />
 
       <LogoCore
-        logoSrc={logoSrc}
+        // logoSrc={logoSrc}
         activeFeature={activeFeature}
         reduceMotion={reduceMotion}
       />

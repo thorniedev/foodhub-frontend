@@ -1,7 +1,6 @@
 import type { MenuItem } from "@/types/manu";
 import type { Store } from "@/types/store";
 
-export type RecommendationMode = "single" | "group";
 export type LocationViewMode = "list" | "map";
 
 export type LocationSort =
@@ -24,6 +23,8 @@ export interface Coordinates {
   longitude: number;
   accuracy?: number;
 }
+
+export type RecommendationMode = "single" | "group";
 
 export interface LocationFiltersState {
   radiusKm: number;
@@ -57,6 +58,7 @@ export interface RecommendedStore extends Store {
   groupCoverageCount: number;
   groupMemberCount: number;
   safeForAllMembers: boolean;
+  hasMealsForEveryone: boolean;
   recommendationScore: number;
   voteCount: number;
 }
