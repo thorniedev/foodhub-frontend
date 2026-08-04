@@ -16,15 +16,15 @@ export default function PopularSection() {
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
         </p>
-      </section> */}
-      <CurvedLoop
+      </section>
+      {/* <CurvedLoop
         marqueeText="ស្វែងរកមុខម្ហូបនៅជិតអ្នកបំផុត"
         speed={2}
         curveAmount={-170}
         direction="left"
         interactive
         className="custom-text-style"
-      />
+      /> */}
       <div className="flex  justify-center lg:max-w-7xl  mx-auto">
         <Image
           width={235}

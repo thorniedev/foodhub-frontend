@@ -72,7 +72,7 @@ export default function ReviewPage() {
         : mockItems.filter((item) => item.category === activeTab);
 
     const sorted = [...items].sort((a, b) =>
-      a.sortDate.localeCompare(b.sortDate)
+      a.sortDate.localeCompare(b.sortDate),
     );
     return sortOrder === "oldest" ? sorted : sorted.reverse();
   }, [activeTab, sortOrder]);
@@ -102,7 +102,7 @@ export default function ReviewPage() {
           <button
             type="button"
             onClick={() => setSortMenuOpen((open) => !open)}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            className="inline-flex items-cennter gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             {activeSortLabel}
             <ChevronDown className="h-4 w-4" />

@@ -1,4 +1,5 @@
 export interface FamilyMember {
+  isActive: unknown;
   id: string;
   name: string;
   role: string;

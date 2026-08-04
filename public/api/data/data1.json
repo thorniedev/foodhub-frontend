@@ -1,0 +1,136 @@
+{
+  "menuItems": [
+    {
+      "uuid": "1168290d-9bfd-4af2-a0a2-2d7cb7514451",
+      "name": "Fish Amok",
+      "localName": "អាម៉ុកត្រី",
+      "description": "Steamed fish curry with coconut milk and traditional Khmer herbs.",
+      "thumbnail": "/Image/food/food3.png",
+      "gallery": [
+        "/Image/food/food1.png",
+        "/Image/food/food2.png",
+        "/Image/food/food3.png",
+        "/Image/food/food4.png"
+      ],
+      "price": 5.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 25,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "fd5575d5-ab5a-44fd-ae9f-ed100707bf55",
+
+        "name": "Sovann Khmer Kitchen",
+
+        "logoUrl": "/images/stores/sovann-logo.webp",
+
+        "coverImageUrl": "/images/stores/sovann-cover.webp",
+
+        "addressLine": "Street 178",
+
+        "district": "Daun Penh",
+
+        "city": "Phnom Penh",
+
+        "latitude": 11.5686,
+
+        "longitude": 104.9214,
+
+        "operatingStatus": "OPEN",
+
+        "averageRating": 4.7,
+
+        "totalReviews": 328
+      },
+      "food": {
+        "uuid": "4cf40782-0a54-45f5-bd7b-d6d986f5ee4b",
+        "canonicalName": "Fish Amok",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 2,
+        "ageGroups": [
+          {
+            "code": "ADULT",
+            "name": "Adult"
+          },
+          {
+            "code": "SENIOR",
+            "name": "Senior"
+          }
+        ]
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        },
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["Fish", "Coconut Milk", "Kroeung", "Egg", "Banana Leaf"],
+
+      "nutrition": {
+        "calories": 420,
+        "protein": 24,
+        "carbohydrate": 48,
+        "fat": 13,
+        "fiber": 6,
+        "sodium": 520
+      },
+      "distanceKm": 1.2,
+      "deliveryFee": 0.5,
+      "recommendation": {
+        "isRecommended": true,
+
+        "rankPosition": 1,
+
+        "finalScore": 0.94,
+
+        "safetyStatus": "SAFE",
+
+        "candidateSource": "CONTENT_BASED",
+
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "HIGH_RATING"],
+
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+
+        "isExploration": false,
+
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1,
+          "budgetMatch": 0.91,
+          "distanceMatch": 0.95,
+          "popularity": 0.86
+        }
+      },
+      "createdAt": "2025-01-01T10:00:00Z",
+      "updatedAt": "2025-01-01T10:00:00Z"
+    }
+  ]
+}
