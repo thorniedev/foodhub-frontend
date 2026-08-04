@@ -98,9 +98,9 @@ export default function StoreGrid({ stores, onReset }: StoreGridProps) {
                 ជម្រើសសម្រាប់អ្នក
               </p>
 
-              <h2 className="mt-1 text-[24px] font-bold text-primary-900 sm:text-[28px]">
+              <p className="mt-1 text-[24px] font-bold text-primary-900 sm:text-[28px]">
                 ហាងអាហារដែលគួរសាកល្បង
-              </h2>
+              </p>
             </div>
 
             <div className="hidden items-center gap-2 sm:flex">
@@ -153,9 +153,9 @@ export default function StoreGrid({ stores, onReset }: StoreGridProps) {
               ហាងអាហារទាំងអស់
             </p>
 
-            <h2 className="mt-1 text-[24px] font-bold text-primary-900 sm:text-[28px]">
+            <p className="mt-1 text-[24px] font-bold text-primary-900 sm:text-[28px]">
               ស្វែងរកហាងដែលអ្នកចូលចិត្ត
-            </h2>
+            </p>
           </div>
 
           <span className="rounded-full border border-gray-200 bg-white px-4 py-2 text-[16px] font-semibold text-gray-600 shadow-sm">

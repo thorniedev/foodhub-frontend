@@ -9,6 +9,8 @@ import MealTimeTabs from "@/components/dashboard/family-profile/MealTimeTabs";
 import type { FamilyMember, MealTime } from "@/types/family-profile";
 import type { FoodItem } from "@/types/food";
 import FoodCardComponent from "@/components/FoodCardComponent";
+import FoodCard from "@/components/dynamic-card/FoodCard";
+import { MenuItem } from "@/types/manu";
 
 const familyMembers: FamilyMember[] = [
   {
@@ -16,33 +18,33 @@ const familyMembers: FamilyMember[] = [
     name: "សុខ​ ស៊ូហេង",
     role: "កូនបង",
     avatarUrl: "https://placehold.co/96x96?text=MB",
-    isActive: undefined
+    isActive: undefined,
   },
   {
     id: "2",
     name: "សុខ​ លីតា",
     role: "កូនកណ្កាល",
     avatarUrl: "https://placehold.co/96x96?text=M",
-    isActive: undefined
+    isActive: undefined,
   },
   {
     id: "3",
     name: "សៀវយៀក",
     role: "កូនពៅ",
     avatarUrl: "https://placehold.co/96x96?text=C",
-    isActive: undefined
+    isActive: undefined,
   },
 ];
 
 export default function FamilyPage() {
   const [mealTime, setMealTime] = useState<MealTime>("breakfast");
-  const [foods, setFoods] = useState<FoodItem[]>([]);
+  // const [foods, setFoods] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [foods, setFoods] = useState<MenuItem[]>([]);
   useEffect(() => {
     fetch("/data/recommendedFoods.json")
       .then((res) => res.json())
-      .then((data: FoodItem[]) => setFoods(data))
+      .then((data: MenuItem[]) => setFoods(data))
       .catch((err) => console.error("Failed to load foods:", err))
       .finally(() => setLoading(false));
   }, []);
@@ -53,7 +55,7 @@ export default function FamilyPage() {
     dinner: "ពេលល្ងាច",
   };
 
-  const visibleFoods = foods.filter((item) => item.mealTime === mealTime);
+  const visibleFoods = foods.filter((item) => item.mealTypes === mealTime);
 
   return (
     <div className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6">
@@ -100,7 +102,7 @@ export default function FamilyPage() {
               className="mt-5 grid grid-cols-1 place-items-center gap-4 sm:grid-cols-2 sm:place-items-stretch sm:gap-5 lg:grid-cols-3 lg:w-4xl"
             >
               {visibleFoods.map((item) => (
-                <FoodCardComponent key={item.id} food={item} />
+                <FoodCard key={item.id} food={item} />
               ))}
             </motion.div>
           ) : (

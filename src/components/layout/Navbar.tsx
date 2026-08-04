@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
 import ThemeToggle from "../theme-toggle";
+import DashboardUserProfile from "../DashboardUserProfile";
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 
 const NAV_LINKS = [
   {
@@ -22,7 +25,7 @@ const NAV_LINKS = [
   },
 ];
 
-function checkActiveRoute(pathname: string, href: string) {
+function checkActiveRoute(pathname: string, href: string): boolean {
   if (href === "/") {
     return pathname === "/";
   }
@@ -38,6 +41,15 @@ export default function Navbar() {
 
   const navRef = useRef<HTMLElement | null>(null);
 
+  const { data: user, isLoading: isLoadingUser } = useGetCurrentUserQuery(
+    undefined,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+
+  const isAuthenticated = Boolean(user);
+
   const foundActiveIndex = NAV_LINKS.findIndex((link) =>
     checkActiveRoute(pathname, link.href),
   );
@@ -49,7 +61,9 @@ export default function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -72,12 +86,16 @@ export default function Navbar() {
     };
 
     window.addEventListener("keydown", handleKeyDown);
+
     window.addEventListener("pointerdown", handlePointerDown);
+
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+
       window.removeEventListener("pointerdown", handlePointerDown);
+
       window.removeEventListener("resize", handleResize);
     };
   }, [open]);
@@ -85,7 +103,9 @@ export default function Navbar() {
   const handleDesktopTabChange = (index: number) => {
     const selectedLink = NAV_LINKS[index];
 
-    if (!selectedLink) return;
+    if (!selectedLink) {
+      return;
+    }
 
     if (checkActiveRoute(pathname, selectedLink.href)) {
       return;
@@ -96,12 +116,18 @@ export default function Navbar() {
     });
   };
 
+  const handleLogout = () => {
+    setOpen(false);
+    window.location.assign("/api/auth/logout");
+  };
+
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 z-99 w-full bg-white/80 shadow-xs backdrop-blur-md dark:bg-gray-950/70"
+      className="fixed top-0 z-99 w-full border-b border-black/5 bg-white/80 shadow-xs backdrop-blur-md dark:border-white/10 dark:bg-gray-950/70"
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between ">
+      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-3 sm:px-4 lg:px-6">
+        {/* Logo */}
         <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0">
           <img
             src="/Image/logo.png"
@@ -127,15 +153,38 @@ export default function Navbar() {
         </div>
 
         {/* Desktop actions */}
-        <div className="hidden items-center justify-center gap-4 md:flex">
+        <div className="hidden min-w-0 items-center justify-center gap-3 md:flex">
           <ThemeToggle />
 
-          <Link
-            href="/register"
-            className="rounded-full bg-primary-800 px-4 py-2 text-white transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-primary"
-          >
-            បង្កើតគណនី
-          </Link>
+          {isLoadingUser ? (
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-10 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700" />
+
+              <div className="space-y-1">
+                <div className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+                <div className="h-3 w-28 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
+              </div>
+            </div>
+          ) : isAuthenticated ? (
+            <DashboardUserProfile />
+          ) : (
+            <>
+              <Link
+                href="/api/auth/login?returnTo=%2Fdashboard"
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 font-medium text-primary-900 transition hover:bg-primary-800/10 dark:text-white"
+              >
+                <LogIn className="h-4 w-4" />
+                ចូលគណនី
+              </Link>
+
+              <Link
+                href="/register"
+                className="rounded-full bg-primary-800 px-4 py-2 font-semibold text-white transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-primary"
+              >
+                បង្កើតគណនី
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -178,60 +227,111 @@ export default function Navbar() {
         }`}
       >
         <div className="overflow-hidden">
-          <ul className="flex flex-col gap-1 border-t border-black/5 px-3 pb-4 pt-3 dark:border-white/10">
-            {NAV_LINKS.map((link, index) => {
-              const isActive = checkActiveRoute(pathname, link.href);
+          <div className="border-t border-black/5 px-3 pb-4 pt-3 dark:border-white/10">
+            {/* Mobile authenticated user */}
+            {isLoadingUser ? (
+              <div className="mb-3 flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900">
+                <div className="h-11 w-11 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700" />
 
-              return (
-                <li
-                  key={link.href}
-                  style={{
-                    transitionDelay: open ? `${80 + index * 60}ms` : "0ms",
-                  }}
-                  className={`transition-all duration-300 ease-out motion-reduce:transition-none ${
-                    open
-                      ? "translate-y-0 opacity-100"
-                      : "-translate-y-2 opacity-0"
-                  }`}
-                >
-                  <Link
-                    href={link.href}
-                    scroll
-                    tabIndex={open ? 0 : -1}
-                    onClick={() => setOpen(false)}
-                    className={`block rounded-2xl px-4 py-3 text-[16px] font-medium transition-colors duration-200 ${
-                      isActive
-                        ? "bg-primary-800 text-white"
-                        : "text-primary-900 hover:bg-primary-800/10 dark:text-white"
+                <div className="space-y-2">
+                  <div className="h-4 w-28 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+                  <div className="h-3 w-40 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
+                </div>
+              </div>
+            ) : isAuthenticated ? (
+              <div className="mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+                <DashboardUserProfile showEmail alwaysShowText />
+              </div>
+            ) : null}
+
+            <ul className="flex flex-col gap-1">
+              {NAV_LINKS.map((link, index) => {
+                const isActive = checkActiveRoute(pathname, link.href);
+
+                return (
+                  <li
+                    key={link.href}
+                    style={{
+                      transitionDelay: open ? `${80 + index * 60}ms` : "0ms",
+                    }}
+                    className={`transition-all duration-300 ease-out motion-reduce:transition-none ${
+                      open
+                        ? "translate-y-0 opacity-100"
+                        : "-translate-y-2 opacity-0"
                     }`}
                   >
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
+                    <Link
+                      href={link.href}
+                      scroll
+                      tabIndex={open ? 0 : -1}
+                      onClick={() => setOpen(false)}
+                      className={`block rounded-2xl px-4 py-3 text-[16px] font-medium transition-colors duration-200 ${
+                        isActive
+                          ? "bg-primary-800 text-white"
+                          : "text-primary-900 hover:bg-primary-800/10 dark:text-white"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                );
+              })}
 
-            <li
-              style={{
-                transitionDelay: open
-                  ? `${80 + NAV_LINKS.length * 60}ms`
-                  : "0ms",
-              }}
-              className={`mt-2 transition-all duration-300 ease-out motion-reduce:transition-none ${
-                open ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
-              }`}
-            >
-              <Link
-                href="/register"
-                scroll
-                tabIndex={open ? 0 : -1}
-                onClick={() => setOpen(false)}
-                className="block rounded-full bg-primary-800 px-4 py-3 text-center text-[16px] font-semibold text-white transition-transform duration-200 active:scale-[0.98] dark:bg-white dark:text-primary"
-              >
-                បង្កើតគណនី
-              </Link>
-            </li>
-          </ul>
+              {/* Logged-in mobile actions */}
+              {isAuthenticated ? (
+                <>
+                  <li className="mt-2">
+                    <Link
+                      href="/dashboard"
+                      tabIndex={open ? 0 : -1}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-center gap-2 rounded-full bg-primary-800 px-4 py-3 text-[16px] font-semibold text-white transition active:scale-[0.98]"
+                    >
+                      <LayoutDashboard className="h-5 w-5" />
+                      ចូលទៅផ្ទាំងគ្រប់គ្រង
+                    </Link>
+                  </li>
+
+                  <li>
+                    <button
+                      type="button"
+                      tabIndex={open ? 0 : -1}
+                      onClick={handleLogout}
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-red-50 px-4 py-3 text-[16px] font-semibold text-red-600 transition hover:bg-red-100 active:scale-[0.98] dark:bg-red-950/40 dark:text-red-400"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      ចាកចេញ
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="mt-2">
+                    <Link
+                      href="/api/auth/login?returnTo=%2Fdashboard"
+                      tabIndex={open ? 0 : -1}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-center gap-2 rounded-full border border-primary-800 px-4 py-3 text-[16px] font-semibold text-primary-900 transition hover:bg-primary-800/10 active:scale-[0.98] dark:border-white dark:text-white"
+                    >
+                      <LogIn className="h-5 w-5" />
+                      ចូលគណនី
+                    </Link>
+                  </li>
+
+                  <li>
+                    <Link
+                      href="/register"
+                      tabIndex={open ? 0 : -1}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-full bg-primary-800 px-4 py-3 text-center text-[16px] font-semibold text-white transition-transform duration-200 active:scale-[0.98] dark:bg-white dark:text-primary"
+                    >
+                      បង្កើតគណនី
+                    </Link>
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
         </div>
       </div>
     </nav>

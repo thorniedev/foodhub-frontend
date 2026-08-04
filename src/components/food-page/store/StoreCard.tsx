@@ -223,14 +223,14 @@ function GridStoreCard({ store }: { store: Store }) {
         duration: 0.25,
         ease: "easeOut",
       }}
-      className="group overflow-hidden rounded-[24px] border border-gray-200 bg-white p-3 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:rounded-[28px] sm:p-4"
+      className="group overflow-hidden rounded-[24px] border border-gray-200 bg-white p-3 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md sm:rounded-[28px] sm:p-4"
     >
       <div className="relative overflow-hidden rounded-[20px] sm:rounded-[24px]">
-        <div className="relative h-[200px] w-full bg-primary-50 sm:h-[240px]">
+        <div className="relative h-[200px] w-full bg-primary-50 sm:h-[160px]">
           <StoreImage store={store} />
         </div>
 
-        <div className="absolute right-3 top-3">
+        <div className="absolute right-0 top-0">
           <FavoriteButton storeName={displayName} />
         </div>
       </div>
@@ -276,13 +276,13 @@ function GridStoreCard({ store }: { store: Store }) {
             <span className="truncate">{store.city || "Unknown location"}</span>
           </span>
 
-          <span className="inline-flex items-center gap-1.5 text-yellow-500">
+          {/* <span className="inline-flex items-center gap-1.5 text-yellow-500">
             <FaStar className="text-[14px]" />
             {ratingText}
-          </span>
+          </span> */}
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
+        {/* <div className="mt-5 flex flex-wrap gap-3">
           <StoreInfoChip>
             {store.reviewStatus === "APPROVED"
               ? "បានផ្ទៀងផ្ទាត់"
@@ -292,7 +292,7 @@ function GridStoreCard({ store }: { store: Store }) {
           <StoreInfoChip outlined>
             {store.accountStatus === "ACTIVE" ? "ហាងសកម្ម" : "មិនសកម្ម"}
           </StoreInfoChip>
-        </div>
+        </div> */}
       </div>
     </motion.article>
   );

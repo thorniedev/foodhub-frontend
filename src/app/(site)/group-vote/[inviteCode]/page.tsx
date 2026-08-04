@@ -6,14 +6,8 @@ interface GroupVotePageProps {
   }>;
 }
 
-export default async function GroupVotePage({
-  params,
-}: GroupVotePageProps) {
+export default async function GroupVotePage({ params }: GroupVotePageProps) {
   const { inviteCode } = await params;
 
-  return (
-    <SharedVotingPage
-      inviteCode={inviteCode.toUpperCase()}
-    />
-  );
+  return <SharedVotingPage inviteCode={inviteCode.toUpperCase()} />;
 }

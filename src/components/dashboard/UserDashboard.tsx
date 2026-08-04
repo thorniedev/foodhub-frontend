@@ -92,7 +92,7 @@ export default function UserDashboard() {
   return (
     <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
       {/* Profile banner */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {/* <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="relative h-20 bg-gradient-to-r from-primary-100 to-primary-200 sm:h-32" />
         <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
           <div className="-mt-8 flex flex-col gap-4 sm:-mt-10 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
@@ -134,10 +134,10 @@ export default function UserDashboard() {
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Personal info */}
-      <SectionCard
+      {/* <SectionCard
         icon={<FaRegUser />}
         title="ព័ត៌មានផ្ទាល់ខ្លួន"
         className="mt-4 sm:mt-5"
@@ -218,7 +218,7 @@ export default function UserDashboard() {
             />
           </Field>
         </div>
-      </SectionCard>
+      </SectionCard> */}
 
       {/* Health goals */}
       <SectionCard

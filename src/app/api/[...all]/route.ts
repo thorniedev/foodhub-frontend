@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +14,8 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   "auth/login": new Set(["POST"]),
   "auth/logout": new Set(["POST"]),
   "auth/refresh": new Set(["POST"]),
-
+  "users/me": new Set(["GET", "PATCH"]),
+  "users/me/sync": new Set(["PUT"]),
   users: new Set(["GET", "POST"]),
   stores: new Set(["GET"]),
   "menu-items": new Set(["GET", "POST"]),
@@ -27,7 +28,7 @@ interface RouteContext {
 }
 
 async function forwardRequest(
-  request: Request,
+  request: NextRequest,
   context: RouteContext,
 ): Promise<Response> {
   if (!backendApiUrl) {
@@ -109,10 +110,14 @@ async function forwardRequest(
     requestHeaders.set("Content-Type", contentType);
   }
 
-  const authorization = request.headers.get("authorization");
+  const incomingAuthorization = request.headers.get("authorization");
 
-  if (authorization) {
-    requestHeaders.set("Authorization", authorization);
+  const accessToken = request.cookies.get("foodhub_access_token")?.value;
+
+  if (incomingAuthorization) {
+    requestHeaders.set("Authorization", incomingAuthorization);
+  } else if (accessToken) {
+    requestHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
   const canHaveBody = request.method !== "GET" && request.method !== "HEAD";
