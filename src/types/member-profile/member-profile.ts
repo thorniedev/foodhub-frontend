@@ -7,11 +7,7 @@ export type MemberRelationship =
   | "GRANDPARENT"
   | "OTHER";
 
-export type MemberGender =
-  | "MALE"
-  | "FEMALE"
-  | "OTHER"
-  | "PREFER_NOT_TO_SAY";
+export type MemberGender = "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
 
 export interface MemberAgeGroup {
   uuid: string;
@@ -60,4 +56,22 @@ export interface MemberProfileResponse {
 export interface GetMemberProfilesParams {
   page?: number;
   size?: number;
+}
+
+export interface CreateMemberProfileRequest {
+  profileName: string;
+  relationship: MemberRelationship;
+  gender: MemberGender;
+  dateOfBirth: string;
+  preferredLanguage: string;
+  avatarMediaUuid: string | null;
+  isDefault: boolean;
+  allergies: unknown[];
+  dietaryTypes: unknown[];
+  medicalConditions: unknown[];
+  ingredientAvoids: unknown[];
+  preferences: Record<string, unknown> | null;
+}
+export interface DeleteMemberProfileParams {
+  uuid: string;
 }

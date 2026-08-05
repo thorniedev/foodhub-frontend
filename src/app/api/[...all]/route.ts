@@ -14,10 +14,13 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   "auth/login": new Set(["POST"]),
   "auth/logout": new Set(["POST"]),
   "auth/refresh": new Set(["POST"]),
+
   "users/me": new Set(["GET", "PATCH"]),
   "users/me/sync": new Set(["PUT"]),
-  
   users: new Set(["GET", "POST"]),
+
+  profiles: new Set(["GET", "POST", "DELETE"]),
+
   stores: new Set(["GET"]),
   "menu-items": new Set(["GET", "POST"]),
 };
