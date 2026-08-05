@@ -1,20 +1,16 @@
 "use client";
 
-import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import { LoaderCircle, Plus, RefreshCw, Trash2, X } from "lucide-react";
 
+import CreateMemberProfileModal from "@/app/(dashboard)/dashboard/CreateMemberProfileModal";
 import {
-  useCreateMemberProfileMutation,
   useDeleteMemberProfileMutation,
   useGetMemberProfilesQuery,
 } from "@/app/store/memberProfileApi";
 
-import type {
-  CreateMemberProfileRequest,
-  MemberGender,
-  MemberRelationship,
-} from "@/types/member-profile/member-profile";
+import type { MemberRelationship } from "@/types/member-profile/member-profile";
 
 const relationshipLabels: Record<MemberRelationship, string> = {
   SELF: "ខ្លួនឯង",
@@ -24,28 +20,6 @@ const relationshipLabels: Record<MemberRelationship, string> = {
   SIBLING: "បងប្អូន",
   GRANDPARENT: "ជីដូនជីតា",
   OTHER: "ផ្សេងៗ",
-};
-
-const genderLabels: Record<MemberGender, string> = {
-  MALE: "ប្រុស",
-  FEMALE: "ស្រី",
-  OTHER: "ផ្សេងៗ",
-  PREFER_NOT_TO_SAY: "មិនចង់បញ្ជាក់",
-};
-
-const initialFormState: CreateMemberProfileRequest = {
-  profileName: "",
-  relationship: "CHILD",
-  gender: "MALE",
-  dateOfBirth: "",
-  preferredLanguage: "km",
-  avatarMediaUuid: null,
-  isDefault: false,
-  allergies: [],
-  dietaryTypes: [],
-  medicalConditions: [],
-  ingredientAvoids: [],
-  preferences: null,
 };
 
 function getErrorMessage(error: unknown, fallbackMessage: string): string {
@@ -74,11 +48,6 @@ function getErrorMessage(error: unknown, fallbackMessage: string): string {
 export default function FamilyProfiles() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [form, setForm] =
-    useState<CreateMemberProfileRequest>(initialFormState);
-
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [deletingProfileUuid, setDeletingProfileUuid] = useState<string | null>(
@@ -91,57 +60,13 @@ export default function FamilyProfiles() {
       size: 20,
     });
 
-  const [createMemberProfile, { isLoading: isCreating }] =
-    useCreateMemberProfileMutation();
-
   const [deleteMemberProfile, { isLoading: isDeleting }] =
     useDeleteMemberProfileMutation();
 
   const members = data?.contents ?? [];
 
   const handleAddProfile = () => {
-    setSubmitError(null);
-    setForm(initialFormState);
     setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    if (isCreating) {
-      return;
-    }
-
-    setSubmitError(null);
-    setIsModalOpen(false);
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setSubmitError(null);
-
-    if (!form.profileName.trim()) {
-      setSubmitError("សូមបញ្ចូលឈ្មោះគណនី។");
-      return;
-    }
-
-    if (!form.dateOfBirth) {
-      setSubmitError("សូមជ្រើសរើសថ្ងៃខែឆ្នាំកំណើត។");
-      return;
-    }
-
-    try {
-      await createMemberProfile({
-        ...form,
-        profileName: form.profileName.trim(),
-      }).unwrap();
-
-      setForm(initialFormState);
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("CREATE MEMBER PROFILE ERROR:", error);
-
-      setSubmitError(getErrorMessage(error, "មិនអាចបង្កើតគណនីបានទេ។"));
-    }
   };
 
   const handleDeleteProfile = async (
@@ -157,11 +82,6 @@ export default function FamilyProfiles() {
     }
 
     if (!uuid) {
-      console.error("DELETE PROFILE: UUID is missing", {
-        uuid,
-        profileName,
-      });
-
       setDeleteError("រកមិនឃើញលេខសម្គាល់គណនី។");
       return;
     }
@@ -178,11 +98,6 @@ export default function FamilyProfiles() {
     setDeletingProfileUuid(uuid);
 
     try {
-      console.log("DELETE PROFILE:", {
-        uuid,
-        profileName,
-      });
-
       await deleteMemberProfile({ uuid }).unwrap();
     } catch (error) {
       console.error("DELETE PROFILE ERROR:", error);
@@ -340,238 +255,10 @@ export default function FamilyProfiles() {
         )}
       </div>
 
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              handleCloseModal();
-            }
-          }}
-        >
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">
-                  បន្ថែមគណនីគ្រួសារ
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  បញ្ចូលព័ត៌មានសម្រាប់សមាជិកគ្រួសារ។
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                disabled={isCreating}
-                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="profileName"
-                  className="mb-1.5 block text-sm font-medium text-slate-700"
-                >
-                  ឈ្មោះគណនី
-                </label>
-
-                <input
-                  id="profileName"
-                  type="text"
-                  value={form.profileName}
-                  onChange={(event) =>
-                    setForm((previous) => ({
-                      ...previous,
-                      profileName: event.target.value,
-                    }))
-                  }
-                  placeholder="ឧ. Leng Sokha"
-                  disabled={isCreating}
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="relationship"
-                    className="mb-1.5 block text-sm font-medium text-slate-700"
-                  >
-                    ទំនាក់ទំនង
-                  </label>
-
-                  <select
-                    id="relationship"
-                    value={form.relationship}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        relationship: event.target.value as MemberRelationship,
-                      }))
-                    }
-                    disabled={isCreating}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100"
-                  >
-                    {Object.entries(relationshipLabels).map(
-                      ([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="gender"
-                    className="mb-1.5 block text-sm font-medium text-slate-700"
-                  >
-                    ភេទ
-                  </label>
-
-                  <select
-                    id="gender"
-                    value={form.gender}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        gender: event.target.value as MemberGender,
-                      }))
-                    }
-                    disabled={isCreating}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100"
-                  >
-                    {Object.entries(genderLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="dateOfBirth"
-                  className="mb-1.5 block text-sm font-medium text-slate-700"
-                >
-                  ថ្ងៃខែឆ្នាំកំណើត
-                </label>
-
-                <input
-                  id="dateOfBirth"
-                  type="date"
-                  value={form.dateOfBirth}
-                  max={new Date().toISOString().split("T")[0]}
-                  onChange={(event) =>
-                    setForm((previous) => ({
-                      ...previous,
-                      dateOfBirth: event.target.value,
-                    }))
-                  }
-                  disabled={isCreating}
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="preferredLanguage"
-                  className="mb-1.5 block text-sm font-medium text-slate-700"
-                >
-                  ភាសាដែលពេញចិត្ត
-                </label>
-
-                <select
-                  id="preferredLanguage"
-                  value={form.preferredLanguage}
-                  onChange={(event) =>
-                    setForm((previous) => ({
-                      ...previous,
-                      preferredLanguage: event.target.value,
-                    }))
-                  }
-                  disabled={isCreating}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100"
-                >
-                  <option value="km">ភាសាខ្មែរ</option>
-
-                  <option value="en">English</option>
-                </select>
-              </div>
-
-              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4">
-                <input
-                  type="checkbox"
-                  checked={form.isDefault}
-                  onChange={(event) =>
-                    setForm((previous) => ({
-                      ...previous,
-                      isDefault: event.target.checked,
-                    }))
-                  }
-                  disabled={isCreating}
-                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-
-                <div>
-                  <p className="text-sm font-medium text-slate-700">
-                    កំណត់ជាគណនីលំនាំដើម
-                  </p>
-
-                  <p className="text-xs text-slate-400">
-                    គណនីនេះនឹងត្រូវបានប្រើជាលំនាំដើម។
-                  </p>
-                </div>
-              </label>
-
-              {submitError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {submitError}
-                </div>
-              )}
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  disabled={isCreating}
-                  className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  បោះបង់
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isCreating}
-                  className="inline-flex min-w-32 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isCreating ? (
-                    <>
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                      កំពុងបង្កើត...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4" />
-                      បង្កើតគណនី
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CreateMemberProfileModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }

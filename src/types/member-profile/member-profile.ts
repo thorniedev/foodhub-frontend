@@ -7,7 +7,24 @@ export type MemberRelationship =
   | "GRANDPARENT"
   | "OTHER";
 
-export type MemberGender = "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
+export type MemberGender =
+  | "MALE"
+  | "FEMALE"
+  | "OTHER"
+  | "PREFER_NOT_TO_SAY";
+
+export type ProfileSeverity =
+  | "MILD"
+  | "MODERATE"
+  | "SEVERE";
+
+export type DietaryEnforcementLevel =
+  | "PREFERRED"
+  | "REQUIRED";
+
+export type IngredientAvoidLevel =
+  | "PREFERENCE"
+  | "STRICT_BLOCK";
 
 export interface MemberAgeGroup {
   uuid: string;
@@ -15,6 +32,34 @@ export interface MemberAgeGroup {
   name: string;
   minAge: number | null;
   maxAge: number | null;
+}
+
+export interface MemberAllergyRequest {
+  allergenCode: string;
+  severity: ProfileSeverity;
+  reactionNotes: string | null;
+  avoidCrossContact: boolean;
+  medicallyDiagnosed: boolean;
+}
+
+export interface MemberDietaryTypeRequest {
+  dietaryTypeCode: string;
+  enforcementLevel: DietaryEnforcementLevel;
+  priority: number;
+  notes: string | null;
+}
+
+export interface MemberMedicalConditionRequest {
+  conditionCode: string;
+  severity: ProfileSeverity;
+  notes: string | null;
+}
+
+export interface MemberIngredientAvoidRequest {
+  ingredientCode: string;
+  avoidLevel: IngredientAvoidLevel;
+  reasonCode: string;
+  notes: string | null;
 }
 
 export interface MemberProfile {
@@ -29,14 +74,11 @@ export interface MemberProfile {
   isDefault: boolean;
   isActive: boolean;
 
-  /*
-   * Replace unknown with exact interfaces when you have
-   * the response structures for these properties.
-   */
-  allergies: unknown[];
-  dietaryTypes: unknown[];
-  medicalConditions: unknown[];
-  ingredientAvoids: unknown[];
+  allergies: MemberAllergyRequest[];
+  dietaryTypes: MemberDietaryTypeRequest[];
+  medicalConditions: MemberMedicalConditionRequest[];
+  ingredientAvoids: MemberIngredientAvoidRequest[];
+
   preferences: Record<string, unknown> | null;
 
   createdAt: string;
@@ -66,12 +108,11 @@ export interface CreateMemberProfileRequest {
   preferredLanguage: string;
   avatarMediaUuid: string | null;
   isDefault: boolean;
-  allergies: unknown[];
-  dietaryTypes: unknown[];
-  medicalConditions: unknown[];
-  ingredientAvoids: unknown[];
+
+  allergies: MemberAllergyRequest[];
+  dietaryTypes: MemberDietaryTypeRequest[];
+  medicalConditions: MemberMedicalConditionRequest[];
+  ingredientAvoids: MemberIngredientAvoidRequest[];
+
   preferences: Record<string, unknown> | null;
-}
-export interface DeleteMemberProfileParams {
-  uuid: string;
 }
