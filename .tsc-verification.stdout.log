@@ -1,0 +1,5 @@
+src/lib/location/recommendation.ts(228,26): error TS2339: Property 'localName' does not exist on type 'LocationStore'.
+src/lib/location/recommendation.ts(259,9): error TS2353: Object literal may only specify known properties, and 'hasMealsForEveryone' does not exist in type 'RecommendedStore'.
+src/lib/location/recommendation.ts(352,14): error TS2339: Property 'hasMealsForEveryone' does not exist on type 'RecommendedStore'.
+src/types/store-page.ts(1,15): error TS2305: Module '"./store"' has no exported member 'FoodStore'.
+src/types/store-page.ts(1,26): error TS2305: Module '"./store"' has no exported member 'StorePriceLevel'.

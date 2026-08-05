@@ -11,7 +11,11 @@ export default function AboutHeroClient() {
 
   return (
     <>
+<<<<<<< HEAD
       <FoodHubHero01/>
+=======
+      <FoodHubHero01 />
+>>>>>>> 8be8ac3b2e55d1ca43186738dce8858315c9f2c4
 
       <AnimatePresence>
         {isOpen && (

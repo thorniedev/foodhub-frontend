@@ -316,21 +316,21 @@ export default function Home() {
 
   return (
     <div>
-      <LocationPermissionModal
+      {/* <LocationPermissionModal
         open={locationModalOpen && status !== "granted"}
         status={status}
         error={error}
         onEnable={handleEnableLocation}
         onClose={handleCloseLocationModal}
-      />
+      /> */}
 
-      <NearbyStoreVoiceAlert
+      {/* <NearbyStoreVoiceAlert
         coordinates={coordinates ?? null}
         stores={matchingStores}
         radiusMeters={100}
         cooldownMilliseconds={10 * 60 * 1000}
         onRequestLocation={handleOpenLocationModal}
-      />
+      /> */}
 
       <section>
         <Hero />

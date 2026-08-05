@@ -1,5 +1,9 @@
 export type StoreReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type StoreOperatingStatus = "OPEN" | "CLOSED" | "UNKNOWN";
+export type StoreOperatingStatus =
+  | "OPEN"
+  | "CLOSED"
+  | "TEMPORARILY_CLOSED"
+  | "UNKNOWN";
 export type StoreAccountStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 
 export interface StoreSocialLink {
@@ -23,6 +27,7 @@ export interface StoreOpeningHour {
 export interface LocationStore {
   uuid: string;
   storeName: string;
+  localName?: string | null;
   description: string | null;
 
   addressLine: string;

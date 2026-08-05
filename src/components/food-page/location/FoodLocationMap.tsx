@@ -38,14 +38,24 @@ function MapController({
   const map = useMap();
 
   useEffect(() => {
-    if (selectedStore) {
-      map.flyTo([selectedStore.latitude, selectedStore.longitude], 16, {
-        duration: 0.8,
-      });
+    if (!map) return;
+
+    const target = selectedStore ?? center;
+
+    if (
+      !Number.isFinite(target.latitude) ||
+      !Number.isFinite(target.longitude)
+    ) {
       return;
     }
 
+<<<<<<< HEAD
     // map.flyTo([center.latitude, center.longitude], 14, { duration: 0.8 });
+=======
+    // map.flyTo([target.latitude, target.longitude], selectedStore ? 16 : 14, {
+    //   duration: 0.8,
+    // });
+>>>>>>> 8be8ac3b2e55d1ca43186738dce8858315c9f2c4
   }, [center, map, selectedStore]);
 
   return null;

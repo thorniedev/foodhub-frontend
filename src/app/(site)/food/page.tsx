@@ -2100,7 +2100,7 @@ export default function FoodPage() {
   const activeFilterCount = countActiveFilters(filters);
 
   return (
-    <div className="min-h-screen bg-[#fafaf8]">
+    <div className="min-h-screen bg-[#fafaf8] dark:bg-black">
       <div className="pt-15" />
 
       {/* Tabs stay on the same FoodPage */}
@@ -2265,9 +2265,9 @@ export default function FoodPage() {
                               FoodHub AI
                             </p>
 
-                            <h2 className="mt-1 text-[26px] font-bold text-primary-900">
+                            <p className="mt-1 dark:text-emerald-400 text-[26px] font-bold text-primary-900">
                               មុខម្ហូបណែនាំសម្រាប់អ្នក
-                            </h2>
+                            </p>
                           </div>
 
                           <span className="rounded-full bg-primary-50 px-4 py-2 text-[16px] font-semibold text-primary-700">
@@ -2286,12 +2286,12 @@ export default function FoodPage() {
                             មុខម្ហូបទាំងអស់
                           </p>
 
-                          <h2 className="mt-1 text-[26px] font-bold text-primary-900">
+                          <p className="mt-1 dark:text-emerald-400 text-[26px] font-bold text-primary-900">
                             ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
-                          </h2>
+                          </p>
                         </div>
 
-                        <p className="text-[16px] text-gray-500">
+                        <p className="text-[16px] dark:text-gray-50 text-gray-500">
                           បង្ហាញ {filteredFoods.length} ក្នុងចំណោម{" "}
                           {menuItems.length}
                         </p>

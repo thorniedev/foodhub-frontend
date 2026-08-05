@@ -161,7 +161,7 @@ export default function RegisterPage() {
             autoComplete="email"
           />
 
-          <FormInput
+          {/* <FormInput
             label="Phone number"
             name="phoneNumber"
             type="tel"
@@ -169,7 +169,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             placeholder="+85512345678"
             autoComplete="tel"
-          />
+          /> */}
 
           <div className="grid gap-5 sm:grid-cols-2">
             <FormInput

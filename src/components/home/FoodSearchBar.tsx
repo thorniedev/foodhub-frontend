@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import Link from "next/link";
 
-import { useGetFoodsQuery } from "@/app/store/foodApi";
 import FoodCardComponent from "../FoodCardComponent";
+import { useGetFoodsQuery } from "@/app/store/foodApi";
 
 type ChipGroup = {
   title: string;

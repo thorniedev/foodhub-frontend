@@ -8,7 +8,6 @@ import Providers from "@/app/store/Providers";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -41,10 +40,7 @@ export default function RootLayout({
       >
         {/* <AOSInit /> */}
         {/* <Navbar /> */}
-        <Providers>
-          {children}
-         
-        </Providers>
+        <Providers>{children}</Providers>
         {/* <footer>
           <DrawCircleText />
           <Footer />

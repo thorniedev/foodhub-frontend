@@ -1,6 +1,7 @@
 export type MealTime = "breakfast" | "lunch" | "dinner";
 
 export type FoodItem = {
+  dietaryTypes: any;
   id: number;
   mealTime: MealTime;
   store: string;

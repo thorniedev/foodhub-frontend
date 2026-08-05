@@ -9,6 +9,7 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "./NavItem";
 import { useSidebar } from "./SidebarContext";
+import LogoutButton from "../LogOutButton";
 
 export default function Aside() {
   const pathname = usePathname();
@@ -92,13 +93,14 @@ export default function Aside() {
           ការកំណត់
         </button>
 
-        <button
+        {/* <button
           type="button"
           className="mt-2 flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium text-red-500 hover:bg-red-50"
         >
           <FiLogOut className="text-xl" />
           ចាកចេញ
-        </button>
+        </button> */}
+        <LogoutButton />
       </aside>
     </>
   );

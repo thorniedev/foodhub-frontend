@@ -64,7 +64,7 @@ export default function FitFoodSection() {
             data-aos-delay={item.aosDelay}
             className="flex flex-col items-center max-md:-mt-24 max-sm:mt-5 "
           >
-            <div className="relative w-60 h-60 mb-6">
+            <div className="relative w-60 h-60 lg:-mt-43 mb-6">
               <Image
                 src={item.image}
                 alt={item.title}

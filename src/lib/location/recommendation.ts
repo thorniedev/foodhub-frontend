@@ -379,14 +379,127 @@ function mapLocationStoreToRecommendedStore(input: {
   return recommendedStore as RecommendedStore;
 }
 
+function normalizeOperatingStatus(
+  status: string,
+): RecommendedStore["operatingStatus"] {
+  switch (status) {
+    case "OPEN":
+    case "CLOSED":
+    case "TEMPORARILY_CLOSED":
+    case "UNKNOWN":
+      return status;
+    default:
+      return "UNKNOWN";
+  }
+}
+
+// export function buildRecommendedStores({
+//   menuItems,
+//   stores = [],
+//   referencePoint,
+// }: BuildRecommendedStoresInput): RecommendedStore[] {
+//   /*
+//    * Do not show every store with distance 0 while the user's location
+//    * is still unavailable.
+//    */
+//   if (!referencePoint) {
+//     return [];
+//   }
+
+//   return stores
+//     .filter(
+//       (store) =>
+//         Number.isFinite(store.latitude) && Number.isFinite(store.longitude),
+//     )
+//     .map((store) => {
+//       const items = getMenuItemsForStore(menuItems, store.uuid);
+
+//       const storeCoordinates: Coordinates = {
+//         latitude: store.latitude,
+//         longitude: store.longitude,
+//       };
+
+//       const distanceKm = calculateDistanceKm(referencePoint, storeCoordinates);
+
+//       const averageRating = store.averageRating ?? 0;
+
+//       const recommendationScore = calculateRecommendationScore({
+//         distanceKm,
+//         averageRating,
+//         menuCount: items.length,
+//       });
+
+//       return {
+//         uuid: store.uuid,
+
+//         name: store.storeName,
+//         localName: store.storeName,
+//         description: store.description ?? "",
+
+//         addressLine: store.addressLine,
+//         commune: store.commune ?? "",
+//         district: store.district ?? "",
+//         city: store.city,
+//         province: store.province,
+
+//         latitude: store.latitude,
+//         longitude: store.longitude,
+
+//         phoneNumber: store.phoneNumber,
+//         email: store.email,
+
+//         logoUrl: normalizeImagePath(store.logoUrl),
+
+//         coverImageUrl: normalizeImagePath(store.coverImageUrl),
+
+//         priceLevel: store.priceLevel,
+
+//         averageRating,
+//         totalReviews: store.totalReviews ?? 0,
+
+//         operatingStatus: store.operatingStatus,
+
+//         isOpenNow: store.isOpenNow,
+
+//         deliveryAvailable: store.deliveryAvailable === true,
+
+//         pickupAvailable: store.pickupAvailable === true,
+
+//         menuItems: items,
+//         menuCount: items.length,
+//         matchingMenuCount: items.length,
+
+//         distanceKm,
+
+//         /*
+//          * Neutral values used by shared store components.
+//          * The real group values are calculated in
+//          * group-recommendation.ts.
+//          */
+//         averageMemberDistanceKm: distanceKm,
+//         maximumMemberDistanceKm: distanceKm,
+//         groupCoverageCount: 0,
+//         groupMemberCount: 0,
+//         safeForAllMembers: true,
+//         hasMealsForEveryone: true,
+
+//         recommendationScore,
+//         voteCount: 0,
+//       } as RecommendedStore;
+//     });
+// }
 export function buildRecommendedStores({
   menuItems = [],
   stores = [],
   referencePoint,
 }: BuildRecommendedStoresInput): RecommendedStore[] {
+<<<<<<< HEAD
   const safeReferencePoint = normalizeCoordinates(referencePoint);
 
   if (!safeReferencePoint) {
+=======
+  if (!referencePoint) {
+>>>>>>> 8be8ac3b2e55d1ca43186738dce8858315c9f2c4
     return [];
   }
 
@@ -394,11 +507,67 @@ export function buildRecommendedStores({
 
   const safeStores: LocationStore[] = Array.isArray(stores) ? stores : [];
 
+<<<<<<< HEAD
   return safeStores.reduce<RecommendedStore[]>((result, store) => {
     const recommendedStore = mapLocationStoreToRecommendedStore({
       store,
       menuItems: safeMenuItems,
       referencePoint: safeReferencePoint,
+=======
+      const distanceKm = calculateDistanceKm(referencePoint, storeCoordinates);
+
+      const averageRating = store.averageRating ?? 0;
+      const storeLocalName = store.localName ?? store.storeName;
+
+      const recommendationScore = calculateRecommendationScore({
+        distanceKm,
+        averageRating,
+        menuCount: items.length,
+      });
+
+      const recommendedStore = {
+        ...store,
+
+        name: store.storeName,
+        localName: storeLocalName,
+
+        description: store.description ?? "",
+
+        commune: store.commune ?? "",
+        district: store.district ?? "",
+
+        logoUrl: normalizeImagePath(store.logoUrl),
+        coverImageUrl: normalizeImagePath(store.coverImageUrl),
+
+        averageRating,
+        totalReviews: store.totalReviews ?? 0,
+
+        operatingStatus: normalizeOperatingStatus(store.operatingStatus),
+
+        deliveryAvailable: store.deliveryAvailable === true,
+        pickupAvailable: store.pickupAvailable === true,
+
+        menuItems: items,
+        menuCount: items.length,
+        matchingMenuCount: items.length,
+
+        distanceKm,
+
+        averageMemberDistanceKm: distanceKm,
+        maximumMemberDistanceKm: distanceKm,
+
+        groupCoverageCount: 0,
+        groupMemberCount: 0,
+
+        safeForAllMembers: true,
+        hasMealsForEveryone: true,
+
+        recommendationScore,
+        voteCount: 0,
+      } satisfies RecommendedStore;
+
+      return recommendedStore;
+>>>>>>> 8be8ac3b2e55d1ca43186738dce8858315c9f2c4
     });
 
     if (recommendedStore) {

@@ -121,7 +121,7 @@ const leaders: MemberCardProps[] = [
     role: "Sub-Leader",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/souheng.jpg",
   },
 ];
 
@@ -129,11 +129,11 @@ const leaders: MemberCardProps[] = [
 const members: MemberCardProps[] = [
   {
     id: "m1",
-    name: "ភឿង សូលីតា",
+    name: "ភឿន សូលីតា",
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/lyta.jpg",
   },
   {
     id: "m2",
@@ -141,7 +141,7 @@ const members: MemberCardProps[] = [
     role: "Frontend",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/mingyeak.jpg",
   },
   {
     id: "m3",
@@ -149,7 +149,7 @@ const members: MemberCardProps[] = [
     role: "Backend",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/karona.jpg",
   },
   {
     id: "m4",
@@ -157,7 +157,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/thorn.jpg",
   },
   {
     id: "m5",
@@ -165,7 +165,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/saroth.png",
   },
   {
     id: "m6",
@@ -173,7 +173,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/dara.jpg",
   },
   {
     id: "m7",
@@ -181,7 +181,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/longfou.jpg",
   },
   {
     id: "m8",
@@ -189,7 +189,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=500&q=80",
+    avatar: "about/chanthat.png",
   },
 ];
 

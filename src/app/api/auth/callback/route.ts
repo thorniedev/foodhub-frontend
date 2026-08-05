@@ -2,232 +2,328 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 interface KeycloakTokenResponse {
-  access_token?: string;
-  expires_in?: number;
-  refresh_expires_in?: number;
+  access_token: string;
   refresh_token?: string;
-  token_type?: string;
   id_token?: string;
-  session_state?: string;
+  expires_in: number;
+  refresh_expires_in?: number;
+  token_type: string;
   scope?: string;
+}
+
+interface KeycloakErrorResponse {
   error?: string;
   error_description?: string;
 }
 
-function normalizeUrl(value: string): string {
-  return value.replace(/\/+$/, "");
+function redirectToLogin(
+  request: NextRequest,
+  error: string,
+  description?: string,
+) {
+  const loginUrl = new URL("/login", request.url);
+
+  loginUrl.searchParams.set("error", error);
+
+  if (description) {
+    loginUrl.searchParams.set("error_description", description);
+  }
+
+  return NextResponse.redirect(loginUrl);
+}
+
+function isSafeReturnPath(path: string): boolean {
+  return path.startsWith("/") && !path.startsWith("//");
 }
 
 export async function GET(request: NextRequest) {
-  const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
-  const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
-  const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
-
-  // Only needed when Keycloak "Client authentication" is enabled
+  const keycloakUrl = process.env.KEYCLOAK_URL;
+  const realm = process.env.KEYCLOAK_REALM;
+  const clientId = process.env.KEYCLOAK_CLIENT_ID;
   const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
 
-  if (!keycloakUrl || !realm || !clientId) {
-    return NextResponse.json(
-      {
-        message: "Keycloak configuration is missing",
-      },
-      {
-        status: 500,
-      },
-    );
-  }
+  const appUrl = process.env.APP_URL ?? request.nextUrl.origin;
 
-  const searchParams = request.nextUrl.searchParams;
-
-  const code = searchParams.get("code");
-  const returnedState = searchParams.get("state");
-  const returnedIssuer = searchParams.get("iss");
-
-  const keycloakError = searchParams.get("error");
-  const keycloakErrorDescription = searchParams.get("error_description");
-
-  if (keycloakError) {
-    console.error("Keycloak authorization error:", {
-      error: keycloakError,
-      description: keycloakErrorDescription,
+  if (!keycloakUrl || !realm || !clientId || !clientSecret) {
+    console.error("Missing callback configuration:", {
+      hasKeycloakUrl: Boolean(keycloakUrl),
+      hasRealm: Boolean(realm),
+      hasClientId: Boolean(clientId),
+      hasClientSecret: Boolean(clientSecret),
     });
 
-    return NextResponse.redirect(
-      new URL(
-        `/login?error=${encodeURIComponent(keycloakError)}`,
-        request.nextUrl.origin,
-      ),
+    return redirectToLogin(
+      request,
+      "server_configuration_error",
+      "The Keycloak callback configuration is incomplete.",
     );
   }
 
-  if (!code || !returnedState) {
-    return NextResponse.json(
-      {
-        message: "Missing authorization code or state",
-      },
-      {
-        status: 400,
-      },
+  /*
+   * Handle errors sent directly from Keycloak.
+   */
+  const authorizationError = request.nextUrl.searchParams.get("error");
+
+  if (authorizationError) {
+    const authorizationErrorDescription =
+      request.nextUrl.searchParams.get("error_description");
+
+    console.error("Keycloak authorization error:", {
+      error: authorizationError,
+      description: authorizationErrorDescription,
+    });
+
+    return redirectToLogin(
+      request,
+      authorizationError,
+      authorizationErrorDescription ?? undefined,
     );
   }
 
-  const savedState = request.cookies.get("oauth_state")?.value;
-  const codeVerifier = request.cookies.get("pkce_verifier")?.value;
+  const code = request.nextUrl.searchParams.get("code");
 
-  const savedReturnTo =
-    request.cookies.get("auth_return_to")?.value ?? "/dashboard";
+  const receivedState = request.nextUrl.searchParams.get("state");
 
-  if (!savedState || returnedState !== savedState) {
-    return NextResponse.json(
-      {
-        message: "Invalid OAuth state",
-      },
-      {
-        status: 400,
-      },
+  /*
+   * These names must match the cookies created
+   * inside /api/auth/login.
+   */
+  const expectedState = request.cookies.get("foodhub_oauth_state")?.value;
+
+  const codeVerifier = request.cookies.get("foodhub_code_verifier")?.value;
+
+  const storedReturnTo =
+    request.cookies.get("foodhub_return_to")?.value ?? "/dashboard";
+
+  console.log("KEYCLOAK CALLBACK:", {
+    hasCode: Boolean(code),
+    hasReceivedState: Boolean(receivedState),
+    hasExpectedState: Boolean(expectedState),
+    stateMatches: Boolean(receivedState) && receivedState === expectedState,
+    hasCodeVerifier: Boolean(codeVerifier),
+    returnTo: storedReturnTo,
+  });
+
+  if (!code) {
+    return redirectToLogin(
+      request,
+      "missing_authorization_code",
+      "Keycloak did not return an authorization code.",
+    );
+  }
+
+  if (!receivedState || !expectedState) {
+    return redirectToLogin(
+      request,
+      "missing_oauth_state",
+      "The login state cookie is missing or expired.",
+    );
+  }
+
+  if (receivedState !== expectedState) {
+    return redirectToLogin(
+      request,
+      "invalid_oauth_state",
+      "The login state does not match.",
     );
   }
 
   if (!codeVerifier) {
-    return NextResponse.json(
-      {
-        message: "PKCE code verifier cookie is missing",
-      },
-      {
-        status: 400,
-      },
+    return redirectToLogin(
+      request,
+      "missing_code_verifier",
+      "The PKCE verifier cookie is missing or expired.",
     );
   }
 
-  // Optional issuer validation
-  const expectedIssuer = normalizeUrl(
-    new URL(`/realms/${realm}`, keycloakUrl).toString(),
-  );
+  const normalizedKeycloakUrl = keycloakUrl.replace(/\/$/, "");
 
-  if (returnedIssuer && normalizeUrl(returnedIssuer) !== expectedIssuer) {
-    return NextResponse.json(
-      {
-        message: "Invalid Keycloak issuer",
-      },
-      {
-        status: 400,
-      },
-    );
-  }
+  const redirectUri = `${appUrl}/api/auth/callback`;
 
-  const redirectUri = new URL(
-    "/api/auth/callback",
-    request.nextUrl.origin,
-  ).toString();
+  const tokenEndpoint =
+    `${normalizedKeycloakUrl}` +
+    `/realms/${realm}` +
+    `/protocol/openid-connect/token`;
 
-  const tokenEndpoint = new URL(
-    `/realms/${realm}/protocol/openid-connect/token`,
-    keycloakUrl,
-  );
-
-  const body = new URLSearchParams({
+  const tokenRequestBody = new URLSearchParams({
     grant_type: "authorization_code",
     client_id: clientId,
+    client_secret: clientSecret,
     code,
     redirect_uri: redirectUri,
     code_verifier: codeVerifier,
   });
 
-  // Include this only for a confidential Keycloak client
-  if (clientSecret) {
-    body.set("client_secret", clientSecret);
-  }
+  let tokenResponse: Response;
 
   try {
-    const tokenResponse = await fetch(tokenEndpoint, {
+    tokenResponse = await fetch(tokenEndpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body,
+      body: tokenRequestBody,
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("Could not connect to Keycloak token endpoint:", error);
+
+    return redirectToLogin(
+      request,
+      "keycloak_connection_failed",
+      "Could not connect to the Keycloak server.",
+    );
+  }
+
+  const tokenResponseText = await tokenResponse.text();
+
+  if (!tokenResponse.ok) {
+    let keycloakError: KeycloakErrorResponse = {};
+
+    try {
+      keycloakError = JSON.parse(tokenResponseText) as KeycloakErrorResponse;
+    } catch {
+      // Keep the original response as a terminal log only.
+    }
+
+    console.error("KEYCLOAK TOKEN ERROR:", {
+      status: tokenResponse.status,
+      error: keycloakError.error,
+      description: keycloakError.error_description,
+      response: tokenResponseText,
+      redirectUri,
+    });
+
+    return redirectToLogin(
+      request,
+      keycloakError.error ?? "token_exchange_failed",
+      keycloakError.error_description ??
+        "Keycloak could not exchange the authorization code.",
+    );
+  }
+
+  let tokens: KeycloakTokenResponse;
+
+  try {
+    tokens = JSON.parse(tokenResponseText) as KeycloakTokenResponse;
+  } catch {
+    console.error("Invalid token response:", tokenResponseText);
+
+    return redirectToLogin(
+      request,
+      "invalid_token_response",
+      "Keycloak returned an invalid token response.",
+    );
+  }
+
+  if (!tokens.access_token) {
+    return redirectToLogin(
+      request,
+      "missing_access_token",
+      "Keycloak did not return an access token.",
+    );
+  }
+
+  if (!tokens.access_token) {
+    return redirectToLogin(
+      request,
+      "missing_access_token",
+      "Keycloak did not return an access token.",
+    );
+  }
+
+  /*
+   * Synchronize the authenticated Keycloak user
+   * with the FoodHub backend.
+   */
+  const backendApiUrl =
+    process.env.BACKEND_API_URL ?? "http://localhost:7070/api/v1";
+
+  try {
+    const syncResponse = await fetch(`${backendApiUrl}/users/me/sync`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${tokens.access_token}`,
+      },
       cache: "no-store",
     });
 
-    const tokenData = (await tokenResponse.json()) as KeycloakTokenResponse;
+    const syncResponseBody = await syncResponse.text();
 
-    if (!tokenResponse.ok || !tokenData.access_token) {
-      console.error("Keycloak token exchange failed:", tokenData);
+    if (!syncResponse.ok) {
+      console.error("USER SYNC ERROR:", {
+        status: syncResponse.status,
+        response: syncResponseBody,
+      });
 
-      return NextResponse.json(
-        {
-          message: "Unable to exchange authorization code",
-          error:
-            tokenData.error_description ??
-            tokenData.error ??
-            "Unknown Keycloak error",
-        },
-        {
-          status: tokenResponse.status || 500,
-        },
+      return redirectToLogin(
+        request,
+        "user_sync_failed",
+        "Login succeeded, but the user could not be synchronized.",
       );
     }
 
-    const safeReturnTo = savedReturnTo.startsWith("/dashboard")
-      ? savedReturnTo
-      : "/dashboard";
-
-    const response = NextResponse.redirect(
-      new URL(safeReturnTo, request.nextUrl.origin),
-    );
-
-    const baseCookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      path: "/",
-    };
-
-    response.cookies.set("access_token", tokenData.access_token, {
-      ...baseCookieOptions,
-      maxAge: tokenData.expires_in ?? 300,
+    console.log("USER SYNC SUCCESS:", {
+      status: syncResponse.status,
+      response: syncResponseBody,
     });
-
-    if (tokenData.refresh_token) {
-      response.cookies.set("refresh_token", tokenData.refresh_token, {
-        ...baseCookieOptions,
-        maxAge: tokenData.refresh_expires_in ?? 1800,
-      });
-    }
-
-    if (tokenData.id_token) {
-      response.cookies.set("id_token", tokenData.id_token, {
-        ...baseCookieOptions,
-        maxAge: tokenData.expires_in ?? 300,
-      });
-    }
-
-    // Remove temporary OAuth cookies
-    response.cookies.set("pkce_verifier", "", {
-      ...baseCookieOptions,
-      maxAge: 0,
-    });
-
-    response.cookies.set("oauth_state", "", {
-      ...baseCookieOptions,
-      maxAge: 0,
-    });
-
-    response.cookies.set("auth_return_to", "", {
-      ...baseCookieOptions,
-      maxAge: 0,
-    });
-
-    return response;
   } catch (error) {
-    console.error("Keycloak callback request failed:", error);
+    console.error("USER SYNC CONNECTION ERROR:", error);
 
-    return NextResponse.json(
-      {
-        message: "Unable to connect to Keycloak",
-      },
-      {
-        status: 500,
-      },
+    return redirectToLogin(
+      request,
+      "user_sync_connection_failed",
+      "Could not connect to the FoodHub backend.",
     );
   }
+
+  const safeReturnTo = isSafeReturnPath(storedReturnTo)
+    ? storedReturnTo
+    : "/dashboard";
+
+  const response = NextResponse.redirect(new URL(safeReturnTo, request.url));
+
+  const sessionCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+  };
+
+  response.cookies.set("foodhub_access_token", tokens.access_token, {
+    ...sessionCookieOptions,
+    maxAge: tokens.expires_in,
+  });
+
+  if (tokens.refresh_token) {
+    response.cookies.set("foodhub_refresh_token", tokens.refresh_token, {
+      ...sessionCookieOptions,
+      maxAge: tokens.refresh_expires_in ?? 30 * 60,
+    });
+  }
+
+  if (tokens.id_token) {
+    response.cookies.set("foodhub_id_token", tokens.id_token, {
+      ...sessionCookieOptions,
+      maxAge: tokens.expires_in,
+    });
+  }
+
+  /*
+   * Remove temporary OAuth cookies.
+   */
+  response.cookies.delete("foodhub_oauth_state");
+
+  response.cookies.delete("foodhub_code_verifier");
+
+  response.cookies.delete("foodhub_return_to");
+
+  console.log("KEYCLOAK LOGIN SUCCESS:", {
+    returnTo: safeReturnTo,
+    tokenType: tokens.token_type,
+    expiresIn: tokens.expires_in,
+  });
+
+  return response;
 }

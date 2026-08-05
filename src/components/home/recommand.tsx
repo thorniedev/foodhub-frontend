@@ -8,7 +8,7 @@ import { MdDeliveryDining } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
 
 import Link from "next/link";
-import { useGetFoodsQuery } from "@/app/store/foodApi";
+import { useGetFoodsQuery } from "@/app/store/foodApi"; 
 import Image from "next/image";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";

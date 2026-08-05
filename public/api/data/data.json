@@ -1,0 +1,249 @@
+{
+  "menuItems": [
+    {
+      "uuid": "1168290d-9bfd-4af2-a0a2-2d7cb7514451",
+      "name": "Fish Amok",
+      "localName": "អាម៉ុកត្រី",
+      "description": "Steamed fish curry with coconut milk and Khmer herbs.",
+      "imageUrl": "/images/menu-items/fish-amok.webp",
+      "price": 5.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 25,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "fd5575d5-ab5a-44fd-ae9f-ed100707bf55",
+        "name": "Sovann Khmer Kitchen",
+        "addressLine": "Street 178",
+        "district": "Daun Penh",
+        "city": "Phnom Penh",
+        "operatingStatus": "OPEN",
+        "averageRating": 4.7,
+        "totalReviews": 328
+      },
+      "food": {
+        "uuid": "4cf40782-0a54-45f5-bd7b-d6d986f5ee4b",
+        "canonicalName": "Fish Amok",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 2
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        },
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "GLUTEN_FREE",
+          "name": "Gluten Free",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "FISH",
+          "name": "Fish",
+          "declarationType": "CONTAINS",
+          "riskLevel": "HIGH",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["fish", "coconut milk", "kroeung", "egg", "banana leaf"],
+      "distanceKm": 1.2,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 1,
+        "finalScore": 0.94,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["CUISINE_MATCH", "MEAL_MATCH", "NEARBY", "HIGH_RATING"],
+        "reasonText": "Matches your Khmer cuisine preference and is nearby.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.98,
+          "cuisineMatch": 1,
+          "budgetMatch": 0.91,
+          "distanceMatch": 0.95,
+          "popularity": 0.86
+        }
+      }
+    },
+    {
+      "uuid": "c7a2a92d-2b2d-48df-91b7-76cbd4cf0011",
+      "name": "Chicken Rice Porridge",
+      "localName": "បបរសាច់មាន់",
+      "description": "Traditional Khmer rice porridge served with shredded chicken and fried garlic.",
+      "imageUrl": "/images/menu-items/chicken-porridge.webp",
+      "price": 3.25,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 15,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": false,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "0ef2de98-1bb2-46f7-a9ef-4c5f7db3c777",
+        "name": "ម្លប់ស្វាយ",
+        "addressLine": "Street 271",
+        "district": "Chamkar Mon",
+        "city": "Phnom Penh",
+        "operatingStatus": "OPEN",
+        "averageRating": 4.8,
+        "totalReviews": 214
+      },
+      "food": {
+        "uuid": "22bc6dc5-123d-4c55-bd3d-7fa92dd00123",
+        "canonicalName": "Chicken Rice Porridge",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 0
+      },
+      "mealTypes": [
+        {
+          "code": "BREAKFAST",
+          "name": "Breakfast"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "High Protein",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "NONE",
+          "name": "No Common Allergens",
+          "declarationType": "FREE_FROM",
+          "riskLevel": "LOW",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": ["rice", "chicken", "garlic", "green onion", "pepper"],
+      "distanceKm": 0.8,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 2,
+        "finalScore": 0.91,
+        "safetyStatus": "SAFE",
+        "candidateSource": "CONTENT_BASED",
+        "reasonCodes": ["BREAKFAST_MATCH", "HIGH_RATING", "NEARBY"],
+        "reasonText": "Perfect for breakfast and highly rated by nearby customers.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 1,
+          "cuisineMatch": 1,
+          "budgetMatch": 0.95,
+          "distanceMatch": 0.98,
+          "popularity": 0.88
+        }
+      }
+    },
+    {
+      "uuid": "e8347d2c-74b0-4d4d-86b8-21e89e332981",
+      "name": "Beef Lok Lak",
+      "localName": "ឡុកឡាក់សាច់គោ",
+      "description": "Stir-fried marinated beef served with pepper-lime dipping sauce.",
+      "imageUrl": "/images/menu-items/beef-loklak.webp",
+      "price": 6.5,
+      "currencyCode": "USD",
+      "preparationTimeMinutes": 20,
+      "availabilityStatus": "AVAILABLE",
+      "isFeatured": true,
+      "source": "MANUAL",
+      "store": {
+        "uuid": "4a3c2185-8fa0-4d09-98e1-827ad1931201",
+        "name": "ភោជនីយដ្ឋាន ទន្លេបាសាក់",
+        "addressLine": "Street 51",
+        "district": "Chamkar Mon",
+        "city": "Phnom Penh",
+        "operatingStatus": "OPEN",
+        "averageRating": 4.9,
+        "totalReviews": 512
+      },
+      "food": {
+        "uuid": "4f2b317c-7f1d-48c9-b31b-d123ac123456",
+        "canonicalName": "Beef Lok Lak",
+        "category": {
+          "code": "KHMER_FOOD",
+          "name": "Khmer Food"
+        },
+        "cuisine": {
+          "code": "KHMER",
+          "name": "Khmer"
+        },
+        "spiceLevel": 1
+      },
+      "mealTypes": [
+        {
+          "code": "LUNCH",
+          "name": "Lunch"
+        },
+        {
+          "code": "DINNER",
+          "name": "Dinner"
+        }
+      ],
+      "dietaryTypes": [
+        {
+          "code": "HIGH_PROTEIN",
+          "name": "High Protein",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "allergenDeclarations": [
+        {
+          "code": "SOY",
+          "name": "Soy",
+          "declarationType": "CONTAINS",
+          "riskLevel": "MEDIUM",
+          "verificationStatus": "VERIFIED"
+        }
+      ],
+      "ingredients": [
+        "beef",
+        "lettuce",
+        "tomato",
+        "cucumber",
+        "black pepper sauce"
+      ],
+      "distanceKm": 2.4,
+      "recommendation": {
+        "isRecommended": true,
+        "rankPosition": 3,
+        "finalScore": 0.89,
+        "safetyStatus": "SAFE",
+        "candidateSource": "HYBRID",
+        "reasonCodes": ["CUISINE_MATCH", "POPULAR", "HIGH_RATING"],
+        "reasonText": "Popular Khmer signature dish with excellent customer reviews.",
+        "isExploration": false,
+        "scoreBreakdown": {
+          "mealMatch": 0.96,
+          "cuisineMatch": 1,
+          "budgetMatch": 0.87,
+          "distanceMatch": 0.83,
+          "popularity": 0.97
+        }
+      }
+    }
+  ]
+}
