@@ -150,16 +150,16 @@ function createRandomValue(): string {
 }
 
 export async function GET(request: NextRequest) {
-  const keycloakUrl = process.env.KEYCLOAK_URL;
-  const realm = process.env.KEYCLOAK_REALM;
-  const clientId = process.env.KEYCLOAK_CLIENT_ID;
-  const appUrl = process.env.APP_URL ?? request.nextUrl.origin;
+  const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
+  const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
+  const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
 
   if (!keycloakUrl || !realm || !clientId) {
     return NextResponse.json(
       {
         message: "Missing Keycloak environment configuration",
-        required: ["KEYCLOAK_URL", "KEYCLOAK_REALM", "KEYCLOAK_CLIENT_ID"],
+        required: ["NEXT_PUBLIC_KEYCLOAK_URL", "NEXT_PUBLIC_KEYCLOAK_REALM", "NEXT_PUBLIC_KEYCLOAK_CLIENT_ID"],
       },
       { status: 500 },
     );

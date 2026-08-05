@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const backendApiUrl = process.env.BACKEND_API_URL?.replace(/\/+$/, "");
+const backendApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "");
 
 /**
  * Explicitly list backend paths exposed through this proxy.
@@ -16,6 +16,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   "auth/refresh": new Set(["POST"]),
   "users/me": new Set(["GET", "PATCH"]),
   "users/me/sync": new Set(["PUT"]),
+  
   users: new Set(["GET", "POST"]),
   stores: new Set(["GET"]),
   "menu-items": new Set(["GET", "POST"]),
