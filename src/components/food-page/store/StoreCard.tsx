@@ -12,10 +12,10 @@ import {
 } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 
-import type { Store } from "@/types/store";
+import type { FoodStore } from "@/types/store-page";
 
 type StoreCardProps = {
-  store: Store;
+  store: FoodStore;
   variant?: "featured" | "grid";
 };
 
@@ -37,17 +37,17 @@ function normalizeImageUrl(value?: string | null): string | null {
   return `/${imageUrl}`;
 }
 
-function getDisplayName(store: Store): string {
-  return store.localName?.trim() || store.name?.trim() || "Food store";
+function getDisplayName(store: FoodStore): string {
+  return store.storeName?.trim() || "Food store";
 }
 
-function getTopLabel(store: Store): string {
+function getTopLabel(store: FoodStore): string {
   return (
     [store.district, store.city].filter(Boolean).join(", ") || "Restaurant"
   );
 }
 
-function getStatusLabel(store: Store): string {
+function getStatusLabel(store: FoodStore): string {
   if (store.isOpenNow === true || store.operatingStatus === "OPEN") {
     return "បើកឥឡូវនេះ";
   }
@@ -67,7 +67,7 @@ function getPriceLabel(priceLevel: number | null): string {
   return "$".repeat(Math.min(Math.round(priceLevel), 4));
 }
 
-function StoreImage({ store }: { store: Store }) {
+function StoreImage({ store }: { store: FoodStore }) {
   const displayName = getDisplayName(store);
 
   const imageUrl =
@@ -145,7 +145,7 @@ function StoreInfoChip({
   );
 }
 
-function GridStoreCard({ store }: { store: Store }) {
+function GridStoreCard({ store }: { store: FoodStore }) {
   const displayName = getDisplayName(store);
   const topLabel = getTopLabel(store);
   const priceLabel = getPriceLabel(store.priceLevel);
@@ -226,7 +226,7 @@ function GridStoreCard({ store }: { store: Store }) {
   );
 }
 
-function FeaturedStoreCard({ store }: { store: Store }) {
+function FeaturedStoreCard({ store }: { store: FoodStore }) {
   const displayName = getDisplayName(store);
   const topLabel = getTopLabel(store);
 

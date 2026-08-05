@@ -1,4 +1,4 @@
-import type { FoodStore, StorePriceLevel } from "./store";
+import type { LocationStore } from "./location-store";
 
 export type StoreSortBy = "default" | "name-asc" | "rating" | "reviews";
 
@@ -25,6 +25,8 @@ export interface StorePageOption {
   count: number;
 }
 
-export type StoreCardData = FoodStore;
+export type FoodStore = LocationStore;
 
-export type { FoodStore, StorePriceLevel };
+export type StorePriceLevel = LocationStore["priceLevel"];
+
+export type StoreCardData = FoodStore;

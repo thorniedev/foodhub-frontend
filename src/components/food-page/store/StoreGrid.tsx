@@ -11,16 +11,16 @@ import {
   IoSearchOutline,
 } from "react-icons/io5";
 
-import type { Store } from "@/types/store";
+import type { FoodStore } from "@/types/store-page";
 
 import StoreCard from "./StoreCard";
 
 type StoreGridProps = {
-  stores: Store[];
+  stores: FoodStore[];
   onReset: () => void;
 };
 
-function getFeaturedStores(stores: Store[]): Store[] {
+function getFeaturedStores(stores: FoodStore[]): FoodStore[] {
   return [...stores]
     .filter(
       (store) =>

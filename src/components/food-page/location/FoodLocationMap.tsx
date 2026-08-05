@@ -45,7 +45,7 @@ function MapController({
       return;
     }
 
-    map.flyTo([center.latitude, center.longitude], 14, { duration: 0.8 });
+    // map.flyTo([center.latitude, center.longitude], 14, { duration: 0.8 });
   }, [center, map, selectedStore]);
 
   return null;

@@ -11,7 +11,7 @@ export default function AboutHeroClient() {
 
   return (
     <>
-      <FoodHubHero01 onAssistantClick={() => setIsOpen(true)} />
+      <FoodHubHero01/>
 
       <AnimatePresence>
         {isOpen && (
