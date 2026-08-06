@@ -334,7 +334,7 @@ export default function Home() {
 
       <section>
         <Hero />
-
+        
         <FilterByMealTime />
 
         <FoodSearchBar />

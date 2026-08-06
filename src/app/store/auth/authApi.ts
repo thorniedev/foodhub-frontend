@@ -1,4 +1,3 @@
-
 import { baseApi } from "../baseApi";
 
 import type { RegisterRequest, RegisterResponse } from "@/types/auth";

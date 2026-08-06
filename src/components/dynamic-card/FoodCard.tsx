@@ -66,7 +66,7 @@ export default function FoodCard({ food }: FoodCardProps) {
         <div className="flex items-center gap-2 text-secondary-400">
           <FaStore className="shrink-0" />
 
-          <p className="truncate lg:text-[16px] text-sm">
+          <p className="truncate text-sm lg:text-[16px]">
             {food.store.localName}
           </p>
         </div>
@@ -82,11 +82,6 @@ export default function FoodCard({ food }: FoodCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-4">
-          {/* <div className="flex items-center gap-2 text-accent-400">
-            <FaStar />
-            <span>{food.store.averageRating}</span>
-          </div> */}
-
           <div className="flex items-center gap-2 text-primary-400">
             <IoMdTime />
             <span>{food.preparationTimeMinutes} min</span>
@@ -98,15 +93,21 @@ export default function FoodCard({ food }: FoodCardProps) {
           </div>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {food.dietaryTypes.map((diet) => (
+        <div className="flex items-center gap-2 overflow-hidden">
+          {food.dietaryTypes.slice(0, 2).map((diet) => (
             <span
               key={diet.code}
-              className="shrink-0 lg:text-[16px] whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-sm text-white"
+              className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-sm text-white lg:text-[16px]"
             >
               {diet.name}
             </span>
           ))}
+
+          {food.dietaryTypes.length > 2 && (
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600 lg:text-[16px]">
+              +{food.dietaryTypes.length - 2}
+            </span>
+          )}
         </div>
       </div>
     </motion.div>

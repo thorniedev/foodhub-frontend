@@ -54,12 +54,10 @@ export async function GET(request: NextRequest) {
    * for non-secret Keycloak configuration.
    */
   const keycloakUrl =
-    process.env.KEYCLOAK_URL ??
-    process.env.NEXT_PUBLIC_KEYCLOAK_URL;
+    process.env.KEYCLOAK_URL ?? process.env.NEXT_PUBLIC_KEYCLOAK_URL;
 
   const realm =
-    process.env.KEYCLOAK_REALM ??
-    process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
+    process.env.KEYCLOAK_REALM ?? process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
 
   const clientId =
     process.env.KEYCLOAK_CLIENT_ID ??
@@ -69,13 +67,7 @@ export async function GET(request: NextRequest) {
   const backendApiUrl = process.env.BACKEND_API_URL;
   const appUrl = process.env.APP_URL ?? request.nextUrl.origin;
 
-  if (
-    !keycloakUrl ||
-    !realm ||
-    !clientId ||
-    !clientSecret ||
-    !backendApiUrl
-  ) {
+  if (!keycloakUrl || !realm || !clientId || !clientSecret || !backendApiUrl) {
     console.error("Missing callback configuration:", {
       hasKeycloakUrl: Boolean(keycloakUrl),
       hasRealm: Boolean(realm),
@@ -95,8 +87,7 @@ export async function GET(request: NextRequest) {
   /*
    * Handle an authorization error returned directly by Keycloak.
    */
-  const authorizationError =
-    request.nextUrl.searchParams.get("error");
+  const authorizationError = request.nextUrl.searchParams.get("error");
 
   if (authorizationError) {
     const authorizationErrorDescription =
@@ -121,23 +112,18 @@ export async function GET(request: NextRequest) {
    * These names must match the cookies created
    * by /api/auth/login.
    */
-  const expectedState =
-    request.cookies.get("foodhub_oauth_state")?.value;
+  const expectedState = request.cookies.get("foodhub_oauth_state")?.value;
 
-  const codeVerifier =
-    request.cookies.get("foodhub_code_verifier")?.value;
+  const codeVerifier = request.cookies.get("foodhub_code_verifier")?.value;
 
   const storedReturnTo =
-    request.cookies.get("foodhub_return_to")?.value ??
-    "/dashboard";
+    request.cookies.get("foodhub_return_to")?.value ?? "/dashboard";
 
   console.log("KEYCLOAK CALLBACK:", {
     hasCode: Boolean(code),
     hasReceivedState: Boolean(receivedState),
     hasExpectedState: Boolean(expectedState),
-    stateMatches:
-      Boolean(receivedState) &&
-      receivedState === expectedState,
+    stateMatches: Boolean(receivedState) && receivedState === expectedState,
     hasCodeVerifier: Boolean(codeVerifier),
     returnTo: storedReturnTo,
   });
@@ -174,16 +160,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const normalizedKeycloakUrl =
-    normalizeBaseUrl(keycloakUrl);
+  const normalizedKeycloakUrl = normalizeBaseUrl(keycloakUrl);
 
-  const normalizedBackendApiUrl =
-    normalizeBaseUrl(backendApiUrl);
+  const normalizedBackendApiUrl = normalizeBaseUrl(backendApiUrl);
 
   const normalizedAppUrl = normalizeBaseUrl(appUrl);
 
-  const redirectUri =
-    `${normalizedAppUrl}/api/auth/callback`;
+  const redirectUri = `${normalizedAppUrl}/api/auth/callback`;
 
   const tokenEndpoint =
     `${normalizedKeycloakUrl}` +
@@ -209,20 +192,16 @@ export async function GET(request: NextRequest) {
       method: "POST",
       headers: {
         Accept: "application/json",
-        "Content-Type":
-          "application/x-www-form-urlencoded",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: tokenRequestBody,
       cache: "no-store",
     });
   } catch (error) {
-    console.error(
-      "KEYCLOAK TOKEN CONNECTION ERROR:",
-      {
-        error,
-        tokenEndpoint,
-      },
-    );
+    console.error("KEYCLOAK TOKEN CONNECTION ERROR:", {
+      error,
+      tokenEndpoint,
+    });
 
     return redirectToLogin(
       request,
@@ -237,9 +216,7 @@ export async function GET(request: NextRequest) {
     let keycloakError: KeycloakErrorResponse = {};
 
     try {
-      keycloakError = JSON.parse(
-        tokenResponseText,
-      ) as KeycloakErrorResponse;
+      keycloakError = JSON.parse(tokenResponseText) as KeycloakErrorResponse;
     } catch {
       // The raw response is only printed in the server terminal.
     }
@@ -265,14 +242,9 @@ export async function GET(request: NextRequest) {
   let tokens: KeycloakTokenResponse;
 
   try {
-    tokens = JSON.parse(
-      tokenResponseText,
-    ) as KeycloakTokenResponse;
+    tokens = JSON.parse(tokenResponseText) as KeycloakTokenResponse;
   } catch {
-    console.error(
-      "INVALID KEYCLOAK TOKEN RESPONSE:",
-      tokenResponseText,
-    );
+    console.error("INVALID KEYCLOAK TOKEN RESPONSE:", tokenResponseText);
 
     return redirectToLogin(
       request,
@@ -293,8 +265,7 @@ export async function GET(request: NextRequest) {
    * Synchronize the authenticated Keycloak user
    * with the FoodHub backend.
    */
-  const userSyncUrl =
-    `${normalizedBackendApiUrl}/users/me/sync`;
+  const userSyncUrl = `${normalizedBackendApiUrl}/users/me/sync`;
 
   try {
     console.log("USER SYNC REQUEST:", {
@@ -310,8 +281,7 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
 
-    const syncResponseBody =
-      await syncResponse.text();
+    const syncResponseBody = await syncResponse.text();
 
     if (!syncResponse.ok) {
       console.error("USER SYNC ERROR:", {
@@ -352,9 +322,7 @@ export async function GET(request: NextRequest) {
     ? storedReturnTo
     : "/dashboard";
 
-  const response = NextResponse.redirect(
-    new URL(safeReturnTo, request.url),
-  );
+  const response = NextResponse.redirect(new URL(safeReturnTo, request.url));
 
   const sessionCookieOptions = {
     httpOnly: true,
@@ -366,37 +334,23 @@ export async function GET(request: NextRequest) {
   /*
    * Save the Keycloak tokens in HTTP-only cookies.
    */
-  response.cookies.set(
-    "foodhub_access_token",
-    tokens.access_token,
-    {
-      ...sessionCookieOptions,
-      maxAge: tokens.expires_in,
-    },
-  );
+  response.cookies.set("foodhub_access_token", tokens.access_token, {
+    ...sessionCookieOptions,
+    maxAge: tokens.expires_in,
+  });
 
   if (tokens.refresh_token) {
-    response.cookies.set(
-      "foodhub_refresh_token",
-      tokens.refresh_token,
-      {
-        ...sessionCookieOptions,
-        maxAge:
-          tokens.refresh_expires_in ??
-          30 * 60,
-      },
-    );
+    response.cookies.set("foodhub_refresh_token", tokens.refresh_token, {
+      ...sessionCookieOptions,
+      maxAge: tokens.refresh_expires_in ?? 30 * 60,
+    });
   }
 
   if (tokens.id_token) {
-    response.cookies.set(
-      "foodhub_id_token",
-      tokens.id_token,
-      {
-        ...sessionCookieOptions,
-        maxAge: tokens.expires_in,
-      },
-    );
+    response.cookies.set("foodhub_id_token", tokens.id_token, {
+      ...sessionCookieOptions,
+      maxAge: tokens.expires_in,
+    });
   }
 
   /*

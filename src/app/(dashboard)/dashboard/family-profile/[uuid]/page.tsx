@@ -175,7 +175,7 @@ export default function MemberProfileDetailPage() {
       <div className="mx-auto max-w-3xl">
         <Link
           href="/dashboard/family-profile"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-600"
+          className="mb-6 inline-flex items-center gap-2 text-xl font-medium text-slate-600 hover:text-emerald-600"
         >
           <ArrowLeft className="h-4 w-4" />
           ត្រឡប់ទៅគណនីគ្រួសារ
