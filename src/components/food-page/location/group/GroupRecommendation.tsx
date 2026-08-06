@@ -124,7 +124,7 @@ function getApiErrorMessage(error: unknown): string {
 
 export default function GroupRecommendation({
   menuItems,
-  stores: sourceStores,
+  stores: sourceStores = [],
   userLocation,
   filters,
   searchQuery,
@@ -625,10 +625,7 @@ function EmptyResults({
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <DebugMetric
-          label=""
-          value={String(sourceStoreCount)}
-        />
+        <DebugMetric label="" value={String(sourceStoreCount)} />
 
         <DebugMetric
           label="ហាងមុនតម្រង"

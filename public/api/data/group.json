@@ -1,0 +1,600 @@
+{
+  "info": {
+    "_postman_id": "2f327f27-4982-4854-824b-4455ebd38d1f",
+    "name": "group",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "47246323"
+  },
+  "item": [
+    {
+      "name": "create group",
+      "item": [
+        {
+          "name": "deleted",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Advance status",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"createdByUserId\": 123, \"title\": \"Lunch near office\", \"maximumBudgetPerPerson\": 25.00, \"currencyCode\": \"USD\", \"searchRadiusKm\": 5.0, \"minimumParticipants\": 3, \"candidateLimit\": 8, \"scheduledFor\": \"2026-08-10T12:00:00Z\", \"timezone\": \"Asia/Phnom_Penh\", \"expiresAt\": \"2026-08-09T12:00:00Z\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": ["api", "v1", "meetup", "groups"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get group",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "get token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/share/CivPuPUbrouQgYRUXujHHKc_1aKsoB7Spm8RDs0iUdc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "share",
+                "CivPuPUbrouQgYRUXujHHKc_1aKsoB7Spm8RDs0iUdc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get by user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/share/CivPuPUbrouQgYRUXujHHKc_1aKsoB7Spm8RDs0iUdc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "share",
+                "CivPuPUbrouQgYRUXujHHKc_1aKsoB7Spm8RDs0iUdc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cancel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Meetup Participants",
+      "item": [
+        {
+          "name": "deleted",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "join meetup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "join user 2",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"createdByUserId\": 123, \"title\": \"Lunch near office\", \"maximumBudgetPerPerson\": 25.00, \"currencyCode\": \"USD\", \"searchRadiusKm\": 5.0, \"minimumParticipants\": 3, \"candidateLimit\": 8, \"scheduledFor\": \"2026-08-10T12:00:00Z\", \"timezone\": \"Asia/Phnom_Penh\", \"expiresAt\": \"2026-08-09T12:00:00Z\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": ["api", "v1", "meetup", "groups"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Participants for Group",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Get Participant Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/share/CivPuPUbrouQgYRUXujHHKc_1aKsoB7Spm8RDs0iUdc",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "share",
+                "CivPuPUbrouQgYRUXujHHKc_1aKsoB7Spm8RDs0iUdc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Participant Leave",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/participants/e57c2e65-9c45-40ec-b20b-51400503518b/leave",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "participants",
+                "e57c2e65-9c45-40ec-b20b-51400503518b",
+                "leave"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Kick/Remove Participant",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Meetup Candidates",
+      "item": [
+        {
+          "name": "deleted",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Candidate",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Candidate 2",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"createdByUserId\": 123, \"title\": \"Lunch near office\", \"maximumBudgetPerPerson\": 25.00, \"currencyCode\": \"USD\", \"searchRadiusKm\": 5.0, \"minimumParticipants\": 3, \"candidateLimit\": 8, \"scheduledFor\": \"2026-08-10T12:00:00Z\", \"timezone\": \"Asia/Phnom_Penh\", \"expiresAt\": \"2026-08-09T12:00:00Z\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": ["api", "v1", "meetup", "groups"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Kick/Remove Participant",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Meetup Votes",
+      "item": [
+        {
+          "name": "deleted",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cast Vote",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "participate  2 vote",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"meetupUuid\": \"772f0659-525b-4b81-a048-9462f4000f71\",\r\n  \"participantUuid\": \"4dac2978-2d7e-4315-8d01-add4db783926\",\r\n  \"candidateUuid\": \"c669e688-8159-454f-ba98-2e5096d36361\",\r\n  \"rankChoice\": 1\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/votes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": ["api", "v1", "meetup", "votes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Votes by Group",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/votes/meetup/772f0659-525b-4b81-a048-9462f4000f71",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "votes",
+                "meetup",
+                "772f0659-525b-4b81-a048-9462f4000f71"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Votes by Group Copy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:7070/api/v1/meetup/groups/7fe3dc81-62f2-4611-9506-bf5b9ae1712a/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "7070",
+              "path": [
+                "api",
+                "v1",
+                "meetup",
+                "groups",
+                "7fe3dc81-62f2-4611-9506-bf5b9ae1712a",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

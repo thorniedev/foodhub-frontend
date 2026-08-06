@@ -1,4 +1,5 @@
 import type { LocationStore } from "@/types/location-store";
+
 import type { MenuItem } from "@/types/manu";
 
 import type {
@@ -6,6 +7,7 @@ import type {
   LocationFiltersState,
   RecommendationMode,
   RecommendedStore,
+  StoreOperatingStatus,
 } from "@/types/location";
 
 import { calculateDistanceKm } from "./geo";
@@ -20,51 +22,20 @@ interface FilterRecommendedStoresInput {
   stores?: RecommendedStore[];
   filters: LocationFiltersState;
   mode: RecommendationMode;
+
   searchQuery?: string;
 }
 
-/**
- * Some properties may exist only on the group recommendation model.
- * This structural type lets this shared filter read them safely without
- * requiring them to exist on the base RecommendedStore interface.
- */
-interface OptionalRecommendationFields {
-  deliveryAvailable?: boolean;
-  pickupAvailable?: boolean;
-
-  safeForAllMembers?: boolean;
-  hasMealsForEveryone?: boolean;
-
-  maximumMemberDistanceKm?: number;
-  averageMemberDistanceKm?: number;
-
-  recommendationScore?: number;
-  voteCount?: number;
+interface OptionalStoreServices {
+  deliveryAvailable?: unknown;
+  pickupAvailable?: unknown;
 }
-
-interface MenuItemStoreReference {
-  uuid?: unknown;
-}
-
-type RecommendedOperatingStatus = RecommendedStore["operatingStatus"];
-
-type RecommendedPriceLevel = RecommendedStore["priceLevel"];
 
 function normalizeText(value: unknown): string {
   return String(value ?? "")
     .trim()
     .toLowerCase()
     .normalize("NFKC");
-}
-
-function normalizeRequiredText(value: unknown, fallback = ""): string {
-  if (typeof value !== "string") {
-    return fallback;
-  }
-
-  const normalizedValue = value.trim();
-
-  return normalizedValue || fallback;
 }
 
 function toFiniteNumber(value: unknown): number | null {
@@ -101,6 +72,7 @@ function normalizeCoordinates(
   }
 
   const latitude = toFiniteNumber(value.latitude);
+
   const longitude = toFiniteNumber(value.longitude);
 
   if (
@@ -120,12 +92,10 @@ function normalizeCoordinates(
   };
 }
 
-function normalizeImagePath(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const normalizedUrl = value.trim();
+function normalizeImagePath(
+  imageUrl: string | null | undefined,
+): string | null {
+  const normalizedUrl = imageUrl?.trim();
 
   if (!normalizedUrl) {
     return null;
@@ -142,59 +112,55 @@ function normalizeImagePath(value: unknown): string | null {
   return `/${normalizedUrl}`;
 }
 
-function normalizeOperatingStatus(value: unknown): RecommendedOperatingStatus {
+function normalizeOperatingStatus(value: unknown): StoreOperatingStatus {
+  if (value === true) {
+    return "OPEN";
+  }
+
+  if (value === false) {
+    return "CLOSED";
+  }
+
   const normalizedValue = String(value ?? "")
     .trim()
     .toUpperCase();
 
   switch (normalizedValue) {
     case "OPEN":
-      return "OPEN" as RecommendedOperatingStatus;
+    case "OPENED":
+    case "ACTIVE":
+      return "OPEN";
 
     case "CLOSED":
-      return "CLOSED" as RecommendedOperatingStatus;
+      return "CLOSED";
 
     case "TEMPORARILY_CLOSED":
-      return "TEMPORARILY_CLOSED" as RecommendedOperatingStatus;
+    case "TEMPORARY_CLOSED":
+      return "TEMPORARILY_CLOSED";
 
     case "PERMANENTLY_CLOSED":
-      return "PERMANENTLY_CLOSED" as RecommendedOperatingStatus;
+      return "PERMANENTLY_CLOSED";
 
     case "UNKNOWN":
     default:
-      return "UNKNOWN" as RecommendedOperatingStatus;
+      return "UNKNOWN";
   }
 }
 
-function normalizePriceLevel(value: unknown): RecommendedPriceLevel {
-  const numericValue = toFiniteNumber(value);
+function getOptionalService(
+  store: LocationStore,
+  key: "deliveryAvailable" | "pickupAvailable",
+): boolean {
+  const extendedStore = store as LocationStore & OptionalStoreServices;
 
-  if (numericValue !== null && numericValue >= 1 && numericValue <= 4) {
-    return Math.round(numericValue) as RecommendedPriceLevel;
-  }
+  return extendedStore[key] === true;
+}
 
-  if (typeof value === "string") {
-    const normalizedValue = value.trim();
-
-    const dollarLevelMap: Record<string, number> = {
-      $: 1,
-      $$: 2,
-      $$$: 3,
-      $$$$: 4,
-    };
-
-    const mappedValue = dollarLevelMap[normalizedValue];
-
-    if (mappedValue !== undefined) {
-      return mappedValue as RecommendedPriceLevel;
-    }
-  }
-
-  /*
-   * Zero means that the price level is unavailable.
-   * Your UI can hide values lower than 1.
-   */
-  return 0 as RecommendedPriceLevel;
+function getMenuItemsForStore(
+  menuItems: MenuItem[],
+  storeUuid: string,
+): MenuItem[] {
+  return menuItems.filter((menuItem) => menuItem.store?.uuid === storeUuid);
 }
 
 function normalizeRating(value: unknown): number {
@@ -217,27 +183,6 @@ function normalizeCount(value: unknown): number {
   return Math.floor(count);
 }
 
-function getMenuItemStoreUuid(menuItem: MenuItem): string | null {
-  const storeReference = (
-    menuItem as unknown as {
-      store?: MenuItemStoreReference | null;
-    }
-  ).store;
-
-  const uuid = storeReference?.uuid;
-
-  return typeof uuid === "string" && uuid.trim() ? uuid.trim() : null;
-}
-
-function getMenuItemsForStore(
-  menuItems: MenuItem[],
-  storeUuid: string,
-): MenuItem[] {
-  return menuItems.filter(
-    (menuItem) => getMenuItemStoreUuid(menuItem) === storeUuid,
-  );
-}
-
 function calculateRecommendationScore(input: {
   distanceKm: number;
   averageRating: number;
@@ -249,14 +194,11 @@ function calculateRecommendationScore(input: {
 
   const safeRating = normalizeRating(input.averageRating);
 
-  const safeMenuCount = Number.isFinite(input.menuCount)
-    ? Math.max(0, input.menuCount)
-    : 0;
+  const safeMenuCount = Math.max(0, input.menuCount);
 
   const distanceScore = Number.isFinite(safeDistance)
     ? Math.max(0, 100 - safeDistance * 15)
     : 0;
-
   const ratingScore =
     safeRating > 0 ? Math.min(100, (safeRating / 5) * 100) : 50;
 
@@ -267,239 +209,14 @@ function calculateRecommendationScore(input: {
   return Number.isFinite(score) ? Math.round(score) : 0;
 }
 
-/**
- * Converts the backend LocationStore into the frontend
- * RecommendedStore model.
- *
- * The controlled cast is kept inside this adapter only. All values
- * are normalized before being returned.
- */
-function mapLocationStoreToRecommendedStore(input: {
-  store: LocationStore;
-  menuItems: MenuItem[];
-  referencePoint: Coordinates;
-}): RecommendedStore | null {
-  const { store, menuItems, referencePoint } = input;
-
-  const storeCoordinates = normalizeCoordinates({
-    latitude: store.latitude,
-    longitude: store.longitude,
-  });
-
-  if (!storeCoordinates) {
-    return null;
-  }
-
-  const distanceKm = calculateDistanceKm(referencePoint, storeCoordinates);
-
-  if (!Number.isFinite(distanceKm)) {
-    return null;
-  }
-
-  const uuid = normalizeRequiredText(store.uuid);
-
-  if (!uuid) {
-    return null;
-  }
-
-  const storeName = normalizeRequiredText(
-    store.storeName,
-    "Unknown restaurant",
-  );
-
-  const items = getMenuItemsForStore(menuItems, uuid);
-
-  const averageRating = normalizeRating(store.averageRating);
-
-  const recommendationScore = calculateRecommendationScore({
-    distanceKm,
-    averageRating,
-    menuCount: items.length,
-  });
-
-  /*
-   * Do not add commune, province, phoneNumber or email here unless
-   * those fields are declared in RecommendedStore.
-   *
-   * LocationStore is a backend DTO. RecommendedStore is the
-   * frontend view model used by the location UI.
-   */
-  const recommendedStore = {
-    uuid,
-
-    name: storeName,
-    localName: storeName,
-
-    description: normalizeRequiredText(store.description),
-
-    addressLine: normalizeRequiredText(store.addressLine),
-
-    district: normalizeRequiredText(store.district),
-
-    city: normalizeRequiredText(store.city),
-
-    latitude: storeCoordinates.latitude,
-    longitude: storeCoordinates.longitude,
-
-    logoUrl: normalizeImagePath(store.logoUrl),
-
-    coverImageUrl: normalizeImagePath(store.coverImageUrl),
-
-    priceLevel: normalizePriceLevel(store.priceLevel),
-
-    averageRating,
-
-    totalReviews: normalizeCount(store.totalReviews),
-
-    operatingStatus: normalizeOperatingStatus(store.operatingStatus),
-
-    isOpenNow: store.isOpenNow === true,
-
-    deliveryAvailable: store.deliveryAvailable === true,
-
-    pickupAvailable: store.pickupAvailable === true,
-
-    menuItems: items,
-
-    menuCount: items.length,
-
-    matchingMenuCount: items.length,
-
-    distanceKm,
-
-    recommendationScore,
-
-    voteCount: 0,
-  };
-
-  /*
-   * The assertion is isolated at the boundary between the backend
-   * LocationStore DTO and the frontend RecommendedStore model.
-   */
-  return recommendedStore as RecommendedStore;
-}
-
-function normalizeOperatingStatus(
-  status: string,
-): RecommendedStore["operatingStatus"] {
-  switch (status) {
-    case "OPEN":
-    case "CLOSED":
-    case "TEMPORARILY_CLOSED":
-    case "UNKNOWN":
-      return status;
-    default:
-      return "UNKNOWN";
-  }
-}
-
-// export function buildRecommendedStores({
-//   menuItems,
-//   stores = [],
-//   referencePoint,
-// }: BuildRecommendedStoresInput): RecommendedStore[] {
-//   /*
-//    * Do not show every store with distance 0 while the user's location
-//    * is still unavailable.
-//    */
-//   if (!referencePoint) {
-//     return [];
-//   }
-
-//   return stores
-//     .filter(
-//       (store) =>
-//         Number.isFinite(store.latitude) && Number.isFinite(store.longitude),
-//     )
-//     .map((store) => {
-//       const items = getMenuItemsForStore(menuItems, store.uuid);
-
-//       const storeCoordinates: Coordinates = {
-//         latitude: store.latitude,
-//         longitude: store.longitude,
-//       };
-
-//       const distanceKm = calculateDistanceKm(referencePoint, storeCoordinates);
-
-//       const averageRating = store.averageRating ?? 0;
-
-//       const recommendationScore = calculateRecommendationScore({
-//         distanceKm,
-//         averageRating,
-//         menuCount: items.length,
-//       });
-
-//       return {
-//         uuid: store.uuid,
-
-//         name: store.storeName,
-//         localName: store.storeName,
-//         description: store.description ?? "",
-
-//         addressLine: store.addressLine,
-//         commune: store.commune ?? "",
-//         district: store.district ?? "",
-//         city: store.city,
-//         province: store.province,
-
-//         latitude: store.latitude,
-//         longitude: store.longitude,
-
-//         phoneNumber: store.phoneNumber,
-//         email: store.email,
-
-//         logoUrl: normalizeImagePath(store.logoUrl),
-
-//         coverImageUrl: normalizeImagePath(store.coverImageUrl),
-
-//         priceLevel: store.priceLevel,
-
-//         averageRating,
-//         totalReviews: store.totalReviews ?? 0,
-
-//         operatingStatus: store.operatingStatus,
-
-//         isOpenNow: store.isOpenNow,
-
-//         deliveryAvailable: store.deliveryAvailable === true,
-
-//         pickupAvailable: store.pickupAvailable === true,
-
-//         menuItems: items,
-//         menuCount: items.length,
-//         matchingMenuCount: items.length,
-
-//         distanceKm,
-
-//         /*
-//          * Neutral values used by shared store components.
-//          * The real group values are calculated in
-//          * group-recommendation.ts.
-//          */
-//         averageMemberDistanceKm: distanceKm,
-//         maximumMemberDistanceKm: distanceKm,
-//         groupCoverageCount: 0,
-//         groupMemberCount: 0,
-//         safeForAllMembers: true,
-//         hasMealsForEveryone: true,
-
-//         recommendationScore,
-//         voteCount: 0,
-//       } as RecommendedStore;
-//     });
-// }
 export function buildRecommendedStores({
   menuItems = [],
   stores = [],
   referencePoint,
 }: BuildRecommendedStoresInput): RecommendedStore[] {
-<<<<<<< HEAD
   const safeReferencePoint = normalizeCoordinates(referencePoint);
 
   if (!safeReferencePoint) {
-=======
-  if (!referencePoint) {
->>>>>>> 8be8ac3b2e55d1ca43186738dce8858315c9f2c4
     return [];
   }
 
@@ -507,81 +224,105 @@ export function buildRecommendedStores({
 
   const safeStores: LocationStore[] = Array.isArray(stores) ? stores : [];
 
-<<<<<<< HEAD
   return safeStores.reduce<RecommendedStore[]>((result, store) => {
-    const recommendedStore = mapLocationStoreToRecommendedStore({
-      store,
-      menuItems: safeMenuItems,
-      referencePoint: safeReferencePoint,
-=======
-      const distanceKm = calculateDistanceKm(referencePoint, storeCoordinates);
+    const storeCoordinates = normalizeCoordinates({
+      latitude: store.latitude,
 
-      const averageRating = store.averageRating ?? 0;
-      const storeLocalName = store.localName ?? store.storeName;
-
-      const recommendationScore = calculateRecommendationScore({
-        distanceKm,
-        averageRating,
-        menuCount: items.length,
-      });
-
-      const recommendedStore = {
-        ...store,
-
-        name: store.storeName,
-        localName: storeLocalName,
-
-        description: store.description ?? "",
-
-        commune: store.commune ?? "",
-        district: store.district ?? "",
-
-        logoUrl: normalizeImagePath(store.logoUrl),
-        coverImageUrl: normalizeImagePath(store.coverImageUrl),
-
-        averageRating,
-        totalReviews: store.totalReviews ?? 0,
-
-        operatingStatus: normalizeOperatingStatus(store.operatingStatus),
-
-        deliveryAvailable: store.deliveryAvailable === true,
-        pickupAvailable: store.pickupAvailable === true,
-
-        menuItems: items,
-        menuCount: items.length,
-        matchingMenuCount: items.length,
-
-        distanceKm,
-
-        averageMemberDistanceKm: distanceKm,
-        maximumMemberDistanceKm: distanceKm,
-
-        groupCoverageCount: 0,
-        groupMemberCount: 0,
-
-        safeForAllMembers: true,
-        hasMealsForEveryone: true,
-
-        recommendationScore,
-        voteCount: 0,
-      } satisfies RecommendedStore;
-
-      return recommendedStore;
->>>>>>> 8be8ac3b2e55d1ca43186738dce8858315c9f2c4
+      longitude: store.longitude,
     });
 
-    if (recommendedStore) {
-      result.push(recommendedStore);
+    if (!storeCoordinates) {
+      return result;
     }
+
+    const distanceKm = calculateDistanceKm(
+      safeReferencePoint,
+      storeCoordinates,
+    );
+
+    if (!Number.isFinite(distanceKm)) {
+      return result;
+    }
+
+    const items = getMenuItemsForStore(safeMenuItems, store.uuid);
+
+    const averageRating = normalizeRating(store.averageRating);
+
+    const recommendationScore = calculateRecommendationScore({
+      distanceKm,
+      averageRating,
+      menuCount: items.length,
+    });
+
+    const operatingStatus = normalizeOperatingStatus(store.operatingStatus);
+
+    const isOpenNow = store.isOpenNow === true || operatingStatus === "OPEN";
+
+    const recommendedStore: RecommendedStore = {
+      uuid: store.uuid,
+
+      name: store.storeName?.trim() || "Food store",
+
+      localName: store.storeName?.trim() || null,
+
+      description: store.description ?? "",
+
+      addressLine: store.addressLine ?? "",
+
+      commune: store.commune ?? "",
+
+      district: store.district ?? "",
+
+      city: store.city ?? "",
+
+      province: store.province ?? "",
+
+      latitude: storeCoordinates.latitude,
+
+      longitude: storeCoordinates.longitude,
+
+      phoneNumber: store.phoneNumber ?? null,
+
+      email: store.email ?? null,
+
+      logoUrl: normalizeImagePath(store.logoUrl),
+
+      coverImageUrl: normalizeImagePath(store.coverImageUrl),
+
+      priceLevel: store.priceLevel ?? null,
+
+      averageRating,
+
+      totalReviews: normalizeCount(store.totalReviews),
+
+      operatingStatus,
+
+      isOpenNow,
+
+      /*
+       * The current JSON does not provide these fields.
+       */
+      deliveryAvailable: getOptionalService(store, "deliveryAvailable"),
+
+      pickupAvailable: getOptionalService(store, "pickupAvailable"),
+
+      menuItems: items,
+
+      menuCount: items.length,
+
+      matchingMenuCount: items.length,
+
+      distanceKm,
+
+      recommendationScore,
+
+      voteCount: 0,
+    };
+
+    result.push(recommendedStore);
 
     return result;
   }, []);
-}
-
-function getOptionalRecommendationFields(
-  store: RecommendedStore,
-): OptionalRecommendationFields {
-  return store as RecommendedStore & OptionalRecommendationFields;
 }
 
 function matchesSearch(store: RecommendedStore, searchQuery: string): boolean {
@@ -591,17 +332,17 @@ function matchesSearch(store: RecommendedStore, searchQuery: string): boolean {
     return true;
   }
 
-  const menuItems: MenuItem[] = Array.isArray(store.menuItems)
-    ? store.menuItems
-    : [];
+  const menuItems = Array.isArray(store.menuItems) ? store.menuItems : [];
 
-  const searchableValues: unknown[] = [
+  const searchableValues = [
     store.name,
     store.localName,
     store.description,
     store.addressLine,
+    store.commune,
     store.district,
     store.city,
+    store.province,
 
     ...menuItems.flatMap((menuItem) => [menuItem.name, menuItem.localName]),
   ];
@@ -612,9 +353,7 @@ function matchesSearch(store: RecommendedStore, searchQuery: string): boolean {
 }
 
 function isStoreOpen(store: RecommendedStore): boolean {
-  return (
-    store.isOpenNow === true || normalizeText(store.operatingStatus) === "open"
-  );
+  return store.isOpenNow === true || store.operatingStatus === "OPEN";
 }
 
 function getSafeSortableNumber(value: unknown, fallback: number): number {
@@ -623,21 +362,42 @@ function getSafeSortableNumber(value: unknown, fallback: number): number {
   return parsedValue ?? fallback;
 }
 
+function compareStoreNames(
+  first: RecommendedStore,
+  second: RecommendedStore,
+): number {
+  const firstName = first.localName?.trim() || first.name.trim();
+
+  const secondName = second.localName?.trim() || second.name.trim();
+
+  return firstName.localeCompare(secondName, undefined, {
+    sensitivity: "base",
+    numeric: true,
+  });
+}
+
 export function filterAndSortRecommendedStores({
   stores = [],
   filters,
   mode,
   searchQuery = "",
 }: FilterRecommendedStoresInput): RecommendedStore[] {
-  const safeStores: RecommendedStore[] = Array.isArray(stores) ? stores : [];
+  const safeStores = Array.isArray(stores) ? stores : [];
 
   const radiusKm = getSafeSortableNumber(filters.radiusKm, 0);
 
   const minimumRating = getSafeSortableNumber(filters.minimumRating, 0);
 
+  const selectedProvince = normalizeText(filters.selectedProvince);
+
+  const selectedCity = normalizeText(filters.selectedCity);
+
+  const selectedDistrict = normalizeText(filters.selectedDistrict);
+
   const filteredStores = safeStores.filter((store) => {
     const coordinates = normalizeCoordinates({
       latitude: store.latitude,
+
       longitude: store.longitude,
     });
 
@@ -645,20 +405,33 @@ export function filterAndSortRecommendedStores({
       return false;
     }
 
-    if (!matchesSearch(store, searchQuery)) {
-      return false;
-    }
-
-    const optionalFields = getOptionalRecommendationFields(store);
-
     const distanceKm = getSafeSortableNumber(
       store.distanceKm,
+
       Number.POSITIVE_INFINITY,
     );
 
     const averageRating = getSafeSortableNumber(store.averageRating, 0);
 
     if (radiusKm > 0 && distanceKm > radiusKm) {
+      return false;
+    }
+
+    if (
+      selectedProvince &&
+      normalizeText(store.province) !== selectedProvince
+    ) {
+      return false;
+    }
+
+    if (selectedCity && normalizeText(store.city) !== selectedCity) {
+      return false;
+    }
+
+    if (
+      selectedDistrict &&
+      normalizeText(store.district) !== selectedDistrict
+    ) {
       return false;
     }
 
@@ -671,20 +444,9 @@ export function filterAndSortRecommendedStores({
     }
 
     if (
-      filters.deliveryAvailable &&
-      optionalFields.deliveryAvailable !== true
-    ) {
-      return false;
-    }
-
-    if (filters.pickupAvailable && optionalFields.pickupAvailable !== true) {
-      return false;
-    }
-
-    if (
       mode === "group" &&
       filters.safeForAllMembers &&
-      optionalFields.safeForAllMembers !== true
+      store.safeForAllMembers === false
     ) {
       return false;
     }
@@ -692,26 +454,24 @@ export function filterAndSortRecommendedStores({
     if (
       mode === "group" &&
       filters.hasMealsForEveryone &&
-      optionalFields.hasMealsForEveryone !== true
+      store.hasMealsForEveryone === false
     ) {
       return false;
     }
 
-    return true;
+    return matchesSearch(store, searchQuery);
   });
 
   return [...filteredStores].sort((first, second) => {
-    const firstOptionalFields = getOptionalRecommendationFields(first);
-
-    const secondOptionalFields = getOptionalRecommendationFields(second);
-
     const firstDistance = getSafeSortableNumber(
       first.distanceKm,
+
       Number.POSITIVE_INFINITY,
     );
 
     const secondDistance = getSafeSortableNumber(
       second.distanceKm,
+
       Number.POSITIVE_INFINITY,
     );
 
@@ -719,39 +479,32 @@ export function filterAndSortRecommendedStores({
 
     const secondRating = getSafeSortableNumber(second.averageRating, 0);
 
-    const firstScore = getSafeSortableNumber(
-      firstOptionalFields.recommendationScore ?? first.recommendationScore,
-      0,
+    const firstScore = getSafeSortableNumber(first.recommendationScore, 0);
+
+    const secondScore = getSafeSortableNumber(second.recommendationScore, 0);
+
+    const firstVoteCount = getSafeSortableNumber(first.voteCount, 0);
+
+    const secondVoteCount = getSafeSortableNumber(second.voteCount, 0);
+
+    const firstMaximumDistance = getSafeSortableNumber(
+      first.maximumMemberDistanceKm,
+
+      Number.POSITIVE_INFINITY,
     );
 
-    const secondScore = getSafeSortableNumber(
-      secondOptionalFields.recommendationScore ?? second.recommendationScore,
-      0,
-    );
+    const secondMaximumDistance = getSafeSortableNumber(
+      second.maximumMemberDistanceKm,
 
-    const firstVoteCount = getSafeSortableNumber(
-      firstOptionalFields.voteCount,
-      0,
-    );
-
-    const secondVoteCount = getSafeSortableNumber(
-      secondOptionalFields.voteCount,
-      0,
-    );
-
-    const firstMaximumMemberDistance = getSafeSortableNumber(
-      firstOptionalFields.maximumMemberDistanceKm,
-      firstDistance,
-    );
-
-    const secondMaximumMemberDistance = getSafeSortableNumber(
-      secondOptionalFields.maximumMemberDistanceKm,
-      secondDistance,
+      Number.POSITIVE_INFINITY,
     );
 
     switch (filters.sortBy) {
       case "nearest":
         return firstDistance - secondDistance;
+
+      case "name-asc":
+        return compareStoreNames(first, second);
 
       case "highest-rated":
         return secondRating - firstRating || firstDistance - secondDistance;
@@ -765,7 +518,7 @@ export function filterAndSortRecommendedStores({
 
       case "fairest-distance":
         return (
-          firstMaximumMemberDistance - secondMaximumMemberDistance ||
+          firstMaximumDistance - secondMaximumDistance ||
           firstDistance - secondDistance
         );
 
