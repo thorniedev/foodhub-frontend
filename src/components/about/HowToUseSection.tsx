@@ -207,14 +207,14 @@ export default function HowToUseSection() {
   }, [isPaused]);
 
   return (
-    <section className="bg-[#f8fafc] px-6 ">
+    <section className=" px-6 ">
       <CarouselAnimationStyles />
       <div className="mx-auto container max-w-7xl">
         {/* Header */}
         <div className="mb-10 text-center md:mb-14">
           <h2 className="font-['Kantumruy_Pro',sans-serif] text-3xl font-semibold tracking-wide sm:text-4xl md:text-[48px]">
             <span className="text-[#e36914]">របៀបក្នុង</span>
-            <span className="text-[#136c34]">ការប្រើប្រាស់</span>
+            <span className="text-[#136c34] dark:text-emerald-400">ការប្រើប្រាស់</span>
           </h2>
         </div>
 

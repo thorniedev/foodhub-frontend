@@ -38,7 +38,7 @@ export default function Hero() {
                 data-aos="flip-down"
                 data-aos-delay="350"
                 className="lg:w-237.5    md:w-150   z-1 "
-                src="/Image/foodhub-image (2).png"
+                src="/Image/foodhub-image-new.png"
                 alt="FOOFHUB"
                 width={950}
                 height={450}

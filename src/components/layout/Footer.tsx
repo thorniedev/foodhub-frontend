@@ -1,149 +1,181 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { FaFacebookF, FaTwitter, FaYoutube } from "react-icons/fa";
 
-type FooterLink = {
-  label: string;
-  href: string;
-};
-
-const sitemapLinks: FooterLink[] = [
+const quickLinks = [
   { label: "ទំព័រដើម", href: "/" },
   { label: "អំពីយើង", href: "/about" },
-  { label: "មុខអាហារ", href: "/menu" },
+  { label: "មុខម្ហូប", href: "/food" },
+];
+
+const socialLinks = [
+  {
+    label: "Facebook",
+    href: "https://facebook.com",
+    icon: <FaFacebookF className="h-5 w-5" />,
+  },
+  {
+    label: "Twitter",
+    href: "https://twitter.com",
+    icon: <FaTwitter className="h-5 w-5" />,
+  },
+  {
+    label: "YouTube",
+    href: "https://youtube.com",
+    icon: <FaYoutube className="h-5 w-5" />,
+  },
 ];
 
 export default function Footer() {
   return (
-    <footer className="w-full">
-      <div
-        className="
-          mx-auto max-w-7xl
-          px-5 sm:px-6 lg:px-0
-          py-10 lg:py-14
-          grid gap-10
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-[1.1fr_0.7fr_1fr_1.5fr]
-        "
-      >
-        {/* Brand */}
-        <div className="sm:col-span-2 lg:col-span-1">
-          <h4 className="text-lg lg:text-xl font-bold text-primary-800 dark:text-emerald-400 mb-4 lg:mb-6">
-            គេហទំព័រ
-          </h4>
-          <div className="relative w-[130px] h-[74px] lg:w-[150px] lg:h-[85px] mb-4 lg:mb-6">
-            <Image
-              src="/Image/logo.png"
-              alt="FoodHub logo"
-              fill
-              className="object-contain object-left"
-              sizes="(max-width: 1024px) 130px, 150px"
-            />
-          </div>
-          <p className=" dark:text-gray-200 text-slate-500 text-base lg:text-[18px] leading-relaxed max-w-xs">
-            ធ្វើឱ្យការជ្រើសរើសមុខម្ហូបកាន់តែងាយស្រួល{" "}
-            <br className="hidden lg:block" />
-            ជាមួយការណែនាំដែលសាកសមនឹងអ្នក
-          </p>
-        </div>
+    <footer className=" w-full">
+      {/* Main footer */}
+      <div className="">
+        <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1fr_0.7fr_2fr] xl:gap-16">
+            {/* Left column */}
+            <div>
+              <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200 ">
+                គេហទំព័រ
+              </h4>
 
-        {/* Sitemap */}
-        <div>
-          <h4 className="text-lg lg:text-xl font-bold text-primary-800 dark:text-emerald-400 mb-4 lg:mb-6">
-            តំណភ្ជាប់
-          </h4>
-          <ul className="space-y-3 lg:space-y-4">
-            {sitemapLinks.map((link) => (
-              <li key={link.label}>
-                <Link
-                  href={link.href}
-                  className=" dark:text-gray-200 text-slate-500 text-base sm:text-lg lg:text-[22px] hover:text-primary transition-colors"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+              <div className="mt-6">
+                <div className="relative h-[80px] w-[160px] max-w-full">
+                  <Image
+                    src="/Image/foodhub-logo.png"
+                    alt="FoodHub logo"
+                    className="object-contain object-left"
+                    width={160}
+                    height={80}
+                  />
+                </div>
+              </div>
 
-        {/* Contact */}
-        <div>
-          <h4 className="text-lg lg:text-xl font-bold text-primary-800 dark:text-emerald-400 mb-4 lg:mb-6">
-            ទំនាក់ទំនង
-          </h4>
-          <ul className="space-y-3 lg:space-y-4 text-base lg:text-[20px]">
-            <li>
-              <Link
-                href="mailto:foodhub@gmail.com"
-                className="flex items-center gap-3  dark:text-gray-200 text-slate-500 hover:text-primary transition-colors break-all"
-              >
-                <Mail className="w-5 h-5 shrink-0" strokeWidth={1.8} />
-                foodhub@gmail.com
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="tel:+15550123456"
-                className="flex items-center gap-3  dark:text-gray-200 text-slate-500 hover:text-primary transition-colors"
-              >
-                <Phone className="w-5 h-5 shrink-0" strokeWidth={1.8} />
-                +1 (555) 012-3456
-              </Link>
-            </li>
-            <li className="flex items-center gap-3  dark:text-gray-200 text-slate-500">
-              <MapPin className="w-5 h-5 shrink-0" strokeWidth={1.8} />
-              Phnom Penh, Cambodia
-            </li>
-          </ul>
-        </div>
+              <p className="mt-6 max-w-md text-lg leading-8  dark:text-gray-300 text-slate-500">
+                ផ្តល់ការណែនាំអំពីមុខម្ហូបដែលសមស្រប
+                ដោយផ្អែកលើចំណង់ចំណូលចិត្តរបស់អ្នក
+              </p>
 
-        {/* Sponsors */}
-        <div className="sm:col-span-2 lg:col-span-1">
-          <h4 className="text-lg lg:text-xl font-bold text-primary-800 dark:text-emerald-400 mb-4 lg:mb-6">
-            ឧបត្ថម្ភដោយ
-          </h4>
-          <div className="flex flex-wrap items-center gap-6 lg:gap-10 mb-8 lg:mb-10">
-            <div className="relative h-[56px] w-[145px] sm:h-[64px] sm:w-[168px] lg:h-[75px] lg:w-[195px]">
-              <Image
-                src="/Image/mptc.png"
-                alt="Ministry of Posts and Telecommunications"
-                fill
-                className="object-contain object-left"
-                sizes="(max-width: 640px) 145px, (max-width: 1024px) 168px, 195px"
-              />
+              <div className="mt-10">
+                <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
+                  បណ្តាញសង្គម
+                </h4>
+
+                <div className="mt-6 flex items-center gap-4">
+                  {socialLinks.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={item.label}
+                      className="flex h-12.5 w-12.5 items-center justify-center rounded-full border border-slate-300 bg-white text-[#0E7A33] transition hover:border-[#0E7A33] hover:bg-[#0E7A33] hover:text-white"
+                    >
+                      {item.icon}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="relative h-[56px] w-[122px] sm:h-[64px] sm:w-[140px] lg:h-[75px] lg:w-[163px]">
-              <Image
-                src="/Image/cbrd.png"
-                alt="CBRD Fund"
-                fill
-                className="object-contain object-left"
-                sizes="(max-width: 640px) 122px, (max-width: 1024px) 140px, 163px"
-              />
+
+            {/* Middle column */}
+            <div>
+              <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
+                លីងភ្ជាប់
+              </h4>
+
+              <nav className="mt-6 flex flex-col gap-5">
+                {quickLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="text-lg  dark:text-gray-300 text-slate-500 transition hover:text-[#0E7A33]"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="mt-10">
+                <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
+                  ទំនាក់ទំនង
+                </h4>
+
+                <div className="mt-6 space-y-4 text-lg  dark:text-gray-300 text-slate-500">
+                  <p>foodhub@gmail.com</p>
+                  <p>+(555) 012-3456</p>
+                  <p>PhnomPenh , Combodia</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column */}
+            <div>
+              <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
+                ឧបត្ថម្ភដោយ
+              </h4>
+
+              <div className="mt-6 flex flex-col gap-6">
+                {/* long sponsor logo */}
+                <div className="relative h-[70px]  min-w-[600px] ">
+                  <Image
+                    src="/sponsors.png"
+                    alt="Ministry  of Post and Telecommunications"
+                    fill
+                    className="object-contain block dark:hidden object-left"
+                    sizes="(max-width: 768px) 100vw, 389px"
+                  />
+                  <Image
+                    src="/sponsors-dark.png"
+                    alt="Ministry  of Post and Telecommunications"
+                    fill
+                    className="object-contain hidden dark:block object-left"
+                    sizes="(max-width: 768px) 100vw, 389px"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-10">
+                <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
+                  រៀបចំដោយ
+                </h4>
+
+                <div className="mt-6">
+                  <div className="relative h-[70px] w-full max-w-[193px]">
+                    <Image
+                      src="/ISTAD-Logo.png"
+                      alt="ISTAD"
+                      fill
+                      className="object-contain block dark:hidden object-left"
+                      sizes="193px"
+                    />
+                    <Image
+                      src="/ISTAD-Logo-dark.png"
+                      alt="ISTAD"
+                      fill
+                      className="object-contain hidden dark:block object-left"
+                      sizes="193px"
+                    />
+                  </div>
+
+                  <p className="mt-5 max-w-sm text-lg leading-8  dark:text-gray-300 text-slate-500">
+                    Institute of Science and Technology
+                    <br />
+                    Advanced Development
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <h4 className="text-lg lg:text-xl font-bold text-primary-800 dark:text-emerald-400 mb-4 lg:mb-6">
-            រៀបចំដោយ
-          </h4>
-          <div className="relative h-[56px] w-[155px] sm:h-[64px] sm:w-[178px] lg:h-[75px] lg:w-[208px]">
-            <Image
-              src="/Image/istad.png"
-              alt="ISTAD"
-              fill
-              className="object-contain object-left"
-              sizes="(max-width: 640px) 155px, (max-width: 1024px) 178px, 208px"
-            />
+          {/* bottom line */}
+          <div className="mt-10 border-t border-slate-300 pt-6">
+            <div className="flex flex-col items-center justify-center gap-2 text-center text-base  dark:text-gray-300 text-slate-500 sm:flex-row sm:gap-6">
+              <p>© 2026 FoodHub | All Rights Reserved</p>
+              {/* <p>© 2026 FoodHub | All Rights Reserved</p> */}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Copyright */}
-      <div className="border-t border-slate-200 px-5 py-5 lg:py-6 text-center">
-        <p className="text-slate-400  text-sm lg:text-base">
-          © 2026 FoodHub | All Rights Reserved
-        </p>
       </div>
     </footer>
   );

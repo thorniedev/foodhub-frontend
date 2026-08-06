@@ -37,7 +37,7 @@ export default function DashboardHeader({
       {/* Logo */}
       <Link href="/" className="flex shrink-0 items-center">
         <Image
-          src="/Image/logo.png"
+          src="/Image/foodHub-logo.png"
           alt="FoodHub"
           width={140}
           height={48}

@@ -4,7 +4,7 @@
     "slug": "lucky-express",
     "name": "Lucky Express",
     "tagline": "អាហារ​ថ្មី​ស្រស់ រហ័ស ឆ្ងាញ់ រៀងរាល់ថ្ងៃ",
-    "logo": "/Image/logo.png",
+    "logo": "/Image/foodHub-logo.png",
     "brandColor": "#D3282A",
     "heroSlides": [
       {
@@ -314,7 +314,7 @@
     "slug": "kongfou-kitchen",
     "name": "Kongfou Kitchen",
     "tagline": "ម្ហូបចិន-ខ្មែរ រសជាតិដើម",
-    "logo": "/Image/logo.png",
+    "logo": "/Image/foodHub-logo.png",
     "brandColor": "#16A34A",
     "heroSlides": [
       {
@@ -355,7 +355,7 @@
     "slug": "green-salad-house",
     "name": "Green Salad House",
     "tagline": "Fresh & Healthy Everyday",
-    "logo": "/Image/logo.png",
+    "logo": "/Image/foodHub-logo.png",
     "brandColor": "#22C55E",
     "heroSlides": [
       {
@@ -439,7 +439,7 @@
     "slug": "pizza-town",
     "name": "Pizza Town",
     "tagline": "Hot Pizza Fast Delivery",
-    "logo": "/Image/logo.png",
+    "logo": "/Image/foodHub-logo.png",
     "brandColor": "#EA580C",
     "heroSlides": [
       {
@@ -523,7 +523,7 @@
     "slug": "burger-world",
     "name": "Burger World",
     "tagline": "Juicy Burgers Everyday",
-    "logo": "/Image/logo.png",
+    "logo": "/Image/foodHub-logo.png",
     "brandColor": "#FACC15",
     "heroSlides": [
       {

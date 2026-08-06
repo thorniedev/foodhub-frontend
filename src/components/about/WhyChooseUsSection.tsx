@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function WhyChooseUsSection() {
   return (
-    <section className="relative w-full bg-[#f8fafc]   overflow-hidden">
+    <section className="relative w-full    overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-16">
         <div className="grid grid-cols-1 items-center gap-29 lg:grid-cols-12">
           

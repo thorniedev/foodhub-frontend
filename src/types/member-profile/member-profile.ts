@@ -7,24 +7,13 @@ export type MemberRelationship =
   | "GRANDPARENT"
   | "OTHER";
 
-export type MemberGender =
-  | "MALE"
-  | "FEMALE"
-  | "OTHER"
-  | "PREFER_NOT_TO_SAY";
+export type MemberGender = "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
 
-export type ProfileSeverity =
-  | "MILD"
-  | "MODERATE"
-  | "SEVERE";
+export type ProfileSeverity = "MILD" | "MODERATE" | "SEVERE";
 
-export type DietaryEnforcementLevel =
-  | "PREFERRED"
-  | "REQUIRED";
+export type DietaryEnforcementLevel = "PREFERRED" | "REQUIRED";
 
-export type IngredientAvoidLevel =
-  | "PREFERENCE"
-  | "STRICT_BLOCK";
+export type IngredientAvoidLevel = "PREFERENCE" | "STRICT_BLOCK";
 
 export interface MemberAgeGroup {
   uuid: string;
@@ -100,6 +89,9 @@ export interface GetMemberProfilesParams {
   size?: number;
 }
 
+/**
+ * POST /profiles only creates the basic profile.
+ */
 export interface CreateMemberProfileRequest {
   profileName: string;
   relationship: MemberRelationship;
@@ -108,11 +100,45 @@ export interface CreateMemberProfileRequest {
   preferredLanguage: string;
   avatarMediaUuid: string | null;
   isDefault: boolean;
+}
 
+/**
+ * Option returned from safety endpoints.
+ *
+ * The user sees name/localName, but the frontend sends code.
+ */
+export interface SafetyOption {
+  uuid: string;
+  code: string;
+  name: string;
+  localName?: string | null;
+  description?: string | null;
+  active?: boolean;
+  isActive?: boolean;
+}
+
+export interface SafetyOptionResponse {
+  contents: SafetyOption[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface ReplaceMemberAllergiesRequest {
   allergies: MemberAllergyRequest[];
-  dietaryTypes: MemberDietaryTypeRequest[];
-  medicalConditions: MemberMedicalConditionRequest[];
-  ingredientAvoids: MemberIngredientAvoidRequest[];
+}
 
-  preferences: Record<string, unknown> | null;
+export interface ReplaceMemberDietaryTypesRequest {
+  dietaryTypes: MemberDietaryTypeRequest[];
+}
+
+export interface ReplaceMemberMedicalConditionsRequest {
+  medicalConditions: MemberMedicalConditionRequest[];
+}
+
+export interface ReplaceMemberIngredientAvoidsRequest {
+  ingredientAvoids: MemberIngredientAvoidRequest[];
 }

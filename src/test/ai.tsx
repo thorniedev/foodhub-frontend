@@ -61,7 +61,7 @@ export default function SectionModal() {
 
         <span className="relative flex h-19 w-19 shrink-0 items-center justify-center rounded-full bg-white p-1.5 shadow-inner">
           <motion.img
-            src="/Image/logo.png"
+            src="/Image/foodHub-logo.png"
             alt="Logo"
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}

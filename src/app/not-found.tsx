@@ -7,7 +7,7 @@ export default function NotFoundPage() {
     <div className="h-screen bg-background dark:bg-gray-950  md:gap-8 flex-col w-full flex items-center justify-center">
       <img
         className="w-[350px] block dark:hidden"
-        src="/Image/Logo.png"
+        src="/Image/foodHub-logo.png"
         alt="L0go"
       />{" "}
       {/* <img className="w-[350px] hidden dark:block" src={LogoDark} alt="L0go" /> */}
