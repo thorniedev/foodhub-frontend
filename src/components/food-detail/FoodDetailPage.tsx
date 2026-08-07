@@ -103,7 +103,7 @@ function ScoreBar({ label, value }: ScoreBarProps) {
         />
       </div>
 
-      <p className="text-base dark:text-emerald-400 font-semibold text-primary-800 sm:text-right">
+      <p className="text-base dark:text-[#22a447] font-semibold text-primary-800 sm:text-right">
         {percentage}%
       </p>
     </div>
@@ -297,7 +297,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="mb-8 flex items-center gap-2 text-base dark:text-emerald-400 font-semibold text-primary-800 transition hover:text-primary-600"
+          className="mb-8 flex items-center gap-2 text-base dark:text-[#22a447] font-semibold text-primary-800 transition hover:text-primary-600"
         >
           <FaArrowLeft />
           ត្រឡប់ក្រោយ
@@ -897,7 +897,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               <Link
                 href="/"
-                className="flex items-center gap-2 text-base dark:text-emerald-400 font-semibold text-primary-800"
+                className="flex items-center gap-2 text-base dark:text-[#22a447] font-semibold text-primary-800"
               >
                 មើលទាំងអស់
                 <IoChevronForward />
@@ -931,7 +931,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               await navigator.clipboard.writeText(window.location.href);
             }}
-            className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base dark:text-emerald-400 font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 active:scale-95"
+            className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base dark:text-[#22a447] font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 active:scale-95"
           >
             <FaShareAlt />
             ចែករំលែកមុខម្ហូប

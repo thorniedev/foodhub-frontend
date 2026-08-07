@@ -38,7 +38,7 @@ export default function MealsByAgeSection() {
 
         {/* Heading */}
         <section className="flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
-          <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-emerald-400 font-semibold text-primary-800">
+          <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800">
             ចំណីអាហារ
             <span className="text-secondary-500">ទៅតាមវ័យ</span>
           </p>

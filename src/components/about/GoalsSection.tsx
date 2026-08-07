@@ -48,7 +48,7 @@ export default function GoalsSection() {
         {/* Section Header */}
         <h2 className="mb-8 sm:mb-12 text-center  text-2xl font-extrabold sm:text-4xl md:text-5xl">
           <span className="text-[#f97316]">គោលបំណង</span>
-          <span className="text-[#136c34] dark:text-emerald-400">របស់យើង</span>
+          <span className="text-[#136c34] dark:text-[#22a447]">របស់យើង</span>
         </h2>
 
         {/* Responsive Grid Layout: 1 col (mobile) -> 2 cols (tablet) -> 12 cols (desktop) */}

@@ -206,7 +206,7 @@ export default function FilterByMealTime({
   return (
     <div className="my-15 flex flex-col gap-12.5">
       <section className="container mx-auto flex max-w-7xl flex-col items-center justify-center gap-6 px-4 pt-4 md:gap-12.5 lg:pt-0">
-        <p className="text-center  text-2xl dark:text-emerald-400 font-semibold text-primary-800 md:text-4xl lg:text-5xl">
+        <p className="text-center  text-2xl dark:text-[#22a447] font-semibold text-primary-800 md:text-4xl lg:text-5xl">
           បទពិសោធន៍ថ្មីក្នុង
           <TypingAnimation
             words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
@@ -240,7 +240,7 @@ export default function FilterByMealTime({
               }}
               className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
                 activeTab === tab.id
-                  ? "text-primary-700 dark:text-emerald-400"
+                  ? "text-primary-700 dark:text-[#22a447]"
                   : "text-gray-400 dark:text-gray-200 hark:hover:text-gray-400 hover:text-gray-600"
               }`}
             >

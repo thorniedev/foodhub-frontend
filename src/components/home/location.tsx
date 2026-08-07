@@ -43,7 +43,7 @@ export default function LocationSection() {
   return (
     <section className="container md:pb-30 max-md:pb-60 flex max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center mx-auto max-w-7xl">
       <div className="flex  relative  flex-col gap-12.5">
-        <p className="lg:text-7xl md:text-[38px] max-md:text-[30px] font-bold dark:text-emerald-400 text-primary-800">
+        <p className="lg:text-7xl md:text-[38px] max-md:text-[30px] font-bold dark:text-[#22a447] text-primary-800">
           ស្វែងរកមុខម្ហូបនៅ
           <span className="text-secondary-400">ជិតអ្នកបំផុត</span>
         </p>

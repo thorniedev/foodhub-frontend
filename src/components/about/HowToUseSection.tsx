@@ -214,7 +214,7 @@ export default function HowToUseSection() {
         <div className="mb-10 text-center md:mb-14">
           <h2 className="font-['Kantumruy_Pro',sans-serif] text-3xl font-semibold tracking-wide sm:text-4xl md:text-[48px]">
             <span className="text-[#e36914]">របៀបក្នុង</span>
-            <span className="text-[#136c34] dark:text-emerald-400">ការប្រើប្រាស់</span>
+            <span className="text-[#136c34] dark:text-[#22a447]">ការប្រើប្រាស់</span>
           </h2>
         </div>
 

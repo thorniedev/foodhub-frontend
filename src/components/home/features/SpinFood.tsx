@@ -390,7 +390,7 @@ function WinPopup({
                   {food.localName || food.name}
                 </p>
 
-                <p className="shrink-0 dark:text-emerald-400 font-semibold text-primary-800">
+                <p className="shrink-0 dark:text-[#22a447] font-semibold text-primary-800">
                   {formatPrice(food)}
                 </p>
               </div>
@@ -424,7 +424,7 @@ function WinPopup({
             <Link
               href={`/food/${food.uuid}`}
               onClick={onClose}
-              className="flex flex-1 items-center justify-center rounded-full border border-primary-800 px-4 py-2.5 text-[18px] dark:text-emerald-400 font-semibold text-primary-800 transition hover:bg-primary-50 active:scale-[0.97]"
+              className="flex flex-1 items-center justify-center rounded-full border border-primary-800 px-4 py-2.5 text-[18px] dark:text-[#22a447] font-semibold text-primary-800 transition hover:bg-primary-50 active:scale-[0.97]"
             >
               មើលលម្អិត
             </Link>

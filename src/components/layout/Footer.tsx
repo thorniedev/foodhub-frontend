@@ -169,11 +169,11 @@ export default function Footer() {
           </div>
 
           {/* bottom line */}
-          <div className="mt-10 border-t border-slate-300 pt-6">
-            <div className="flex flex-col items-center justify-center gap-2 text-center text-base  dark:text-gray-300 text-slate-500 sm:flex-row sm:gap-6">
-              <p>© 2026 FoodHub | All Rights Reserved</p>
-              {/* <p>© 2026 FoodHub | All Rights Reserved</p> */}
-            </div>
+        </div>
+        <div className="mt-10 border-t border-slate-300 py-5">
+          <div className="flex flex-col items-center justify-center gap-2 text-center text-base  dark:text-gray-300 text-slate-500 sm:flex-row sm:gap-6">
+            <p>© 2026 FoodHub | All Rights Reserved</p>
+            {/* <p>© 2026 FoodHub | All Rights Reserved</p> */}
           </div>
         </div>
       </div>

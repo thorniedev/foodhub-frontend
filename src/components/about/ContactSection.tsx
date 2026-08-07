@@ -49,7 +49,7 @@ export default function ContactSection() {
         {/* Header Title */}
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight">
-            <span className="text-[#136C34] dark:text-emerald-400">
+            <span className="text-[#136C34] dark:text-[#22a447]">
               ទំនាក់ទំនង{" "}
             </span>
             <span className="text-[#e2722b]">មកយើង</span>

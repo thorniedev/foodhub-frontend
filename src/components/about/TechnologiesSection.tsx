@@ -6,7 +6,7 @@ export default function TechnologiesSection() {
     <div>
       <div className=" container py-12.5 mx-auto max-w-7xl flex lg:flex-row   max-lg:flex-col max-lg:items-center max-lg:justify-center lg:items-center justify-between ">
         <div className="flex lg:text-start max-lg:items-center max-lg:text-center  flex-col gap-12.5">
-          <p className="lg:text-7xl  text-start md:text-[38px] max-md:text-[30px] font-bold dark:text-emerald-400 text-primary-800">
+          <p className="lg:text-7xl  text-start md:text-[38px] max-md:text-[30px] font-bold dark:text-[#22a447] text-primary-800">
             បច្ចេកវិទ្យា
             <span className="text-secondary-400">ដែលពួកយើងប្រើ</span>
           </p>
