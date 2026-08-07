@@ -4,11 +4,22 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
-import { useGetStoresQuery } from "@/app/store/locationApi";
+import {
+  IoFilterOutline,
+  IoRestaurantOutline,
+  IoSearchOutline,
+} from "react-icons/io5";
 
 import { useUserLocation } from "@/hooks/useUserLocation";
 
-import type { LocationStore } from "@/types/location-store";
+import { calculateDistanceKm } from "@/lib/location/geo";
+
+import {
+  countActiveLocationFoodFilters,
+  filterLocationMenuItems,
+} from "@/lib/location/location-food-filter";
+
+import { buildLocationStoresFromMenuItems } from "@/lib/location/menu-store-adapter";
 
 import type { MenuItem } from "@/types/manu";
 
@@ -16,10 +27,18 @@ import type {
   Coordinates,
   LocationFiltersState,
   LocationPermissionStatus,
+  LocationSort,
   RecommendationMode,
 } from "@/types/location";
 
 import { DEFAULT_LOCATION_FILTERS } from "@/types/location";
+
+import type {
+  LocationFoodFilterState,
+  LocationFoodSort,
+} from "@/types/location-food-filter";
+
+import { DEFAULT_LOCATION_FOOD_FILTERS } from "@/types/location-food-filter";
 
 import LocationFilters from "./LocationFilters";
 
@@ -32,10 +51,12 @@ import LocationPickerModal, {
 } from "./picker/LocationPickerModal";
 
 import SingleRecommendation from "./single/SingleRecommendation";
+
 import GroupRecommendation from "./group/GroupRecommendation";
 
 interface LocationContentProps {
   menuItems: MenuItem[];
+
   searchQuery?: string;
 }
 
@@ -67,14 +88,78 @@ function convertLocationStatus(
   }
 }
 
+function mapFoodSortToLocationSort(
+  foodSort: LocationFoodSort,
+  mode: RecommendationMode,
+): LocationSort {
+  if (mode === "group") {
+    return "fairest-distance";
+  }
+
+  switch (foodSort) {
+    case "nearest":
+      return "nearest";
+
+    case "rating":
+      return "highest-rated";
+
+    case "recommended":
+    default:
+      return "recommended";
+  }
+}
+
+function buildLocationFilters(
+  foodFilters: LocationFoodFilterState,
+  mode: RecommendationMode,
+): LocationFiltersState {
+  return {
+    ...DEFAULT_LOCATION_FILTERS,
+
+    radiusKm:
+      foodFilters.maximumDistanceKm ?? DEFAULT_LOCATION_FILTERS.radiusKm,
+
+    /*
+     * These old store filters are disabled.
+     * The new flow filters FOOD instead.
+     */
+    openNow: false,
+
+    deliveryAvailable: false,
+
+    pickupAvailable: false,
+
+    minimumRating: 0,
+
+    safeForAllMembers: false,
+
+    hasMealsForEveryone: false,
+
+    sortBy: mapFoodSortToLocationSort(foodFilters.sortBy, mode),
+  };
+}
+
+function hasValidCoordinates(
+  value: Coordinates | null | undefined,
+): value is Coordinates {
+  if (!value) {
+    return false;
+  }
+
+  return (
+    Number.isFinite(Number(value.latitude)) &&
+    Number.isFinite(Number(value.longitude))
+  );
+}
+
 export default function LocationContent({
   menuItems,
   searchQuery = "",
 }: LocationContentProps) {
   const [mode, setMode] = useState<RecommendationMode>("single");
 
-  const [filters, setFilters] = useState<LocationFiltersState>({
-    ...DEFAULT_LOCATION_FILTERS,
+  const [foodFilters, setFoodFilters] = useState<LocationFoodFilterState>({
+    ...DEFAULT_LOCATION_FOOD_FILTERS,
   });
 
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -87,47 +172,114 @@ export default function LocationContent({
     coordinates,
 
     detectedCoordinates,
+
     selectedLocation,
 
     source,
+
     status,
+
     error,
 
     refreshLocation,
+
     selectManualLocation,
+
     useCurrentLocation,
   } = useUserLocation();
 
-  const {
-    data: storeData = [],
+  /*
+   * Top-level FoodSearch can also filter the
+   * Location tab.
+   *
+   * When it is empty, use the search field
+   * inside LocationFilters.
+   */
+  const effectiveFoodFilters = useMemo<LocationFoodFilterState>(
+    () => ({
+      ...foodFilters,
 
-    isLoading: isStoresLoading,
-
-    isFetching: isStoresFetching,
-
-    isError: isStoresError,
-
-    refetch: refetchStores,
-  } = useGetStoresQuery();
-
-  const stores = useMemo<LocationStore[]>(
-    () => (Array.isArray(storeData) ? (storeData as LocationStore[]) : []),
-    [storeData],
+      query: searchQuery.trim() || foodFilters.query,
+    }),
+    [foodFilters, searchQuery],
   );
 
-  const headerLocationStatus = convertLocationStatus(status, coordinates);
+  /*
+   * STEP 1
+   *
+   * Filter foods.
+   */
+  const matchingFoods = useMemo(
+    () => filterLocationMenuItems(menuItems, effectiveFoodFilters),
+    [effectiveFoodFilters, menuItems],
+  );
 
-  const isRefreshing = status === "requesting" || isStoresFetching;
+  /*
+   * STEP 2
+   *
+   * Every MenuItem already contains its store reference and coordinates.
+   * Build unique Location stores directly from matchingFoods so the Location
+   * tab does not make a second GET /stores request.
+   */
+  const foodStores = useMemo(
+    () => buildLocationStoresFromMenuItems(matchingFoods),
+    [matchingFoods],
+  );
+
+  /*
+   * STEP 3
+   *
+   * Convert food filter distance to the
+   * location recommendation radius.
+   */
+  const locationFilters = useMemo(
+    () => buildLocationFilters(effectiveFoodFilters, mode),
+    [effectiveFoodFilters, mode],
+  );
+
+  const effectiveRadiusKm =
+    effectiveFoodFilters.maximumDistanceKm ?? DEFAULT_LOCATION_FILTERS.radiusKm;
+
+  const nearbyStoreCount = useMemo(() => {
+    if (!hasValidCoordinates(coordinates)) {
+      return foodStores.length;
+    }
+
+    return foodStores.filter((store) => {
+      if (
+        !Number.isFinite(Number(store.latitude)) ||
+        !Number.isFinite(Number(store.longitude))
+      ) {
+        return false;
+      }
+
+      const distance = calculateDistanceKm(coordinates, {
+        latitude: Number(store.latitude),
+
+        longitude: Number(store.longitude),
+      });
+
+      return Number.isFinite(distance) && distance <= effectiveRadiusKm;
+    }).length;
+  }, [coordinates, effectiveRadiusKm, foodStores]);
+
+  const activeFilterCount = countActiveLocationFoodFilters(foodFilters);
+
+  const headerLocationStatus = convertLocationStatus(status, coordinates);
 
   const activeLocationLabel =
     selectedLocation?.label ??
     (source === "live"
-      ? "កំពុងប្រើទីតាំង GPS បច្ចុប្បន្នរបស់អ្នក"
+      ? "កំពុងប្រើទីតាំងបច្ចុប្បន្នរបស់អ្នក"
       : source === "saved"
-        ? "កំពុងប្រើទីតាំង GPS ដែលបានរក្សាទុកចុងក្រោយ"
-        : source === "fallback"
-          ? "សូមប្រើ GPS ឬស្វែងរកទីតាំងលើផែនទី"
-          : null);
+        ? "កំពុងប្រើទីតាំងដែលបានរក្សាទុកចុងក្រោយ"
+        : source === "saved-manual"
+          ? "កំពុងប្រើទីតាំងដែលអ្នកបានជ្រើសពីមុន"
+          : source === "manual"
+            ? "កំពុងប្រើទីតាំងដែលអ្នកបានជ្រើសលើផែនទី"
+            : "សូមប្រើទីតាំងបច្ចុប្បន្ន ឬជ្រើសទីតាំងលើផែនទី");
+
+  const isRefreshing = status === "requesting";
 
   useEffect(() => {
     if (!filtersOpen) {
@@ -138,40 +290,29 @@ export default function LocationContent({
 
     document.body.style.overflow = "hidden";
 
-    const handleEscape = (event: KeyboardEvent) => {
+    const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setFiltersOpen(false);
       }
     };
 
-    window.addEventListener("keydown", handleEscape);
+    window.addEventListener("keydown", closeOnEscape);
 
     return () => {
       document.body.style.overflow = previousOverflow;
 
-      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("keydown", closeOnEscape);
     };
   }, [filtersOpen]);
 
   const handleModeChange = (nextMode: RecommendationMode) => {
     setMode(nextMode);
+
     setResultCount(0);
-
-    setFilters((currentFilters) => ({
-      ...currentFilters,
-
-      sortBy: nextMode === "single" ? "recommended" : "fairest-distance",
-    }));
-  };
-
-  const handleFiltersChange = (nextFilters: LocationFiltersState) => {
-    setFilters(nextFilters);
   };
 
   const handleRefresh = () => {
     refreshLocation();
-
-    void refetchStores();
   };
 
   const handleUseCurrentLocation = () => {
@@ -193,6 +334,25 @@ export default function LocationContent({
 
     setResultCount(0);
   };
+
+  const resetFoodFilters = () => {
+    setFoodFilters({
+      ...DEFAULT_LOCATION_FOOD_FILTERS,
+    });
+
+    setResultCount(0);
+  };
+
+  const noMatchingFood = matchingFoods.length === 0;
+
+  const noMatchingStore = !noMatchingFood && foodStores.length === 0;
+
+  const noNearbyStore =
+    mode === "single" &&
+    !noMatchingFood &&
+    !noMatchingStore &&
+    Boolean(coordinates) &&
+    nearbyStoreCount === 0;
 
   return (
     <>
@@ -216,23 +376,27 @@ export default function LocationContent({
         }}
         className="mt-6 min-w-0 text-[17px]"
       >
-        <div className="flex min-w-0 flex-col items-start gap-6 xl:flex-row xl:gap-8">
-        
-          <div className="hidden shrink-0 xl:block">
+        {/*
+         * No fixed height.
+         * No LocationContent scrollbar.
+         *
+         * The normal page scrolls.
+         */}
+        <div className="flex min-w-0 items-start gap-7">
+          {/* Desktop food filters */}
+          <div className="sticky top-28 hidden shrink-0 self-start xl:block">
             <LocationFilters
-              mode={mode}
-              stores={stores}
-              filters={filters}
-              onModeChange={handleModeChange}
-              onChange={handleFiltersChange}
+              menuItems={menuItems}
+              filters={foodFilters}
+              onChange={setFoodFilters}
             />
           </div>
 
-          <main className="min-w-0 flex-1 overflow-visible">
+          <main className="min-w-0 flex-1">
             <LocationHeader
               mode={mode}
               storeCount={resultCount}
-              radiusKm={filters.radiusKm}
+              radiusKm={effectiveRadiusKm}
               locationStatus={headerLocationStatus}
               locationSource={source}
               locationError={error}
@@ -246,31 +410,70 @@ export default function LocationContent({
             />
 
             <div className="mt-6 pb-10">
-              {isStoresLoading ? (
-                <StoresLoadingState />
-              ) : isStoresError ? (
-                <StoresErrorState
-                  onRetry={() => {
-                    void refetchStores();
-                  }}
+              {!coordinates && mode === "single" ? (
+                <ReadableMessage
+                  icon={<IoSearchOutline />}
+                  title="សូមជ្រើសទីតាំងសម្រាប់ស្វែងរកហាង"
+                  description="អ្នកអាចប្រើទីតាំងបច្ចុប្បន្នរបស់អ្នក ឬជ្រើសទីតាំងផ្សេងដោយផ្ទាល់លើផែនទី។"
+                  actionLabel="ជ្រើសទីតាំងលើផែនទី"
+                  onAction={() => setLocationPickerOpen(true)}
+                />
+              ) : noMatchingFood ? (
+                <ReadableMessage
+                  icon={<IoRestaurantOutline />}
+                  title="រកមិនឃើញមុខម្ហូបដែលត្រូវនឹងជម្រើសរបស់អ្នក"
+                  description="សូមកែតម្រងមុខម្ហូប ឬសាកល្បងជ្រើសប្រភេទ របបអាហារ គ្រឿងផ្សំ ឬតម្លៃផ្សេង។"
+                  actionLabel="សម្អាតតម្រង"
+                  onAction={resetFoodFilters}
+                />
+              ) : noMatchingStore ? (
+                <ReadableMessage
+                  icon={<IoRestaurantOutline />}
+                  title="មានមុខម្ហូបដែលអ្នកចង់បាន ប៉ុន្តែមិនទាន់រកឃើញហាង"
+                  description="មុខម្ហូបដែលបានជ្រើសមានក្នុងបញ្ជី FoodHub ប៉ុន្តែមិនទាន់មានព័ត៌មានទីតាំងហាងដែលអាចប្រើបាន។ សូមសាកល្បងមុខម្ហូបផ្សេង។"
+                  actionLabel="កែតម្រងមុខម្ហូប"
+                  onAction={() => setFiltersOpen(true)}
+                />
+              ) : noNearbyStore ? (
+                <ReadableMessage
+                  icon={<IoRestaurantOutline />}
+                  title="មិនមានហាងដែលមានមុខម្ហូបទាំងនេះនៅក្បែរទីតាំងរបស់អ្នក"
+                  description={`សូមពង្រីកចម្ងាយស្វែងរកលើស ${effectiveRadiusKm} km ឬជ្រើសទីតាំងផ្សេងលើផែនទី។`}
+                  actionLabel="កែតម្រងមុខម្ហូប"
+                  onAction={() => setFiltersOpen(true)}
                 />
               ) : mode === "single" ? (
                 <SingleRecommendation
-                  menuItems={menuItems}
-                  stores={stores}
+                  /*
+                   * ONLY matching foods.
+                   */
+                  menuItems={matchingFoods}
+                  /*
+                   * ONLY stores containing those foods.
+                   */
+                  stores={foodStores}
                   userLocation={coordinates}
-                  filters={filters}
-                  searchQuery={searchQuery}
+                  filters={locationFilters}
+                  foodSort={effectiveFoodFilters.sortBy}
+                  /*
+                   * Search has already been applied
+                   * against FOOD, not store.
+                   */
+                  searchQuery=""
                   onOpenFilters={() => setFiltersOpen(true)}
                   onResultCountChange={setResultCount}
                 />
               ) : (
                 <GroupRecommendation
-                  menuItems={menuItems}
-                  stores={stores}
+                  /*
+                   * Same food-first flow is kept
+                   * for group recommendations.
+                   */
+                  menuItems={matchingFoods}
+                  stores={foodStores}
                   userLocation={coordinates}
-                  filters={filters}
-                  searchQuery={searchQuery}
+                  filters={locationFilters}
+                  searchQuery=""
                   onOpenFilters={() => setFiltersOpen(true)}
                   onResultCountChange={setResultCount}
                 />
@@ -279,10 +482,11 @@ export default function LocationContent({
           </main>
         </div>
 
+        {/* Mobile / tablet food filter drawer */}
         <AnimatePresence>
           {filtersOpen && (
             <motion.div
-              key="location-filter-drawer"
+              key="location-food-filter-drawer"
               initial={{
                 opacity: 0,
               }}
@@ -292,31 +496,16 @@ export default function LocationContent({
               exit={{
                 opacity: 0,
               }}
-              transition={{
-                duration: 0.2,
-              }}
-              className="fixed inset-0 z-[100] xl:hidden"
+              className="fixed inset-0 z-[1000] xl:hidden"
             >
-              <motion.button
+              <button
                 type="button"
-                aria-label="Close location filters"
-                initial={{
-                  opacity: 0,
-                }}
-                animate={{
-                  opacity: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                }}
+                aria-label="Close food filters"
                 onClick={() => setFiltersOpen(false)}
-                className="absolute inset-0 cursor-default bg-black/45 backdrop-blur-[2px]"
+                className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
               />
 
               <motion.div
-                role="dialog"
-                aria-modal="true"
-                aria-label="Location filters"
                 initial={{
                   y: "100%",
                 }}
@@ -333,25 +522,31 @@ export default function LocationContent({
                 }}
                 className="
                   absolute inset-x-0 bottom-0
-                  h-[88dvh] overflow-hidden
-                  rounded-t-[30px] bg-white shadow-2xl
+                  max-h-[92dvh]
+                  overflow-y-auto
+                  rounded-t-[30px]
+                  bg-white
+                  pb-8
+                  shadow-2xl
+
+                  [scrollbar-width:none]
+                  [&::-webkit-scrollbar]:hidden
 
                   md:bottom-auto
                   md:left-0
                   md:right-auto
                   md:top-0
                   md:h-full
-                  md:w-[370px]
+                  md:max-h-none
+                  md:w-[390px]
                   md:rounded-none
                   md:rounded-r-[30px]
                 "
               >
                 <LocationFilters
-                  mode={mode}
-                  stores={stores}
-                  filters={filters}
-                  onModeChange={handleModeChange}
-                  onChange={handleFiltersChange}
+                  menuItems={menuItems}
+                  filters={foodFilters}
+                  onChange={setFoodFilters}
                   onClose={() => setFiltersOpen(false)}
                 />
               </motion.div>
@@ -371,51 +566,52 @@ export default function LocationContent({
   );
 }
 
-function StoresLoadingState() {
-  return (
-    <div className="space-y-4">
-      <div className="h-[180px] animate-pulse rounded-[24px] bg-gray-100" />
+interface ReadableMessageProps {
+  icon: React.ReactNode;
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {Array.from({
-          length: 4,
-        }).map((_, index) => (
-          <div
-            key={index}
-            className="h-[230px] animate-pulse rounded-[24px] bg-gray-100"
-          />
-        ))}
+  title: string;
+
+  description: string;
+
+  actionLabel?: string;
+
+  onAction?: () => void;
+}
+
+function ReadableMessage({
+  icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+}: ReadableMessageProps) {
+  return (
+    <section className="rounded-[26px] border border-orange-100 bg-orange-50 px-5 py-8 text-center sm:px-7 sm:py-10">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-[30px] text-secondary-500 shadow-sm">
+        {icon}
       </div>
-    </div>
-  );
-}
 
-interface StoresErrorStateProps {
-  onRetry: () => void;
-}
-
-function StoresErrorState({ onRetry }: StoresErrorStateProps) {
-  return (
-    <div className="rounded-[24px] border border-red-100 bg-white px-5 py-12 text-center shadow-sm">
       <p
         role="heading"
         aria-level={2}
-        className="text-[21px] font-semibold text-primary-900"
+        className="mx-auto mt-5 max-w-2xl text-[21px] font-bold leading-8 text-primary-900 sm:text-[23px]"
       >
-        មិនអាចទាញយកទិន្នន័យហាងបានទេ
+        {title}
       </p>
 
-      <p className="mx-auto mt-2 max-w-lg text-[17px] leading-8 text-gray-500">
-        សូមពិនិត្យការភ្ជាប់ RTK Query និងទីតាំងឯកសារទិន្នន័យហាង។
+      <p className="mx-auto mt-2 max-w-2xl text-[17px] leading-8 text-gray-600">
+        {description}
       </p>
 
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-5 min-h-11 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700"
-      >
-        ព្យាយាមម្តងទៀត
-      </button>
-    </div>
+      {actionLabel && onAction && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-5 min-h-12 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700"
+        >
+          {actionLabel}
+        </button>
+      )}
+    </section>
   );
 }

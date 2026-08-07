@@ -1,5 +1,5 @@
 import { baseApi } from "@/app/store/baseApi";
-import type { CurrentUser } from "@/types/current-user";
+import type { CurrentUser } from "@/types/user/current-user";
 
 export interface UpdateCurrentUserRequest {
   firstName: string;

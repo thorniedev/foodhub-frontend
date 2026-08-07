@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Circle,
@@ -12,7 +12,12 @@ import {
   ZoomControl,
 } from "react-leaflet";
 
-import { divIcon, latLngBounds, type DivIcon } from "leaflet";
+import {
+  divIcon,
+  latLngBounds,
+  type DivIcon,
+  type Map as LeafletMap,
+} from "leaflet";
 
 import {
   IoContractOutline,
@@ -171,6 +176,95 @@ function isSafeLatLng(
     longitude >= -180 &&
     longitude <= 180
   );
+}
+
+function invalidateLeafletSize(map: LeafletMap): void {
+  const container = map.getContainer();
+
+  if (!container?.isConnected) {
+    return;
+  }
+
+  try {
+    map.invalidateSize({
+      animate: false,
+      pan: false,
+    });
+  } catch {
+    // The map may be unmounting. Ignore resize work in that case.
+  }
+}
+
+function safelySetView(
+  map: LeafletMap,
+  target: SafeLatLng,
+  zoom: number,
+): void {
+  if (!isSafeLatLng(target)) {
+    return;
+  }
+
+  try {
+    map.stop();
+
+    invalidateLeafletSize(map);
+
+    map.setView(target, zoom, {
+      animate: false,
+    });
+  } catch {
+    // Do not let a Leaflet transition error break the Location page.
+  }
+}
+
+function safelyFlyTo(
+  map: LeafletMap,
+  target: SafeLatLng,
+  zoom: number,
+  duration = 0.65,
+): number | null {
+  if (typeof window === "undefined" || !isSafeLatLng(target)) {
+    return null;
+  }
+
+  map.stop();
+
+  invalidateLeafletSize(map);
+
+  return window.requestAnimationFrame(() => {
+    const container = map.getContainer();
+
+    if (!container?.isConnected) {
+      return;
+    }
+
+    try {
+      const currentCenter = map.getCenter();
+      const currentZoom = map.getZoom();
+
+      const alreadyAtTarget =
+        Math.abs(currentCenter.lat - target[0]) < 0.000005 &&
+        Math.abs(currentCenter.lng - target[1]) < 0.000005 &&
+        Math.abs(currentZoom - zoom) < 0.01;
+
+      if (alreadyAtTarget) {
+        return;
+      }
+
+      map.flyTo(target, zoom, {
+        animate: true,
+        duration,
+        easeLinearity: 0.25,
+      });
+    } catch {
+      /*
+       * A rapid card-scroll can interrupt a Leaflet animation while the map
+       * is also being resized. Falling back to setView keeps the UI usable
+       * instead of allowing the map transition to throw into React.
+       */
+      safelySetView(map, target, zoom);
+    }
+  });
 }
 
 function getSafeRadiusMeters(radiusKm: unknown): number {
@@ -390,13 +484,84 @@ function MapViewportController({
 }) {
   const map = useMap();
 
+  const frameRef = useRef<number | null>(null);
+
+  const timeoutRef = useRef<number | null>(null);
+
+  const firstViewAppliedRef = useRef(false);
+
   const centerLatitude = center[0];
+
   const centerLongitude = center[1];
 
   const selectedLatitude = selectedStorePosition?.[0] ?? null;
 
   const selectedLongitude = selectedStorePosition?.[1] ?? null;
 
+  /*
+   * Leaflet does not always detect width/height changes caused by a
+   * responsive Tailwind grid or sticky column. When that happens, only part
+   * of the tile layer is painted and flyTo can run with stale pixel bounds.
+   *
+   * ResizeObserver keeps Leaflet's internal size synchronized with the
+   * actual map element.
+   */
+  useEffect(() => {
+    const container = map.getContainer();
+
+    if (!container) {
+      return;
+    }
+
+    let resizeFrame: number | null = null;
+
+    const refreshSize = () => {
+      if (resizeFrame !== null) {
+        window.cancelAnimationFrame(resizeFrame);
+      }
+
+      resizeFrame = window.requestAnimationFrame(() => {
+        invalidateLeafletSize(map);
+      });
+    };
+
+    refreshSize();
+
+    const firstTimeout = window.setTimeout(refreshSize, 80);
+
+    const secondTimeout = window.setTimeout(refreshSize, 280);
+
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(refreshSize)
+        : null;
+
+    resizeObserver?.observe(container);
+
+    window.addEventListener("resize", refreshSize);
+
+    return () => {
+      resizeObserver?.disconnect();
+
+      window.removeEventListener("resize", refreshSize);
+
+      window.clearTimeout(firstTimeout);
+
+      window.clearTimeout(secondTimeout);
+
+      if (resizeFrame !== null) {
+        window.cancelAnimationFrame(resizeFrame);
+      }
+    };
+  }, [map]);
+
+  /*
+   * Follow the active FoodCard.
+   *
+   * We debounce very slightly because the active card may change many times
+   * while the user is scrolling. Before each move we stop the previous
+   * Leaflet animation and recalculate the map size.
+   */
   useEffect(() => {
     const hasSelectedPosition =
       selectedLatitude !== null && selectedLongitude !== null;
@@ -409,12 +574,56 @@ function MapViewportController({
       return;
     }
 
-    map.stop();
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
 
-    map.flyTo(target, hasSelectedPosition ? 16 : 14, {
-      duration: 0.75,
-      easeLinearity: 0.25,
-    });
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current);
+    }
+
+    timeoutRef.current = window.setTimeout(
+      () => {
+        map.stop();
+
+        invalidateLeafletSize(map);
+
+        /*
+         * On the first map render, setView is safer because Leaflet may still
+         * be calculating the dimensions of the sticky/responsive container.
+         * After that, selected FoodCards use the smooth flyTo animation.
+         */
+        if (!firstViewAppliedRef.current) {
+          safelySetView(map, target, hasSelectedPosition ? 16 : 14);
+
+          firstViewAppliedRef.current = true;
+
+          return;
+        }
+
+        frameRef.current = safelyFlyTo(
+          map,
+          target,
+          hasSelectedPosition ? 16 : 14,
+          hasSelectedPosition ? 0.62 : 0.5,
+        );
+      },
+      hasSelectedPosition ? 70 : 30,
+    );
+
+    return () => {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+
+      // map.stop();
+    };
   }, [
     centerLatitude,
     centerLongitude,
@@ -440,12 +649,7 @@ function FloatingMapControls({
       return;
     }
 
-    map.stop();
-
-    map.flyTo(focusPosition, 16, {
-      duration: 0.75,
-      easeLinearity: 0.25,
-    });
+    safelyFlyTo(map, focusPosition, 16, 0.62);
   };
 
   const handleFitAll = () => {
@@ -457,22 +661,32 @@ function FloatingMapControls({
 
     map.stop();
 
+    invalidateLeafletSize(map);
+
     if (safePositions.length === 1) {
-      map.flyTo(safePositions[0], 15, {
-        duration: 0.75,
-      });
+      safelyFlyTo(map, safePositions[0], 15, 0.62);
 
       return;
     }
 
     const bounds = latLngBounds(safePositions);
 
-    map.fitBounds(bounds, {
-      animate: true,
-      duration: 0.75,
-      paddingTopLeft: [50, 100],
-      paddingBottomRight: [50, 80],
-      maxZoom: 15,
+    window.requestAnimationFrame(() => {
+      try {
+        map.fitBounds(bounds, {
+          animate: true,
+          duration: 0.65,
+          paddingTopLeft: [50, 100],
+          paddingBottomRight: [50, 80],
+          maxZoom: 15,
+        });
+      } catch {
+        const fallbackPosition = safePositions[0];
+
+        if (fallbackPosition) {
+          safelySetView(map, fallbackPosition, 14);
+        }
+      }
     });
   };
 
@@ -655,7 +869,7 @@ export default function FoodLocationMap({
         scrollWheelZoom
         doubleClickZoom
         touchZoom
-        className="h-[58dvh] min-h-[480px] w-full sm:h-[620px] md:min-h-[560px] lg:h-[680px] 2xl:h-[calc(100vh-250px)]"
+        className="h-[64dvh] min-h-[520px] w-full sm:h-[650px] md:min-h-[600px] lg:h-[720px] 2xl:h-[calc(100dvh-100px)] 2xl:min-h-[620px] 2xl:max-h-[900px]"
       >
         <TileLayer
           key={mapStyle}
@@ -716,7 +930,7 @@ export default function FoodLocationMap({
                       ទីតាំងរបស់អ្នក
                     </p>
 
-                    <p className="mt-0.5 text-[15px] text-slate-500">
+                    <p className="mt-0.5 text-[17px] text-slate-500">
                       ទីតាំងបច្ចុប្បន្ន
                     </p>
                   </div>
@@ -724,7 +938,7 @@ export default function FoodLocationMap({
 
                 {typeof userLocation?.accuracy === "number" &&
                   Number.isFinite(userLocation.accuracy) && (
-                    <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-[15px] text-slate-600">
+                    <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-[17px] text-slate-600">
                       ភាពត្រឹមត្រូវប្រហែល {Math.round(userLocation.accuracy)}{" "}
                       ម៉ែត្រ
                     </p>
@@ -763,7 +977,7 @@ export default function FoodLocationMap({
                       {member.name || `Member ${index + 1}`}
                     </p>
 
-                    <p className="mt-0.5 text-[15px] text-slate-500">
+                    <p className="mt-0.5 text-[17px] text-slate-500">
                       ទីតាំងសមាជិកក្រុម
                     </p>
                   </div>
@@ -794,7 +1008,7 @@ export default function FoodLocationMap({
                       ចំណុចកណ្ដាលក្រុម
                     </p>
 
-                    <p className="mt-0.5 text-[15px] text-slate-500">
+                    <p className="mt-0.5 text-[17px] text-slate-500">
                       ទីតាំងសមរម្យសម្រាប់មនុស្សគ្រប់គ្នា
                     </p>
                   </div>
@@ -840,12 +1054,16 @@ export default function FoodLocationMap({
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-2 text-[18px] font-bold leading-6 text-slate-900">
+                      <p
+                        role="heading"
+                        aria-level={3}
+                        className="line-clamp-2 text-[18px] font-bold leading-6 text-slate-900"
+                      >
                         {displayName}
-                      </h3>
+                      </p>
 
                       <p
-                        className={`mt-1 text-[15px] font-semibold ${storeStatus.className}`}
+                        className={`mt-1 text-[17px] font-semibold ${storeStatus.className}`}
                       >
                         {storeStatus.label}
                       </p>
@@ -853,7 +1071,7 @@ export default function FoodLocationMap({
                   </div>
 
                   {displayAddress && (
-                    <p className="mt-3 flex items-start gap-2 text-[15px] leading-6 text-slate-500">
+                    <p className="mt-3 flex items-start gap-2 text-[17px] leading-6 text-slate-500">
                       <IoLocationOutline className="mt-1 shrink-0 text-[17px] text-primary-600" />
 
                       <span>{displayAddress}</span>
@@ -861,12 +1079,12 @@ export default function FoodLocationMap({
                   )}
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-amber-50 px-3 text-[15px] font-semibold text-amber-700">
+                    <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-amber-50 px-3 text-[17px] font-semibold text-amber-700">
                       <IoStar className="text-[17px]" />
                       {formatRating(store.averageRating)}
                     </span>
 
-                    <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-blue-50 px-3 text-[15px] font-semibold text-blue-700">
+                    <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-blue-50 px-3 text-[17px] font-semibold text-blue-700">
                       <IoNavigateOutline className="text-[17px]" />
                       {formatDistance(store.distanceKm)}
                     </span>
@@ -876,7 +1094,7 @@ export default function FoodLocationMap({
                     <button
                       type="button"
                       onClick={() => onSelectStore(store.uuid)}
-                      className="flex min-h-11 items-center justify-center rounded-xl bg-primary-800 px-3 text-[15px] font-bold text-white transition hover:bg-primary-700"
+                      className="flex min-h-11 items-center justify-center rounded-xl bg-primary-800 px-3 text-[17px] font-bold text-white transition hover:bg-primary-700"
                     >
                       ជ្រើសរើស
                     </button>
@@ -885,7 +1103,7 @@ export default function FoodLocationMap({
                       href={directionsUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-[15px] font-bold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800"
+                      className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-[17px] font-bold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800"
                     >
                       <IoNavigateOutline className="text-[18px]" />
                       ទិសដៅ
@@ -912,7 +1130,7 @@ export default function FoodLocationMap({
               key={style}
               type="button"
               onClick={() => setMapStyle(style)}
-              className={`min-h-9 rounded-xl px-3 text-[14px] font-bold transition sm:px-4 sm:text-[15px] ${
+              className={`min-h-9 rounded-xl px-3 text-[17px] font-bold transition sm:px-4 sm:text-[17px] ${
                 active
                   ? "bg-primary-800 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100"
@@ -925,7 +1143,7 @@ export default function FoodLocationMap({
       </div>
 
       {/* Responsive legend */}
-      <div className="pointer-events-none absolute bottom-3 left-3 z-[500] hidden items-center gap-4 rounded-2xl border border-white/80 bg-white/95 px-4 py-3 text-[14px] font-semibold text-slate-600 shadow-[0_8px_28px_rgba(15,23,42,0.14)] backdrop-blur-md md:flex">
+      <div className="pointer-events-none absolute bottom-3 left-3 z-[500] hidden items-center gap-4 rounded-2xl border border-white/80 bg-white/95 px-4 py-3 text-[17px] font-semibold text-slate-600 shadow-[0_8px_28px_rgba(15,23,42,0.14)] backdrop-blur-md md:flex">
         <span className="inline-flex items-center gap-2">
           <span className="h-3 w-3 rounded-full border-2 border-white bg-blue-600 shadow" />
           អ្នក

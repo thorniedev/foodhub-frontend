@@ -16,6 +16,9 @@ export interface GroupLocationMember {
   requiredDietaryCodes: string[];
   blockedAllergenCodes: string[];
   hasVoted: boolean;
+  profileId?: number | null;
+
+  backendParticipantUuid?: string | null;
 }
 
 export interface GroupLocationVote {
@@ -24,11 +27,6 @@ export interface GroupLocationVote {
   createdAt: string;
 }
 
-/**
- * Group-only fields layered on top of the existing location RecommendedStore.
- * Keeping these types separate prevents the shared voting API types from
- * becoming coupled to the midpoint UI.
- */
 export type GroupRecommendedStore = RecommendedStore & {
   deliveryAvailable: boolean;
   pickupAvailable: boolean;

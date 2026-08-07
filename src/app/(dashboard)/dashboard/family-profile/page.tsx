@@ -55,7 +55,13 @@ export default function FamilyPage() {
     dinner: "ពេលល្ងាច",
   };
 
-  const visibleFoods = foods.filter((item) => item.mealTypes === mealTime);
+  const visibleFoods = foods.filter((item) =>
+    item.mealTypes?.some(
+      (type) =>
+        type.code?.toLowerCase() === mealTime ||
+        type.name?.toLowerCase() === mealTime,
+    ),
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6">
@@ -102,7 +108,7 @@ export default function FamilyPage() {
               className="mt-5 grid grid-cols-1 place-items-center gap-4 sm:grid-cols-2 sm:place-items-stretch sm:gap-5 lg:grid-cols-3 lg:w-4xl"
             >
               {visibleFoods.map((item) => (
-                <FoodCard key={item.id} food={item} />
+                <FoodCard key={item.uuid} food={item} />
               ))}
             </motion.div>
           ) : (

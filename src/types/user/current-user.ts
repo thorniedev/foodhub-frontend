@@ -1,4 +1,6 @@
 export interface CurrentUser {
+  id?: number;
+
   uuid: string;
   username: string;
   primaryEmail: string;
