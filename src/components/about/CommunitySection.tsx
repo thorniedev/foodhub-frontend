@@ -43,7 +43,13 @@ interface MemberCardProps {
   avatar: string;
 }
 
-function MemberCard({ name, role, roleColor, roleBg, avatar }: MemberCardProps) {
+function MemberCard({
+  name,
+  role,
+  roleColor,
+  roleBg,
+  avatar,
+}: MemberCardProps) {
   return (
     <div className="flex flex-col items-center gap-3">
       {/* Outer Wrapper for Avatar with Ring Elements */}

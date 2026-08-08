@@ -25,7 +25,7 @@ export const navItems: NavItem[] = [
   // },
   {
     href: "/dashboard/history",
-    label: "ប្រវត្តិការវាយតម្លៃអាហារ",
+    label: "ប្រវត្តិដែលបានមើលអាហារ",
     icon: <FaHistory />,
   },
 

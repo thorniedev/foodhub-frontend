@@ -10,6 +10,11 @@ export type HistoryItem = {
 
 const HISTORY_KEY = "foodhub-recently-viewed";
 const MAX_HISTORY = 30;
+export const HISTORY_UPDATED_EVENT = "foodhub-history-updated";
+
+function notifyHistoryUpdated() {
+  window.dispatchEvent(new Event(HISTORY_UPDATED_EVENT));
+}
 
 export function addToHistory(item: Omit<HistoryItem, "viewedAt">) {
   if (typeof window === "undefined") return;
@@ -33,6 +38,7 @@ export function addToHistory(item: Omit<HistoryItem, "viewedAt">) {
     ].slice(0, MAX_HISTORY);
 
     localStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+    notifyHistoryUpdated();
   } catch (error) {
     console.error("Failed to save history:", error);
   }
@@ -54,4 +60,5 @@ export function clearHistory() {
   if (typeof window === "undefined") return;
 
   localStorage.removeItem(HISTORY_KEY);
+  notifyHistoryUpdated();
 }
