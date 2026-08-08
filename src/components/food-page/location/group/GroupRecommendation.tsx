@@ -5,11 +5,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IoFilterOutline, IoRestaurantOutline } from "react-icons/io5";
 
 import {
+  useCancelMeetupMutation,
+  useCreateMeetupMutation,
   useCreateMockGroupSessionMutation,
   useFinishMockGroupVotingMutation,
+  useGetMeetupParticipantsQuery,
   useGetMockGroupSessionQuery,
+  useJoinMeetupParticipantMutation,
   useSubmitMockGroupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
+
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
@@ -52,6 +58,41 @@ const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
 const CURRENT_MEMBER_UUID = "current-user";
 
 const MAX_VOTING_CANDIDATES = 8;
+
+const BACKEND_MEETUP_EXPIRY_HOURS = 24;
+
+function createGoogleMapsUrl(coordinates: Coordinates): string {
+  const query = encodeURIComponent(
+    `${coordinates.latitude},${coordinates.longitude}`,
+  );
+
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+}
+
+function getClientTimezone(): string {
+  try {
+    return (
+      Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Phnom_Penh"
+    );
+  } catch {
+    return "Asia/Phnom_Penh";
+  }
+}
+
+function buildMeetupExpiry(): string {
+  return new Date(
+    Date.now() + BACKEND_MEETUP_EXPIRY_HOURS * 60 * 60 * 1000,
+  ).toISOString();
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    Number.isFinite(value) &&
+    value > 0
+  );
+}
 
 interface GroupRecommendationProps {
   menuItems: MenuItem[];
@@ -124,7 +165,7 @@ function getApiErrorMessage(error: unknown): string {
 
 export default function GroupRecommendation({
   menuItems,
-  stores: sourceStores,
+  stores: sourceStores = [],
   userLocation,
   filters,
   searchQuery,
@@ -162,7 +203,25 @@ export default function GroupRecommendation({
 
   const [sessionError, setSessionError] = useState<string | null>(null);
 
+  const [backendMeetupUuid, setBackendMeetupUuid] = useState<string | null>(
+    null,
+  );
+
+  const [backendSyncError, setBackendSyncError] = useState<string | null>(null);
+
   const autoCreateAttemptedRef = useRef(false);
+
+  const { data: currentUser } = useGetCurrentUserQuery();
+
+  const createdByUserId = isPositiveInteger(currentUser?.id)
+    ? currentUser.id
+    : null;
+
+  const [createMeetup] = useCreateMeetupMutation();
+
+  const [joinMeetupParticipant] = useJoinMeetupParticipantMutation();
+
+  const [cancelMeetup] = useCancelMeetupMutation();
 
   const [createSession, { isLoading: isCreatingSession }] =
     useCreateMockGroupSessionMutation();
@@ -181,6 +240,16 @@ export default function GroupRecommendation({
       refetchOnReconnect: true,
     });
 
+  const { data: backendParticipants } = useGetMeetupParticipantsQuery(
+    backendMeetupUuid ?? "",
+    {
+      skip: !backendMeetupUuid,
+      pollingInterval: 5_000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
+
   const activeSession = queriedSession ?? createdSession;
 
   useEffect(() => {
@@ -198,6 +267,41 @@ export default function GroupRecommendation({
       ),
     );
   }, [userLocation]);
+
+  useEffect(() => {
+    const syncedParticipants = backendParticipants?.participants ?? [];
+
+    if (syncedParticipants.length === 0) {
+      return;
+    }
+
+    setMembers((current) => {
+      let changed = false;
+
+      const nextMembers = current.map((member) => {
+        if (!isPositiveInteger(member.profileId)) {
+          return member;
+        }
+
+        const synced = syncedParticipants.find(
+          (participant) => participant.profileId === member.profileId,
+        );
+
+        if (!synced?.uuid || member.backendParticipantUuid === synced.uuid) {
+          return member;
+        }
+
+        changed = true;
+
+        return {
+          ...member,
+          backendParticipantUuid: synced.uuid,
+        };
+      });
+
+      return changed ? nextMembers : current;
+    });
+  }, [backendParticipants]);
 
   const recommendedStores = useMemo(
     () =>
@@ -254,6 +358,124 @@ export default function GroupRecommendation({
     }
   }, [activeSession?.status]);
 
+  const syncMeetupToBackend = useCallback(
+    async (midpoint: Coordinates) => {
+      // The current backend create contract requires a numeric user ID.
+      // If /users/me does not expose it yet, keep the complete local flow
+      // working and simply defer backend lifecycle sync.
+      if (!createdByUserId || backendMeetupUuid) {
+        return;
+      }
+
+      try {
+        setBackendSyncError(null);
+
+        const created = await createMeetup({
+          createdByUserId,
+          title: groupName.trim() || "FoodHub Group",
+          votingMethod: "SINGLE_PICK",
+          searchRadiusKm: filters.radiusKm,
+          timezone: getClientTimezone(),
+          meetingPointLat: midpoint.latitude,
+          meetingPointLng: midpoint.longitude,
+          meetingPointMethod: "GEOMETRIC_MEDIAN",
+          expiresAt: buildMeetupExpiry(),
+        }).unwrap();
+
+        const meetupUuid = created.uuid;
+
+        if (!meetupUuid) {
+          throw new Error(
+            "Meetup was created but the response did not include a meetup UUID.",
+          );
+        }
+
+        setBackendMeetupUuid(meetupUuid);
+
+        const joinableMembers = members.filter((member) =>
+          isPositiveInteger(member.profileId),
+        );
+
+        if (joinableMembers.length === 0) {
+          return;
+        }
+
+        const joinedResults = await Promise.allSettled(
+          joinableMembers.map(async (member) => {
+            const coordinates = member.coordinates;
+
+            const participant = await joinMeetupParticipant({
+              meetupUuid,
+              profileId: member.profileId as number,
+              nickname: member.name.trim() || "FoodHub member",
+              locationInputType: coordinates ? "MAPS_LINK" : null,
+              mapsLink: coordinates ? createGoogleMapsUrl(coordinates) : null,
+              locationLat: coordinates?.latitude ?? null,
+              locationLng: coordinates?.longitude ?? null,
+            }).unwrap();
+
+            return {
+              localMemberUuid: member.uuid,
+              backendParticipantUuid: participant.uuid,
+            };
+          }),
+        );
+
+        const successfulJoins = new Map<string, string>();
+        let failedJoinCount = 0;
+
+        joinedResults.forEach((result) => {
+          if (
+            result.status === "fulfilled" &&
+            result.value.backendParticipantUuid
+          ) {
+            successfulJoins.set(
+              result.value.localMemberUuid,
+              result.value.backendParticipantUuid,
+            );
+            return;
+          }
+
+          if (result.status === "rejected") {
+            failedJoinCount += 1;
+          }
+        });
+
+        if (successfulJoins.size > 0) {
+          setMembers((current) =>
+            current.map((member) => {
+              const backendParticipantUuid = successfulJoins.get(member.uuid);
+
+              return backendParticipantUuid
+                ? {
+                    ...member,
+                    backendParticipantUuid,
+                  }
+                : member;
+            }),
+          );
+        }
+
+        if (failedJoinCount > 0) {
+          setBackendSyncError(
+            `Meetup created, but ${failedJoinCount} participant(s) could not sync.`,
+          );
+        }
+      } catch (error) {
+        setBackendSyncError(getApiErrorMessage(error));
+      }
+    },
+    [
+      backendMeetupUuid,
+      createMeetup,
+      createdByUserId,
+      filters.radiusKm,
+      groupName,
+      joinMeetupParticipant,
+      members,
+    ],
+  );
+
   const calculateAndShowRecommendations = () => {
     const midpoint = calculateGroupMidpoint(members);
 
@@ -270,6 +492,8 @@ export default function GroupRecommendation({
     setStage("recommendations");
 
     setSessionError(null);
+
+    void syncMeetupToBackend(midpoint);
   };
 
   const createVotingSession = useCallback(
@@ -403,6 +627,23 @@ export default function GroupRecommendation({
     }
   };
 
+  const cancelBackendMeetupIfNeeded = () => {
+    const meetupUuid = backendMeetupUuid;
+
+    setBackendMeetupUuid(null);
+    setBackendSyncError(null);
+
+    if (!meetupUuid) {
+      return;
+    }
+
+    void cancelMeetup(meetupUuid)
+      .unwrap()
+      .catch(() => {
+        // Do not block the local UI reset if backend cancellation fails.
+      });
+  };
+
   const clearSharedSession = () => {
     autoCreateAttemptedRef.current = false;
 
@@ -417,6 +658,7 @@ export default function GroupRecommendation({
   };
 
   const changeLocations = () => {
+    cancelBackendMeetupIfNeeded();
     clearSharedSession();
 
     setMeetingPoint(null);
@@ -428,6 +670,7 @@ export default function GroupRecommendation({
   };
 
   const restart = () => {
+    cancelBackendMeetupIfNeeded();
     clearSharedSession();
 
     setGroupName("FoodHub Dinner Group");
@@ -495,9 +738,13 @@ export default function GroupRecommendation({
   if (!meetingPoint) {
     return (
       <section className="rounded-[24px] border border-red-100 bg-red-50 p-6 text-center">
-        <h2 className="text-[21px] font-bold text-primary-900">
+        <p
+          role="heading"
+          aria-level={2}
+          className="text-[21px] font-bold text-primary-900"
+        >
           មិនអាចគណនាចំណុចកណ្ដាលបានទេ
-        </h2>
+        </p>
 
         <p className="mt-2 text-[17px] leading-8 text-gray-600">
           សូមបញ្ចូល Latitude និង Longitude ត្រឹមត្រូវ យ៉ាងហោចណាស់ពីរនាក់។
@@ -574,8 +821,14 @@ export default function GroupRecommendation({
       />
 
       {sessionError && !votingOpen && (
-        <div className="mb-5 rounded-[18px] border border-red-100 bg-red-50 px-4 py-3 text-[16px] leading-7 text-red-600">
+        <div className="mb-5 rounded-[18px] border border-red-100 bg-red-50 px-4 py-3 text-[17px] leading-7 text-red-600">
           {sessionError}
+        </div>
+      )}
+
+      {backendSyncError && !votingOpen && (
+        <div className="mb-5 rounded-[18px] border border-amber-100 bg-amber-50 px-4 py-3 text-[17px] leading-7 text-amber-700">
+          {backendSyncError}
         </div>
       )}
 
@@ -615,9 +868,13 @@ function EmptyResults({
         <IoRestaurantOutline className="text-[27px]" />
       </div>
 
-      <h3 className="mt-4 text-[21px] font-bold text-primary-900">
+      <p
+        role="heading"
+        aria-level={3}
+        className="mt-4 text-[21px] font-bold text-primary-900"
+      >
         មិនមានហាងដែលត្រូវនឹងតម្រង
-      </h3>
+      </p>
 
       <p className="mt-2 text-[17px] leading-8 text-gray-600">
         ក្នុងពេលសាកល្បង សូមប្រើកាំស្វែងរក 5 km ឬ 10 km ហើយបិទ Open now, Rating,
@@ -625,10 +882,7 @@ function EmptyResults({
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <DebugMetric
-          label=""
-          value={String(sourceStoreCount)}
-        />
+        <DebugMetric label="" value={String(sourceStoreCount)} />
 
         <DebugMetric
           label="ហាងមុនតម្រង"

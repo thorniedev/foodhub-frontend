@@ -1811,7 +1811,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid grid-cols-1 gap-x-10 gap-y-3 max-w-4xl sm:grid-cols-2 xl:grid-cols-3"
+      className="grid grid-cols-1 gap-x-10 gap-y-3 max-w-4xl sm:grid-cols-3 xl:grid-cols-3"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (

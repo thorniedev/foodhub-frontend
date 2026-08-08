@@ -11,7 +11,7 @@ export default function AboutHeroClient() {
 
   return (
     <>
-      <FoodHubHero01 />
+      <FoodHubHero01/>
 
       <AnimatePresence>
         {isOpen && (

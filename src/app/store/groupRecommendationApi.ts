@@ -1,5 +1,14 @@
 import { baseApi } from "./baseApi";
 
+import {
+  normalizeMeetupActionResponse,
+  normalizeMeetupGroupResponse,
+  normalizeMeetupParticipantResponse,
+  normalizeMeetupParticipantsResponse,
+  normalizeMeetupVoteResponse,
+  normalizeMeetupVotesResponse,
+} from "@/lib/meetup/meetup-adapter";
+
 import type {
   CreateGroupSessionRequest,
   CreateGroupSessionResponse,
@@ -9,6 +18,19 @@ import type {
   SharedGroupSession,
   SubmitSharedVoteRequest,
 } from "@/types/group-recommendation";
+
+import type {
+  CreateMeetupRequest,
+  JoinMeetupParticipantRequest,
+  LeaveMeetupParticipantArgs,
+  MeetupActionResponse,
+  MeetupGroupResponse,
+  MeetupParticipantResponse,
+  MeetupParticipantsResponse,
+  MeetupVoteResponse,
+  MeetupVotesResponse,
+  SubmitMeetupVoteRequest,
+} from "@/types/meetup-api";
 
 interface ApiErrorBody {
   message?: string;
@@ -65,6 +87,135 @@ async function requestJson<T>(
 
 export const groupRecommendationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+
+    createMeetup: builder.mutation<MeetupGroupResponse, CreateMeetupRequest>({
+      query: (body) => ({
+        url: "/meetup/groups",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupGroupResponse(response),
+      invalidatesTags: [
+        {
+          type: "GroupRecommendation",
+          id: "MEETUP_LIST",
+        },
+      ],
+    }),
+
+    joinMeetupParticipant: builder.mutation<
+      MeetupParticipantResponse,
+      JoinMeetupParticipantRequest
+    >({
+      query: (body) => ({
+        url: "/meetup/participants/join",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupParticipantResponse(response),
+      invalidatesTags: (_result, _error, body) => [
+        {
+          type: "GroupRecommendation",
+          id: `PARTICIPANTS-${body.meetupUuid}`,
+        },
+      ],
+    }),
+
+    getMeetupParticipants: builder.query<MeetupParticipantsResponse, string>({
+      query: (meetupUuid) => ({
+        url: `/meetup/participants/meetup/${encodeURIComponent(meetupUuid)}`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupParticipantsResponse(response),
+      providesTags: (_result, _error, meetupUuid) => [
+        {
+          type: "GroupRecommendation",
+          id: `PARTICIPANTS-${meetupUuid}`,
+        },
+      ],
+    }),
+
+    leaveMeetupParticipant: builder.mutation<
+      MeetupActionResponse,
+      LeaveMeetupParticipantArgs
+    >({
+      query: ({ participantUuid }) => ({
+        url: `/meetup/participants/${encodeURIComponent(participantUuid)}/leave`,
+        method: "POST",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupActionResponse(response),
+      invalidatesTags: (_result, _error, args) =>
+        args.meetupUuid
+          ? [
+              {
+                type: "GroupRecommendation" as const,
+                id: `PARTICIPANTS-${args.meetupUuid}`,
+              },
+            ]
+          : [],
+    }),
+
+    cancelMeetup: builder.mutation<MeetupActionResponse, string>({
+      query: (meetupUuid) => ({
+        url: `/meetup/groups/${encodeURIComponent(meetupUuid)}/cancel`,
+        method: "POST",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupActionResponse(response),
+      invalidatesTags: (_result, _error, meetupUuid) => [
+        {
+          type: "GroupRecommendation",
+          id: `PARTICIPANTS-${meetupUuid}`,
+        },
+        {
+          type: "GroupVoting",
+          id: `MEETUP-${meetupUuid}`,
+        },
+      ],
+    }),
+
+    submitMeetupVote: builder.mutation<
+      MeetupVoteResponse,
+      SubmitMeetupVoteRequest
+    >({
+      query: (body) => ({
+        url: "/meetup/votes",
+        method: "POST",
+        body: {
+          ...body,
+          rankChoice: body.rankChoice ?? 1,
+        },
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupVoteResponse(response),
+      invalidatesTags: (_result, _error, body) => [
+        {
+          type: "GroupVoting",
+          id: `MEETUP-${body.meetupUuid}`,
+        },
+      ],
+    }),
+
+    getMeetupVotes: builder.query<MeetupVotesResponse, string>({
+      query: (meetupUuid) => ({
+        url: `/meetup/votes/meetup/${encodeURIComponent(meetupUuid)}`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupVotesResponse(response),
+      providesTags: (_result, _error, meetupUuid) => [
+        {
+          type: "GroupVoting",
+          id: `MEETUP-${meetupUuid}`,
+        },
+      ],
+    }),
+
+
     createMockGroupSession: builder.mutation<
       CreateGroupSessionResponse,
       CreateGroupSessionRequest
@@ -175,6 +326,14 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useCreateMeetupMutation,
+  useJoinMeetupParticipantMutation,
+  useGetMeetupParticipantsQuery,
+  useLeaveMeetupParticipantMutation,
+  useCancelMeetupMutation,
+  useSubmitMeetupVoteMutation,
+  useGetMeetupVotesQuery,
+
   useCreateMockGroupSessionMutation,
   useGetMockGroupSessionQuery,
   useJoinMockGroupSessionMutation,

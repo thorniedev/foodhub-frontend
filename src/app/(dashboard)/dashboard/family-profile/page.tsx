@@ -55,7 +55,13 @@
 //     dinner: "ពេលល្ងាច",
 //   };
 
-//   const visibleFoods = foods.filter((item) => item.mealTypes === mealTime);
+  // const visibleFoods = foods.filter((item) =>
+  //   item.mealTypes?.some(
+  //     (type) =>
+  //       type.code?.toLowerCase() === mealTime ||
+  //       type.name?.toLowerCase() === mealTime,
+  //   ),
+  // );
 
 //   return (
 //     <div className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6">

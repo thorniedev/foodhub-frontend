@@ -241,8 +241,11 @@ export default function Home() {
           return false;
         }
 
-        const operatingStatus = store.operatingStatus?.toUpperCase();
-
+        const operatingStatus =
+          typeof store.operatingStatus === "string"
+            ? store.operatingStatus.trim().toUpperCase()
+            : "UNKNOWN";
+            
         const storeIsOpen =
           !operatingStatus ||
           operatingStatus === "OPEN" ||

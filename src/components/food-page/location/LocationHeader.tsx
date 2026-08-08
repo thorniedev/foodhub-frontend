@@ -1,11 +1,14 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { motion } from "framer-motion";
 
 import {
   IoAlertCircleOutline,
   IoLocateOutline,
   IoLocationOutline,
+  IoMapOutline,
   IoOptionsOutline,
   IoPeopleOutline,
   IoPersonOutline,
@@ -16,6 +19,8 @@ import {
 
 import type { RecommendationMode } from "@/types/location";
 
+import type { LocationSelectionSource } from "@/hooks/useUserLocation";
+
 export type LocationStatus =
   | "idle"
   | "loading"
@@ -23,25 +28,30 @@ export type LocationStatus =
   | "denied"
   | "unavailable";
 
-export type LocationSource = "live" | "saved" | "fallback";
+export type LocationSource = LocationSelectionSource;
 
 type LocationHeaderProps = {
   mode: RecommendationMode;
+
   storeCount: number;
   radiusKm: number;
 
   locationStatus: LocationStatus;
   locationSource: LocationSource;
+
   locationError?: string | null;
+  locationLabel?: string | null;
 
   isRefreshing?: boolean;
 
   onModeChange: (mode: RecommendationMode) => void;
+
   onRefresh: () => void;
 
-  /**
-   * Used to open the filter drawer on mobile and tablet.
-   */
+  onUseCurrentLocation: () => void;
+
+  onChooseLocation: () => void;
+
   onOpenFilters?: () => void;
 };
 
@@ -52,13 +62,23 @@ export default function LocationHeader({
   locationStatus,
   locationSource,
   locationError,
+  locationLabel,
   isRefreshing = false,
   onModeChange,
   onRefresh,
+  onUseCurrentLocation,
+  onChooseLocation,
   onOpenFilters,
 }: LocationHeaderProps) {
+  const manualLocationActive =
+    locationSource === "manual" || locationSource === "saved-manual";
+
+  const currentLocationActive =
+    locationSource === "live" || locationSource === "saved";
+
   const showLocationWarning =
-    locationStatus === "denied" || locationStatus === "unavailable";
+    !manualLocationActive &&
+    (locationStatus === "denied" || locationStatus === "unavailable");
 
   const sourceLabel = getLocationSourceLabel(locationSource);
 
@@ -79,23 +99,26 @@ export default function LocationHeader({
       className="overflow-hidden rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm sm:p-5 lg:p-6"
     >
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-        {/* Heading */}
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-primary-700">
-            <IoLocationOutline className="shrink-0 text-[20px]" />
+            <IoLocationOutline className="shrink-0 text-[22px]" />
 
-            <p className="text-[16px] font-semibold">ទីតាំង</p>
+            <p className="text-[17px] font-semibold">ទីតាំង</p>
           </div>
 
-          <p className="mt-1.5 text-[22px] font-semibold leading-15 text-primary-900 sm:text-[24px]">
+          <p
+            role="heading"
+            aria-level={1}
+            className="mt-2 text-[24px] font-semibold leading-tight text-primary-900 sm:text-[27px]"
+          >
             ហាងនៅជិតអ្នក
           </p>
-          <p className="mt-1 max-w-2xl text-[16px] leading-7 text-gray-500">
-            ស្វែងរកហាង និងមុខម្ហូបនៅជិតទីតាំងរបស់អ្នក
+
+          <p className="mt-2 max-w-2xl text-[17px] leading-8 text-gray-500">
+            {locationLabel || "ស្វែងរកហាង និងមុខម្ហូបនៅជិតទីតាំងរបស់អ្នក"}
           </p>
         </div>
 
-        {/* Controls */}
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto">
           <RecommendationModeSwitch mode={mode} onChange={onModeChange} />
 
@@ -104,9 +127,9 @@ export default function LocationHeader({
               <button
                 type="button"
                 onClick={onOpenFilters}
-                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[16px] dark:text-[#22a447] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] xl:hidden"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
               >
-                <IoOptionsOutline className="text-[20px]" />
+                <IoOptionsOutline className="text-[22px]" />
                 តម្រង
               </button>
             )}
@@ -115,7 +138,7 @@ export default function LocationHeader({
               type="button"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[16px] dark:text-[#22a447] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-400"
             >
               <motion.span
                 animate={
@@ -139,7 +162,7 @@ export default function LocationHeader({
                       }
                 }
               >
-                <IoRefreshOutline className="text-[20px]" />
+                <IoRefreshOutline className="text-[22px]" />
               </motion.span>
 
               <span>{isRefreshing ? "កំពុងផ្ទុក" : "Refresh"}</span>
@@ -148,24 +171,25 @@ export default function LocationHeader({
         </div>
       </div>
 
-      {/* Information chips */}
       <div className="mt-5 flex flex-wrap gap-2.5">
         <InfoChip
-          icon={<IoStorefrontOutline className="text-[19px]" />}
+          icon={<IoStorefrontOutline className="text-[21px]" />}
           label={`${storeCount} ហាង`}
           variant="green"
         />
 
         <InfoChip
-          icon={<IoLocateOutline className="text-[19px]" />}
+          icon={<IoLocateOutline className="text-[21px]" />}
           label={`ក្នុងរង្វង់ ${radiusKm} km`}
           variant="green"
         />
 
         <InfoChip
-          icon={<IoShieldCheckmarkOutline className="text-[19px]" />}
+          icon={<IoShieldCheckmarkOutline className="text-[21px]" />}
           label={sourceLabel}
-          variant={locationSource === "live" ? "green" : "gray"}
+          variant={
+            locationSource === "live" || manualLocationActive ? "green" : "gray"
+          }
         />
 
         {locationStatus === "loading" && (
@@ -179,7 +203,66 @@ export default function LocationHeader({
         )}
       </div>
 
-      {/* Location warning */}
+      <div className="mt-5 grid gap-3 rounded-[20px] border border-gray-100 bg-gray-50 p-3 sm:grid-cols-2">
+        <motion.button
+          type="button"
+          whileTap={{
+            scale: 0.98,
+          }}
+          onClick={onUseCurrentLocation}
+          className={`flex min-h-14 items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+            currentLocationActive
+              ? "border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
+              : "border-gray-200 bg-white text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+          }`}
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+            <IoLocateOutline className="text-[24px]" />
+          </span>
+
+          <span className="min-w-0">
+            <span className="block text-[17px] font-semibold">
+              ប្រើទីតាំងបច្ចុប្បន្ន
+            </span>
+
+            <span className="mt-1 block text-[17px] opacity-75">
+              ប្រើ GPS របស់ឧបករណ៍
+            </span>
+          </span>
+        </motion.button>
+
+        <motion.button
+          type="button"
+          whileTap={{
+            scale: 0.98,
+          }}
+          onClick={onChooseLocation}
+          className={`flex min-h-14 items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+            manualLocationActive
+              ? "border-primary-700 bg-primary-800 text-white shadow-sm"
+              : "border-primary-200 bg-white text-primary-800 hover:bg-primary-50"
+          }`}
+        >
+          <span
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-sm ${
+              manualLocationActive ? "bg-white/15" : "bg-primary-50"
+            }`}
+          >
+            <IoMapOutline className="text-[24px]" />
+          </span>
+
+          <span className="min-w-0">
+            <span className="block text-[17px] font-semibold">
+              ជ្រើសទីតាំងលើផែនទី
+            </span>
+
+            <span className="mt-1 block text-[17px] opacity-75">
+              ស្វែងរក ចុច ឬអូសសញ្ញាសម្គាល់
+            </span>
+          </span>
+        </motion.button>
+      </div>
+
       {showLocationWarning && (
         <motion.div
           initial={{
@@ -193,18 +276,18 @@ export default function LocationHeader({
           className="mt-5"
         >
           <div role="alert" className="flex items-start gap-3 px-4 py-3.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center ">
-              <IoAlertCircleOutline className="text-[22px] text-orange-600" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center">
+              <IoAlertCircleOutline className="text-[24px] text-orange-600" />
             </div>
 
             <div className="min-w-0">
-              <p className="text-[16px] font-semibold leading-7 text-orange-700">
+              <p className="text-[17px] font-semibold leading-8 text-orange-700">
                 មិនអាចប្រើទីតាំងបច្ចុប្បន្នបាន
               </p>
 
-              <p className="mt-0.5 text-[16px] leading-7 text-orange-600">
+              <p className="mt-1 text-[17px] leading-8 text-orange-600">
                 {locationError ||
-                  "FoodHub កំពុងប្រើចម្ងាយដែលបានរក្សាទុក ដើម្បីបង្ហាញហាងនៅក្បែរអ្នក។"}
+                  "អ្នកអាចស្វែងរក ឬជ្រើសទីតាំងដោយផ្ទាល់លើផែនទី។"}
               </p>
             </div>
           </div>
@@ -216,6 +299,7 @@ export default function LocationHeader({
 
 type RecommendationModeSwitchProps = {
   mode: RecommendationMode;
+
   onChange: (mode: RecommendationMode) => void;
 };
 
@@ -226,7 +310,7 @@ function RecommendationModeSwitch({
   const options: Array<{
     value: RecommendationMode;
     label: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
   }> = [
     {
       value: "single",
@@ -256,13 +340,13 @@ function RecommendationModeSwitch({
             role="tab"
             aria-selected={selected}
             onClick={() => onChange(option.value)}
-            className={`flex min-h-10 items-center justify-center gap-2 rounded-full px-4 text-[16px] font-semibold whitespace-nowrap transition ${
+            className={`flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 text-[17px] font-semibold transition ${
               selected
                 ? "bg-primary-800 text-white shadow-sm"
                 : "text-gray-600 hover:bg-white hover:text-primary-800"
             }`}
           >
-            <span className="text-[19px]">{option.icon}</span>
+            <span className="text-[21px]">{option.icon}</span>
 
             {option.label}
           </button>
@@ -273,8 +357,9 @@ function RecommendationModeSwitch({
 }
 
 type InfoChipProps = {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
+
   variant: "green" | "gray";
 };
 
@@ -289,7 +374,7 @@ function InfoChip({ icon, label, variant }: InfoChipProps) {
     >
       <span className="shrink-0">{icon}</span>
 
-      <span className="text-[16px] font-medium">{label}</span>
+      <span className="text-[17px] font-medium">{label}</span>
     </div>
   );
 }
@@ -297,13 +382,19 @@ function InfoChip({ icon, label, variant }: InfoChipProps) {
 function getLocationSourceLabel(source: LocationSource): string {
   switch (source) {
     case "live":
-      return "Live location";
+      return "Live GPS location";
 
     case "saved":
-      return "Saved location";
+      return "Saved GPS location";
+
+    case "manual":
+      return "Selected map location";
+
+    case "saved-manual":
+      return "Saved selected location";
 
     case "fallback":
     default:
-      return "Location fallback";
+      return "No location selected";
   }
 }
