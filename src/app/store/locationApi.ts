@@ -2,7 +2,6 @@ import { LocationStore } from "@/types/location-store";
 import { baseApi } from "./baseApi";
 
 
-
 function isLocationStore(value: unknown): value is LocationStore {
   if (!value || typeof value !== "object") {
     return false;

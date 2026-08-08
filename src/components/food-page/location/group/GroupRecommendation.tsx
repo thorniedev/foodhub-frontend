@@ -9,9 +9,7 @@ import {
   useCreateMeetupMutation,
   useCreateMockGroupSessionMutation,
   useFinishMockGroupVotingMutation,
-  useGetMeetupParticipantsQuery,
   useGetMockGroupSessionQuery,
-  useJoinMeetupParticipantMutation,
   useSubmitMockGroupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
 
@@ -60,14 +58,6 @@ const CURRENT_MEMBER_UUID = "current-user";
 const MAX_VOTING_CANDIDATES = 8;
 
 const BACKEND_MEETUP_EXPIRY_HOURS = 24;
-
-function createGoogleMapsUrl(coordinates: Coordinates): string {
-  const query = encodeURIComponent(
-    `${coordinates.latitude},${coordinates.longitude}`,
-  );
-
-  return `https://www.google.com/maps/search/?api=1&query=${query}`;
-}
 
 function getClientTimezone(): string {
   try {
@@ -207,6 +197,10 @@ export default function GroupRecommendation({
     null,
   );
 
+  const [backendShareToken, setBackendShareToken] = useState<string | null>(
+    null,
+  );
+
   const [backendSyncError, setBackendSyncError] = useState<string | null>(null);
 
   const autoCreateAttemptedRef = useRef(false);
@@ -218,8 +212,6 @@ export default function GroupRecommendation({
     : null;
 
   const [createMeetup] = useCreateMeetupMutation();
-
-  const [joinMeetupParticipant] = useJoinMeetupParticipantMutation();
 
   const [cancelMeetup] = useCancelMeetupMutation();
 
@@ -240,16 +232,6 @@ export default function GroupRecommendation({
       refetchOnReconnect: true,
     });
 
-  const { data: backendParticipants } = useGetMeetupParticipantsQuery(
-    backendMeetupUuid ?? "",
-    {
-      skip: !backendMeetupUuid,
-      pollingInterval: 5_000,
-      refetchOnFocus: true,
-      refetchOnReconnect: true,
-    },
-  );
-
   const activeSession = queriedSession ?? createdSession;
 
   useEffect(() => {
@@ -267,41 +249,6 @@ export default function GroupRecommendation({
       ),
     );
   }, [userLocation]);
-
-  useEffect(() => {
-    const syncedParticipants = backendParticipants?.participants ?? [];
-
-    if (syncedParticipants.length === 0) {
-      return;
-    }
-
-    setMembers((current) => {
-      let changed = false;
-
-      const nextMembers = current.map((member) => {
-        if (!isPositiveInteger(member.profileId)) {
-          return member;
-        }
-
-        const synced = syncedParticipants.find(
-          (participant) => participant.profileId === member.profileId,
-        );
-
-        if (!synced?.uuid || member.backendParticipantUuid === synced.uuid) {
-          return member;
-        }
-
-        changed = true;
-
-        return {
-          ...member,
-          backendParticipantUuid: synced.uuid,
-        };
-      });
-
-      return changed ? nextMembers : current;
-    });
-  }, [backendParticipants]);
 
   const recommendedStores = useMemo(
     () =>
@@ -358,123 +305,64 @@ export default function GroupRecommendation({
     }
   }, [activeSession?.status]);
 
-  const syncMeetupToBackend = useCallback(
-    async (midpoint: Coordinates) => {
-      // The current backend create contract requires a numeric user ID.
-      // If /users/me does not expose it yet, keep the complete local flow
-      // working and simply defer backend lifecycle sync.
-      if (!createdByUserId || backendMeetupUuid) {
-        return;
+  const syncMeetupToBackend = useCallback(async () => {
+    /*
+     * The backend JOIN endpoint is not confirmed yet.
+     * For now we create the real meetup and immediately persist its one-time
+     * shareToken, while members/recommendations/store-voting continue using
+     * the current local/mock flow.
+     */
+    if (backendMeetupUuid) {
+      return;
+    }
+
+    if (!createdByUserId) {
+      setBackendSyncError(
+        "Real meetup was not created because /users/me does not expose a numeric user id yet.",
+      );
+      return;
+    }
+
+    try {
+      setBackendSyncError(null);
+
+      const created = await createMeetup({
+        createdByUserId,
+        title: groupName.trim() || "FoodHub Group",
+        votingMethod: "SINGLE_PICK",
+        searchRadiusKm: filters.radiusKm,
+        timezone: getClientTimezone(),
+        expiresAt: buildMeetupExpiry(),
+      }).unwrap();
+
+      const meetupUuid = created.uuid;
+
+      if (!meetupUuid) {
+        throw new Error(
+          "Meetup was created but the response did not include a meetup UUID.",
+        );
       }
 
-      try {
-        setBackendSyncError(null);
+      setBackendMeetupUuid(meetupUuid);
 
-        const created = await createMeetup({
-          createdByUserId,
-          title: groupName.trim() || "FoodHub Group",
-          votingMethod: "SINGLE_PICK",
-          searchRadiusKm: filters.radiusKm,
-          timezone: getClientTimezone(),
-          meetingPointLat: midpoint.latitude,
-          meetingPointLng: midpoint.longitude,
-          meetingPointMethod: "GEOMETRIC_MEDIAN",
-          expiresAt: buildMeetupExpiry(),
-        }).unwrap();
+      if (created.shareToken) {
+        setBackendShareToken(created.shareToken);
 
-        const meetupUuid = created.uuid;
-
-        if (!meetupUuid) {
-          throw new Error(
-            "Meetup was created but the response did not include a meetup UUID.",
-          );
-        }
-
-        setBackendMeetupUuid(meetupUuid);
-
-        const joinableMembers = members.filter((member) =>
-          isPositiveInteger(member.profileId),
+        window.localStorage.setItem(
+          `foodhub-meetup-share-token-${meetupUuid}`,
+          created.shareToken,
         );
-
-        if (joinableMembers.length === 0) {
-          return;
-        }
-
-        const joinedResults = await Promise.allSettled(
-          joinableMembers.map(async (member) => {
-            const coordinates = member.coordinates;
-
-            const participant = await joinMeetupParticipant({
-              meetupUuid,
-              profileId: member.profileId as number,
-              nickname: member.name.trim() || "FoodHub member",
-              locationInputType: coordinates ? "MAPS_LINK" : null,
-              mapsLink: coordinates ? createGoogleMapsUrl(coordinates) : null,
-              locationLat: coordinates?.latitude ?? null,
-              locationLng: coordinates?.longitude ?? null,
-            }).unwrap();
-
-            return {
-              localMemberUuid: member.uuid,
-              backendParticipantUuid: participant.uuid,
-            };
-          }),
-        );
-
-        const successfulJoins = new Map<string, string>();
-        let failedJoinCount = 0;
-
-        joinedResults.forEach((result) => {
-          if (
-            result.status === "fulfilled" &&
-            result.value.backendParticipantUuid
-          ) {
-            successfulJoins.set(
-              result.value.localMemberUuid,
-              result.value.backendParticipantUuid,
-            );
-            return;
-          }
-
-          if (result.status === "rejected") {
-            failedJoinCount += 1;
-          }
-        });
-
-        if (successfulJoins.size > 0) {
-          setMembers((current) =>
-            current.map((member) => {
-              const backendParticipantUuid = successfulJoins.get(member.uuid);
-
-              return backendParticipantUuid
-                ? {
-                    ...member,
-                    backendParticipantUuid,
-                  }
-                : member;
-            }),
-          );
-        }
-
-        if (failedJoinCount > 0) {
-          setBackendSyncError(
-            `Meetup created, but ${failedJoinCount} participant(s) could not sync.`,
-          );
-        }
-      } catch (error) {
-        setBackendSyncError(getApiErrorMessage(error));
       }
-    },
-    [
-      backendMeetupUuid,
-      createMeetup,
-      createdByUserId,
-      filters.radiusKm,
-      groupName,
-      joinMeetupParticipant,
-      members,
-    ],
-  );
+    } catch (error) {
+      setBackendSyncError(getApiErrorMessage(error));
+    }
+  }, [
+    backendMeetupUuid,
+    createMeetup,
+    createdByUserId,
+    filters.radiusKm,
+    groupName,
+  ]);
 
   const calculateAndShowRecommendations = () => {
     const midpoint = calculateGroupMidpoint(members);
@@ -493,7 +381,7 @@ export default function GroupRecommendation({
 
     setSessionError(null);
 
-    void syncMeetupToBackend(midpoint);
+    void syncMeetupToBackend();
   };
 
   const createVotingSession = useCallback(
@@ -631,11 +519,14 @@ export default function GroupRecommendation({
     const meetupUuid = backendMeetupUuid;
 
     setBackendMeetupUuid(null);
+    setBackendShareToken(null);
     setBackendSyncError(null);
 
     if (!meetupUuid) {
       return;
     }
+
+    window.localStorage.removeItem(`foodhub-meetup-share-token-${meetupUuid}`);
 
     void cancelMeetup(meetupUuid)
       .unwrap()
@@ -747,7 +638,7 @@ export default function GroupRecommendation({
         </p>
 
         <p className="mt-2 text-[17px] leading-8 text-gray-600">
-          សូមបញ្ចូល Latitude និង Longitude ត្រឹមត្រូវ យ៉ាងហោចណាស់ពីរនាក់។
+          សូមឱ្យសមាជិកយ៉ាងហោចណាស់ពីរនាក់កំណត់ទីតាំងរបស់ពួកគេ។
         </p>
 
         <button
@@ -829,6 +720,13 @@ export default function GroupRecommendation({
       {backendSyncError && !votingOpen && (
         <div className="mb-5 rounded-[18px] border border-amber-100 bg-amber-50 px-4 py-3 text-[17px] leading-7 text-amber-700">
           {backendSyncError}
+        </div>
+      )}
+
+      {backendMeetupUuid && !backendSyncError && !votingOpen && (
+        <div className="mb-5 rounded-[18px] border border-emerald-100 bg-emerald-50 px-4 py-3 text-[17px] leading-7 text-emerald-700">
+          Real meetup synced locally.
+          {backendShareToken ? " Backend share token saved." : ""}
         </div>
       )}
 
