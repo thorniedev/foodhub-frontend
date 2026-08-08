@@ -124,13 +124,13 @@ export default function Navbar() {
   return (
     <nav
       ref={navRef}
-      className="fixed top-0 z-99 w-full border-b border-black/5 bg-white/80 shadow-xs backdrop-blur-md dark:border-white/10 dark:bg-gray-950/70"
+      className="fixed top-0 z-99 w-full   bg-white/5 shadow-2xs backdrop-blur-[4px] dark:border-white/1 dark:bg-gray-950/1"
     >
-      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-3 sm:px-4 lg:px-6">
+      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-3 sm:px-2">
         {/* Logo */}
         <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0">
           <img
-            src="/Image/logo.png"
+            src="/Image/foodHub-logo.png"
             alt="FoodHub logo"
             className="block h-[40px] py-1 sm:h-[45px] md:h-[65px]"
           />
@@ -171,18 +171,18 @@ export default function Navbar() {
             <>
               <Link
                 href="/api/auth/login?returnTo=%2Fdashboard"
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 font-medium text-primary-900 transition hover:bg-primary-800/10 dark:text-white"
+                className="inline-flex text-white items-center gap-2 rounded-full px-4 py-2 font-medium bg-primary-800 transition hover:bg-primary-800/10 dark:text-white"
               >
                 <LogIn className="h-4 w-4" />
                 ចូលគណនី
               </Link>
 
-              <Link
+              {/* <Link
                 href="/register"
                 className="rounded-full bg-primary-800 px-4 py-2 font-semibold text-white transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-primary"
               >
                 បង្កើតគណនី
-              </Link>
+              </Link> */}
             </>
           )}
         </div>
@@ -318,7 +318,7 @@ export default function Navbar() {
                     </Link>
                   </li>
 
-                  <li>
+                  {/* <li>
                     <Link
                       href="/register"
                       tabIndex={open ? 0 : -1}
@@ -327,7 +327,7 @@ export default function Navbar() {
                     >
                       បង្កើតគណនី
                     </Link>
-                  </li>
+                  </li> */}
                 </>
               )}
             </ul>

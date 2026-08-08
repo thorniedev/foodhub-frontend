@@ -2,11 +2,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const keycloakUrl = process.env.KEYCLOAK_URL;
-  const realm = process.env.KEYCLOAK_REALM;
-  const clientId = process.env.KEYCLOAK_CLIENT_ID;
+  const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
+  const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
+  const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
 
-  const appUrl = process.env.APP_URL ?? request.nextUrl.origin;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
 
   const idToken = request.cookies.get("foodhub_id_token")?.value;
 

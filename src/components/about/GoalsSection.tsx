@@ -28,7 +28,7 @@ const goalsData: GoalCardProps[] = [
     badgeColor: "bg-[#e8f5e9] text-[#136c34]",
     title: "ចក្ខុវិស័យ",
     description: "វេទិកាស្វែងរកនិងណែនាំអាហារឈានមុខគេ ជាមួយបទពិសោធន៍ល្អបំផុត!",
-    cardBg: "bg-[#f8fafc]",
+    cardBg: "",
   },
   {
     number: 3,
@@ -43,12 +43,12 @@ const goalsData: GoalCardProps[] = [
 
 export default function GoalsSection() {
   return (
-    <section className="relative w-full bg-[#f8fafc] py-8 sm:py-12 md:py-12.5">
+    <section className="relative w-full  py-8 sm:py-12 md:py-12.5">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-4">
         {/* Section Header */}
-        <h2 className="mb-8 sm:mb-12 text-center font-['Kantumruy_Pro',sans-serif] text-2xl font-extrabold sm:text-4xl md:text-5xl">
+        <h2 className="mb-8 sm:mb-12 text-center  text-2xl font-extrabold sm:text-4xl md:text-5xl">
           <span className="text-[#f97316]">គោលបំណង</span>
-          <span className="text-[#136c34]">របស់យើង</span>
+          <span className="text-[#136c34] dark:text-[#22a447]">របស់យើង</span>
         </h2>
 
         {/* Responsive Grid Layout: 1 col (mobile) -> 2 cols (tablet) -> 12 cols (desktop) */}
@@ -61,13 +61,13 @@ export default function GoalsSection() {
                 <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#4ba361] text-base font-extrabold text-white">
                   1
                 </span>
-                <span className="font-['Kantumruy_Pro',sans-serif] text-base font-bold text-[#1a4427] sm:text-lg lg:text-xl">
+                <span className=" text-base font-bold text-[#1a4427] sm:text-lg lg:text-xl">
                   {goalsData[0].title}
                 </span>
               </div>
 
               {/* Description */}
-              <p className="mt-3 sm:mt-4 font-['Kantumruy_Pro',sans-serif] text-sm font-medium leading-relaxed text-[#1d4629] sm:text-base lg:text-lg">
+              <p className="mt-3 sm:mt-4 dark: text-sm font-medium leading-relaxed text-[#1d4629] sm:text-base lg:text-lg">
                 {goalsData[0].description}
               </p>
             </div>
@@ -90,18 +90,18 @@ export default function GoalsSection() {
           {/* Middle Column (Cards 2 & 3 Stacked) */}
           <div className="flex flex-col gap-4 sm:gap-6 md:col-span-1 lg:col-span-4">
             {/* Card 2: Vision */}
-            <div className="flex min-h-[200px] sm:min-h-[220px] flex-1 flex-col justify-start rounded-3xl border border-slate-100 bg-[#f8fafc] p-5 sm:p-6 lg:p-8 shadow-sm">
+            <div className="flex bg-white min-h-[200px] sm:min-h-[220px] flex-1 flex-col justify-start rounded-3xl border border-slate-100  p-5 sm:p-6 lg:p-8 shadow-sm">
               <div>
                 <div className="inline-flex items-center gap-2.5 self-start rounded-full bg-[#d8f3e1] py-1.5 pl-2 pr-4">
                   <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#34a853] text-base font-bold text-white">
                     2
                   </span>
-                  <span className="font-['Kantumruy_Pro',sans-serif] text-base font-extrabold text-[#136c34] sm:text-lg lg:text-xl">
+                  <span className=" text-base font-extrabold text-[#136c34] sm:text-lg lg:text-xl">
                     {goalsData[1].title}
                   </span>
                 </div>
 
-                <p className="mt-3 sm:mt-4 font-['Kantumruy_Pro',sans-serif] text-sm font-medium leading-relaxed text-slate-600 sm:text-base lg:text-lg">
+                <p className="mt-3 sm:mt-4  text-sm font-medium leading-relaxed text-slate-600 sm:text-base lg:text-lg">
                   {goalsData[1].description}
                 </p>
               </div>
@@ -114,12 +114,12 @@ export default function GoalsSection() {
                   <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#f97316] text-base font-bold text-white">
                     3
                   </span>
-                  <span className="font-['Kantumruy_Pro',sans-serif] text-base font-extrabold text-[#f97316] sm:text-lg lg:text-xl">
+                  <span className=" text-base font-extrabold text-[#f97316] sm:text-lg lg:text-xl">
                     {goalsData[2].title}
                   </span>
                 </div>
 
-                <p className="mt-3 sm:mt-4 font-['Kantumruy_Pro',sans-serif] text-sm font-medium leading-relaxed text-slate-600 sm:text-base lg:text-lg">
+                <p className="mt-3 sm:mt-4  text-sm font-medium leading-relaxed text-slate-600 sm:text-base lg:text-lg">
                   {goalsData[2].description}
                 </p>
               </div>

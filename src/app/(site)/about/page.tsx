@@ -9,15 +9,16 @@ import MentorSection from "@/components/about/MentorSection";
 import MarqueeSectionOrangeRtl from "@/components/about/MarqueeSectionOrangeReverse";
 import AboutHeroClient from "@/components/about/AboutHeroClient";
 import TechnologiesSection from "@/components/about/TechnologiesSection";
+import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommendationSection";
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950">
       <div className="relative mx-auto w-full max-w-[1536px]">
         <AboutHeroClient />
-
+        {/* <FoodHubSmartRecommendationSection /> */}
         <StatsSection />
-        <TechnologiesSection/>
+        <TechnologiesSection />
         {/* <WhyChooseUsSection /> */}
         <MarqueeSection />
         <GoalsSection />

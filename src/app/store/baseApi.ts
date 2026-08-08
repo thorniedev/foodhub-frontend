@@ -21,6 +21,7 @@ export const baseApi = createApi({
     "GroupRecommendation",
     "GroupVoting",
     "Profile",
+    "MemberProfile",
   ],
 
   endpoints: () => ({}),

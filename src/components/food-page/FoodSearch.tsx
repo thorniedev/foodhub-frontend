@@ -561,7 +561,7 @@ export default function FoodSearch({
                           </div>
                         </div>
 
-                        <p className="shrink-0 text-[16px] dark:text-emerald-400 font-semibold text-primary-800">
+                        <p className="shrink-0 text-[16px] dark:text-[#22a447] font-semibold text-primary-800">
                           {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: food.currencyCode || "USD",

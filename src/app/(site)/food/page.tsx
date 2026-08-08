@@ -2265,7 +2265,7 @@ export default function FoodPage() {
                               FoodHub AI
                             </p>
 
-                            <p className="mt-1 dark:text-emerald-400 text-[26px] font-bold text-primary-900">
+                            <p className="mt-1 dark:text-[#22a447] text-[26px] font-bold text-primary-900">
                               មុខម្ហូបណែនាំសម្រាប់អ្នក
                             </p>
                           </div>
@@ -2286,7 +2286,7 @@ export default function FoodPage() {
                             មុខម្ហូបទាំងអស់
                           </p>
 
-                          <p className="mt-1 dark:text-emerald-400 text-[26px] font-bold text-primary-900">
+                          <p className="mt-1 dark:text-[#22a447] text-[26px] font-bold text-primary-900">
                             ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
                           </p>
                         </div>

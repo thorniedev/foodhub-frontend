@@ -108,7 +108,7 @@ const mentors: MentorCardProps[] = [
 
 export default function MentorSection() {
   return (
-    <section className="bg-[#f8fafc] py-14 md:py-24 px-4 sm:px-8">
+    <section className=" py-14 md:py-24 px-4 sm:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 sm:mb-16">
           <h2 className="font-['Kantumruy_Pro',sans-serif] font-extrabold text-3xl sm:text-5xl md:text-6xl tracking-wide">

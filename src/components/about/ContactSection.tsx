@@ -44,12 +44,14 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="relative w-full bg-[#fafbfc] py-16 px-4 sm:px-6 lg:px-8 font-['Kantumruy_Pro',sans-serif]">
+    <section className="relative w-full  py-16 px-4 sm:px-6 lg:px-8 font-['Kantumruy_Pro',sans-serif]">
       <div className="max-w-7xl container mx-auto px-4">
         {/* Header Title */}
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight">
-            <span className="text-[#136C34]">ទំនាក់ទំនង </span>
+            <span className="text-[#136C34] dark:text-[#22a447]">
+              ទំនាក់ទំនង{" "}
+            </span>
             <span className="text-[#e2722b]">មកយើង</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg font-medium text-[#e2722b]">
@@ -145,7 +147,7 @@ export default function ContactSection() {
                   <input
                     type="text"
                     placeholder="e.g. លឹម តារា"
-                    className="w-full bg-[#f8fafc] border border-slate-100 rounded-xl px-4 py-3.5 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#e2722b]/50 text-sm sm:text-base transition-all"
+                    className="w-full  border border-slate-100 rounded-xl px-4 py-3.5 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#e2722b]/50 text-sm sm:text-base transition-all"
                   />
                 </div>
 
@@ -157,7 +159,7 @@ export default function ContactSection() {
                   <input
                     type="email"
                     placeholder="you@example.com"
-                    className="w-full bg-[#f8fafc] border border-slate-100 rounded-xl px-4 py-3.5 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#e2722b]/50 text-sm sm:text-base transition-all"
+                    className="w-full  border border-slate-100 rounded-xl px-4 py-3.5 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#e2722b]/50 text-sm sm:text-base transition-all"
                   />
                 </div>
 
@@ -169,7 +171,7 @@ export default function ContactSection() {
                   <textarea
                     rows={4}
                     placeholder="តើយើងអាចជួយអ្នកដោយរបៀបណា?"
-                    className="w-full bg-[#f8fafc] border border-slate-100 rounded-xl px-4 py-3.5 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#e2722b]/50 text-sm sm:text-base transition-all resize-none"
+                    className="w-full  border border-slate-100 rounded-xl px-4 py-3.5 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#e2722b]/50 text-sm sm:text-base transition-all resize-none"
                   />
                 </div>
 

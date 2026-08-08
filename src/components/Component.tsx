@@ -628,7 +628,7 @@ export default function MinimalFoodHubRecommendationSection() {
             className="mt-7 text-balance text-5xl font-black leading-[0.96] tracking-[-0.05em] sm:text-6xl lg:text-7xl"
           >
             Food that fits
-            <span className="mt-2 block text-emerald-600 dark:text-emerald-400">
+            <span className="mt-2 block text-emerald-600 dark:text-[#22a447]">
               your real life.
             </span>
           </motion.h2>

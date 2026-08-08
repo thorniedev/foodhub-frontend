@@ -1,23 +1,40 @@
-import { NextResponse } from "next/server";
+// src/app/api/auth/register/route.ts
 
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-  if (!BACKEND_API_URL) {
-    return NextResponse.json(
-      {
-        message: "BACKEND_API_URL is not configured on the Next.js server.",
-      },
-      {
-        status: 500,
-      },
-    );
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const API_BASE_URL =
+  process.env.BACKEND_API_URL ??
+  "https://food.chanthorndev.site//api/v1";
+
+function parseResponseBody(value: string): unknown {
+  if (!value) {
+    return {};
   }
 
   try {
-    const requestBody: unknown = await request.json();
+    return JSON.parse(value);
+  } catch {
+    return {
+      message: value,
+    };
+  }
+}
 
-    const backendResponse = await fetch(`${BACKEND_API_URL}/auth/register`, {
+export async function POST(request: NextRequest) {
+  const endpoint = `${API_BASE_URL.replace(/\/$/, "")}/auth/register`;
+
+  try {
+    const requestBody = await request.json();
+
+    console.log("[REGISTER PROXY REQUEST]", {
+      endpoint,
+      API_BASE_URL,
+    });
+
+    const backendResponse = await fetch(endpoint, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -25,32 +42,48 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(requestBody),
       cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
     });
-
-    const contentType = backendResponse.headers.get("content-type") ?? "";
-
-    if (contentType.includes("application/json")) {
-      const responseBody: unknown = await backendResponse.json();
-
-      return NextResponse.json(responseBody, {
-        status: backendResponse.status,
-      });
-    }
 
     const responseText = await backendResponse.text();
+    const responseBody = parseResponseBody(responseText);
 
-    return new NextResponse(responseText || null, {
+    console.log("[REGISTER PROXY RESPONSE]", {
+      endpoint,
       status: backendResponse.status,
-      headers: {
-        "Content-Type": contentType || "text/plain; charset=utf-8",
-      },
+      ok: backendResponse.ok,
+      response: responseBody,
+    });
+
+    return NextResponse.json(responseBody, {
+      status: backendResponse.status,
     });
   } catch (error) {
-    console.error("[REGISTER ROUTE] Backend request failed:", error);
+    const fetchError = error as Error & {
+      cause?: {
+        code?: string;
+        address?: string;
+        port?: number;
+        message?: string;
+      };
+    };
+
+    console.error("[REGISTER PROXY CONNECTION ERROR]", {
+      endpoint,
+      name: fetchError.name,
+      message: fetchError.message,
+      cause: fetchError.cause,
+    });
 
     return NextResponse.json(
       {
         message: "Could not connect to the authentication server.",
+        error:
+          process.env.NODE_ENV === "development"
+            ? fetchError.message
+            : undefined,
+        cause:
+          process.env.NODE_ENV === "development" ? fetchError.cause : undefined,
       },
       {
         status: 502,

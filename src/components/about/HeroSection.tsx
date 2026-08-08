@@ -82,7 +82,7 @@ function FoodColumn({
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#f8fafc] pt-8 sm:pt-12 md:pt-18 pb-10 sm:pb-12">
+    <section className="relative w-full overflow-hidden  pt-8 sm:pt-12 md:pt-18 pb-10 sm:pb-12">
       <div className="relative mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
         {/* Responsive Grid Layout */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3 md:gap-4">

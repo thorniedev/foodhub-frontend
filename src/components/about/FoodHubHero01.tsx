@@ -963,7 +963,7 @@ function InteractiveVisual({
 }
 
 export default function FoodHubHero01({
-  logoSrc = "/Image/logo.png",
+  logoSrc = "/Image/foodHub-logo.png",
 }: FoodHubHeroSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = Boolean(useReducedMotion());
