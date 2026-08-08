@@ -2336,13 +2336,13 @@ export default function FoodPage() {
                   ease: "easeOut",
                 }}
               >
-                <section className="rounded-full border border-gray-100 bg-white p-4 shadow-sm sm:p-1">
+                {/* <section className="rounded-full border border-gray-100 bg-white p-4 shadow-sm sm:p-1">
                   <FoodSearch
                     menuItems={menuItems}
                     value={searchInput}
                     onChange={setSearchInput}
                   />
-                </section>
+                </section> */}
 
                 <LocationContent
                   menuItems={menuItems}

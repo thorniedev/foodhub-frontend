@@ -107,13 +107,12 @@
 //   );
 // }
 
-
 "use client";
- 
+
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FaArrowLeft, FaSearch, FaMapMarkerAlt } from "react-icons/fa";
- 
+
 import RestaurantHero from "@/components/restaurant/RestaurantHero";
 // import RestaurantHeroCarousel from "@/components/restaurant/RestaurantHeroCarousel";
 import RestaurantCategorySidebar from "@/components/restaurant/RestaurantCategorySidebar";
@@ -121,17 +120,17 @@ import RestaurantMenuSection from "@/components/restaurant/RestaurantMenuSection
 import VoucherCard from "@/components/restaurant/VoucherCard";
 import { useGetRestaurantByIdQuery } from "@/app/store/restaurantApi";
 import RestaurantHeroCarousel from "@/components/restaurant/Restaurantherocarousel";
- 
+
 export default function RestaurantDetailPage() {
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
- 
+
   const {
     data: restaurant,
     isLoading,
     isError,
   } = useGetRestaurantByIdQuery(id, { skip: Number.isNaN(id) });
- 
+
   if (isLoading) {
     return (
       <main className="flex min-h-[70vh] items-center justify-center bg-zinc-50">
@@ -139,7 +138,7 @@ export default function RestaurantDetailPage() {
       </main>
     );
   }
- 
+
   if (isError || !restaurant) {
     return (
       <main className="flex min-h-[70vh] flex-col items-center justify-center gap-4 bg-zinc-50 px-4 text-center">
@@ -153,7 +152,7 @@ export default function RestaurantDetailPage() {
       </main>
     );
   }
- 
+
   return (
     <main className="min-h-screen bg-zinc-50 pt-14">
       <div className="mx-auto max-w-360 px-4 py-6 sm:px-6">
@@ -164,18 +163,18 @@ export default function RestaurantDetailPage() {
           <FaArrowLeft />
           ត្រឡប់ក្រោយ
         </Link>
- 
+
         {/* Two columns: sticky category rail + main content */}
         <div className="grid gap-6 lg:grid-cols-[224px_1fr] lg:items-start lg:gap-8">
           {/* Category nav: horizontal chip row on mobile/tablet, sticky
               vertical rail on desktop. */}
           <RestaurantCategorySidebar categories={restaurant.categories} />
- 
+
           {/* Main: brand banner → search → photo carousel → vouchers → menu */}
           <div className="flex min-w-0 flex-col gap-6">
             {/* 1. Red brand banner */}
             <RestaurantHero restaurant={restaurant} />
- 
+
             {/* 2. Search bar + store-location button */}
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
@@ -195,10 +194,10 @@ export default function RestaurantDetailPage() {
                 ស្វែងរក
               </button>
             </div>
- 
+
             {/* 3. Rotating dish photos */}
             {/* <RestaurantHeroCarousel slides={restaurant.heroSlides} /> */}
- 
+
             {/* 4. Vouchers */}
             {/* {restaurant.vouchers.length > 0 && (
               <section>
@@ -220,7 +219,7 @@ export default function RestaurantDetailPage() {
                 </div>
               </section>
             )} */}
- 
+
             {/* 5. Menu sections (each is a horizontal card row) */}
             <div className="flex flex-col gap-8">
               {restaurant.categories.map((category) => (
@@ -233,4 +232,3 @@ export default function RestaurantDetailPage() {
     </main>
   );
 }
-

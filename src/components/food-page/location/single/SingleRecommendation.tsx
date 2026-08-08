@@ -367,7 +367,7 @@ export default function SingleRecommendation({
                   }}
                   className={`min-w-0 rounded-[24px] transition-shadow ${
                     selected
-                      ? "ring-2 ring-primary-100 ring-offset-2 ring-offset-transparent"
+                      ? "ring-2 ring-primary-300 w-fit  ring-offset-2 ring-offset-transparent"
                       : ""
                   }`}
                   onMouseEnter={() => {
@@ -378,7 +378,7 @@ export default function SingleRecommendation({
                 >
                   <Link
                     href={`/food/${food.uuid}`}
-                    className="block h-full w-full min-w-0"
+                    className="block self-center h-full w-full min-w-0"
                     onFocus={() => {
                       if (storeUuid) {
                         setSelectedStoreId(storeUuid);

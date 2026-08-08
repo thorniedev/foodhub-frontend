@@ -228,10 +228,10 @@ export default function StoreCard({ store, variant = "grid" }: StoreCardProps) {
       }`}
     >
       {/* Store image */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] bg-primary-50">
+      <div className="relative h-[180px] w-full overflow-hidden rounded-[14px] bg-primary-50">
         <StoreImage store={store} />
 
-        <div className="absolute right-2 top-2">
+        <div className="absolute line-clamp-1 right-2 top-2">
           <FavoriteButton storeName={displayName} />
         </div>
       </div>
@@ -247,13 +247,13 @@ export default function StoreCard({ store, variant = "grid" }: StoreCardProps) {
 
         {/* Store name and price level */}
         <div className="flex items-start justify-between gap-3">
-          <h3 className="line-clamp-2 min-w-0 flex-1 text-[22px] font-medium leading-tight text-primary-900">
+          <h3 className=" line-clamp-1 min-w-0 flex-1 text-[22px] font-medium leading-tight text-primary-900">
             {displayName}
           </h3>
 
-          <p className="shrink-0 text-[22px] font-medium text-primary-800">
+          {/* <p className="shrink-0 text-[22px] font-medium text-primary-800">
             {priceLabel}
-          </p>
+          </p> */}
         </div>
 
         {/* Rating, status and city */}

@@ -62,7 +62,7 @@ function QuickFilterButton({
   );
 }
 
-export default function StoreContent({
+export default function   StoreContent({
   searchQuery = "",
   onClearSearch,
 }: StoreContentProps) {
