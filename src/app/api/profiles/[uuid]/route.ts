@@ -10,13 +10,55 @@ interface RouteContext {
   }>;
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                   HELPERS                                  */
+/* -------------------------------------------------------------------------- */
+
 function normalizeBaseUrl(url: string): string {
   return url.trim().replace(/\/+$/, "");
 }
 
-async function parseBackendResponse(
-  response: Response,
-): Promise<unknown> {
+function getBackendApiUrl(): string | null {
+  const configuredBackendUrl =
+    process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  if (!configuredBackendUrl) {
+    return null;
+  }
+
+  const normalizedUrl = normalizeBaseUrl(configuredBackendUrl);
+
+  /*
+   * Supports both:
+   *
+   * https://food.chanthorndev.site
+   *
+   * and:
+   *
+   * https://food.chanthorndev.site/api/v1
+   */
+  if (/\/api\/v1$/i.test(normalizedUrl)) {
+    return normalizedUrl;
+  }
+
+  return `${normalizedUrl}/api/v1`;
+}
+
+function getAccessToken(request: NextRequest): string | null {
+  return request.cookies.get("foodhub_access_token")?.value ?? null;
+}
+
+async function getProfileUuid(context: RouteContext): Promise<string | null> {
+  const { uuid } = await context.params;
+
+  if (!uuid || uuid === "undefined" || uuid === "null") {
+    return null;
+  }
+
+  return uuid;
+}
+
+async function parseBackendResponse(response: Response): Promise<unknown> {
   const responseText = await response.text();
 
   if (!responseText) {
@@ -24,7 +66,7 @@ async function parseBackendResponse(
   }
 
   try {
-    return JSON.parse(responseText) as unknown;
+    return JSON.parse(responseText);
   } catch {
     return {
       message: responseText,
@@ -32,24 +74,9 @@ async function parseBackendResponse(
   }
 }
 
-function getBackendApiUrl(): string | null {
-  const backendApiUrl =
-    process.env.BACKEND_API_URL ??
-    process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  if (!backendApiUrl) {
-    return null;
-  }
-
-  return normalizeBaseUrl(backendApiUrl);
-}
-
-function getAccessToken(request: NextRequest): string | null {
-  return (
-    request.cookies.get("foodhub_access_token")?.value ??
-    null
-  );
-}
+/* -------------------------------------------------------------------------- */
+/*                                   ERRORS                                   */
+/* -------------------------------------------------------------------------- */
 
 function configurationError() {
   return NextResponse.json(
@@ -87,31 +114,18 @@ function invalidUuidError() {
   );
 }
 
-async function getProfileUuid(
-  context: RouteContext,
-): Promise<string | null> {
-  const { uuid } = await context.params;
-
-  if (
-    !uuid ||
-    uuid === "undefined" ||
-    uuid === "null"
-  ) {
-    return null;
-  }
-
-  return uuid;
-}
+/* ========================================================================== */
+/*                                     GET                                    */
+/* ========================================================================== */
 
 /**
  * GET /api/profiles/{uuid}
  */
-export async function GET(
-  request: NextRequest,
-  context: RouteContext,
-) {
+export async function GET(request: NextRequest, context: RouteContext) {
   const backendApiUrl = getBackendApiUrl();
+
   const accessToken = getAccessToken(request);
+
   const uuid = await getProfileUuid(context);
 
   if (!backendApiUrl) {
@@ -126,111 +140,35 @@ export async function GET(
     return invalidUuidError();
   }
 
-  const backendUrl =
-    `${backendApiUrl}/profiles/${encodeURIComponent(uuid)}`;
+  const backendUrl = `${backendApiUrl}/profiles/${encodeURIComponent(uuid)}`;
 
   try {
-    console.log("GET PROFILE DETAIL REQUEST:", {
+    console.log("[GET PROFILE DETAIL REQUEST]", {
       uuid,
       url: backendUrl,
     });
 
     const backendResponse = await fetch(backendUrl, {
       method: "GET",
+
       headers: {
         Accept: "application/json",
+
         Authorization: `Bearer ${accessToken}`,
       },
+
       cache: "no-store",
     });
 
-    const responseData =
-      await parseBackendResponse(backendResponse);
+    const responseData = await parseBackendResponse(backendResponse);
 
-    if (!backendResponse.ok) {
-      console.error("GET PROFILE DETAIL ERROR:", {
-        uuid,
-        url: backendUrl,
-        status: backendResponse.status,
-        response: responseData,
-      });
-    }
-
-    return NextResponse.json(responseData, {
-      status: backendResponse.status,
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    });
-  } catch (error) {
-    console.error(
-      "GET PROFILE DETAIL CONNECTION ERROR:",
-      {
-        error,
-        uuid,
-        url: backendUrl,
-      },
-    );
-
-    return NextResponse.json(
-      {
-        source: "next-route-handler",
-        message:
-          "Could not connect to the profile service.",
-      },
-      {
-        status: 502,
-      },
-    );
-  }
-}
-
-/**
- * DELETE /api/profiles/{uuid}
- */
-export async function DELETE(
-  request: NextRequest,
-  context: RouteContext,
-) {
-  const backendApiUrl = getBackendApiUrl();
-  const accessToken = getAccessToken(request);
-  const uuid = await getProfileUuid(context);
-
-  if (!backendApiUrl) {
-    return configurationError();
-  }
-
-  if (!accessToken) {
-    return authenticationError();
-  }
-
-  if (!uuid) {
-    return invalidUuidError();
-  }
-
-  const backendUrl =
-    `${backendApiUrl}/profiles/${encodeURIComponent(uuid)}`;
-
-  try {
-    console.log("DELETE PROFILE REQUEST:", {
+    console.log("[GET PROFILE DETAIL RESPONSE]", {
       uuid,
-      url: backendUrl,
+      status: backendResponse.status,
     });
-
-    const backendResponse = await fetch(backendUrl, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      cache: "no-store",
-    });
-
-    const responseData =
-      await parseBackendResponse(backendResponse);
 
     if (!backendResponse.ok) {
-      console.error("DELETE PROFILE BACKEND ERROR:", {
+      console.error("[GET PROFILE DETAIL ERROR]", {
         uuid,
         url: backendUrl,
         status: backendResponse.status,
@@ -246,22 +184,245 @@ export async function DELETE(
 
     return NextResponse.json(responseData, {
       status: backendResponse.status,
+
+      headers: {
+        "Cache-Control": "no-store",
+      },
     });
   } catch (error) {
-    console.error(
-      "DELETE PROFILE CONNECTION ERROR:",
-      {
-        error,
-        uuid,
-        url: backendUrl,
-      },
-    );
+    console.error("[GET PROFILE DETAIL CONNECTION ERROR]", {
+      error,
+      uuid,
+      url: backendUrl,
+    });
 
     return NextResponse.json(
       {
         source: "next-route-handler",
-        message:
-          "Could not connect to the profile service.",
+
+        message: "Could not connect to the profile service.",
+      },
+      {
+        status: 502,
+      },
+    );
+  }
+}
+
+/* ========================================================================== */
+/*                                    PATCH                                   */
+/* ========================================================================== */
+
+/**
+ * PATCH /api/profiles/{uuid}
+ *
+ * Forward to:
+ *
+ * PATCH /api/v1/profiles/{uuid}
+ */
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const backendApiUrl = getBackendApiUrl();
+
+  const accessToken = getAccessToken(request);
+
+  const uuid = await getProfileUuid(context);
+
+  if (!backendApiUrl) {
+    return configurationError();
+  }
+
+  if (!accessToken) {
+    return authenticationError();
+  }
+
+  if (!uuid) {
+    return invalidUuidError();
+  }
+
+  const backendUrl = `${backendApiUrl}/profiles/${encodeURIComponent(uuid)}`;
+
+  let requestBody: unknown;
+
+  try {
+    requestBody = await request.json();
+  } catch {
+    return NextResponse.json(
+      {
+        source: "next-route-handler",
+
+        message: "Invalid JSON request body.",
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+
+  try {
+    console.log("[PATCH PROFILE REQUEST]", {
+      uuid,
+      url: backendUrl,
+      body: requestBody,
+    });
+
+    const backendResponse = await fetch(backendUrl, {
+      method: "PATCH",
+
+      headers: {
+        Accept: "application/json",
+
+        "Content-Type": "application/json",
+
+        Authorization: `Bearer ${accessToken}`,
+      },
+
+      body: JSON.stringify(requestBody),
+
+      cache: "no-store",
+    });
+
+    const responseData = await parseBackendResponse(backendResponse);
+
+    console.log("[PATCH PROFILE RESPONSE]", {
+      uuid,
+      status: backendResponse.status,
+    });
+
+    if (!backendResponse.ok) {
+      console.error("[PATCH PROFILE BACKEND ERROR]", {
+        uuid,
+        url: backendUrl,
+
+        status: backendResponse.status,
+
+        request: requestBody,
+
+        response: responseData,
+      });
+    }
+
+    if (backendResponse.status === 204) {
+      return new NextResponse(null, {
+        status: 204,
+      });
+    }
+
+    return NextResponse.json(responseData, {
+      status: backendResponse.status,
+
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (error) {
+    console.error("[PATCH PROFILE CONNECTION ERROR]", {
+      error,
+      uuid,
+      url: backendUrl,
+    });
+
+    return NextResponse.json(
+      {
+        source: "next-route-handler",
+
+        message: "Could not connect to the profile service.",
+      },
+      {
+        status: 502,
+      },
+    );
+  }
+}
+
+/* ========================================================================== */
+/*                                    DELETE                                  */
+/* ========================================================================== */
+
+/**
+ * DELETE /api/profiles/{uuid}
+ */
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const backendApiUrl = getBackendApiUrl();
+
+  const accessToken = getAccessToken(request);
+
+  const uuid = await getProfileUuid(context);
+
+  if (!backendApiUrl) {
+    return configurationError();
+  }
+
+  if (!accessToken) {
+    return authenticationError();
+  }
+
+  if (!uuid) {
+    return invalidUuidError();
+  }
+
+  const backendUrl = `${backendApiUrl}/profiles/${encodeURIComponent(uuid)}`;
+
+  try {
+    console.log("[DELETE PROFILE REQUEST]", {
+      uuid,
+      url: backendUrl,
+    });
+
+    const backendResponse = await fetch(backendUrl, {
+      method: "DELETE",
+
+      headers: {
+        Accept: "application/json",
+
+        Authorization: `Bearer ${accessToken}`,
+      },
+
+      cache: "no-store",
+    });
+
+    const responseData = await parseBackendResponse(backendResponse);
+
+    console.log("[DELETE PROFILE RESPONSE]", {
+      uuid,
+      status: backendResponse.status,
+    });
+
+    if (!backendResponse.ok) {
+      console.error("[DELETE PROFILE BACKEND ERROR]", {
+        uuid,
+        url: backendUrl,
+
+        status: backendResponse.status,
+
+        response: responseData,
+      });
+    }
+
+    if (backendResponse.status === 204) {
+      return new NextResponse(null, {
+        status: 204,
+      });
+    }
+
+    return NextResponse.json(responseData, {
+      status: backendResponse.status,
+
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (error) {
+    console.error("[DELETE PROFILE CONNECTION ERROR]", {
+      error,
+      uuid,
+      url: backendUrl,
+    });
+
+    return NextResponse.json(
+      {
+        source: "next-route-handler",
+
+        message: "Could not connect to the profile service.",
       },
       {
         status: 502,
