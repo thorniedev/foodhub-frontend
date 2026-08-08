@@ -383,7 +383,8 @@ export default function LocationPickerModal({
                     </p>
 
                     <p className="mt-1 text-[17px] leading-7 text-slate-500">
-                      ស្វែងរកទីតាំងនៅកម្ពុជា ឬចុច និងអូសសញ្ញាសម្គាល់លើផែនទី។
+                      ស្វែងរកទីតាំង ឬគោលដៅជុំវិញពិភពលោក ឬចុច
+                      និងអូសសញ្ញាសម្គាល់លើផែនទី។
                     </p>
                   </div>
                 </div>
@@ -427,11 +428,10 @@ export default function LocationPickerModal({
                         setSearchResults([]);
                       }
                     }}
-                    placeholder="ស្វែងរកទីតាំង ឬអាសយដ្ឋាននៅកម្ពុជា..."
-                    aria-label="Search locations in Cambodia"
+                    placeholder="ស្វែងរកទីតាំង ឬអាសយដ្ឋានជុំវិញពិភពលោក..."
+                    aria-label="Search destinations worldwide"
                     className="min-w-0 flex-1 bg-transparent px-1 text-[17px] text-slate-800 outline-none placeholder:text-slate-400"
                   />
-
                   {searchQuery && (
                     <button
                       type="button"

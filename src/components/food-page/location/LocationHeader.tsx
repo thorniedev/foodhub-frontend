@@ -346,7 +346,7 @@ function RecommendationModeSwitch({
                 : "text-gray-600 hover:bg-white hover:text-primary-800"
             }`}
           >
-            <span className="text-[21px]">{option.icon}</span>
+            <span className="text-[21px]">{option.icon}</span>  
 
             {option.label}
           </button>

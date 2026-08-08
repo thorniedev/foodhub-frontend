@@ -9,6 +9,8 @@ import { EMPTY_FILTERS, FilterState } from "@/types/food";
 import { MenuItem } from "@/types/menu-item";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { addToHistory } from "@/lib/history/recentlyViewed";
+import { useRouter } from "next/navigation";
 
 type TabId = "all" | "breakfast" | "lunch" | "dinner";
 
@@ -130,6 +132,20 @@ export default function MealTimeRecommandSection({
       }),
     [foods, activeTab, filters],
   );
+  const router = useRouter();
+
+  const handleViewFood = (food: MenuItem) => {
+    console.log("CLICKED FOOD:", food);
+
+    addToHistory({
+      uuid: food.uuid,
+      name: food.name,
+      localName: food.localName,
+      thumbnail: food.thumbnail,
+    });
+
+    console.log("FOOD SAVED TO HISTORY:", food.uuid);
+  };
   return (
     <div className="my-15 flex flex-col gap-12.5">
       <section className="flex flex-col items-center lg:pt-0 md:pt-4 justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
@@ -196,21 +212,22 @@ export default function MealTimeRecommandSection({
           </p>
         )} */}
         <AnimatePresence mode="popLayout">
-          {/* {!isLoading && filteredFoods.length === 0 && (
-            <motion.p
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="col-span-full text-center text-gray-400 py-10"
-            >
-              រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
-            </motion.p>
-          )} */}
           {filteredFoods.map((food) => (
-            <Link key={food.uuid} href={`/food/${food.uuid}`}>
-              {/* <FoodCard/> */}
-            </Link>
+            <motion.div
+              key={food.uuid}
+              layout
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+            >
+              <Link
+                href={`/food/${food.uuid}`}
+                onClick={() => handleViewFood(food)}
+                className="block"
+              >
+                {/* Your FoodCard here */}
+              </Link>
+            </motion.div>
           ))}
         </AnimatePresence>
       </div>

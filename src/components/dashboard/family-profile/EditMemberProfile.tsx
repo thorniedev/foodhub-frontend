@@ -7,9 +7,7 @@ interface EditMemberProfileProps {
   uuid: string;
 }
 
-export default function EditMemberProfile({
-  uuid,
-}: EditMemberProfileProps) {
+export default function EditMemberProfile({ uuid }: EditMemberProfileProps) {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
@@ -25,9 +23,7 @@ export default function EditMemberProfile({
           កែប្រែព័ត៌មានគណនី
         </h1>
 
-        <p className="mt-2 text-[17px] text-slate-500">
-          Profile UUID: {uuid}
-        </p>
+        <p className="mt-2 text-[17px] text-slate-500">Profile UUID: {uuid}</p>
       </div>
     </div>
   );

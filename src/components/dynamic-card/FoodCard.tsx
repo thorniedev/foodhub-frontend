@@ -8,7 +8,7 @@ import { CiHeart } from "react-icons/ci";
 import { FaStore, FaStar } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 import { MdDeliveryDining } from "react-icons/md";
-
+import { addToHistory } from "@/lib/history/recentlyViewed";
 type FoodCardProps = {
   food: MenuItem;
 };
