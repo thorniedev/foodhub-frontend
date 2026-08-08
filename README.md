@@ -1,8 +1,8 @@
-#  ម្ហូបអាហារ
+#  Foodhub
 
 <p align="center">
   <img
-    src="./public/thumbnail.png"
+    src="./public/thumnail.png"
     alt="FoodHub Thumbnail"
     width="100%"
   />
@@ -12,4 +12,4 @@
 
 ##  Overview
 
-ម្ហូបអាហារ is an intelligent food recommendation platform that helps users discover meals based on their personal preferences.
+Foodhub is an intelligent food recommendation platform that helps users discover meals based on their personal preferences.
