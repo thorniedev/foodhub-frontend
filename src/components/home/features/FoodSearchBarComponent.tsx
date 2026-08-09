@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-
-import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import { IoSearchOutline } from "react-icons/io5";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
 import FoodCard from "@/components/dynamic-card/FoodCard";
 
-import type { MenuItem } from "@/types/manu";
-import FoodSearch from "@/components/food-page/FoodSearch";
-import { IoSearchOutline } from "react-icons/io5";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 type FilterGroupKey = "category" | "cuisine" | "dietary" | "age";
+
+type FilterOption = {
+  code: string;
+  name: string;
+};
 
 type ChipGroup = {
   title: string;
@@ -21,37 +23,120 @@ type ChipGroup = {
   options: FilterOption[];
 };
 
-type FilterOption = {
-  code: string;
-  name: string;
-};
+/* =========================================================
+   TEXT NORMALIZER
+========================================================= */
 
-function matchesQuery(food: MenuItem, query: string): boolean {
-  if (!query.trim()) {
+function normalizeText(value: unknown): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKC");
+}
+
+/* =========================================================
+   SAFE ARRAY HELPERS
+========================================================= */
+
+function getAgeGroups(food: CatalogMenuItem) {
+  return Array.isArray(food.filterData?.ageGroups)
+    ? food.filterData.ageGroups
+    : [];
+}
+
+function getMealTypes(food: CatalogMenuItem) {
+  return Array.isArray(food.filterData?.mealTypes)
+    ? food.filterData.mealTypes
+    : [];
+}
+
+/**
+ * Your current CatalogMenuItem type has:
+ *
+ * dietaryTypes: unknown[]
+ *
+ * because the API sample currently returns empty arrays.
+ *
+ * This safely reads dietary objects only when the backend
+ * actually provides code/name.
+ */
+function getDietaryOptions(food: CatalogMenuItem): FilterOption[] {
+  if (!Array.isArray(food.dietaryTypes)) {
+    return [];
+  }
+
+  return food.dietaryTypes.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const dietary = item as Record<string, unknown>;
+
+    if (typeof dietary.code === "string" && typeof dietary.name === "string") {
+      return [
+        {
+          code: dietary.code,
+          name: dietary.name,
+        },
+      ];
+    }
+
+    return [];
+  });
+}
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function matchesQuery(food: CatalogMenuItem, query: string): boolean {
+  const normalizedQuery = normalizeText(query);
+
+  if (!normalizedQuery) {
     return true;
   }
 
-  const normalizedQuery = query.trim().toLowerCase();
+  const ageGroups = getAgeGroups(food);
+  const mealTypes = getMealTypes(food);
+  const dietaryTypes = getDietaryOptions(food);
+
+  const ingredients = Array.isArray(food.ingredients)
+    ? food.ingredients.filter(
+        (item): item is string => typeof item === "string",
+      )
+    : [];
 
   const searchableValues = [
     food.name,
     food.localName,
+    food.foodName,
     food.description,
-    food.localDescription,
-    food.store.name,
-    food.store.localName,
-    food.food.canonicalName,
-    food.food.category.name,
-    food.food.cuisine.name,
-    ...food.ingredients,
-    ...food.beveragePairings,
-    ...food.dietaryTypes.map((diet) => diet.name),
+
+    food.store?.name,
+
+    food.filterData?.category?.name,
+    food.filterData?.category?.code,
+
+    food.filterData?.cuisine?.name,
+    food.filterData?.cuisine?.code,
+
+    ...ageGroups.flatMap((ageGroup) => [ageGroup.code, ageGroup.name]),
+
+    ...mealTypes.flatMap((mealType) => [mealType.code, mealType.name]),
+
+    ...dietaryTypes.flatMap((diet) => [diet.code, diet.name]),
+
+    ...ingredients,
   ];
 
   return searchableValues.some((value) =>
-    value.toLowerCase().includes(normalizedQuery),
+    normalizeText(value).includes(normalizedQuery),
   );
 }
+
+/* =========================================================
+   SELECTED FILTER MATCH
+========================================================= */
 
 function hasSelectedValue(
   itemValues: string[],
@@ -61,13 +146,25 @@ function hasSelectedValue(
     return true;
   }
 
-  return itemValues.some((value) => selectedValues.has(value));
+  const normalizedItems = itemValues.map(normalizeText);
+
+  return [...selectedValues].some((selectedValue) =>
+    normalizedItems.includes(normalizeText(selectedValue)),
+  );
 }
+
+/* =========================================================
+   UNIQUE OPTIONS
+========================================================= */
 
 function getUniqueOptions(values: FilterOption[]): FilterOption[] {
   const optionMap = new Map<string, FilterOption>();
 
   values.forEach((item) => {
+    if (!item.code) {
+      return;
+    }
+
     if (!optionMap.has(item.code)) {
       optionMap.set(item.code, item);
     }
@@ -76,23 +173,9 @@ function getUniqueOptions(values: FilterOption[]): FilterOption[] {
   return Array.from(optionMap.values());
 }
 
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="7" />
-
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
+/* =========================================================
+   ICONS
+========================================================= */
 
 function GridIcon({ className }: { className?: string }) {
   return (
@@ -132,30 +215,30 @@ function ChevronIcon({ className }: { className?: string }) {
   );
 }
 
+/* =========================================================
+   COMPONENT
+========================================================= */
+
 export default function FoodSearchBar() {
-  const [query, setQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const {
-    data: menuItems = [],
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useGetMenuItemsQuery();
+
   const [isOpen, setIsOpen] = useState(false);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // const {
-  //   data: menuItems = [],
-  //   isLoading,
-  //   isError,
-  //   error,
-  //   refetch,
-  // } = useGetMenuItemsQuery();
+  const {
+    data: menuItems = [],
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useGetMenuItemsQuery();
+
+  /* =======================================================
+     CLOSE FILTER WHEN CLICKING OUTSIDE
+  ======================================================= */
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -171,62 +254,117 @@ export default function FoodSearchBar() {
     };
   }, []);
 
+  /* =======================================================
+     BUILD FILTER OPTIONS FROM NEW API DATA
+  ======================================================= */
+
   const chipGroups = useMemo<ChipGroup[]>(() => {
+    // ---------------------------------------
+    // CATEGORY
+    // food.filterData.category
+    // ---------------------------------------
+
     const categories = getUniqueOptions(
-      menuItems.map((item) => ({
-        code: item.food.category.code,
-        name: item.food.category.name,
-      })),
+      menuItems.flatMap((item) => {
+        const category = item.filterData?.category;
+
+        if (!category) {
+          return [];
+        }
+
+        return [
+          {
+            code: category.code,
+            name: category.name,
+          },
+        ];
+      }),
     );
+
+    // ---------------------------------------
+    // CUISINE
+    // food.filterData.cuisine
+    // ---------------------------------------
 
     const cuisines = getUniqueOptions(
-      menuItems.map((item) => ({
-        code: item.food.cuisine.code,
-        name: item.food.cuisine.name,
-      })),
+      menuItems.flatMap((item) => {
+        const cuisine = item.filterData?.cuisine;
+
+        if (!cuisine) {
+          return [];
+        }
+
+        return [
+          {
+            code: cuisine.code,
+            name: cuisine.name,
+          },
+        ];
+      }),
     );
 
+    // ---------------------------------------
+    // DIETARY TYPES
+    // API currently may return []
+    // ---------------------------------------
+
     const dietaryTypes = getUniqueOptions(
-      menuItems.flatMap((item) =>
-        item.dietaryTypes.map((diet) => ({
-          code: diet.code,
-          name: diet.name,
-        })),
-      ),
+      menuItems.flatMap((item) => getDietaryOptions(item)),
     );
+
+    // ---------------------------------------
+    // AGE GROUPS
+    // food.filterData.ageGroups
+    // ---------------------------------------
 
     const ageGroups = getUniqueOptions(
       menuItems.flatMap((item) =>
-        item.food.ageGroups.map((ageGroup) => ({
+        getAgeGroups(item).map((ageGroup) => ({
           code: ageGroup.code,
           name: ageGroup.name,
         })),
       ),
     );
 
-    return [
+    const groups: ChipGroup[] = [
       {
         title: "ប្រភេទម្ហូប",
         key: "category",
         options: categories,
       },
+
       {
         title: "ម្ហូបតាមប្រទេស",
         key: "cuisine",
         options: cuisines,
       },
+
       {
         title: "របបអាហារ",
         key: "dietary",
         options: dietaryTypes,
       },
+
       {
         title: "ក្រុមអាយុ",
         key: "age",
         options: ageGroups,
       },
     ];
+
+    /**
+     * Don't show empty filter groups.
+     *
+     * For example your current API may return:
+     *
+     * dietaryTypes: []
+     */
+    return groups.filter((group) => group.options.length > 0);
   }, [menuItems]);
+
+  /* =======================================================
+     SELECTION HELPERS
+  ======================================================= */
 
   function getSelectionKey(group: FilterGroupKey, code: string): string {
     return `${group}:${code}`;
@@ -252,13 +390,14 @@ export default function FoodSearchBar() {
     setSelected(new Set());
   }
 
+  /* =======================================================
+     GROUP SELECTED FILTERS
+  ======================================================= */
+
   const groupedSelected = useMemo(() => {
     const category = new Set<string>();
-
     const cuisine = new Set<string>();
-
     const dietary = new Set<string>();
-
     const age = new Set<string>();
 
     selected.forEach((value) => {
@@ -293,43 +432,74 @@ export default function FoodSearchBar() {
     };
   }, [selected]);
 
-  const filteredFoods = useMemo(
-    () =>
-      menuItems.filter((food) => {
-        if (food.availabilityStatus !== "AVAILABLE") {
-          return false;
-        }
+  /* =======================================================
+     FILTER FOODS
+  ======================================================= */
 
-        const matchesCategory = hasSelectedValue(
-          [food.food.category.code],
-          groupedSelected.category,
-        );
+  const filteredFoods = useMemo(() => {
+    return menuItems.filter((food) => {
+      // Only available foods
+      if (food.availabilityStatus !== "AVAILABLE") {
+        return false;
+      }
 
-        const matchesCuisine = hasSelectedValue(
-          [food.food.cuisine.code],
-          groupedSelected.cuisine,
-        );
+      const category = food.filterData?.category;
 
-        const matchesDietary = hasSelectedValue(
-          food.dietaryTypes.map((diet) => diet.code),
-          groupedSelected.dietary,
-        );
+      const cuisine = food.filterData?.cuisine;
 
-        const matchesAge = hasSelectedValue(
-          food.food.ageGroups.map((ageGroup) => ageGroup.code),
-          groupedSelected.age,
-        );
+      const ageGroups = getAgeGroups(food);
 
-        return (
-          matchesQuery(food, query) &&
-          matchesCategory &&
-          matchesCuisine &&
-          matchesDietary &&
-          matchesAge
-        );
-      }),
-    [menuItems, query, groupedSelected],
-  );
+      const dietaryTypes = getDietaryOptions(food);
+
+      // ---------------------------------------
+      // CATEGORY
+      // ---------------------------------------
+
+      const matchesCategory = hasSelectedValue(
+        category ? [category.code] : [],
+        groupedSelected.category,
+      );
+
+      // ---------------------------------------
+      // CUISINE
+      // ---------------------------------------
+
+      const matchesCuisine = hasSelectedValue(
+        cuisine ? [cuisine.code] : [],
+        groupedSelected.cuisine,
+      );
+
+      // ---------------------------------------
+      // DIETARY
+      // ---------------------------------------
+
+      const matchesDietary = hasSelectedValue(
+        dietaryTypes.map((diet) => diet.code),
+        groupedSelected.dietary,
+      );
+
+      // ---------------------------------------
+      // AGE
+      // ---------------------------------------
+
+      const matchesAge = hasSelectedValue(
+        ageGroups.map((ageGroup) => ageGroup.code),
+        groupedSelected.age,
+      );
+
+      return (
+        matchesQuery(food, searchInput) &&
+        matchesCategory &&
+        matchesCuisine &&
+        matchesDietary &&
+        matchesAge
+      );
+    });
+  }, [menuItems, searchInput, groupedSelected]);
+
+  /* =======================================================
+     SELECTED LABELS
+  ======================================================= */
 
   const selectedLabels = useMemo(() => {
     const labels: string[] = [];
@@ -355,27 +525,44 @@ export default function FoodSearchBar() {
       : selectedLabels.slice(0, 2).join(", ") +
         (count > 2 ? ` +${count - 2}` : "");
 
+  /* =======================================================
+     UI
+  ======================================================= */
+
   return (
-    <div className="mx-auto container w-full max-w-7xl text-[#3d3d3a]">
-      {/* <div className="flex container max-w-7xl px-4 sticky top-18 z-10 flex-wrap items-stretch gap-3.5"> */}
-      <div className="sticky top-12 z-98 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5  px-4 py-3 ">
-        {/* <div className="flex h-[60px] min-w-[280px] flex-1 items-center gap-2.5 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition-all focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec] hover:border-[#cfcec6]">
-          <SearchIcon className="h-5 w-5 shrink-0 text-[#1c6b45]" />
+    <div className="container mx-auto w-full pt-12.5 max-w-7xl text-[#3d3d3a]">
+      {/* ===============================================
+          SEARCH + FILTER BAR
+      =============================================== */}
+
+      <div className="sticky top-12 z-50 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5 px-4 py-3">
+        {/* SEARCH */}
+
+        <div className="flex min-h-[60px] min-w-[280px] flex-1 items-center gap-3 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec]">
+          <IoSearchOutline className="shrink-0 text-[22px] text-[#1c6b45]" />
 
           <input
-            type="text"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
             placeholder="ស្វែងរកម្ហូបអាហារ..."
-            className="h-full w-full bg-transparent text-[15px] text-[#3d3d3a] outline-none placeholder:text-[#a3a29a]"
+            className="h-full w-full bg-transparent text-[15px] outline-none placeholder:text-[#a3a29a]"
           />
-        </div> */}
-        <FoodSearch
-          menuItems={menuItems}
-          value={searchInput}
-          onChange={setSearchInput}
-        />
-        <div ref={wrapRef} className="relative z-99 min-w-[220px] flex-none">
+
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => setSearchInput("")}
+              className="cursor-pointer text-sm text-gray-400 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* FILTER */}
+
+        <div ref={wrapRef} className="relative z-50 min-w-[220px] flex-none">
           <button
             type="button"
             onClick={() => setIsOpen((previous) => !previous)}
@@ -402,32 +589,28 @@ export default function FoodSearchBar() {
             />
           </button>
 
+          {/* DROPDOWN */}
+
           <div
-            className={`absolute right-0 top-[calc(100%+10px)] z-90 w-[380px] max-w-[80vw] rounded-[18px] border border-[#e7e6e1] bg-white p-5 shadow-xl transition-all ${
+            className={`absolute right-0 top-[calc(100%+10px)] z-50 w-[380px] max-w-[80vw] rounded-[18px] border border-[#e7e6e1] bg-white p-5 shadow-xl transition-all ${
               isOpen
                 ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none -translate-y-2 scale-[0.98] opacity-0"
             }`}
           >
-            {" "}
-            <div className="mt-1 flex items-center justify-end">
-              <button
-                type="button"
-                onClick={clearAll}
-                className="text-sm self-end bg-secondary-50 px-3 py-1 rounded-full  cursor-pointer text-secondary-500 underline underline-offset-2 hover:text-secondary-800"
-              >
-                សម្អាតទាំងអស់
-              </button>
-
-              {/* <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full bg-[#1c6b45] px-[22px] py-2.5 text-sm font-semibold text-white hover:bg-[#14502f] active:scale-[0.97]"
-              >
-                អនុវត្ត
-              </button> */}
+            <div className="mb-3 flex items-center justify-end">
+              {count > 0 && (
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="cursor-pointer rounded-full bg-secondary-50 px-3 py-1 text-sm text-secondary-500 underline underline-offset-2 hover:text-secondary-800"
+                >
+                  សម្អាតទាំងអស់
+                </button>
+              )}
             </div>
-            <div className="scrollbar-hide z-99 max-h-[70vh] overflow-y-auto">
+
+            <div className="scrollbar-hide max-h-[70vh] overflow-y-auto">
               {chipGroups.map((group, index) => (
                 <div
                   key={group.key}
@@ -453,7 +636,7 @@ export default function FoodSearchBar() {
                           key={selectionKey}
                           type="button"
                           onClick={() => toggleChip(group.key, option.code)}
-                          className={`rounded-full cursor-pointer border px-4 py-2 text-sm transition-all ${
+                          className={`cursor-pointer rounded-full border px-4 py-2 text-sm transition-all ${
                             isSelected
                               ? "border-[#1c6b45] bg-[#1c6b45] text-white"
                               : "border-[#e7e6e1] bg-white text-[#3d3d3a] hover:border-[#1c6b45]"
@@ -466,30 +649,54 @@ export default function FoodSearchBar() {
                   </div>
                 </div>
               ))}
+
+              {chipGroups.length === 0 && (
+                <p className="py-5 text-center text-sm text-gray-400">
+                  មិនមានទិន្នន័យតម្រង
+                </p>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 place-items-center gap-4 px-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
-        {isLoading && (
+      {/* ===============================================
+          RESULT COUNT
+      =============================================== */}
+
+      {!isLoading && !isError && (
+        <div className="px-4 pb-3 text-sm text-gray-400">
+          រកឃើញ{" "}
+          <span className="font-semibold text-primary-700">
+            {filteredFoods.length}
+          </span>{" "}
+          មុខម្ហូប
+        </div>
+      )}
+
+      {/* ===============================================
+          GRID
+      =============================================== */}
+
+      <div className="mt-3 grid grid-cols-1 place-items-center gap-4 px-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+        {/* LOADING */}
+
+        {(isLoading || isFetching) && (
           <p className="col-span-full py-10 text-center text-gray-400">
             កំពុងផ្ទុក...
           </p>
         )}
 
+        {/* ERROR */}
+
         {isError && (
           <div className="col-span-full flex flex-col items-center gap-3 py-10 text-center">
             <p className="text-red-500">មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ</p>
 
-            {/* <pre className="max-w-full overflow-auto text-base text-red-500">
-              {JSON.stringify(error, null, 2)}
-            </pre> */}
-
             <button
               type="button"
               onClick={() => refetch()}
-              className="rounded-full bg-primary-800 px-4 py-2 text-white"
+              className="cursor-pointer rounded-full bg-primary-800 px-4 py-2 text-white"
             >
               ព្យាយាមម្តងទៀត
             </button>
@@ -497,26 +704,31 @@ export default function FoodSearchBar() {
         )}
 
         <AnimatePresence mode="popLayout">
-          {!isLoading && !isError && filteredFoods.length === 0 && (
-            <motion.p
-              key="empty"
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
-              className="col-span-full py-10 text-center text-gray-400"
-            >
-              <IoSearchOutline className="mx-auto   pb-8 text-[34px] text-gray-300" />
-              រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
-            </motion.p>
-          )}
+          {!isLoading &&
+            !isFetching &&
+            !isError &&
+            filteredFoods.length === 0 && (
+              <motion.div
+                key="empty"
+                initial={{
+                  opacity: 0,
+                }}
+                animate={{
+                  opacity: 1,
+                }}
+                exit={{
+                  opacity: 0,
+                }}
+                className="col-span-full py-10 text-center text-gray-400"
+              >
+                <IoSearchOutline className="mx-auto mb-4 text-[34px] text-gray-300" />
+
+                <p>រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង</p>
+              </motion.div>
+            )}
 
           {!isLoading &&
+            !isFetching &&
             !isError &&
             filteredFoods.map((food) => (
               <motion.div
@@ -524,21 +736,22 @@ export default function FoodSearchBar() {
                 key={food.uuid}
                 initial={{
                   opacity: 0,
-                  scale: 0.96,
+                  y: 10,
                 }}
                 animate={{
                   opacity: 1,
-                  scale: 1,
+                  y: 0,
                 }}
                 exit={{
                   opacity: 0,
-                  scale: 0.96,
+                  y: 10,
+                }}
+                transition={{
+                  duration: 0.2,
                 }}
                 className="w-full"
               >
-                <Link href={`/food/${food.uuid}`} className="block w-full">
-                  <FoodCard food={food} />
-                </Link>
+                <FoodCard food={food} />
               </motion.div>
             ))}
         </AnimatePresence>

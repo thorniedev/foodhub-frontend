@@ -317,7 +317,7 @@ export default function Home() {
 
     setLocationModalOpen(true);
   }
-
+ 
   return (
     <div>
       {/* <LocationPermissionModal

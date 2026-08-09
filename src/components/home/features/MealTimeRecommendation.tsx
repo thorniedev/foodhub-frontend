@@ -1,50 +1,101 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
-import { EMPTY_FILTERS, FilterState } from "@/types/food";
-import { MenuItem } from "@/types/menu-item";
+import FoodCard from "@/components/dynamic-card/FoodCard";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+
+import { EMPTY_FILTERS, type FilterState } from "@/types/food";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+
 import { addToHistory } from "@/lib/history/recentlyViewed";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type TabId = "all" | "breakfast" | "lunch" | "dinner";
 
 const tabs: { id: TabId; label: string }[] = [
-  { id: "all", label: "ទាំងអស់" },
-  { id: "breakfast", label: "អាហារពេលព្រឹក" },
-  { id: "lunch", label: "អាហារពេលថ្ងៃ" },
-  { id: "dinner", label: "អាហារពេលល្ងាច" },
+  {
+    id: "all",
+    label: "ទាំងអស់",
+  },
+  {
+    id: "breakfast",
+    label: "អាហារពេលព្រឹក",
+  },
+  {
+    id: "lunch",
+    label: "អាហារពេលថ្ងៃ",
+  },
+  {
+    id: "dinner",
+    label: "អាហារពេលល្ងាច",
+  },
 ];
 
 function getMealTimeByHour(hour: number): TabId {
-  if (hour >= 5 && hour < 11) return "breakfast";
-  if (hour >= 11 && hour < 17) return "lunch";
+  if (hour >= 5 && hour < 11) {
+    return "breakfast";
+  }
+
+  if (hour >= 11 && hour < 17) {
+    return "lunch";
+  }
+
   return "dinner";
 }
 
-function matchesQuery(food: MenuItem, query?: string) {
-  if (!query || !query.trim()) return true;
+function normalizeText(value?: string | null): string {
+  return (value ?? "").trim().toLowerCase().normalize("NFKC");
+}
 
-  const q = query.trim().toLowerCase();
+function matchesQuery(food: CatalogMenuItem, query?: string): boolean {
+  const normalizedQuery = normalizeText(query);
 
-  return (
-    food.localName.toLowerCase().includes(q) ||
-    food.name.toLowerCase().includes(q) ||
-    food.description.toLowerCase().includes(q) ||
-    food.store.localName.toLowerCase().includes(q) ||
-    food.food.category.name.toLowerCase().includes(q)
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const searchableValues = [
+    food.name,
+    food.localName,
+    food.foodName,
+    food.description,
+
+    food.store.name,
+
+    food.filterData.category.name,
+    food.filterData.category.code,
+
+    food.filterData.cuisine.name,
+    food.filterData.cuisine.code,
+
+    ...food.filterData.mealTypes.map((item) => item.name),
+
+    ...food.filterData.mealTypes.map((item) => item.code),
+
+    ...food.filterData.ageGroups.map((item) => item.name),
+
+    ...food.filterData.ageGroups.map((item) => item.code),
+  ];
+
+  return searchableValues.some((value) =>
+    normalizeText(value).includes(normalizedQuery),
   );
 }
 
-function matchesGroup(itemValues: string[], selected?: Set<string>) {
-  if (!selected || selected.size === 0) return true;
-  if (itemValues.includes("គ្រប់វ័យ")) return true;
-  return itemValues.some((v) => selected.has(v));
+function matchesGroup(itemValues: string[], selected?: Set<string>): boolean {
+  if (!selected || selected.size === 0) {
+    return true;
+  }
+
+  const normalizedItemValues = itemValues.map(normalizeText);
+
+  return [...selected].some((selectedValue) =>
+    normalizedItemValues.includes(normalizeText(selectedValue)),
+  );
 }
 
 type RecommandSectionProps = {
@@ -55,39 +106,8 @@ export default function MealTimeRecommandSection({
   filters = EMPTY_FILTERS,
 }: RecommandSectionProps) {
   const [activeTab, setActiveTab] = useState<TabId>("all");
-  const hasAutoSelected = useRef(false);
+
   const isManualOverride = useRef(false);
-  // useEffect(() => {
-  //   if (!hasAutoSelected.current) {
-  //     hasAutoSelected.current = true;
-  //     const currentHour = new Date().getHours();
-  //     setActiveTab(getMealTimeByHour(currentHour));
-  //   }
-  // }, []);
-  useEffect(() => {
-    const applyTimeBasedTab = () => {
-      if (isManualOverride.current) return;
-      const currentHour = new Date().getHours();
-      setActiveTab((prev) => {
-        const next = getMealTimeByHour(currentHour);
-        return prev === next ? prev : next;
-      });
-    };
-
-    applyTimeBasedTab(); // run immediately on mount
-    hasAutoSelected.current = true;
-
-    const intervalId = setInterval(applyTimeBasedTab, 1_000);
-
-    document.addEventListener("visibilitychange", applyTimeBasedTab);
-    window.addEventListener("focus", applyTimeBasedTab);
-
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", applyTimeBasedTab);
-      window.removeEventListener("focus", applyTimeBasedTab);
-    };
-  }, []);
 
   const {
     data: foods = [],
@@ -95,142 +115,258 @@ export default function MealTimeRecommandSection({
     isError,
     error,
   } = useGetMenuItemsQuery();
-  console.log(" ==> data :", foods);
-  //   if (error) {
-  //     console.log("RTK Query error:", JSON.stringify(error, null, 2));
-  //   }
+  console.log("==> api data", foods);
+  /**
+   * Automatically select meal time.
+   *
+   * We don't need to check every second.
+   * Once per minute is enough and is lighter
+   * for the browser.
+   */
+  useEffect(() => {
+    const applyTimeBasedTab = () => {
+      if (isManualOverride.current) {
+        return;
+      }
 
-  const filteredFoods = useMemo(
-    () =>
-      foods.filter((food) => {
-        const mealMatch =
-          activeTab === "all" ||
-          food.mealTypes.some((meal) => meal.code.toLowerCase() === activeTab);
+      const currentHour = new Date().getHours();
+      const nextTab = getMealTimeByHour(currentHour);
 
-        const categoryMatch = matchesGroup(
-          [food.food.category.name],
-          filters.food,
+      setActiveTab((currentTab) =>
+        currentTab === nextTab ? currentTab : nextTab,
+      );
+    };
+
+    applyTimeBasedTab();
+
+    const intervalId = window.setInterval(applyTimeBasedTab, 60_000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        applyTimeBasedTab();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    window.addEventListener("focus", applyTimeBasedTab);
+
+    return () => {
+      window.clearInterval(intervalId);
+
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+      window.removeEventListener("focus", applyTimeBasedTab);
+    };
+  }, []);
+
+  const filteredFoods = useMemo(() => {
+    return foods.filter((food) => {
+      // ==========================================
+      // MEAL TIME
+      // New API:
+      // food.filterData.mealTypes
+      // ==========================================
+      const mealMatch =
+        activeTab === "all" ||
+        food.filterData.mealTypes.some(
+          (meal) => normalizeText(meal.code) === normalizeText(activeTab),
         );
 
-        const dietaryMatch = matchesGroup(
-          food.dietaryTypes.map((item) => item.name),
-          filters.drink,
-        );
+      // ==========================================
+      // CATEGORY
+      // New API:
+      // food.filterData.category
+      // ==========================================
+      const categoryMatch = matchesGroup(
+        [food.filterData.category.name, food.filterData.category.code],
+        filters.food,
+      );
 
-        const ageMatch = matchesGroup(
-          food.food.ageGroups.map((item) => item.name),
-          filters.age,
-        );
+      // ==========================================
+      // AGE GROUP
+      // New API:
+      // food.filterData.ageGroups
+      // ==========================================
+      const ageMatch = matchesGroup(
+        food.filterData.ageGroups.flatMap((item) => [item.name, item.code]),
+        filters.age,
+      );
 
-        return (
-          mealMatch &&
-          matchesQuery(food, filters.query) &&
-          categoryMatch &&
-          dietaryMatch &&
-          ageMatch
-        );
-      }),
-    [foods, activeTab, filters],
-  );
-  const router = useRouter();
+      /**
+       * Your new LIST response currently does not
+       * provide a typed dietary/drink structure
+       * that can safely replace:
+       *
+       * food.dietaryTypes.map(...)
+       *
+       * Therefore don't try to read `.name`
+       * from `dietaryTypes` here yet.
+       *
+       * For now we allow the item through when
+       * no drink filter is selected.
+       */
+      const drinkMatch = !filters.drink || filters.drink.size === 0;
 
-  const handleViewFood = (food: MenuItem) => {
-    console.log("CLICKED FOOD:", food);
+      return (
+        mealMatch &&
+        matchesQuery(food, filters.query) &&
+        categoryMatch &&
+        drinkMatch &&
+        ageMatch
+      );
+    });
+  }, [foods, activeTab, filters]);
 
+  const handleViewFood = (food: CatalogMenuItem) => {
     addToHistory({
       uuid: food.uuid,
-      name: food.name,
-      localName: food.localName,
-      thumbnail: food.thumbnail,
+
+      name: food.name || food.foodName || "",
+
+      localName: food.localName ?? food.name,
+
+      thumbnail: food.thumbnail ?? "",
     });
-
-    console.log("FOOD SAVED TO HISTORY:", food.uuid);
   };
-  return (
-    <div className="my-15 flex flex-col gap-12.5">
-      <section className="flex flex-col items-center lg:pt-0 md:pt-4 justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
-        <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center font-semibold text-primary-800">
-          បទពិសោធន៍ថ្មីក្នុង
-          {/* <span className="text-secondary-500">ការស្វែងរកអាហារ</span> */}
-          <TypingAnimation
-            words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
-            blinkCursor={true}
-            pauseDelay={2000}
-            loop
-            className="text-secondary-500"
-          >
-            Blinking cursor
-          </TypingAnimation>
-        </p>
-        <p className="lg:text-[24px] md:text-[20px] text-center font-light text-gray-700 max-md:text-[16px]">
-          ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ
-          <br />
-          ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
-          និងទីតាំងរបស់អ្នក
-        </p>
-      </section>
 
-      {/* Meal-time tabs */}
-      <div className="container max-w-7xl mx-auto px-4">
-        <div className="flex gap-8 border-b border-gray-200 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                isManualOverride.current = true;
-                setActiveTab(tab.id);
-              }}
-              className={`relative cursor-pointer pb-4 whitespace-nowrap text-lg md:text-xl font-semibold transition-colors ${
-                activeTab === tab.id
-                  ? "text-primary-700"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId="active-meal-tab-underline"
-                  className="absolute left-0 right-0 -bottom-[1px] h-[3px] bg-primary-700 rounded-full"
-                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                />
-              )}
-            </button>
-          ))}
+  return (
+    <section className="w-full">
+      {/* ==========================================
+          TITLE
+      ========================================== */}
+
+      <div className="container mx-auto mb-10 max-w-7xl px-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-primary-900 md:text-4xl">
+            បទពិសោធន៍ថ្មីក្នុង{" "}
+            <TypingAnimation
+              words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
+              blinkCursor
+              pauseDelay={2000}
+              loop
+              className="text-secondary-500"
+            />
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-3xl leading-7 text-gray-500">
+            ស្វែងរកមុខម្ហូប និងហាងអាហារ ដែលសមនឹងអ្នក តាមរយៈ ប្រព័ន្ធណែនាំឆ្លាតវៃ
+            ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា និងទីតាំងរបស់អ្នក
+          </p>
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="lg:max-w-7xl md:max-w-3xl md:gap-4 container items-center place-items-center mx-auto grid lg:grid-cols-4 md:grid-cols-3 grid-cols-1 md:gap-4 max-md:gap-4 lg:gap-6">
+      {/* ==========================================
+          MEAL TIME TABS
+      ========================================== */}
+
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="scrollbar-hide flex gap-8 overflow-x-auto border-b border-gray-200">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  isManualOverride.current = true;
+
+                  setActiveTab(tab.id);
+                }}
+                className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
+                  isActive
+                    ? "text-primary-700"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                {tab.label}
+
+                {isActive && (
+                  <motion.div
+                    layoutId="active-meal-tab-underline"
+                    className="absolute -bottom-[1px] left-0 right-0 h-[3px] rounded-full bg-primary-700"
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 40,
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ==========================================
+          FOOD GRID
+      ========================================== */}
+
+      <div className="container mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-5 px-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+        {/* Loading */}
         {isLoading && (
-          <p className="col-span-full text-center text-gray-400 py-10">
-            កំពុងផ្ទុក...
-          </p>
+          <div className="col-span-full py-16 text-center">
+            <p className="text-gray-400">កំពុងផ្ទុក...</p>
+          </div>
         )}
-        {/* {isError && (
-          <p className="col-span-full text-center text-red-400 py-10">
-            មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ
-          </p>
-        )} */}
+
+        {/* Error */}
+        {isError && (
+          <div className="col-span-full py-16 text-center">
+            <p className="text-red-500">មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ</p>
+
+            {process.env.NODE_ENV === "development" && (
+              <pre className="mx-auto mt-3 max-w-xl overflow-auto text-left text-xs text-red-400">
+                {JSON.stringify(error, null, 2)}
+              </pre>
+            )}
+          </div>
+        )}
+
+        {/* Empty */}
+        {!isLoading && !isError && filteredFoods.length === 0 && (
+          <div className="col-span-full py-16 text-center">
+            <p className="text-gray-400">
+              មិនមានមុខម្ហូបដែលត្រូវនឹងការស្វែងរកទេ
+            </p>
+          </div>
+        )}
+
+        {/* Foods */}
         <AnimatePresence mode="popLayout">
           {filteredFoods.map((food) => (
             <motion.div
               key={food.uuid}
               layout
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
+              initial={{
+                opacity: 0,
+                y: 12,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: -8,
+              }}
+              transition={{
+                duration: 0.25,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
               <Link
                 href={`/food/${food.uuid}`}
                 onClick={() => handleViewFood(food)}
-                className="block"
+                className="block h-full"
               >
-                {/* Your FoodCard here */}
+                <FoodCard food={food} />
               </Link>
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
-    </div>
+    </section>
   );
 }

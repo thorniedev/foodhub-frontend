@@ -19,7 +19,7 @@ import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
 
-import type { MenuItem } from "@/types/manu";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 type ModalTab = "swipe" | "spin";
 
@@ -45,16 +45,30 @@ const MODAL_TABS: ModalTabItem[] = [
   },
 ];
 
-function getTopRecommendation(foods: MenuItem[]): MenuItem | null {
+function getTopRecommendation(
+  foods: CatalogMenuItem[],
+): CatalogMenuItem | null {
   return foods[0] ?? null;
 }
 
-function getPreferenceLabels(foods: MenuItem[]): string[] {
+function getPreferenceLabels(foods: CatalogMenuItem[]): string[] {
   const values = new Set<string>();
 
   foods.slice(0, 6).forEach((food) => {
-    food.dietaryTypes.forEach((diet) => {
-      values.add(diet.name);
+    if (!Array.isArray(food.dietaryTypes)) {
+      return;
+    }
+
+    food.dietaryTypes.forEach((item) => {
+      if (typeof item !== "object" || item === null) {
+        return;
+      }
+
+      const diet = item as Record<string, unknown>;
+
+      if (typeof diet.name === "string") {
+        values.add(diet.name);
+      }
     });
   });
 
@@ -81,12 +95,16 @@ export default function Model() {
     () =>
       [...menuItems]
         .filter((food) => food.availabilityStatus === "AVAILABLE")
-        .filter((food) => food.recommendation?.safetyStatus === "SAFE")
-        .sort(
-          (firstFood, secondFood) =>
-            secondFood.recommendation.finalScore -
-            firstFood.recommendation.finalScore,
-        ),
+        .sort((firstFood, secondFood) => {
+          if (firstFood.isFeatured !== secondFood.isFeatured) {
+            return firstFood.isFeatured ? -1 : 1;
+          }
+
+          return (
+            Number(secondFood.store?.averageRating ?? 0) -
+            Number(firstFood.store?.averageRating ?? 0)
+          );
+        }),
     [menuItems],
   );
 
@@ -231,7 +249,11 @@ export default function Model() {
     }
 
     if (activeTab === "swipe") {
-      return <SwipeCardTinderStyle foods={recommendedFoods} />;
+      return (
+        <div className="flex w-full  justify-center">
+          <SwipeCardTinderStyle foods={recommendedFoods} />
+        </div>
+      );
     }
 
     return <SpinFood />;
@@ -817,22 +839,22 @@ export default function Model() {
 
                   <div className="scrollbar-hide flex-1 overflow-y-auto">
                     {/* <div className="border-b border-gray-100 bg-white/70 px-5 py-3 backdrop-blur">
-                      <div className="flex items-start gap-3">
-                        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
-                          {activeTabInformation.icon}
-                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+                            {activeTabInformation.icon}
+                          </div>
 
-                        <div>
-                          <p className="text-[17px] font-semibold text-primary-900">
-                            {activeTabInformation.label}
-                          </p>
+                          <div>
+                            <p className="text-[17px] font-semibold text-primary-900">
+                              {activeTabInformation.label}
+                            </p>
 
-                          <p className="mt-1 text-[16px] leading-7 text-gray-500">
-                            {activeTabInformation.description}
-                          </p>
+                            <p className="mt-1 text-[16px] leading-7 text-gray-500">
+                              {activeTabInformation.description}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </div> */}
+                      </div> */}
 
                     <AnimatePresence mode="wait">
                       <motion.div
@@ -860,15 +882,15 @@ export default function Model() {
                   </div>
 
                   {/* <div className="border-t border-gray-200 bg-white px-5 py-">
-                    <div className="flex items-start justify-center gap-2 text-center">
-                      <HiOutlineLightBulb className="mt-0.5 shrink-0 text-[22px] text-secondary-500" />
+                      <div className="flex items-start justify-center gap-2 text-center">
+                        <HiOutlineLightBulb className="mt-0.5 shrink-0 text-[22px] text-secondary-500" />
 
-                      <p className="text-[16px] leading-7 text-gray-500">
-                        ការណែនាំនេះផ្អែកលើទិន្នន័យ ចំណូលចិត្ត
-                        និងលក្ខខណ្ឌសុវត្ថិភាពរបស់អ្នក។
-                      </p>
-                    </div>
-                  </div> */}
+                        <p className="text-[16px] leading-7 text-gray-500">
+                          ការណែនាំនេះផ្អែកលើទិន្នន័យ ចំណូលចិត្ត
+                          និងលក្ខខណ្ឌសុវត្ថិភាពរបស់អ្នក។
+                        </p>
+                      </div>
+                    </div> */}
                 </motion.div>
               </motion.div>
             )}

@@ -1,18 +1,13 @@
 "use client";
 
 import type { MenuItem } from "@/types/menu-item";
-import { motion } from "framer-motion";
-import Image from "next/image";
 import { CiHeart } from "react-icons/ci";
 import { FaStore, FaStar } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 import { MdDeliveryDining } from "react-icons/md";
+import MediaImage from "./home/features/MediaImage";
 
-type Props = {
-  food: MenuItem;
-};
-
-function FoodCard({ food }: { food: MenuItem }) {
+export default function FoodCard({ food }: { food: MenuItem }) {
   return (
     <div
       className="
@@ -31,19 +26,9 @@ function FoodCard({ food }: { food: MenuItem }) {
       {/* Image */}
       <div className="relative flex-1 min-h-0">
         {food.thumbnail && (
-          <Image
-            width={285}
-            height={370}
-            src={food.thumbnail}
-            alt={food.localName}
-            draggable={false}
-            className="
-            rounded-[14px]
-            w-full
-            h-full
-            object-cover
-            pointer-events-none
-            "
+          <MediaImage
+            mediaPath={food.thumbnail}
+            alt={food.localName || food.name}
           />
         )}
 

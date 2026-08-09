@@ -17,14 +17,13 @@ import {
 
 import { FaStar, FaStore } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
-import { MdDeliveryDining, MdReplay } from "react-icons/md";
 import { IoBagHandle, IoClose, IoSparkles } from "react-icons/io5";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
-import type { MenuItem } from "@/types/manu";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 type WonEntry = {
-  food: MenuItem;
+  food: CatalogMenuItem;
   count: number;
 };
 
@@ -106,7 +105,7 @@ function truncateText(value: string, maximumLength = 12) {
   return `${value.slice(0, maximumLength - 1)}…`;
 }
 
-function formatPrice(food: MenuItem) {
+function formatPrice(food: CatalogMenuItem) {
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -116,6 +115,56 @@ function formatPrice(food: MenuItem) {
   } catch {
     return `$${food.price.toFixed(2)}`;
   }
+}
+
+function getMediaUrl(value: string | null | undefined): string {
+  if (!value) {
+    return "/Image/default-food.png";
+  }
+
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
+
+  if (value.startsWith("/api/v1/")) {
+    return `/api/${value.slice("/api/v1/".length)}`;
+  }
+
+  if (value.startsWith("/")) {
+    return value;
+  }
+
+  return `/${value}`;
+}
+
+type DisplayCodeName = {
+  code: string;
+  name: string;
+};
+
+function getDietaryTypes(food: CatalogMenuItem): DisplayCodeName[] {
+  if (!Array.isArray(food.dietaryTypes)) {
+    return [];
+  }
+
+  return food.dietaryTypes.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const value = item as Record<string, unknown>;
+
+    if (typeof value.code !== "string" || typeof value.name !== "string") {
+      return [];
+    }
+
+    return [
+      {
+        code: value.code,
+        name: value.name,
+      },
+    ];
+  });
 }
 
 function Confetti({ count = 42 }: { count?: number }) {
@@ -186,42 +235,36 @@ function Confetti({ count = 42 }: { count?: number }) {
   );
 }
 
-function FoodStats({ food }: { food: MenuItem }) {
+function FoodStats({ food }: { food: CatalogMenuItem }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base text-primary-400">
       <span className="flex items-center gap-1 text-accent-400">
         <FaStar className="text-base" />
-
-        {food.store.averageRating}
+        {Number(food.store?.averageRating ?? 0).toFixed(1)}
       </span>
 
-      <span className="flex items-center gap-1">
-        <IoMdTime className="text-[18px]" />
-        {food.preparationTimeMinutes} min
-      </span>
-
-      <span className="flex items-center gap-1">
-        <MdDeliveryDining className="text-base" />
-        {food.distanceKm} km
-      </span>
+      {food.preparationTimeMinutes !== null && (
+        <span className="flex items-center gap-1">
+          <IoMdTime className="text-[18px]" />
+          {food.preparationTimeMinutes} min
+        </span>
+      )}
     </div>
   );
 }
 
 type WinPopupProps = {
-  food: MenuItem;
+  food: CatalogMenuItem;
   reducedMotion: boolean;
   onClose: () => void;
-  onSpinAgain: () => void;
 };
 
-function WinPopup({
-  food,
-  reducedMotion,
-  onClose,
-  onSpinAgain,
-}: WinPopupProps) {
-  const matchPercentage = Math.round(food.recommendation.finalScore * 100);
+function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
+  const dietaryTypes = getDietaryTypes(food);
+
+  const badgeText = food.isFeatured
+    ? "Featured"
+    : food.filterData?.category?.name || "Available";
 
   return (
     <motion.div
@@ -343,7 +386,7 @@ function WinPopup({
             <div className="relative h-[195px] overflow-hidden rounded-[18px]">
               <Image
                 fill
-                src={food.thumbnail}
+                src={getMediaUrl(food.thumbnail)}
                 alt={food.localName || food.name}
                 sizes="300px"
                 priority
@@ -351,7 +394,7 @@ function WinPopup({
               />
 
               <span className="absolute left-2 top-2 rounded-full bg-primary-800/95 px-3 py-1 text-base font-medium text-white shadow">
-                {matchPercentage}% Match
+                {badgeText}
               </span>
 
               {!reducedMotion && (
@@ -382,7 +425,9 @@ function WinPopup({
               <div className="flex items-center gap-1.5 text-secondary-400">
                 <FaStore className="shrink-0 text-base" />
 
-                <p className="truncate text-base">{food.store.localName}</p>
+                <p className="truncate text-base">
+                  {food.store?.name || "Unknown store"}
+                </p>
               </div>
 
               <div className="flex items-start justify-between gap-3">
@@ -398,37 +443,33 @@ function WinPopup({
               <FoodStats food={food} />
 
               <div className="scrollbar-hide flex gap-2 overflow-x-auto">
-                {food.dietaryTypes.map((diet) => (
-                  <span
-                    key={diet.code}
-                    className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white"
-                  >
-                    {diet.name}
-                  </span>
-                ))}
+                {dietaryTypes.length > 0 ? (
+                  dietaryTypes.map((diet) => (
+                    <span
+                      key={diet.code}
+                      className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white"
+                    >
+                      {diet.name}
+                    </span>
+                  ))
+                ) : (
+                  <>
+                    {food.filterData?.category && (
+                      <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white">
+                        {food.filterData.category.name}
+                      </span>
+                    )}
+
+                    {food.filterData?.cuisine && (
+                      <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white">
+                        {food.filterData.cuisine.name}
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </Link>
-
-          {/* mdorng tt spin */}
-          {/* <div className="flex gap-2 border-t border-gray-100 px-2 pb-1 pt-3">
-            <button
-              type="button"
-              onClick={onSpinAgain}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary-800 px-4 py-2.5 text-[18px] font-semibold text-white transition hover:bg-primary-700 active:scale-[0.97]"
-            >
-              <MdReplay />
-              បង្វិលម្តងទៀត
-            </button>
-
-            <Link
-              href={`/food/${food.uuid}`}
-              onClick={onClose}
-              className="flex flex-1 items-center justify-center rounded-full border border-primary-800 px-4 py-2.5 text-[18px] dark:text-[#22a447] font-semibold text-primary-800 transition hover:bg-primary-50 active:scale-[0.97]"
-            >
-              មើលលម្អិត
-            </Link>
-          </div> */}
         </div>
       </motion.div>
     </motion.div>
@@ -540,7 +581,7 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
                     fill
-                    src={food.thumbnail}
+                    src={getMediaUrl(food.thumbnail)}
                     alt={food.localName || food.name}
                     sizes="180px"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -558,7 +599,7 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
                     <FaStore className="shrink-0 text-[10px]" />
 
                     <p className="truncate text-[11px]">
-                      {food.store.localName}
+                      {food.store?.name || "Unknown store"}
                     </p>
                   </div>
 
@@ -603,11 +644,23 @@ export default function SpinFood() {
     () =>
       [...menuItems]
         .filter((item) => item.availabilityStatus === "AVAILABLE")
-        .filter((item) => item.recommendation?.safetyStatus === "SAFE")
-        .sort(
-          (first, second) =>
-            second.recommendation.finalScore - first.recommendation.finalScore,
-        ),
+        .sort((first, second) => {
+          if (first.isFeatured !== second.isFeatured) {
+            return first.isFeatured ? -1 : 1;
+          }
+
+          const ratingDifference =
+            Number(second.store?.averageRating ?? 0) -
+            Number(first.store?.averageRating ?? 0);
+
+          if (ratingDifference !== 0) {
+            return ratingDifference;
+          }
+
+          return (first.localName || first.name).localeCompare(
+            second.localName || second.name,
+          );
+        }),
     [menuItems],
   );
 
@@ -628,7 +681,7 @@ export default function SpinFood() {
 
   const [isDraggingWheel, setIsDraggingWheel] = useState(false);
 
-  const [result, setResult] = useState<MenuItem | null>(null);
+  const [result, setResult] = useState<CatalogMenuItem | null>(null);
 
   const [showResult, setShowResult] = useState(false);
 
@@ -649,27 +702,70 @@ export default function SpinFood() {
   const animationControlRef = useRef<AnimationPlaybackControls | null>(null);
 
   useEffect(() => {
+    if (hydratedRef.current || menuItems.length === 0) {
+      return;
+    }
+
     try {
       const rawValue = window.localStorage.getItem(STORAGE_KEY);
 
-      const parsedValue = rawValue ? JSON.parse(rawValue) : [];
+      const parsedValue: unknown = rawValue ? JSON.parse(rawValue) : [];
 
       if (!Array.isArray(parsedValue)) {
+        setCollection([]);
         hydratedRef.current = true;
         return;
       }
 
-      const cleanedEntries = parsedValue.filter((entry): entry is WonEntry =>
-        Boolean(entry?.food?.uuid && typeof entry.count === "number"),
+      const currentItemsByUuid = new Map(
+        menuItems.map((item) => [item.uuid, item]),
       );
 
-      setCollection(cleanedEntries);
+      const restoredEntries = parsedValue.flatMap((entry) => {
+        if (typeof entry !== "object" || entry === null) {
+          return [];
+        }
+
+        const value = entry as {
+          food?: {
+            uuid?: unknown;
+          };
+          uuid?: unknown;
+          count?: unknown;
+        };
+
+        const uuid =
+          typeof value.food?.uuid === "string"
+            ? value.food.uuid
+            : typeof value.uuid === "string"
+              ? value.uuid
+              : null;
+
+        if (!uuid || typeof value.count !== "number") {
+          return [];
+        }
+
+        const currentFood = currentItemsByUuid.get(uuid);
+
+        if (!currentFood) {
+          return [];
+        }
+
+        return [
+          {
+            food: currentFood,
+            count: Math.max(1, Math.floor(value.count)),
+          },
+        ];
+      });
+
+      setCollection(restoredEntries);
     } catch {
       setCollection([]);
     } finally {
       hydratedRef.current = true;
     }
-  }, []);
+  }, [menuItems]);
 
   useEffect(() => {
     if (!hydratedRef.current) {
@@ -739,7 +835,7 @@ export default function SpinFood() {
     [items, segmentAngle],
   );
 
-  const addToCollection = useCallback((food: MenuItem) => {
+  const addToCollection = useCallback((food: CatalogMenuItem) => {
     setCollection((current) => {
       const existingIndex = current.findIndex(
         (entry) => entry.food.uuid === food.uuid,
@@ -941,14 +1037,6 @@ export default function SpinFood() {
     },
     [handleSpin],
   );
-
-  const handleSpinAgain = useCallback(() => {
-    setShowResult(false);
-
-    window.setTimeout(() => {
-      handleSpin(1);
-    }, 120);
-  }, [handleSpin]);
 
   if (isLoading || isFetching) {
     return (
@@ -1212,7 +1300,6 @@ export default function SpinFood() {
             food={result}
             reducedMotion={reducedMotion}
             onClose={() => setShowResult(false)}
-            onSpinAgain={handleSpinAgain}
           />
         )}
       </AnimatePresence>

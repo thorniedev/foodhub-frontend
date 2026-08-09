@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
+import FoodCard from "@/components/dynamic-card/FoodCard";
+
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
-import FoodCard from "@/components/dynamic-card/FoodCard";
-import { MealType, MenuItem } from "@/types/manu";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 type TabId = "all" | "BREAKFAST" | "LUNCH" | "DINNER";
 
@@ -53,6 +52,13 @@ const EMPTY_FILTERS: RecommendationFilters = {
   cuisines: [],
 };
 
+function normalizeText(value: unknown): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKC");
+}
+
 function getMealTimeByHour(hour: number): TabId {
   if (hour >= 5 && hour < 11) {
     return "BREAKFAST";
@@ -65,72 +71,177 @@ function getMealTimeByHour(hour: number): TabId {
   return "DINNER";
 }
 
-function matchesQuery(menuItem: MenuItem, query?: string): boolean {
-  if (!query?.trim()) {
+/**
+ * Safely get meal types from new API.
+ */
+function getMealTypes(menuItem: CatalogMenuItem) {
+  return Array.isArray(menuItem.filterData?.mealTypes)
+    ? menuItem.filterData.mealTypes
+    : [];
+}
+
+/**
+ * Safely get age groups from new API.
+ */
+function getAgeGroups(menuItem: CatalogMenuItem) {
+  return Array.isArray(menuItem.filterData?.ageGroups)
+    ? menuItem.filterData.ageGroups
+    : [];
+}
+
+/**
+ * dietaryTypes is currently unknown[] in
+ * CatalogMenuItem because your sample response
+ * had empty arrays.
+ *
+ * This helper safely reads code/name if the
+ * backend later returns objects.
+ */
+function getDietaryValues(menuItem: CatalogMenuItem): string[] {
+  if (!Array.isArray(menuItem.dietaryTypes)) {
+    return [];
+  }
+
+  return menuItem.dietaryTypes.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const value = item as Record<string, unknown>;
+
+    const result: string[] = [];
+
+    if (typeof value.code === "string") {
+      result.push(value.code);
+    }
+
+    if (typeof value.name === "string") {
+      result.push(value.name);
+    }
+
+    return result;
+  });
+}
+
+function matchesQuery(menuItem: CatalogMenuItem, query?: string): boolean {
+  const normalizedQuery = normalizeText(query);
+
+  if (!normalizedQuery) {
     return true;
   }
 
-  const normalizedQuery = query.trim().toLowerCase();
+  const mealTypes = getMealTypes(menuItem);
+
+  const ageGroups = getAgeGroups(menuItem);
+
+  const dietaryValues = getDietaryValues(menuItem);
 
   const searchableValues = [
     menuItem.name,
     menuItem.localName,
+    menuItem.foodName,
     menuItem.description,
-    menuItem.localDescription,
-    menuItem.store.name,
-    menuItem.store.localName,
-    menuItem.food.canonicalName,
-    menuItem.food.category.name,
-    menuItem.food.cuisine.name,
-    ...menuItem.ingredients,
-    ...menuItem.dietaryTypes.map((diet) => diet.name),
+
+    menuItem.store?.name,
+
+    menuItem.filterData?.category?.name,
+    menuItem.filterData?.category?.code,
+
+    menuItem.filterData?.cuisine?.name,
+    menuItem.filterData?.cuisine?.code,
+
+    ...mealTypes.flatMap((mealType) => [mealType.code, mealType.name]),
+
+    ...ageGroups.flatMap((ageGroup) => [ageGroup.code, ageGroup.name]),
+
+    ...dietaryValues,
   ];
 
   return searchableValues.some((value) =>
-    value.toLowerCase().includes(normalizedQuery),
+    normalizeText(value).includes(normalizedQuery),
   );
 }
 
-function matchesMealTime(mealTypes: MealType[], activeTab: TabId): boolean {
+function matchesMealTime(menuItem: CatalogMenuItem, activeTab: TabId): boolean {
   if (activeTab === "all") {
     return true;
   }
 
-  return mealTypes.some((mealType) => mealType.code === activeTab);
+  const mealTypes = getMealTypes(menuItem);
+
+  return mealTypes.some(
+    (mealType) =>
+      String(mealType.code ?? "")
+        .trim()
+        .toUpperCase() === activeTab,
+  );
 }
 
-function matchesDietaryTypes(menuItem: MenuItem, selected?: string[]): boolean {
+function matchesDietaryTypes(
+  menuItem: CatalogMenuItem,
+  selected?: string[],
+): boolean {
   if (!selected?.length) {
     return true;
   }
 
-  const itemDietaryCodes = menuItem.dietaryTypes.map((diet) => diet.code);
+  const itemDietaryValues = getDietaryValues(menuItem).map(normalizeText);
 
-  return selected.some((selectedCode) =>
-    itemDietaryCodes.includes(selectedCode),
+  /**
+   * If backend currently returns:
+   *
+   * dietaryTypes: []
+   *
+   * then selecting a dietary filter
+   * correctly hides this item.
+   */
+  return selected.some((selectedValue) =>
+    itemDietaryValues.includes(normalizeText(selectedValue)),
   );
 }
 
-function matchesAgeGroups(menuItem: MenuItem, selected?: string[]): boolean {
+function matchesAgeGroups(
+  menuItem: CatalogMenuItem,
+  selected?: string[],
+): boolean {
   if (!selected?.length) {
     return true;
   }
 
-  const itemAgeGroupCodes = menuItem.food.ageGroups.map(
-    (ageGroup) => ageGroup.code,
-  );
+  const ageGroups = getAgeGroups(menuItem);
 
-  return selected.some((selectedCode) =>
-    itemAgeGroupCodes.includes(selectedCode),
+  const values = ageGroups.flatMap((ageGroup) => [
+    normalizeText(ageGroup.code),
+    normalizeText(ageGroup.name),
+  ]);
+
+  return selected.some((selectedValue) =>
+    values.includes(normalizeText(selectedValue)),
   );
 }
 
-function matchesCuisines(menuItem: MenuItem, selected?: string[]): boolean {
+function matchesCuisines(
+  menuItem: CatalogMenuItem,
+  selected?: string[],
+): boolean {
   if (!selected?.length) {
     return true;
   }
 
-  return selected.includes(menuItem.food.cuisine.code);
+  const cuisine = menuItem.filterData?.cuisine;
+
+  if (!cuisine) {
+    return false;
+  }
+
+  const cuisineValues = [
+    normalizeText(cuisine.code),
+    normalizeText(cuisine.name),
+  ];
+
+  return selected.some((selectedValue) =>
+    cuisineValues.includes(normalizeText(selectedValue)),
+  );
 }
 
 export default function FilterByMealTime({
@@ -144,10 +255,9 @@ export default function FilterByMealTime({
     data: menuItems = [],
     isLoading,
     isError,
-    error,
     refetch,
   } = useGetMenuItemsQuery();
-  // console.log("manu foodcard data :", menuItems);
+
   useEffect(() => {
     const applyTimeBasedTab = () => {
       if (isManualOverride.current) {
@@ -167,47 +277,49 @@ export default function FilterByMealTime({
 
     const intervalId = window.setInterval(applyTimeBasedTab, 60_000);
 
-    document.addEventListener("visibilitychange", applyTimeBasedTab);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        applyTimeBasedTab();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     window.addEventListener("focus", applyTimeBasedTab);
 
     return () => {
       window.clearInterval(intervalId);
 
-      document.removeEventListener("visibilitychange", applyTimeBasedTab);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
 
       window.removeEventListener("focus", applyTimeBasedTab);
     };
   }, []);
 
-  const filteredFoods = useMemo(
-    () =>
-      menuItems
-        .filter((menuItem) => menuItem.availabilityStatus === "AVAILABLE")
-        .filter((menuItem) => matchesMealTime(menuItem.mealTypes, activeTab))
-        .filter((menuItem) => matchesQuery(menuItem, filters.query))
-        .filter((menuItem) =>
-          matchesDietaryTypes(menuItem, filters.dietaryTypes),
-        )
-        .filter((menuItem) => matchesAgeGroups(menuItem, filters.ageGroups))
-        .filter((menuItem) => matchesCuisines(menuItem, filters.cuisines))
-        .sort(
-          (firstItem, secondItem) =>
-            secondItem.recommendation.finalScore -
-            firstItem.recommendation.finalScore,
-        ),
-    [menuItems, activeTab, filters],
-  );
+  const filteredFoods = useMemo(() => {
+    return menuItems
+      .filter((menuItem) => menuItem.availabilityStatus === "AVAILABLE")
 
-  //   if (isError) {
-  //     console.error("RTK Query error:", error);
-  //   }
+      .filter((menuItem) => matchesMealTime(menuItem, activeTab))
+
+      .filter((menuItem) => matchesQuery(menuItem, filters.query))
+
+      .filter((menuItem) => matchesDietaryTypes(menuItem, filters.dietaryTypes))
+
+      .filter((menuItem) => matchesAgeGroups(menuItem, filters.ageGroups))
+
+      .filter((menuItem) => matchesCuisines(menuItem, filters.cuisines));
+  }, [menuItems, activeTab, filters]);
 
   return (
-    <div className="my-15 flex flex-col gap-12.5">
-      <section className="container mx-auto flex max-w-7xl flex-col items-center justify-center gap-6 px-4 pt-4 md:gap-12.5 lg:pt-0">
-        <p className="text-center  text-2xl dark:text-[#22a447] font-semibold text-primary-800 md:text-4xl lg:text-5xl">
-          បទពិសោធន៍ថ្មីក្នុង
+    <div className="w-full">
+      {/* ==========================
+          TITLE
+      ========================== */}
+
+      <section className="mb-10">
+        <h2 className="text-center text-2xl font-bold text-primary-900 dark:text-white md:text-4xl">
+          បទពិសោធន៍ថ្មីក្នុង{" "}
           <TypingAnimation
             words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
             blinkCursor
@@ -217,9 +329,9 @@ export default function FilterByMealTime({
           >
             ការស្វែងរកអាហារ
           </TypingAnimation>
-        </p>
+        </h2>
 
-        <p className="text-center text-[16px] font-light text-gray-700 dark:text-gray-100 md:text-[20px] lg:text-[24px]">
+        <p className="mt-5 text-center text-[16px] font-light text-gray-700 dark:text-gray-100 md:text-[20px] lg:text-[24px]">
           ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ
           <br />
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
@@ -227,69 +339,94 @@ export default function FilterByMealTime({
         </p>
       </section>
 
+      {/* ==========================
+          TABS
+      ========================== */}
+
       <div className="container mx-auto max-w-7xl px-4">
         <div className="flex gap-8 overflow-x-auto border-b border-gray-200">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => {
-                isManualOverride.current = true;
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
 
-                setActiveTab(tab.id);
-              }}
-              className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
-                activeTab === tab.id
-                  ? "text-primary-700 dark:text-[#22a447]"
-                  : "text-gray-400 dark:text-gray-200 hark:hover:text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              {tab.label}
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  isManualOverride.current = true;
 
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId="active-meal-tab-underline"
-                  className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700"
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 40,
-                  }}
-                />
-              )}
-            </button>
-          ))}
+                  setActiveTab(tab.id);
+                }}
+                className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
+                  isActive
+                    ? "text-primary-700 dark:text-[#22a447]"
+                    : "text-gray-400 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-400"
+                }`}
+              >
+                {tab.label}
+
+                {isActive && (
+                  <motion.div
+                    layoutId="active-meal-tab-underline"
+                    className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700"
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 40,
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="container mx-auto lg:max-w-7xl   px-4 ">
-        <div
-          className="
-      grid
-      grid-cols-1
-      lg:gap-4
-      sm:grid-cols-2
-      md:grid-cols-3
-      lg:grid-cols-4
-     
-     md:
-    
-      lg:max-w-7xl
-    "
-        >
+      {/* ==========================
+          FOOD GRID
+      ========================== */}
+
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {/* Loading */}
+
           {isLoading && (
             <p className="col-span-full py-10 text-center text-gray-400">
               កំពុងផ្ទុក...
             </p>
           )}
 
+          {/* Error */}
+
+          {isError && (
+            <div className="col-span-full flex flex-col items-center gap-3 py-10">
+              <p className="text-center text-red-500">
+                មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ
+              </p>
+
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="rounded-lg bg-primary-700 px-4 py-2 text-sm font-medium text-white"
+              >
+                ព្យាយាមម្តងទៀត
+              </button>
+            </div>
+          )}
+
           <AnimatePresence mode="popLayout">
             {!isLoading && !isError && filteredFoods.length === 0 && (
               <motion.p
                 key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={{
+                  opacity: 0,
+                }}
+                animate={{
+                  opacity: 1,
+                }}
+                exit={{
+                  opacity: 0,
+                }}
                 className="col-span-full py-10 text-center text-gray-400"
               >
                 រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
@@ -304,30 +441,22 @@ export default function FilterByMealTime({
                   key={food.uuid}
                   initial={{
                     opacity: 0,
-                    y: 20,
-                    scale: 0.96,
+                    y: 14,
                   }}
                   animate={{
                     opacity: 1,
                     y: 0,
-                    scale: 1,
                   }}
                   exit={{
                     opacity: 0,
-                    y: 20,
-                    scale: 0.96,
+                    y: 10,
                   }}
                   transition={{
                     duration: 0.25,
                   }}
                   className="w-full"
                 >
-                  <Link
-                    href={`/food/${food.uuid}`}
-                    className="block h-full self-center place-items-center w-full"
-                  >
-                    <FoodCard food={food} />
-                  </Link>
+                  <FoodCard food={food} />
                 </motion.div>
               ))}
           </AnimatePresence>

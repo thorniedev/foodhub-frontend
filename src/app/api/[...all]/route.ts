@@ -46,7 +46,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   "users/me/sync": new Set(["PUT"]),
 
   users: new Set(["GET", "POST"]),
-
+  media: new Set(["GET"]),
   /*
    * We need all of these because profile child routes include:
    *
@@ -60,7 +60,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
    * PUT /profiles/{uuid}/safety/ingredient-avoids
    */
   profiles: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-
+  catalog: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   /*
    * Safety option endpoints:
    *

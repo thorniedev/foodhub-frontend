@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 import { IoMdArrowBack, IoMdArrowForward, IoMdTime } from "react-icons/io";
+
 import { FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining, MdSwipe } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
@@ -17,14 +18,64 @@ import { EffectCards } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-cards";
 
-import type { MenuItem } from "@/types/manu";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 type SwipeCardTinderStyleProps = {
-  foods: MenuItem[];
+  foods?: CatalogMenuItem[];
 };
 
+type DietaryDisplayItem = {
+  code: string;
+  name: string;
+};
+
+function getDietaryTypes(food: CatalogMenuItem): DietaryDisplayItem[] {
+  if (!Array.isArray(food.dietaryTypes)) {
+    return [];
+  }
+
+  return food.dietaryTypes.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const diet = item as Record<string, unknown>;
+
+    if (typeof diet.code === "string" && typeof diet.name === "string") {
+      return [
+        {
+          code: diet.code,
+          name: diet.name,
+        },
+      ];
+    }
+
+    return [];
+  });
+}
+
+function getImageUrl(value: string | null | undefined): string {
+  if (!value) {
+    return "/Image/default-food.png";
+  }
+
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
+
+  if (value.startsWith("/api/v1/")) {
+    return `/api/${value.slice("/api/v1/".length)}`;
+  }
+
+  if (value.startsWith("/")) {
+    return value;
+  }
+
+  return `/${value}`;
+}
+
 export default function SwipeCardTinderStyle({
-  foods,
+  foods = [],
 }: SwipeCardTinderStyleProps) {
   const swiperRef = useRef<SwiperInstance | null>(null);
 
@@ -32,23 +83,22 @@ export default function SwipeCardTinderStyle({
 
   const [pulseKey, setPulseKey] = useState(0);
 
-  const total = foods.length;
+  const safeFoods = Array.isArray(foods) ? foods : [];
+
+  const total = safeFoods.length;
 
   const markInteracted = () => {
     setPulseKey((current) => current + 1);
   };
 
   if (total === 0) {
-    return (
-      <div className="flex items-center justify-center py-20 text-gray-400">
-        មិនមានមុខម្ហូបណែនាំទេ
-      </div>
-    );
+    return <p className="text-center text-gray-400">មិនមានមុខម្ហូបណែនាំទេ</p>;
   }
 
   return (
-    <div className="flex flex-col items-center gap-5 px-4 py-10">
-      <div className="relative mx-auto h-[390px] w-[285px]">
+    <div className="flex w-full flex-col items-center gap-5 py-5">
+      {/* Keep the old centered card size/position */}
+      <div className="h-[390px] w-[295px]">
         <Swiper
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
@@ -69,11 +119,8 @@ export default function SwipeCardTinderStyle({
           modules={[EffectCards]}
           className="h-full w-full"
         >
-          {foods.map((food) => (
-            <SwiperSlide
-              key={food.uuid}
-              className="overflow-hidden rounded-[24px]"
-            >
+          {safeFoods.map((food) => (
+            <SwiperSlide key={food.uuid}>
               <SwipeFoodCard food={food} />
             </SwiperSlide>
           ))}
@@ -139,17 +186,20 @@ export default function SwipeCardTinderStyle({
 }
 
 type SwipeFoodCardProps = {
-  food: MenuItem;
+  food: CatalogMenuItem;
 };
 
 function SwipeFoodCard({ food }: SwipeFoodCardProps) {
-  const matchPercentage = Math.round(food.recommendation.finalScore * 100);
-
   const formattedPrice = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: food.currencyCode,
+    currency: food.currencyCode || "USD",
     minimumFractionDigits: 2,
   }).format(food.price);
+
+  const dietaryTypes = getDietaryTypes(food);
+
+  const displayName =
+    food.localName?.trim() || food.name || food.foodName || "Unnamed food";
 
   return (
     // swipe card tinder style
@@ -161,15 +211,15 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-[14px]">
         <Image
           fill
-          src={food.thumbnail}
-          alt={food.localName || food.name}
+          src={getImageUrl(food.thumbnail)}
+          alt={displayName}
           draggable={false}
           sizes="285px"
           className="pointer-events-none object-cover"
         />
 
         {/* <span className="absolute left-2 top-2 rounded-full bg-primary-800 px-3 py-1 text-base font-medium text-white">
-          {matchPercentage}% Match
+          Match
         </span> */}
 
         <button
@@ -189,12 +239,14 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
         <div className="flex items-center gap-2 text-secondary-400">
           <FaStore className="shrink-0" />
 
-          <p className="truncate text-sm">{food.store.localName}</p>
+          <p className="truncate text-sm">
+            {food.store?.name || "Unknown store"}
+          </p>
         </div>
 
         <div className="flex items-center justify-between gap-2">
           <p className="line-clamp-1 min-w-0 text-[22px] font-medium text-primary-900">
-            {food.localName}
+            {displayName}
           </p>
 
           <p className="shrink-0 text-[22px] font-medium text-primary-800">
@@ -206,23 +258,26 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           <div className="flex items-center gap-1.5 text-accent-400">
             <FaStar />
 
-            <span>{food.store.averageRating}</span>
+            <span>{Number(food.store?.averageRating ?? 0).toFixed(1)}</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-primary-400">
             <IoMdTime />
 
-            <span>{food.preparationTimeMinutes} min</span>
+            <span>{food.preparationTimeMinutes ?? "—"} min</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-primary-400">
             <MdDeliveryDining className="text-lg" />
 
-            <span>{food.distanceKm} km</span>
+            {/* New list API has no distanceKm.
+                Keep the old UI slot without inventing a distance. */}
+            <span>— km</span>
           </div>
         </div>
+
         <div className="flex items-center gap-2 overflow-hidden">
-          {food.dietaryTypes.slice(0, 2).map((diet) => (
+          {dietaryTypes.slice(0, 2).map((diet) => (
             <span
               key={diet.code}
               className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-sm text-white lg:text-[16px]"
@@ -231,14 +286,15 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
             </span>
           ))}
 
-          {food.dietaryTypes.length > 2 && (
+          {dietaryTypes.length > 2 && (
             <span className="shrink-0 whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600 lg:text-[16px]">
-              +{food.dietaryTypes.length - 2}
+              +{dietaryTypes.length - 2}
             </span>
           )}
         </div>
+
         {/* <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
-          {food.dietaryTypes.map((diet) => (
+          {dietaryTypes.map((diet) => (
             <span
               key={diet.code}
               className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-base text-white"

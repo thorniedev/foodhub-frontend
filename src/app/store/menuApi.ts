@@ -1,100 +1,125 @@
-/* import { MenuItem, MenuItemsResponse } from "@/types/manu";
-import { baseApi } from "./baseApi";
+import type {
+  CatalogMenuItem,
+  CatalogMenuItemsResponse,
+} from "@/types/catalog-menu-item";
 
-export const menuApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    getMenuItems: builder.query<MenuItem[], void>({
-      query: () => ({
-        url: "/data/manuItem.json",
-        method: "GET",
-      }),
-
-      transformResponse: (response: MenuItemsResponse): MenuItem[] => {
-        return response.menuItems ?? [];
-      },
-
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map((item) => ({
-                type: "MenuItem" as const,
-                id: item.uuid,
-              })),
-              {
-                type: "MenuItem" as const,
-                id: "LIST",
-              },
-            ]
-          : [
-              {
-                type: "MenuItem" as const,
-                id: "LIST",
-              },
-            ],
-    }),
-  }),
-
-  overrideExisting: false,
-});
-
-export const { useGetMenuItemsQuery } = menuApi;
- */
-import type { MenuItem, MenuItemsResponse } from "@/types/manu";
+import type {
+  CatalogMenuItemDetail,
+  CatalogMenuItemDetailResponse,
+  GetCatalogMenuItemDetailParams,
+} from "@/types/catalog-menu-item-detail";
 
 import { baseApi } from "./baseApi";
 
+type MenuItemDetailQueryArg = string | GetCatalogMenuItemDetailParams;
+
 export const menuApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getMenuItems: builder.query<MenuItem[], void>({
+    // =========================================================
+    // GET ALL MENU ITEMS
+    // GET /api/v1/catalog/menu-items
+    // =========================================================
+    getMenuItems: builder.query<CatalogMenuItem[], void>({
       query: () => ({
-        url: "/data/manuItem1.json",
+        url: "/catalog/menu-items",
         method: "GET",
-      }),
 
-      transformResponse: (response: MenuItemsResponse): MenuItem[] => {
-        return response.menuItems ?? [];
-      },
-
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map((item) => ({
-                type: "MenuItem" as const,
-                id: item.uuid,
-              })),
-              {
-                type: "MenuItem" as const,
-                id: "LIST",
-              },
-            ]
-          : [
-              {
-                type: "MenuItem" as const,
-                id: "LIST",
-              },
-            ],
-    }),
-
-    getMenuItemByUuid: builder.query<MenuItem | null, string>({
-      query: () => ({
-        url: "/data/manuItem.json",
-        method: "GET",
+        // Get more items in one request.
+        // You can remove this if your backend default pagination is enough.
+        params: {
+          page: 0,
+          size: 100,
+        },
       }),
 
       transformResponse: (
-        response: MenuItemsResponse,
-        _meta,
-        uuid,
-      ): MenuItem | null => {
-        return response.menuItems.find((item) => item.uuid === uuid) ?? null;
+        response: CatalogMenuItemsResponse,
+      ): CatalogMenuItem[] => {
+        return response.payload?.content ?? [];
       },
 
-      providesTags: (_result, _error, uuid) => [
-        {
-          type: "MenuItem" as const,
-          id: uuid,
-        },
-      ],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map((item) => ({
+                type: "MenuItem" as const,
+                id: item.uuid,
+              })),
+              {
+                type: "MenuItem" as const,
+                id: "LIST",
+              },
+            ]
+          : [
+              {
+                type: "MenuItem" as const,
+                id: "LIST",
+              },
+            ],
+    }),
+
+    // =========================================================
+    // GET MENU ITEM DETAIL
+    // GET /api/v1/catalog/menu-items/{uuid}/detail
+    // =========================================================
+    getMenuItemByUuid: builder.query<
+      CatalogMenuItemDetail,
+      MenuItemDetailQueryArg
+    >({
+      query: (arg) => {
+        // Keep supporting your old usage:
+        // useGetMenuItemByUuidQuery(uuid)
+        if (typeof arg === "string") {
+          return {
+            url: `/catalog/menu-items/${encodeURIComponent(arg)}/detail`,
+            method: "GET",
+          };
+        }
+
+        const { uuid, sessionUuid, latitude, longitude } = arg;
+
+        return {
+          url: `/catalog/menu-items/${encodeURIComponent(uuid)}/detail`,
+          method: "GET",
+
+          params: {
+            ...(sessionUuid
+              ? {
+                  sessionUuid,
+                }
+              : {}),
+
+            ...(latitude !== undefined
+              ? {
+                  latitude,
+                }
+              : {}),
+
+            ...(longitude !== undefined
+              ? {
+                  longitude,
+                }
+              : {}),
+          },
+        };
+      },
+
+      transformResponse: (
+        response: CatalogMenuItemDetailResponse,
+      ): CatalogMenuItemDetail => {
+        return response.payload;
+      },
+
+      providesTags: (_result, _error, arg) => {
+        const uuid = typeof arg === "string" ? arg : arg.uuid;
+
+        return [
+          {
+            type: "MenuItem" as const,
+            id: uuid,
+          },
+        ];
+      },
     }),
   }),
 
