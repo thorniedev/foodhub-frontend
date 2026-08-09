@@ -1,6 +1,5 @@
 export interface CurrentUser {
   id?: number;
-
   uuid: string;
   username: string;
   primaryEmail: string;
@@ -11,7 +10,5 @@ export interface CurrentUser {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
-
-  // Optional until the backend adds it.
   avatarUrl?: string | null;
 }

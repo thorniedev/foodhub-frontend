@@ -127,10 +127,10 @@ export default function GroupRecommendationStoreCard({
             />
           </div>
 
-          <p className="mt-4 border-t border-gray-100 pt-4 text-[16px] leading-7 text-gray-500">
+          {/* <p className="mt-4 border-t border-gray-100 pt-4 text-[16px] leading-7 text-gray-500">
             ជ្រើសរើសជាបេក្ខភាពសម្រាប់ Vote Party។
             មិត្តភក្តិនឹងឃើញហាងនេះនៅក្នុងតំណបោះឆ្នោត។
-          </p>
+          </p> */}
         </div>
       </button>
     </motion.article>

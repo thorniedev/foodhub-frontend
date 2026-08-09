@@ -4,25 +4,18 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
-import {
-  IoFilterOutline,
-  IoRestaurantOutline,
-  IoSearchOutline,
-} from "react-icons/io5";
+import { IoRestaurantOutline, IoSearchOutline } from "react-icons/io5";
 
+import { useGetStoresQuery } from "@/app/store/locationApi";
 import { useUserLocation } from "@/hooks/useUserLocation";
-
 import { calculateDistanceKm } from "@/lib/location/geo";
-
 import {
-  countActiveLocationFoodFilters,
+  buildLocationStoresForFoods,
   filterLocationMenuItems,
 } from "@/lib/location/location-food-filter";
 
-import { buildLocationStoresFromMenuItems } from "@/lib/location/menu-store-adapter";
-
+import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
-
 import type {
   Coordinates,
   LocationFiltersState,
@@ -30,33 +23,37 @@ import type {
   LocationSort,
   RecommendationMode,
 } from "@/types/location";
-
 import { DEFAULT_LOCATION_FILTERS } from "@/types/location";
-
 import type {
   LocationFoodFilterState,
   LocationFoodSort,
 } from "@/types/location-food-filter";
-
 import { DEFAULT_LOCATION_FOOD_FILTERS } from "@/types/location-food-filter";
+import type {
+  FoodStore,
+  StorePageFilters,
+  StoreSortBy,
+} from "@/types/store-page";
 
 import LocationFilters from "./LocationFilters";
-
 import LocationHeader, {
   type LocationStatus as HeaderLocationStatus,
 } from "./LocationHeader";
-
 import LocationPickerModal, {
   type PickedMapLocation,
 } from "./picker/LocationPickerModal";
-
 import SingleRecommendation from "./single/SingleRecommendation";
-
 import GroupRecommendation from "./group/GroupRecommendation";
+
+import StoreFilters from "../store/StoreFilters";
+import {
+  DEFAULT_STORE_FILTERS,
+  applyStoreFilters,
+  getStoreFilterOptions,
+} from "../store/store-page-utils";
 
 interface LocationContentProps {
   menuItems: MenuItem[];
-
   searchQuery?: string;
 }
 
@@ -88,14 +85,7 @@ function convertLocationStatus(
   }
 }
 
-function mapFoodSortToLocationSort(
-  foodSort: LocationFoodSort,
-  mode: RecommendationMode,
-): LocationSort {
-  if (mode === "group") {
-    return "fairest-distance";
-  }
-
+function mapFoodSortToLocationSort(foodSort: LocationFoodSort): LocationSort {
   switch (foodSort) {
     case "nearest":
       return "nearest";
@@ -109,9 +99,29 @@ function mapFoodSortToLocationSort(
   }
 }
 
-function buildLocationFilters(
+function mapStoreSortToLocationSort(storeSort: StoreSortBy): LocationSort {
+  switch (storeSort) {
+    case "name-asc":
+      return "name-asc";
+
+    case "rating":
+      return "highest-rated";
+
+    case "reviews":
+      return "most-reviewed";
+
+    case "default":
+    default:
+      /*
+       * In Group mode the default ordering remains the fairest
+       * midpoint result after the Store-page filters are applied.
+       */
+      return "fairest-distance";
+  }
+}
+
+function buildSingleLocationFilters(
   foodFilters: LocationFoodFilterState,
-  mode: RecommendationMode,
 ): LocationFiltersState {
   return {
     ...DEFAULT_LOCATION_FILTERS,
@@ -120,22 +130,47 @@ function buildLocationFilters(
       foodFilters.maximumDistanceKm ?? DEFAULT_LOCATION_FILTERS.radiusKm,
 
     /*
-     * These old store filters are disabled.
-     * The new flow filters FOOD instead.
+     * Single-user mode is FOOD first.
+     * Store-page filters do not participate in this mode.
      */
     openNow: false,
-
     deliveryAvailable: false,
-
     pickupAvailable: false,
-
     minimumRating: 0,
-
     safeForAllMembers: false,
-
     hasMealsForEveryone: false,
 
-    sortBy: mapFoodSortToLocationSort(foodFilters.sortBy, mode),
+    sortBy: mapFoodSortToLocationSort(foodFilters.sortBy),
+  };
+}
+
+function buildGroupLocationFilters(
+  storeFilters: StorePageFilters,
+): LocationFiltersState {
+  return {
+    ...DEFAULT_LOCATION_FILTERS,
+
+    /*
+     * StoreFilters itself does not expose a distance control.
+     * Group recommendation therefore keeps the existing default
+     * midpoint radius (currently 5 km).
+     */
+    radiusKm: DEFAULT_LOCATION_FILTERS.radiusKm,
+
+    /*
+     * These two fields also get applied by applyStoreFilters().
+     * Keeping them here makes the GroupRecommendation filtering
+     * consistent after the midpoint models have been built.
+     */
+    openNow: storeFilters.openNowOnly,
+    minimumRating: storeFilters.minimumRating ?? 0,
+
+    deliveryAvailable: false,
+    pickupAvailable: false,
+    safeForAllMembers: false,
+    hasMealsForEveryone: false,
+
+    sortBy: mapStoreSortToLocationSort(storeFilters.sortBy),
   };
 }
 
@@ -158,86 +193,98 @@ export default function LocationContent({
 }: LocationContentProps) {
   const [mode, setMode] = useState<RecommendationMode>("single");
 
+  /*
+   * IMPORTANT:
+   * Keep the two filter states separate.
+   *
+   * Single -> Food filters
+   * Group  -> Store filters
+   *
+   * Switching modes will not destroy the previous selections.
+   */
   const [foodFilters, setFoodFilters] = useState<LocationFoodFilterState>({
     ...DEFAULT_LOCATION_FOOD_FILTERS,
   });
 
+  const [groupStoreFilters, setGroupStoreFilters] = useState<StorePageFilters>({
+    ...DEFAULT_STORE_FILTERS,
+    cities: [...DEFAULT_STORE_FILTERS.cities],
+    districts: [...DEFAULT_STORE_FILTERS.districts],
+    provinces: [...DEFAULT_STORE_FILTERS.provinces],
+    operatingStatuses: [...DEFAULT_STORE_FILTERS.operatingStatuses],
+    priceLevels: [...DEFAULT_STORE_FILTERS.priceLevels],
+  });
+
   const [filtersOpen, setFiltersOpen] = useState(false);
-
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-
   const [resultCount, setResultCount] = useState(0);
 
   const {
     coordinates,
-
     detectedCoordinates,
-
     selectedLocation,
-
     source,
-
     status,
-
     error,
-
     refreshLocation,
-
     selectManualLocation,
-
     useCurrentLocation,
   } = useUserLocation();
 
+  const {
+    data: sourceStoreData = [],
+    isFetching: isStoresFetching,
+    refetch: refetchStores,
+  } = useGetStoresQuery();
+
+  const sourceStores = useMemo<LocationStore[]>(
+    () =>
+      Array.isArray(sourceStoreData)
+        ? (sourceStoreData as LocationStore[])
+        : [],
+    [sourceStoreData],
+  );
+
   /*
-   * Top-level FoodSearch can also filter the
-   * Location tab.
-   *
-   * When it is empty, use the search field
-   * inside LocationFilters.
+   * The Store page and Location page read the same store endpoint.
+   * This view is only used so we can reuse StoreFilters and
+   * store-page-utils without creating a duplicate filter model.
    */
+  const storePageStores = useMemo<FoodStore[]>(
+    () =>
+      Array.isArray(sourceStoreData) ? (sourceStoreData as FoodStore[]) : [],
+    [sourceStoreData],
+  );
+
+  /* =========================================================
+   * SINGLE USER MODE
+   * Food filter -> matching foods -> stores that sell them.
+   * ========================================================= */
+
   const effectiveFoodFilters = useMemo<LocationFoodFilterState>(
     () => ({
       ...foodFilters,
-
       query: searchQuery.trim() || foodFilters.query,
     }),
     [foodFilters, searchQuery],
   );
 
-  /*
-   * STEP 1
-   *
-   * Filter foods.
-   */
   const matchingFoods = useMemo(
     () => filterLocationMenuItems(menuItems, effectiveFoodFilters),
     [effectiveFoodFilters, menuItems],
   );
 
-  /*
-   * STEP 2
-   *
-   * Every MenuItem already contains its store reference and coordinates.
-   * Build unique Location stores directly from matchingFoods so the Location
-   * tab does not make a second GET /stores request.
-   */
   const foodStores = useMemo(
-    () => buildLocationStoresFromMenuItems(matchingFoods),
-    [matchingFoods],
+    () => buildLocationStoresForFoods(matchingFoods, sourceStores),
+    [matchingFoods, sourceStores],
   );
 
-  /*
-   * STEP 3
-   *
-   * Convert food filter distance to the
-   * location recommendation radius.
-   */
-  const locationFilters = useMemo(
-    () => buildLocationFilters(effectiveFoodFilters, mode),
-    [effectiveFoodFilters, mode],
+  const singleLocationFilters = useMemo(
+    () => buildSingleLocationFilters(effectiveFoodFilters),
+    [effectiveFoodFilters],
   );
 
-  const effectiveRadiusKm =
+  const singleRadiusKm =
     effectiveFoodFilters.maximumDistanceKm ?? DEFAULT_LOCATION_FILTERS.radiusKm;
 
   const nearbyStoreCount = useMemo(() => {
@@ -255,15 +302,67 @@ export default function LocationContent({
 
       const distance = calculateDistanceKm(coordinates, {
         latitude: Number(store.latitude),
-
         longitude: Number(store.longitude),
       });
 
-      return Number.isFinite(distance) && distance <= effectiveRadiusKm;
+      return Number.isFinite(distance) && distance <= singleRadiusKm;
     }).length;
-  }, [coordinates, effectiveRadiusKm, foodStores]);
+  }, [coordinates, foodStores, singleRadiusKm]);
 
-  const activeFilterCount = countActiveLocationFoodFilters(foodFilters);
+  /* =========================================================
+   * GROUP MODE
+   * All stores -> Store-page filters -> midpoint recommendation.
+   * Food filters are NOT used to choose candidate stores.
+   * ========================================================= */
+
+  const cityOptions = useMemo(
+    () => getStoreFilterOptions(storePageStores, (store) => store.city),
+    [storePageStores],
+  );
+
+  const districtOptions = useMemo(
+    () => getStoreFilterOptions(storePageStores, (store) => store.district),
+    [storePageStores],
+  );
+
+  const provinceOptions = useMemo(
+    () => getStoreFilterOptions(storePageStores, (store) => store.province),
+    [storePageStores],
+  );
+
+  const operatingStatusOptions = useMemo(
+    () =>
+      getStoreFilterOptions(storePageStores, (store) => store.operatingStatus),
+    [storePageStores],
+  );
+
+  const priceLevelOptions = useMemo(
+    () => getStoreFilterOptions(storePageStores, (store) => store.priceLevel),
+    [storePageStores],
+  );
+
+  const groupFilteredStores = useMemo<LocationStore[]>(() => {
+    /*
+     * In Group mode the top-level search is also STORE search.
+     * applyStoreFilters() is exactly the same helper used by
+     * the Store tab.
+     */
+    const filtered = applyStoreFilters(
+      storePageStores,
+      searchQuery,
+      groupStoreFilters,
+    );
+
+    return filtered as unknown as LocationStore[];
+  }, [groupStoreFilters, searchQuery, storePageStores]);
+
+  const groupLocationFilters = useMemo(
+    () => buildGroupLocationFilters(groupStoreFilters),
+    [groupStoreFilters],
+  );
+
+  const effectiveRadiusKm =
+    mode === "single" ? singleRadiusKm : groupLocationFilters.radiusKm;
 
   const headerLocationStatus = convertLocationStatus(status, coordinates);
 
@@ -279,7 +378,7 @@ export default function LocationContent({
             ? "កំពុងប្រើទីតាំងដែលអ្នកបានជ្រើសលើផែនទី"
             : "សូមប្រើទីតាំងបច្ចុប្បន្ន ឬជ្រើសទីតាំងលើផែនទី");
 
-  const isRefreshing = status === "requesting";
+  const isRefreshing = status === "requesting" || isStoresFetching;
 
   useEffect(() => {
     if (!filtersOpen) {
@@ -287,7 +386,6 @@ export default function LocationContent({
     }
 
     const previousOverflow = document.body.style.overflow;
-
     document.body.style.overflow = "hidden";
 
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -300,38 +398,34 @@ export default function LocationContent({
 
     return () => {
       document.body.style.overflow = previousOverflow;
-
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [filtersOpen]);
 
   const handleModeChange = (nextMode: RecommendationMode) => {
     setMode(nextMode);
-
+    setFiltersOpen(false);
     setResultCount(0);
   };
 
   const handleRefresh = () => {
     refreshLocation();
+    void refetchStores();
   };
 
   const handleUseCurrentLocation = () => {
     useCurrentLocation();
-
     setResultCount(0);
   };
 
   const handleConfirmManualLocation = (pickedLocation: PickedMapLocation) => {
     selectManualLocation({
       latitude: pickedLocation.latitude,
-
       longitude: pickedLocation.longitude,
-
       label: pickedLocation.label || "ទីតាំងដែលបានជ្រើសលើផែនទី",
     });
 
     setLocationPickerOpen(false);
-
     setResultCount(0);
   };
 
@@ -344,15 +438,23 @@ export default function LocationContent({
   };
 
   const noMatchingFood = matchingFoods.length === 0;
-
   const noMatchingStore = !noMatchingFood && foodStores.length === 0;
 
   const noNearbyStore =
-    mode === "single" &&
     !noMatchingFood &&
     !noMatchingStore &&
     Boolean(coordinates) &&
     nearbyStoreCount === 0;
+
+  const groupStoreFilterProps = {
+    filters: groupStoreFilters,
+    onChange: setGroupStoreFilters,
+    cityOptions,
+    districtOptions,
+    provinceOptions,
+    operatingStatusOptions,
+    priceLevelOptions,
+  };
 
   return (
     <>
@@ -376,20 +478,28 @@ export default function LocationContent({
         }}
         className="mt-6 min-w-0 text-[17px]"
       >
-        {/*
-         * No fixed height.
-         * No LocationContent scrollbar.
-         *
-         * The normal page scrolls.
-         */}
         <div className="flex min-w-0 items-start gap-7">
-          {/* Desktop food filters */}
-          <div className="sticky top-28 hidden shrink-0 self-start xl:block">
-            <LocationFilters
-              menuItems={menuItems}
-              filters={foodFilters}
-              onChange={setFoodFilters}
-            />
+          <div
+            className="
+    sticky top-28
+    hidden
+    h-[calc(100dvh-8rem)]
+    min-h-0
+    shrink-0
+    self-start
+    overflow-hidden
+    xl:block
+  "
+          >
+            {mode === "single" ? (
+              <LocationFilters
+                menuItems={menuItems}
+                filters={foodFilters}
+                onChange={setFoodFilters}
+              />
+            ) : (
+              <StoreFilters {...groupStoreFilterProps} />
+            )}
           </div>
 
           <main className="min-w-0 flex-1">
@@ -410,69 +520,66 @@ export default function LocationContent({
             />
 
             <div className="mt-6 pb-10">
-              {!coordinates && mode === "single" ? (
-                <ReadableMessage
-                  icon={<IoSearchOutline />}
-                  title="សូមជ្រើសទីតាំងសម្រាប់ស្វែងរកហាង"
-                  description="អ្នកអាចប្រើទីតាំងបច្ចុប្បន្នរបស់អ្នក ឬជ្រើសទីតាំងផ្សេងដោយផ្ទាល់លើផែនទី។"
-                  actionLabel="ជ្រើសទីតាំងលើផែនទី"
-                  onAction={() => setLocationPickerOpen(true)}
-                />
-              ) : noMatchingFood ? (
-                <ReadableMessage
-                  icon={<IoRestaurantOutline />}
-                  title="រកមិនឃើញមុខម្ហូបដែលត្រូវនឹងជម្រើសរបស់អ្នក"
-                  description="សូមកែតម្រងមុខម្ហូប ឬសាកល្បងជ្រើសប្រភេទ របបអាហារ គ្រឿងផ្សំ ឬតម្លៃផ្សេង។"
-                  actionLabel="សម្អាតតម្រង"
-                  onAction={resetFoodFilters}
-                />
-              ) : noMatchingStore ? (
-                <ReadableMessage
-                  icon={<IoRestaurantOutline />}
-                  title="មានមុខម្ហូបដែលអ្នកចង់បាន ប៉ុន្តែមិនទាន់រកឃើញហាង"
-                  description="មុខម្ហូបដែលបានជ្រើសមានក្នុងបញ្ជី FoodHub ប៉ុន្តែមិនទាន់មានព័ត៌មានទីតាំងហាងដែលអាចប្រើបាន។ សូមសាកល្បងមុខម្ហូបផ្សេង។"
-                  actionLabel="កែតម្រងមុខម្ហូប"
-                  onAction={() => setFiltersOpen(true)}
-                />
-              ) : noNearbyStore ? (
-                <ReadableMessage
-                  icon={<IoRestaurantOutline />}
-                  title="មិនមានហាងដែលមានមុខម្ហូបទាំងនេះនៅក្បែរទីតាំងរបស់អ្នក"
-                  description={`សូមពង្រីកចម្ងាយស្វែងរកលើស ${effectiveRadiusKm} km ឬជ្រើសទីតាំងផ្សេងលើផែនទី។`}
-                  actionLabel="កែតម្រងមុខម្ហូប"
-                  onAction={() => setFiltersOpen(true)}
-                />
-              ) : mode === "single" ? (
-                <SingleRecommendation
-                  /*
-                   * ONLY matching foods.
-                   */
-                  menuItems={matchingFoods}
-                  /*
-                   * ONLY stores containing those foods.
-                   */
-                  stores={foodStores}
-                  userLocation={coordinates}
-                  filters={locationFilters}
-                  foodSort={effectiveFoodFilters.sortBy}
-                  /*
-                   * Search has already been applied
-                   * against FOOD, not store.
-                   */
-                  searchQuery=""
-                  onOpenFilters={() => setFiltersOpen(true)}
-                  onResultCountChange={setResultCount}
-                />
+              {mode === "single" ? (
+                !coordinates ? (
+                  <ReadableMessage
+                    icon={<IoSearchOutline />}
+                    title="សូមជ្រើសទីតាំងសម្រាប់ស្វែងរកហាង"
+                    description="អ្នកអាចប្រើទីតាំងបច្ចុប្បន្នរបស់អ្នក ឬជ្រើសទីតាំងផ្សេងដោយផ្ទាល់លើផែនទី។"
+                    actionLabel="ជ្រើសទីតាំងលើផែនទី"
+                    onAction={() => setLocationPickerOpen(true)}
+                  />
+                ) : noMatchingFood ? (
+                  <ReadableMessage
+                    icon={<IoRestaurantOutline />}
+                    title="រកមិនឃើញមុខម្ហូបដែលត្រូវនឹងជម្រើសរបស់អ្នក"
+                    description="សូមកែតម្រងមុខម្ហូប ឬសាកល្បងជ្រើសប្រភេទ របបអាហារ គ្រឿងផ្សំ ឬតម្លៃផ្សេង។"
+                    actionLabel="សម្អាតតម្រង"
+                    onAction={resetFoodFilters}
+                  />
+                ) : noMatchingStore ? (
+                  <ReadableMessage
+                    icon={<IoRestaurantOutline />}
+                    title="មានមុខម្ហូបដែលអ្នកចង់បាន ប៉ុន្តែមិនទាន់រកឃើញហាង"
+                    description="មុខម្ហូបដែលបានជ្រើសមានក្នុងបញ្ជី FoodHub ប៉ុន្តែមិនទាន់មានព័ត៌មានទីតាំងហាងដែលអាចប្រើបាន។ សូមសាកល្បងមុខម្ហូបផ្សេង។"
+                    actionLabel="កែតម្រងមុខម្ហូប"
+                    onAction={() => setFiltersOpen(true)}
+                  />
+                ) : noNearbyStore ? (
+                  <ReadableMessage
+                    icon={<IoRestaurantOutline />}
+                    title="មិនមានហាងដែលមានមុខម្ហូបទាំងនេះនៅក្បែរទីតាំងរបស់អ្នក"
+                    description={`សូមពង្រីកចម្ងាយស្វែងរកលើស ${singleRadiusKm} km ឬជ្រើសទីតាំងផ្សេងលើផែនទី។`}
+                    actionLabel="កែតម្រងមុខម្ហូប"
+                    onAction={() => setFiltersOpen(true)}
+                  />
+                ) : (
+                  <SingleRecommendation
+                    /* FOOD-first data only. */
+                    menuItems={matchingFoods}
+                    stores={foodStores}
+                    userLocation={coordinates}
+                    filters={singleLocationFilters}
+                    foodSort={effectiveFoodFilters.sortBy}
+                    searchQuery=""
+                    onOpenFilters={() => setFiltersOpen(true)}
+                    onResultCountChange={setResultCount}
+                  />
+                )
               ) : (
                 <GroupRecommendation
                   /*
-                   * Same food-first flow is kept
-                   * for group recommendations.
+                   * GROUP MODE IS STORE-FIRST.
+                   *
+                   * menuItems is still supplied so the recommendation
+                   * engine can calculate group dietary/allergen compatibility,
+                   * but food filters do NOT reduce the candidate stores.
                    */
-                  menuItems={matchingFoods}
-                  stores={foodStores}
+                  menuItems={menuItems}
+                  stores={groupFilteredStores}
                   userLocation={coordinates}
-                  filters={locationFilters}
+                  filters={groupLocationFilters}
+                  /* Store search is already applied by applyStoreFilters(). */
                   searchQuery=""
                   onOpenFilters={() => setFiltersOpen(true)}
                   onResultCountChange={setResultCount}
@@ -482,39 +589,31 @@ export default function LocationContent({
           </main>
         </div>
 
-        {/* Mobile / tablet food filter drawer */}
+        {/* MOBILE / TABLET FILTER DRAWER */}
         <AnimatePresence>
           {filtersOpen && (
             <motion.div
-              key="location-food-filter-drawer"
-              initial={{
-                opacity: 0,
-              }}
-              animate={{
-                opacity: 1,
-              }}
-              exit={{
-                opacity: 0,
-              }}
+              key={`location-${mode}-filter-drawer`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="fixed inset-0 z-[1000] xl:hidden"
             >
               <button
                 type="button"
-                aria-label="Close food filters"
+                aria-label={
+                  mode === "single"
+                    ? "Close food filters"
+                    : "Close store filters"
+                }
                 onClick={() => setFiltersOpen(false)}
                 className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
               />
 
               <motion.div
-                initial={{
-                  y: "100%",
-                }}
-                animate={{
-                  y: 0,
-                }}
-                exit={{
-                  y: "100%",
-                }}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
                 transition={{
                   type: "spring",
                   stiffness: 320,
@@ -543,12 +642,19 @@ export default function LocationContent({
                   md:rounded-r-[30px]
                 "
               >
-                <LocationFilters
-                  menuItems={menuItems}
-                  filters={foodFilters}
-                  onChange={setFoodFilters}
-                  onClose={() => setFiltersOpen(false)}
-                />
+                {mode === "single" ? (
+                  <LocationFilters
+                    menuItems={menuItems}
+                    filters={foodFilters}
+                    onChange={setFoodFilters}
+                    onClose={() => setFiltersOpen(false)}
+                  />
+                ) : (
+                  <StoreFilters
+                    {...groupStoreFilterProps}
+                    onClose={() => setFiltersOpen(false)}
+                  />
+                )}
               </motion.div>
             </motion.div>
           )}
@@ -568,13 +674,9 @@ export default function LocationContent({
 
 interface ReadableMessageProps {
   icon: React.ReactNode;
-
   title: string;
-
   description: string;
-
   actionLabel?: string;
-
   onAction?: () => void;
 }
 

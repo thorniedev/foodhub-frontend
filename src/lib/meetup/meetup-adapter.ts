@@ -1,8 +1,11 @@
 import type {
   MeetupActionResponse,
   MeetupGroupResponse,
+  MeetupMeetingPointResponse,
   MeetupParticipantResponse,
-  MeetupParticipantsResponse,
+  MeetupRecommendationItem,
+  MeetupRecommendationSessionResponse,
+  MeetupRecommendationStatus,
   MeetupVoteResponse,
   MeetupVotesResponse,
 } from "@/types/meetup-api";
@@ -16,41 +19,32 @@ function isRecord(value: unknown): value is UnknownRecord {
 }
 
 function unwrapEnvelope(value: unknown): unknown {
-  let current = value;
+  let current: unknown = value;
 
   for (let depth = 0; depth < 4; depth += 1) {
     if (!isRecord(current)) {
       break;
     }
 
-    const record = current;
+    const record: UnknownRecord = current;
 
-    const nextKey = ENVELOPE_KEYS.find((key) => record[key] !== undefined);
+    let nextValue: unknown = undefined;
+    let foundEnvelope = false;
 
-    if (!nextKey) {
+    for (const key of ENVELOPE_KEYS) {
+      if (record[key] !== undefined) {
+        nextValue = record[key];
+        foundEnvelope = true;
+        break;
+      }
+    }
+
+    if (!foundEnvelope) {
       break;
     }
-
-    current = record[nextKey];
+    current = nextValue;
   }
-
   return current;
-}
-
-function getRecord(value: unknown): UnknownRecord {
-  const unwrapped = unwrapEnvelope(value);
-
-  if (!isRecord(unwrapped)) {
-    return {};
-  }
-
-  for (const key of ["meetup", "group", "participant", "vote"] as const) {
-    if (isRecord(unwrapped[key])) {
-      return unwrapped[key] as UnknownRecord;
-    }
-  }
-
-  return unwrapped;
 }
 
 function getString(
@@ -91,92 +85,188 @@ function getNumber(
   return null;
 }
 
-function getArrayPayload(
-  value: unknown,
-  preferredKeys: readonly string[],
-): unknown[] {
-  const unwrapped = unwrapEnvelope(value);
+function getArray(record: UnknownRecord, keys: readonly string[]): unknown[] {
+  for (const key of keys) {
+    const value = record[key];
 
-  if (Array.isArray(unwrapped)) {
-    return unwrapped;
-  }
-
-  if (!isRecord(unwrapped)) {
-    return [];
-  }
-
-  for (const key of preferredKeys) {
-    const candidate = unwrapped[key];
-
-    if (Array.isArray(candidate)) {
-      return candidate;
-    }
-  }
-
-  for (const key of ["contents", "content", "items"] as const) {
-    const candidate = unwrapped[key];
-
-    if (Array.isArray(candidate)) {
-      return candidate;
+    if (Array.isArray(value)) {
+      return value;
     }
   }
 
   return [];
 }
 
-export function normalizeMeetupGroupResponse(
-  response: unknown,
-): MeetupGroupResponse {
-  const record = getRecord(response);
+function getEnvelopeRecord(response: unknown): UnknownRecord {
+  const unwrapped = unwrapEnvelope(response);
 
-  return {
-    uuid: getString(record, ["uuid", "meetupUuid", "groupUuid", "id"]),
-    shareToken: getString(record, ["shareToken", "inviteCode"]),
-    title: getString(record, ["title", "groupName", "name"]),
-    status: getString(record, ["status", "meetupStatus"]),
-    votingMethod: getString(record, ["votingMethod"]),
-    searchRadiusKm: getNumber(record, ["searchRadiusKm", "radiusKm"]),
-    timezone: getString(record, ["timezone"]),
-    meetingPointLat: getNumber(record, [
-      "meetingPointLat",
-      "meetingPointLatitude",
-    ]),
-    meetingPointLng: getNumber(record, [
-      "meetingPointLng",
-      "meetingPointLongitude",
-    ]),
-    meetingPointMethod: getString(record, ["meetingPointMethod"]),
-    expiresAt: getString(record, ["expiresAt"]),
-    raw: response,
-  };
+  return isRecord(unwrapped) ? unwrapped : {};
+}
+
+function getOuterRecord(response: unknown): UnknownRecord {
+  return isRecord(response) ? response : {};
+}
+
+function getNestedRecord(
+  record: UnknownRecord,
+  keys: readonly string[],
+): UnknownRecord | null {
+  for (const key of keys) {
+    const value = record[key];
+
+    if (isRecord(value)) {
+      return value;
+    }
+  }
+
+  return null;
 }
 
 export function normalizeMeetupParticipantResponse(
   response: unknown,
 ): MeetupParticipantResponse {
-  const record = getRecord(response);
+  const envelope = getEnvelopeRecord(response);
+
+  const record = getNestedRecord(envelope, ["participant"]) ?? envelope;
 
   return {
-    uuid: getString(record, ["uuid", "participantUuid", "id"]),
+    id: getNumber(record, ["id"]),
+    uuid: getString(record, ["uuid", "participantUuid"]),
     meetupUuid: getString(record, ["meetupUuid", "groupUuid"]),
     profileId: getNumber(record, ["profileId"]),
     nickname: getString(record, ["nickname", "name", "displayName"]),
-    locationInputType: getString(record, ["locationInputType"]),
-    mapsLink: getString(record, ["mapsLink", "mapUrl"]),
     locationLat: getNumber(record, ["locationLat", "latitude"]),
     locationLng: getNumber(record, ["locationLng", "longitude"]),
-    status: getString(record, ["status", "participantStatus"]),
+    mapsLink: getString(record, ["mapsLink", "mapUrl"]),
+    joinedAt: getString(record, ["joinedAt", "createdAt"]),
     raw: response,
   };
 }
 
-export function normalizeMeetupParticipantsResponse(
+function normalizeParticipantRecord(value: unknown): MeetupParticipantResponse {
+  return normalizeMeetupParticipantResponse(value);
+}
+
+export function normalizeMeetupGroupResponse(
   response: unknown,
-): MeetupParticipantsResponse {
+): MeetupGroupResponse {
+  const envelope = getEnvelopeRecord(response);
+
+  const groupRecord =
+    getNestedRecord(envelope, ["meetup", "group"]) ?? envelope;
+
+  const participants = getArray(groupRecord, ["participants"]).map(
+    normalizeParticipantRecord,
+  );
+
   return {
-    participants: getArrayPayload(response, ["participants"]).map(
-      normalizeMeetupParticipantResponse,
+    id: getNumber(groupRecord, ["id"]),
+
+    uuid: getString(groupRecord, ["uuid", "meetupUuid", "groupUuid"]),
+
+    shareToken:
+      getString(envelope, ["shareToken", "inviteCode"]) ??
+      getString(groupRecord, ["shareToken", "inviteCode"]),
+
+    createdByUserId: getNumber(groupRecord, ["createdByUserId"]),
+
+    title: getString(groupRecord, ["title", "groupName", "name"]),
+
+    status: getString(groupRecord, ["status", "meetupStatus"]),
+
+    votingMethod: getString(groupRecord, ["votingMethod"]),
+
+    searchRadiusKm: getNumber(groupRecord, ["searchRadiusKm", "radiusKm"]),
+
+    timezone: getString(groupRecord, ["timezone"]),
+
+    meetingPointLat: getNumber(groupRecord, [
+      "meetingPointLat",
+      "meetingPointLatitude",
+    ]),
+
+    meetingPointLng: getNumber(groupRecord, [
+      "meetingPointLng",
+      "meetingPointLongitude",
+    ]),
+
+    meetingPointMethod: getString(groupRecord, ["meetingPointMethod"]),
+
+    participants,
+
+    winningCandidateId: getNumber(groupRecord, ["winningCandidateId"]),
+
+    expiresAt: getString(groupRecord, ["expiresAt"]),
+
+    createdAt: getString(groupRecord, ["createdAt"]),
+
+    updatedAt: getString(groupRecord, ["updatedAt"]),
+
+    raw: response,
+  };
+}
+
+export function normalizeMeetupMeetingPointResponse(
+  response: unknown,
+): MeetupMeetingPointResponse {
+  const record = getEnvelopeRecord(response);
+
+  return {
+    id: getNumber(record, ["id"]),
+
+    meetingPointLat: getNumber(record, [
+      "meetingPointLat",
+      "meetingPointLatitude",
+    ]),
+
+    meetingPointLng: getNumber(record, [
+      "meetingPointLng",
+      "meetingPointLongitude",
+    ]),
+
+    meetingPointMethod: getString(record, ["meetingPointMethod"]),
+
+    raw: response,
+  };
+}
+
+function normalizeRecommendationItem(
+  response: unknown,
+): MeetupRecommendationItem {
+  const record = isRecord(response) ? response : {};
+
+  return {
+    uuid: getString(record, ["uuid", "candidateUuid"]),
+    menuItemId: getNumber(record, ["menuItemId"]),
+    menuItemName: getString(record, ["menuItemName"]),
+    storeId: getNumber(record, ["storeId"]),
+    storeName: getString(record, ["storeName"]),
+    distanceKm: getNumber(record, ["distanceKm"]),
+    finalScore: getNumber(record, ["finalScore", "recommendationScore"]),
+    priceSnapshot: getNumber(record, ["priceSnapshot", "price"]),
+    currencyCode: getString(record, ["currencyCode"]),
+    raw: response,
+  };
+}
+
+export function normalizeMeetupRecommendationSessionResponse(
+  response: unknown,
+): MeetupRecommendationSessionResponse {
+  const record = getEnvelopeRecord(response);
+
+  const status = getString(record, ["status"]);
+
+  return {
+    uuid: getString(record, ["uuid", "sessionUuid"]),
+
+    status: status as MeetupRecommendationStatus | null,
+
+    requestedLimit: getNumber(record, ["requestedLimit", "candidateLimit"]),
+
+    items: getArray(record, ["items", "recommendations", "candidates"]).map(
+      normalizeRecommendationItem,
     ),
+
     raw: response,
   };
 }
@@ -184,7 +274,9 @@ export function normalizeMeetupParticipantsResponse(
 export function normalizeMeetupVoteResponse(
   response: unknown,
 ): MeetupVoteResponse {
-  const record = getRecord(response);
+  const envelope = getEnvelopeRecord(response);
+
+  const record = getNestedRecord(envelope, ["vote"]) ?? envelope;
 
   return {
     uuid: getString(record, ["uuid", "voteUuid", "id"]),
@@ -200,10 +292,23 @@ export function normalizeMeetupVoteResponse(
 export function normalizeMeetupVotesResponse(
   response: unknown,
 ): MeetupVotesResponse {
+  const unwrapped = unwrapEnvelope(response);
+
+  if (Array.isArray(unwrapped)) {
+    return {
+      votes: unwrapped.map(normalizeMeetupVoteResponse),
+
+      raw: response,
+    };
+  }
+
+  const record = isRecord(unwrapped) ? unwrapped : {};
+
   return {
-    votes: getArrayPayload(response, ["votes", "results"]).map(
+    votes: getArray(record, ["votes", "results", "content", "items"]).map(
       normalizeMeetupVoteResponse,
     ),
+
     raw: response,
   };
 }
@@ -211,16 +316,37 @@ export function normalizeMeetupVotesResponse(
 export function normalizeMeetupActionResponse(
   response: unknown,
 ): MeetupActionResponse {
-  const record = getRecord(response);
+  const outer = getOuterRecord(response);
 
-  const explicitSuccess = record.success;
+  const payload = getEnvelopeRecord(response);
+
+  const explicitSuccess =
+    typeof outer.success === "boolean"
+      ? outer.success
+      : typeof payload.success === "boolean"
+        ? payload.success
+        : null;
+
+  const status =
+    getNumber(outer, ["status", "statusCode"]) ??
+    getNumber(payload, ["status", "statusCode"]);
+
+  const textStatus =
+    getString(payload, ["status"]) ?? getString(outer, ["status"]);
 
   return {
     success:
-      typeof explicitSuccess === "boolean"
-        ? explicitSuccess
-        : getString(record, ["status"])?.toUpperCase() !== "FAILED",
-    message: getString(record, ["message", "detail"]),
+      explicitSuccess ??
+      (status !== null
+        ? status >= 200 && status < 300
+        : textStatus?.toUpperCase() !== "FAILED"),
+
+    message:
+      getString(outer, ["message", "detail"]) ??
+      getString(payload, ["message", "detail"]),
+
+    status,
+
     raw: response,
   };
 }

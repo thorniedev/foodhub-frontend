@@ -31,6 +31,7 @@ export type LocationSort =
   | "nearest"
   | "name-asc"
   | "highest-rated"
+  | "most-reviewed"
   | "most-voted"
   | "fairest-distance";
 
@@ -86,31 +87,22 @@ export interface RecommendedStore {
   district: string;
   city: string;
   province: string;
-
   latitude: number;
   longitude: number;
-
   phoneNumber: string | null;
   email: string | null;
-
   logoUrl: string | null;
   coverImageUrl: string | null;
-
   priceLevel: number | string | null;
-
   averageRating: number;
   totalReviews: number;
-
   operatingStatus: StoreOperatingStatus;
   isOpenNow: boolean;
-
   deliveryAvailable: boolean;
   pickupAvailable: boolean;
-
   menuItems: MenuItem[];
   menuCount: number;
   matchingMenuCount: number;
-
   distanceKm: number;
   recommendationScore: number;
   voteCount: number;

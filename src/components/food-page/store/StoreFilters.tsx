@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
@@ -103,6 +102,10 @@ const OPEN_SECTION_DEFAULTS: Record<string, boolean> = {
   sort: true,
 };
 
+/* -------------------------------------------------------------------------- */
+/* Filter section                                                             */
+/* -------------------------------------------------------------------------- */
+
 function FilterSection({
   title,
   icon,
@@ -115,12 +118,18 @@ function FilterSection({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full cursor-pointer items-center justify-between text-left"
+        className="
+          flex w-full cursor-pointer
+          items-center justify-between
+          gap-3 text-left
+        "
       >
-        <span className="flex items-center gap-2 text-[16px] font-semibold text-primary-900">
-          <span className="text-[20px] text-primary-700">{icon}</span>
+        <span className="flex min-w-0 items-center gap-2.5">
+          <span className="shrink-0 text-[20px] text-primary-700">{icon}</span>
 
-          {title}
+          <span className="truncate text-[17px] font-semibold text-primary-900">
+            {title}
+          </span>
         </span>
 
         <motion.span
@@ -130,7 +139,7 @@ function FilterSection({
           transition={{
             duration: 0.2,
           }}
-          className="text-gray-400"
+          className="shrink-0 text-gray-400"
         >
           <IoChevronDown className="text-[20px]" />
         </motion.span>
@@ -152,18 +161,22 @@ function FilterSection({
               opacity: 0,
             }}
             transition={{
-              duration: 0.25,
+              duration: 0.22,
               ease: [0.16, 1, 0.3, 1],
             }}
             className="overflow-hidden"
           >
-            <div className="pt-4">{children}</div>
+            <div className="pt-3">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
     </section>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Checkbox option                                                            */
+/* -------------------------------------------------------------------------- */
 
 function CheckboxOption({
   label,
@@ -178,28 +191,50 @@ function CheckboxOption({
 }) {
   return (
     <label
-      className={`flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition ${
-        checked
-          ? "border-primary-200 bg-primary-50 text-primary-800"
-          : "border-transparent text-gray-600 hover:bg-gray-50"
-      }`}
+      className={`
+        flex min-h-[44px] cursor-pointer
+        items-center justify-between
+        gap-3 rounded-xl border
+        px-3 py-2
+        transition-colors duration-200
+
+        ${
+          checked
+            ? "border-primary-200 bg-primary-50 text-primary-800"
+            : "border-transparent text-gray-600 hover:bg-gray-50"
+        }
+      `}
     >
       <span className="flex min-w-0 items-center gap-3">
         <input
           type="checkbox"
           checked={checked}
           onChange={onChange}
-          className="h-4 w-4 shrink-0 accent-primary-800"
+          className="
+            h-[18px] w-[18px]
+            shrink-0
+            cursor-pointer
+            accent-primary-800
+          "
         />
 
-        <span className="truncate text-[16px] leading-6">{label}</span>
+        <span className="min-w-0 truncate text-[17px] leading-6">{label}</span>
       </span>
 
       {typeof count === "number" && (
         <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[16px] ${
-            checked ? "bg-white text-primary-700" : "bg-gray-100 text-gray-500"
-          }`}
+          className={`
+            flex h-8 min-w-8
+            shrink-0 items-center
+            justify-center rounded-full
+            px-2 text-[17px] font-medium
+
+            ${
+              checked
+                ? "bg-white text-primary-700"
+                : "bg-gray-100 text-gray-500"
+            }
+          `}
         >
           {count}
         </span>
@@ -207,6 +242,10 @@ function CheckboxOption({
     </label>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Radio option                                                               */
+/* -------------------------------------------------------------------------- */
 
 function RadioOption({
   label,
@@ -219,24 +258,43 @@ function RadioOption({
 }) {
   return (
     <label
-      className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
-        checked
-          ? "border-primary-200 bg-primary-50 text-primary-800"
-          : "border-transparent text-gray-600 hover:bg-gray-50"
-      }`}
+      className={`
+        flex min-h-[44px]
+        cursor-pointer items-center
+        gap-3 rounded-xl border
+        px-3 py-2
+        transition-colors duration-200
+
+        ${
+          checked
+            ? "border-primary-200 bg-primary-50 text-primary-800"
+            : "border-transparent text-gray-600 hover:bg-gray-50"
+        }
+      `}
     >
       <input
         type="radio"
         name="store-sort"
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 shrink-0 accent-primary-800"
+        className="
+          h-[18px] w-[18px]
+          shrink-0
+          cursor-pointer
+          accent-primary-800
+        "
       />
 
-      <span className="text-[16px] leading-6">{label}</span>
+      <span className="text-[17px] leading-6">{label}</span>
     </label>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Option list                                                                */
+/* IMPORTANT: No scrollbar here.                                              */
+/* Main StoreFilters container handles all scrolling.                         */
+/* -------------------------------------------------------------------------- */
 
 function OptionList({
   options,
@@ -249,14 +307,14 @@ function OptionList({
 }) {
   if (options.length === 0) {
     return (
-      <p className="rounded-xl bg-gray-50 px-3 py-4 text-[16px] text-gray-400">
+      <p className="rounded-xl bg-gray-50 px-3 py-3 text-[17px] leading-7 text-gray-400">
         មិនមានទិន្នន័យសម្រាប់តម្រងនេះទេ។
       </p>
     );
   }
 
   return (
-    <div className="max-h-[240px] space-y-1 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+    <div className="space-y-1">
       {options.map((option) => (
         <CheckboxOption
           key={option.code}
@@ -269,6 +327,10 @@ function OptionList({
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Store filters                                                              */
+/* -------------------------------------------------------------------------- */
 
 export default function StoreFilters({
   filters,
@@ -316,6 +378,10 @@ export default function StoreFilters({
     }));
   };
 
+  const resetFilters = () => {
+    onChange(DEFAULT_STORE_FILTERS);
+  };
+
   const collapsedItems = [
     {
       key: "status",
@@ -355,7 +421,7 @@ export default function StoreFilters({
         isDrawer
           ? undefined
           : {
-              width: collapsed ? 78 : 300,
+              width: collapsed ? 76 : 292,
             }
       }
       transition={{
@@ -365,16 +431,35 @@ export default function StoreFilters({
       }}
       className={isDrawer ? "h-full w-full" : "h-full shrink-0"}
     >
-      <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm">
-        <header
-          className={`shrink-0 border-b border-gray-100 bg-white ${
-            collapsed && !isDrawer ? "p-3" : "p-5"
-          }`}
+      <div
+        className="
+          flex h-full
+          min-h-0 flex-col
+          overflow-hidden
+          rounded-[22px]
+          border border-gray-100
+          bg-white shadow-sm
+        "
+      >
+        {/* ------------------------------------------------------------------ */}
+        {/* Header                                                             */}
+        {/* ------------------------------------------------------------------ */}
+
+        <div
+          className={`
+            shrink-0
+            border-b border-gray-100
+            bg-white
+
+            ${collapsed && !isDrawer ? "px-3 py-4" : "px-4 py-4 sm:px-5"}
+          `}
         >
           <div
-            className={`flex items-center ${
-              collapsed && !isDrawer ? "justify-center" : "justify-between"
-            }`}
+            className={`
+              flex items-center gap-3
+
+              ${collapsed && !isDrawer ? "justify-center" : "justify-between"}
+            `}
           >
             <AnimatePresence mode="wait" initial={false}>
               {(!collapsed || isDrawer) && (
@@ -392,20 +477,34 @@ export default function StoreFilters({
                     opacity: 0,
                     x: -8,
                   }}
+                  transition={{
+                    duration: 0.2,
+                  }}
+                  className="min-w-0"
                 >
                   <div className="flex items-center gap-2">
-                    <p className="text-[26px] font-semibold text-primary-900">
+                    <p className="text-[23px] font-bold leading-tight text-primary-900">
                       តម្រង
                     </p>
 
                     {activeFilterCount > 0 && (
-                      <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-secondary-500 px-2 text-[16px] font-semibold text-white">
+                      <span
+                        className="
+                          flex h-7 min-w-7
+                          items-center justify-center
+                          rounded-full
+                          bg-secondary-500
+                          px-2
+                          text-[17px]
+                          font-semibold text-white
+                        "
+                      >
                         {activeFilterCount}
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-1 text-[16px] leading-7 text-gray-400">
+                  <p className="mt-1 text-[17px] leading-7 text-gray-400">
                     ស្វែងរកហាងដែលសមនឹងអ្នក
                   </p>
                 </motion.div>
@@ -420,7 +519,15 @@ export default function StoreFilters({
                   scale: 0.9,
                 }}
                 aria-label="Close store filters"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+                className="
+                  flex h-10 w-10
+                  shrink-0 items-center
+                  justify-center rounded-full
+                  bg-gray-50 text-gray-500
+                  transition-colors
+                  hover:bg-primary-50
+                  hover:text-primary-700
+                "
               >
                 <IoCloseOutline className="text-[24px]" />
               </motion.button>
@@ -429,7 +536,7 @@ export default function StoreFilters({
                 type="button"
                 onClick={() => setCollapsed((current) => !current)}
                 whileHover={{
-                  scale: 1.06,
+                  scale: 1.05,
                 }}
                 whileTap={{
                   scale: 0.9,
@@ -437,11 +544,22 @@ export default function StoreFilters({
                 aria-label={
                   collapsed ? "Expand store filters" : "Collapse store filters"
                 }
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+                className="
+                  flex h-10 w-10
+                  shrink-0 items-center
+                  justify-center rounded-full
+                  bg-gray-50 text-gray-500
+                  transition-colors
+                  hover:bg-primary-50
+                  hover:text-primary-700
+                "
               >
                 <motion.span
                   animate={{
                     rotate: collapsed ? 180 : 0,
+                  }}
+                  transition={{
+                    duration: 0.2,
                   }}
                 >
                   <IoChevronBack className="text-[21px]" />
@@ -451,25 +569,57 @@ export default function StoreFilters({
           </div>
 
           {(!collapsed || isDrawer) && (
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-3 py-2.5">
-              <p className="text-[16px] text-gray-500">
+            <div
+              className="
+                mt-3 flex
+                items-center justify-between
+                gap-3 rounded-xl
+                bg-gray-50
+                px-3 py-2.5
+              "
+            >
+              <p className="min-w-0 text-[17px] text-gray-500">
                 {activeFilterCount} តម្រងបានជ្រើស
               </p>
 
               <button
                 type="button"
                 disabled={activeFilterCount === 0}
-                onClick={() => onChange(DEFAULT_STORE_FILTERS)}
-                className="shrink-0 text-[16px] font-medium text-secondary-500 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={resetFilters}
+                className="
+                  shrink-0
+                  text-[17px]
+                  font-medium
+                  text-secondary-500
+                  transition
+                  hover:underline
+                  disabled:cursor-not-allowed
+                  disabled:opacity-40
+                "
               >
-                សម្អាតទាំងអស់
+                សម្អាត
               </button>
             </div>
           )}
-        </header>
+        </div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* Collapsed desktop state                                            */}
+        {/* ------------------------------------------------------------------ */}
 
         {collapsed && !isDrawer ? (
-          <div className="flex flex-1 flex-col items-center gap-3 overflow-y-auto px-3 py-4">
+          <div
+            className="
+              flex min-h-0
+              flex-1 flex-col
+              items-center gap-2.5
+              overflow-y-auto
+              px-2 py-4
+
+              [scrollbar-width:none]
+              [&::-webkit-scrollbar]:hidden
+            "
+          >
             {collapsedItems.map((item) => (
               <motion.button
                 key={item.key}
@@ -477,21 +627,62 @@ export default function StoreFilters({
                 title={item.label}
                 aria-label={item.label}
                 whileHover={{
-                  scale: 1.08,
-                  backgroundColor: "rgb(240 253 244)",
+                  scale: 1.06,
                 }}
                 whileTap={{
-                  scale: 0.9,
+                  scale: 0.92,
                 }}
                 onClick={() => openCollapsedSection(item.key)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[21px] text-primary-700"
+                className="
+                  flex h-11 w-11
+                  shrink-0 items-center
+                  justify-center rounded-full
+                  text-[21px]
+                  text-primary-700
+                  transition-colors
+                  hover:bg-primary-50
+                "
               >
                 {item.icon}
               </motion.button>
             ))}
           </div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+          /* ---------------------------------------------------------------- */
+          /* MAIN SCROLL AREA                                                 */
+          /* This is the ONLY visible scrollbar in the filter.                */
+          /* ---------------------------------------------------------------- */
+
+          <div
+            className="
+              min-h-0
+              flex-1
+              overflow-y-auto
+              overflow-x-hidden
+              scroll-smooth
+              overscroll-contain
+
+              px-4
+              pb-8
+              pt-3
+
+              sm:px-5
+
+              [scrollbar-gutter:stable]
+              [scrollbar-width:thin]
+              [scrollbar-color:#cbd5e1_transparent]
+
+              [&::-webkit-scrollbar]:w-[6px]
+              [&::-webkit-scrollbar-track]:bg-transparent
+              [&::-webkit-scrollbar-thumb]:rounded-full
+              [&::-webkit-scrollbar-thumb]:bg-gray-300
+              [&::-webkit-scrollbar-thumb:hover]:bg-gray-400
+            "
+          >
+            {/* -------------------------------------------------------------- */}
+            {/* Status                                                         */}
+            {/* -------------------------------------------------------------- */}
+
             <FilterSection
               title="ស្ថានភាពហាង"
               icon={<FaStore />}
@@ -525,6 +716,10 @@ export default function StoreFilters({
               </div>
             </FilterSection>
 
+            {/* -------------------------------------------------------------- */}
+            {/* City                                                           */}
+            {/* -------------------------------------------------------------- */}
+
             <FilterSection
               title="ទីក្រុង"
               icon={<IoLocationOutline />}
@@ -542,6 +737,10 @@ export default function StoreFilters({
                 }
               />
             </FilterSection>
+
+            {/* -------------------------------------------------------------- */}
+            {/* District                                                       */}
+            {/* -------------------------------------------------------------- */}
 
             <FilterSection
               title="ខណ្ឌ ឬស្រុក"
@@ -561,6 +760,10 @@ export default function StoreFilters({
               />
             </FilterSection>
 
+            {/* -------------------------------------------------------------- */}
+            {/* Province                                                       */}
+            {/* -------------------------------------------------------------- */}
+
             <FilterSection
               title="ខេត្ត"
               icon={<IoLocationOutline />}
@@ -578,6 +781,10 @@ export default function StoreFilters({
                 }
               />
             </FilterSection>
+
+            {/* -------------------------------------------------------------- */}
+            {/* Operating status                                               */}
+            {/* -------------------------------------------------------------- */}
 
             <FilterSection
               title="ស្ថានភាពប្រតិបត្តិការ"
@@ -597,6 +804,10 @@ export default function StoreFilters({
               />
             </FilterSection>
 
+            {/* -------------------------------------------------------------- */}
+            {/* Rating                                                         */}
+            {/* -------------------------------------------------------------- */}
+
             <FilterSection
               title="ការវាយតម្លៃអប្បបរមា"
               icon={<FaStar />}
@@ -614,11 +825,20 @@ export default function StoreFilters({
                       onClick={() =>
                         updateFilter("minimumRating", option.value)
                       }
-                      className={`rounded-full border px-3 py-2 text-[16px] transition ${
-                        selected
-                          ? "border-primary-800 bg-primary-800 text-white"
-                          : "border-gray-200 bg-white text-gray-600 hover:bg-primary-50"
-                      }`}
+                      className={`
+                        min-h-[42px]
+                        rounded-full
+                        border px-3.5 py-2
+                        text-[17px]
+                        font-medium
+                        transition-colors
+
+                        ${
+                          selected
+                            ? "border-primary-800 bg-primary-800 text-white"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50"
+                        }
+                      `}
                     >
                       {option.label}
                     </button>
@@ -626,6 +846,10 @@ export default function StoreFilters({
                 })}
               </div>
             </FilterSection>
+
+            {/* -------------------------------------------------------------- */}
+            {/* Price                                                          */}
+            {/* -------------------------------------------------------------- */}
 
             <FilterSection
               title="កម្រិតតម្លៃ"
@@ -645,13 +869,17 @@ export default function StoreFilters({
               />
             </FilterSection>
 
+            {/* -------------------------------------------------------------- */}
+            {/* Sort                                                           */}
+            {/* -------------------------------------------------------------- */}
+
             <FilterSection
               title="តម្រៀបតាម"
               icon={<IoSwapVerticalOutline />}
               isOpen={openSections.sort}
               onToggle={() => toggleSection("sort")}
             >
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {SORT_OPTIONS.map((option) => (
                   <RadioOption
                     key={option.value}

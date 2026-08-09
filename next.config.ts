@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+    allowedDevOrigins: [
+    "idealist-distrust-buffed.ngrok-free.dev",
+  ],
+};
 
 export default nextConfig;
 // import type { NextConfig } from "next";
