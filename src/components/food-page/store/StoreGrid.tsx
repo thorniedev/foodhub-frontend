@@ -739,7 +739,7 @@ export default function StoreGrid({
             {stores.map((store) => (
               <Link
                 key={store.uuid}
-                href={`/restaurant/${store.uuid}`}
+                href={`/store/${store.uuid}`}
                 className="block"
               >
                 <StoreCard

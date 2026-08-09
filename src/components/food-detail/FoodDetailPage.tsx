@@ -190,9 +190,9 @@ function ErrorPage({ onRetry }: { onRetry: () => void }) {
         </div>
 
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <p className="text-2xl font-semibold text-gray-900">
             មិនអាចបង្ហាញព័ត៌មានម្ហូបបានទេ
-          </h1>
+          </p>
 
           <p className="mt-2 text-base text-gray-500">
             សូមពិនិត្យទិន្នន័យ និងព្យាយាមម្តងទៀត។

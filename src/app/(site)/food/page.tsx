@@ -27,11 +27,20 @@ import LocationContent from "@/components/food-page/location/LocationContent";
 import StoreContent from "@/components/food-page/store/StoreContent";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import {
+  useGetMemberProfileByIdQuery,
+  useGetMemberProfilesQuery,
+} from "@/app/store/memberProfileApi";
+import {
+  getProfileFoodScore,
+  sortFoodsForProfile,
+} from "@/lib/recommendation/profileFoodPreferences";
 
 import type {
   CatalogCodeName,
   CatalogMenuItem,
 } from "@/types/catalog-menu-item";
+import type { MemberProfile } from "@/types/member-profile/member-profile";
 
 /* =========================================================
    TYPES
@@ -377,6 +386,7 @@ function getUniqueOptions(
 function applyFilters(
   foods: CatalogMenuItem[],
   filters: FilterState,
+  profile?: MemberProfile | null,
 ): CatalogMenuItem[] {
   const filteredFoods = foods.filter((food) => {
     if (filters.availabilityOnly && food.availabilityStatus !== "AVAILABLE") {
@@ -496,7 +506,9 @@ function applyFilters(
     return true;
   });
 
-  return [...filteredFoods].sort((first, second) => {
+  const profileSortedFoods = sortFoodsForProfile(filteredFoods, profile);
+
+  return [...profileSortedFoods].sort((first, second) => {
     switch (filters.sortBy) {
       case "rating":
         return (
@@ -527,6 +539,14 @@ function applyFilters(
 
       case "featured":
       default: {
+        const profileScoreDifference =
+          getProfileFoodScore(second, profile) -
+          getProfileFoodScore(first, profile);
+
+        if (profileScoreDifference !== 0) {
+          return profileScoreDifference;
+        }
+
         if (first.isFeatured !== second.isFeatured) {
           return first.isFeatured ? -1 : 1;
         }
@@ -1604,6 +1624,22 @@ export default function FoodPage() {
     refetch,
   } = useGetMenuItemsQuery();
 
+  const { data: profileResponse } = useGetMemberProfilesQuery({
+    page: 0,
+    size: 100,
+  });
+
+  const defaultProfile = useMemo(
+    () =>
+      profileResponse?.contents.find((profile) => profile.isDefault) ?? null,
+    [profileResponse],
+  );
+
+  const { data: memberProfile } = useGetMemberProfileByIdQuery(
+    defaultProfile?.uuid ?? "",
+    { skip: !defaultProfile?.uuid },
+  );
+
   /* =======================================================
      SEARCH DEBOUNCE
   ======================================================= */
@@ -1727,8 +1763,8 @@ export default function FoodPage() {
   ======================================================= */
 
   const filteredFoods = useMemo(
-    () => applyFilters(menuItems, filters),
-    [menuItems, filters],
+    () => applyFilters(menuItems, filters, memberProfile),
+    [menuItems, filters, memberProfile],
   );
 
   /**

@@ -37,7 +37,7 @@ type StoreContentProps = {
   onClearSearch?: () => void;
 };
 
-export default function   StoreContent({
+export default function StoreContent({
   searchQuery = "",
   onClearSearch,
 }: StoreContentProps) {
