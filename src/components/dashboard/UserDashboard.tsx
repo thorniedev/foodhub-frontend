@@ -696,14 +696,14 @@ function DetailedSafetyTag({
     >
       <span className="text-[17px] font-semibold">{name}</span>
 
-      {visibleDetails.map((detail, index) => (
+      {/* {visibleDetails.map((detail, index) => (
         <span
           key={`${detail}-${index}`}
           className={`rounded-full border px-3 py-1 text-[17px] font-medium ${styles[variant].detail}`}
         >
           {detail}
         </span>
-      ))}
+      ))} */}
     </div>
   );
 }
