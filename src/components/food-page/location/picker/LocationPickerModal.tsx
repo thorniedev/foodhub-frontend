@@ -2,7 +2,13 @@
 
 import dynamic from "next/dynamic";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 
 import { createPortal } from "react-dom";
 
@@ -17,6 +23,12 @@ import {
 } from "react-icons/io5";
 
 import type { Coordinates } from "@/types/location";
+
+import type {
+  LocationReverseResponse,
+  LocationSearchResponse,
+  LocationSearchResult,
+} from "@/types/location-search";
 
 const LocationPickerMap = dynamic(() => import("./LocationPickerMap"), {
   ssr: false,
@@ -48,26 +60,9 @@ interface LocationPickerModalProps {
   onConfirm: (location: PickedMapLocation) => void;
 }
 
-interface LocationSearchResult {
-  placeId: string;
-  label: string;
-  latitude: number;
-  longitude: number;
-  locationType: string | null;
-  types: string[];
-  partialMatch: boolean;
-}
-
-interface LocationSearchResponse {
-  query?: string;
-
-  results?: LocationSearchResult[];
-
-  message?: string | null;
-}
-
 const DEFAULT_LOCATION: Coordinates = {
   latitude: 11.5564,
+
   longitude: 104.9282,
 };
 
@@ -99,13 +94,17 @@ function getInitialLocation(
 ): Coordinates {
   if (isValidCoordinates(initialLocation)) {
     return {
-      ...initialLocation,
+      latitude: initialLocation.latitude,
+
+      longitude: initialLocation.longitude,
     };
   }
 
   if (isValidCoordinates(detectedLocation)) {
     return {
-      ...detectedLocation,
+      latitude: detectedLocation.latitude,
+
+      longitude: detectedLocation.longitude,
     };
   }
 
@@ -114,8 +113,20 @@ function getInitialLocation(
   };
 }
 
-function getSearchErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "មិនអាចស្វែងរកទីតាំងបានទេ។";
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "មិនអាចដំណើរការទីតាំងបានទេ។";
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+function getPlaceArea(place: LocationSearchResult | null): string {
+  if (!place) {
+    return "";
+  }
+
+  return [place.city, place.state, place.country].filter(Boolean).join(" • ");
 }
 
 export default function LocationPickerModal({
@@ -130,6 +141,9 @@ export default function LocationPickerModal({
   const [draftLocation, setDraftLocation] =
     useState<Coordinates>(DEFAULT_LOCATION);
 
+  const [selectedPlace, setSelectedPlace] =
+    useState<LocationSearchResult | null>(null);
+
   const [draftLabel, setDraftLabel] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,26 +156,284 @@ export default function LocationPickerModal({
 
   const [searching, setSearching] = useState(false);
 
+  const [resolvingPlace, setResolvingPlace] = useState(false);
+
   const wasOpenRef = useRef(false);
+
+  const searchRequestRef = useRef<AbortController | null>(null);
+
+  const reverseRequestRef = useRef<AbortController | null>(null);
+
+  /*
+   * When the user selects one
+   * autocomplete result, we put
+   * its name into the input.
+   *
+   * Without this flag that update
+   * would trigger another search.
+   */
+  const skipNextSearchRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  /*
+   * ---------------------------------
+   * REVERSE GEOCODING
+   * ---------------------------------
+   *
+   * Coordinates
+   *       ↓
+   * /api/maps/reverse
+   *       ↓
+   * name + address + city + country
+   */
+  const resolveLocation = useCallback(async (location: Coordinates) => {
+    if (!isValidCoordinates(location)) {
+      return;
+    }
+
+    reverseRequestRef.current?.abort();
+
+    const controller = new AbortController();
+
+    reverseRequestRef.current = controller;
+
+    setResolvingPlace(true);
+
+    try {
+      const params = new URLSearchParams({
+        lat: String(location.latitude),
+
+        lng: String(location.longitude),
+      });
+
+      const response = await fetch(`/api/maps/reverse?${params.toString()}`, {
+        method: "GET",
+
+        signal: controller.signal,
+      });
+
+      const data = (await response.json()) as LocationReverseResponse;
+
+      if (!response.ok) {
+        throw new Error(data.message || "មិនអាចរកព័ត៌មានអាសយដ្ឋានបានទេ។");
+      }
+
+      /*
+       * Ignore an old request
+       * if a newer one started.
+       */
+      if (reverseRequestRef.current !== controller) {
+        return;
+      }
+
+      setSelectedPlace(data.place);
+
+      setDraftLabel(data.place?.address ?? data.place?.name ?? null);
+    } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
+
+      console.error("[LOCATION REVERSE LOOKUP]", error);
+
+      if (reverseRequestRef.current === controller) {
+        setSelectedPlace(null);
+
+        setDraftLabel(null);
+      }
+    } finally {
+      if (reverseRequestRef.current === controller) {
+        reverseRequestRef.current = null;
+
+        setResolvingPlace(false);
+      }
+    }
+  }, []);
+
+  /*
+   * ---------------------------------
+   * AUTOCOMPLETE SEARCH
+   * ---------------------------------
+   */
+  const searchLocations = useCallback(
+    async (query: string) => {
+      const normalizedQuery = query.trim();
+
+      if (normalizedQuery.length < 2) {
+        setSearchResults([]);
+
+        setSearchError(null);
+
+        setSearching(false);
+
+        return;
+      }
+
+      /*
+       * Cancel the previous
+       * autocomplete request.
+       */
+      searchRequestRef.current?.abort();
+
+      const controller = new AbortController();
+
+      searchRequestRef.current = controller;
+
+      setSearching(true);
+
+      setSearchError(null);
+
+      try {
+        const params = new URLSearchParams({
+          q: normalizedQuery,
+        });
+
+        /*
+         * Nearby results receive
+         * preference but search
+         * remains GLOBAL.
+         */
+        if (isValidCoordinates(detectedLocation)) {
+          params.set("lat", String(detectedLocation.latitude));
+
+          params.set("lng", String(detectedLocation.longitude));
+        }
+
+        const response = await fetch(`/api/maps/search?${params.toString()}`, {
+          method: "GET",
+
+          signal: controller.signal,
+        });
+
+        const data = (await response.json()) as LocationSearchResponse;
+
+        if (!response.ok) {
+          throw new Error(data.message || "មិនអាចស្វែងរកទីតាំងបានទេ។");
+        }
+
+        if (searchRequestRef.current !== controller) {
+          return;
+        }
+
+        const results = Array.isArray(data.results) ? data.results : [];
+
+        setSearchResults(results);
+
+        if (results.length === 0) {
+          setSearchError(
+            data.message || "រកមិនឃើញទីតាំងដែលត្រូវនឹងការស្វែងរក។",
+          );
+        }
+      } catch (error) {
+        if (isAbortError(error)) {
+          return;
+        }
+
+        console.error("[LOCATION AUTOCOMPLETE]", error);
+
+        if (searchRequestRef.current === controller) {
+          setSearchResults([]);
+
+          setSearchError(getErrorMessage(error));
+        }
+      } finally {
+        if (searchRequestRef.current === controller) {
+          searchRequestRef.current = null;
+
+          setSearching(false);
+        }
+      }
+    },
+    [detectedLocation?.latitude, detectedLocation?.longitude],
+  );
+
+  /*
+   * ---------------------------------
+   * RESET WHEN MODAL OPENS
+   * ---------------------------------
+   */
   useEffect(() => {
     if (open && !wasOpenRef.current) {
-      setDraftLocation(getInitialLocation(initialLocation, detectedLocation));
+      const location = getInitialLocation(initialLocation, detectedLocation);
+
+      setDraftLocation(location);
+
+      setSelectedPlace(null);
 
       setDraftLabel(null);
+
       setSearchQuery("");
+
       setSearchResults([]);
+
       setSearchError(null);
+
       setSearching(false);
+
+      /*
+       * Also load the address
+       * for the initial map point.
+       */
+      void resolveLocation(location);
     }
 
     wasOpenRef.current = open;
-  }, [detectedLocation, initialLocation, open]);
+  }, [detectedLocation, initialLocation, open, resolveLocation]);
 
+  /*
+   * ---------------------------------
+   * LIVE SEARCH WHILE TYPING
+   * ---------------------------------
+   *
+   * User:
+   * "p"
+   * "ph"
+   * "phn"
+   * "phno"
+   *
+   * Wait 300ms after they stop:
+   * call autocomplete.
+   */
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    if (skipNextSearchRef.current) {
+      skipNextSearchRef.current = false;
+
+      return;
+    }
+
+    const query = searchQuery.trim();
+
+    if (query.length < 2) {
+      searchRequestRef.current?.abort();
+
+      setSearchResults([]);
+
+      setSearchError(null);
+
+      setSearching(false);
+
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      void searchLocations(query);
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [open, searchLocations, searchQuery]);
+
+  /*
+   * Lock page behind modal.
+   */
   useEffect(() => {
     if (!open) {
       return;
@@ -186,39 +458,105 @@ export default function LocationPickerModal({
     };
   }, [onClose, open]);
 
+  /*
+   * Cancel network requests
+   * when modal closes.
+   */
+  useEffect(() => {
+    if (open) {
+      return;
+    }
+
+    searchRequestRef.current?.abort();
+
+    reverseRequestRef.current?.abort();
+
+    setSearching(false);
+
+    setResolvingPlace(false);
+  }, [open]);
+
+  /*
+   * Cancel requests if component
+   * unmounts.
+   */
+  useEffect(() => {
+    return () => {
+      searchRequestRef.current?.abort();
+
+      reverseRequestRef.current?.abort();
+    };
+  }, []);
+
+  /*
+   * ---------------------------------
+   * MAP CLICK / DRAG
+   * ---------------------------------
+   */
   const handleMapChange = (nextLocation: Coordinates) => {
+    if (!isValidCoordinates(nextLocation)) {
+      return;
+    }
+
     setDraftLocation(nextLocation);
 
     /*
-     * The user moved the marker after selecting a
-     * search result, so the previous address may no
-     * longer match the coordinates.
+     * Old address no longer
+     * matches new coordinates.
      */
+    setSelectedPlace(null);
+
     setDraftLabel(null);
+
     setSearchResults([]);
+
+    setSearchError(null);
+
+    /*
+     * Get information for the
+     * location that user clicked.
+     */
+    void resolveLocation(nextLocation);
   };
 
+  /*
+   * ---------------------------------
+   * CURRENT GPS
+   * ---------------------------------
+   */
   const handleUseCurrentLocation = () => {
     if (!isValidCoordinates(detectedLocation)) {
       return;
     }
 
-    setDraftLocation({
-      ...detectedLocation,
-    });
+    const nextLocation: Coordinates = {
+      latitude: detectedLocation.latitude,
+
+      longitude: detectedLocation.longitude,
+    };
+
+    setDraftLocation(nextLocation);
+
+    setSelectedPlace(null);
 
     setDraftLabel("ទីតាំង GPS បច្ចុប្បន្នរបស់អ្នក");
 
     setSearchResults([]);
+
     setSearchError(null);
+
+    void resolveLocation(nextLocation);
   };
 
-  const handleSearch = async (event: FormEvent<HTMLFormElement>) => {
+  /*
+   * Search button still works too.
+   */
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const normalizedQuery = searchQuery.trim();
+    const query = searchQuery.trim();
 
-    if (normalizedQuery.length < 2) {
+    if (query.length < 2) {
       setSearchError("សូមបញ្ចូលយ៉ាងតិច 2 តួអក្សរ។");
 
       setSearchResults([]);
@@ -226,47 +564,14 @@ export default function LocationPickerModal({
       return;
     }
 
-    setSearching(true);
-    setSearchError(null);
-    setSearchResults([]);
-
-    try {
-      const response = await fetch("/api/maps/search", {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          query: normalizedQuery,
-        }),
-      });
-
-      const data = (await response.json()) as LocationSearchResponse;
-
-      if (!response.ok) {
-        throw new Error(data.message || "មិនអាចស្វែងរកទីតាំងបានទេ។");
-      }
-
-      const results = Array.isArray(data.results) ? data.results : [];
-
-      setSearchResults(results);
-
-      if (results.length === 0) {
-        setSearchError(
-          data.message || "រកមិនឃើញទីតាំងនេះនៅក្នុងប្រទេសកម្ពុជា។",
-        );
-      }
-    } catch (error) {
-      setSearchError(getSearchErrorMessage(error));
-
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
+    void searchLocations(query);
   };
 
+  /*
+   * ---------------------------------
+   * USER SELECTS AUTOCOMPLETE RESULT
+   * ---------------------------------
+   */
   const handleSelectResult = (result: LocationSearchResult) => {
     const nextLocation: Coordinates = {
       latitude: result.latitude,
@@ -280,20 +585,54 @@ export default function LocationPickerModal({
       return;
     }
 
+    searchRequestRef.current?.abort();
+
+    /*
+     * Prevent result.name from
+     * triggering another autocomplete.
+     */
+    skipNextSearchRef.current = true;
+
+    /*
+     * This changes map coordinates.
+     * LocationPickerMap sees the new
+     * value and automatically flyTo().
+     */
     setDraftLocation(nextLocation);
 
-    setDraftLabel(result.label);
+    /*
+     * Save complete place details.
+     */
+    setSelectedPlace(result);
 
-    setSearchQuery(result.label);
+    setDraftLabel(result.address || result.name);
 
+    /*
+     * Put selected place name
+     * inside search input.
+     */
+    setSearchQuery(result.name);
+
+    /*
+     * Close suggestions.
+     */
     setSearchResults([]);
+
     setSearchError(null);
+
+    setSearching(false);
   };
 
   const handleClearSearch = () => {
+    searchRequestRef.current?.abort();
+
     setSearchQuery("");
+
     setSearchResults([]);
+
     setSearchError(null);
+
+    setSearching(false);
   };
 
   const handleConfirm = () => {
@@ -306,13 +645,23 @@ export default function LocationPickerModal({
 
       longitude: draftLocation.longitude,
 
-      label: draftLabel || "ទីតាំងដែលបានជ្រើសលើផែនទី",
+      label:
+        selectedPlace?.address ||
+        selectedPlace?.name ||
+        draftLabel ||
+        "ទីតាំងដែលបានជ្រើសលើផែនទី",
     });
   };
 
   if (!mounted) {
     return null;
   }
+
+  const placeArea = getPlaceArea(selectedPlace);
+
+  const showSearchDropdown =
+    searchQuery.trim().length >= 2 &&
+    (searching || searchResults.length > 0 || Boolean(searchError));
 
   return createPortal(
     <AnimatePresence>
@@ -346,26 +695,36 @@ export default function LocationPickerModal({
             aria-label="Choose location on map"
             initial={{
               y: 80,
+
               opacity: 0,
+
               scale: 0.98,
             }}
             animate={{
               y: 0,
+
               opacity: 1,
+
               scale: 1,
             }}
             exit={{
               y: 80,
+
               opacity: 0,
+
               scale: 0.98,
             }}
             transition={{
               type: "spring",
+
               stiffness: 320,
+
               damping: 30,
             }}
             className="relative z-10 flex h-[94dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-t-[30px] bg-white shadow-2xl sm:h-[90dvh] sm:rounded-[30px]"
           >
+            {/* HEADER */}
+
             <header className="shrink-0 border-b border-slate-100 bg-white px-4 py-4 sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-start gap-3">
@@ -383,7 +742,8 @@ export default function LocationPickerModal({
                     </p>
 
                     <p className="mt-1 text-[17px] leading-7 text-slate-500">
-                      ស្វែងរកទីតាំងនៅកម្ពុជា ឬចុច និងអូសសញ្ញាសម្គាល់លើផែនទី។
+                      ស្វែងរកទីក្រុង ហាង អាសយដ្ឋាន
+                      និងទីតាំងតូចៗនៅក្នុងប្រទេសកម្ពុជា ជាភាសាខ្មែរ ឬអង់គ្លេស។
                     </p>
                   </div>
                 </div>
@@ -399,17 +759,21 @@ export default function LocationPickerModal({
               </div>
             </header>
 
+            {/* MAP */}
+
             <div className="relative min-h-0 flex-1">
               <LocationPickerMap
                 value={draftLocation}
+                selectedPlace={selectedPlace}
                 onChange={handleMapChange}
               />
 
-              {/* Cambodia location search */}
-              <div className="absolute left-3 right-3 top-3 z-[650] sm:left-4 sm:right-auto sm:w-[520px]">
+              {/* SEARCH */}
+
+              <div className="absolute left-3 right-3 top-3 z-[650] sm:left-4 sm:right-auto sm:w-[590px]">
                 <form
-                  onSubmit={handleSearch}
-                  className="flex min-h-14 items-center gap-2 rounded-2xl border border-white/90 bg-white/97 p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.22)] backdrop-blur-md"
+                  onSubmit={handleSearchSubmit}
+                  className="flex min-h-14 items-center gap-2 rounded-2xl border border-white/90 bg-white/[0.97] p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.22)] backdrop-blur-md"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center text-slate-500">
                     <IoSearchOutline className="text-[24px]" />
@@ -422,13 +786,10 @@ export default function LocationPickerModal({
                       setSearchQuery(event.target.value);
 
                       setSearchError(null);
-
-                      if (event.target.value.trim() === "") {
-                        setSearchResults([]);
-                      }
                     }}
-                    placeholder="ស្វែងរកទីតាំង ឬអាសយដ្ឋាននៅកម្ពុជា..."
-                    aria-label="Search locations in Cambodia"
+                    autoComplete="off"
+                    placeholder="ស្វែងរកនៅកម្ពុជា / Search in Cambodia..."
+                    aria-label="Search location"
                     className="min-w-0 flex-1 bg-transparent px-1 text-[17px] text-slate-800 outline-none placeholder:text-slate-400"
                   />
 
@@ -448,55 +809,96 @@ export default function LocationPickerModal({
                     disabled={searching}
                     className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-primary-800 px-4 text-[17px] font-bold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {searching ? "កំពុងស្វែងរក..." : "ស្វែងរក"}
+                    ស្វែងរក
                   </button>
                 </form>
 
-                {searchError && (
+                {/* AUTOCOMPLETE DROPDOWN */}
+
+                {showSearchDropdown && (
                   <div
-                    role="alert"
-                    className="mt-2 rounded-2xl border border-red-100 bg-white/97 px-4 py-3 text-[17px] leading-7 text-red-700 shadow-lg backdrop-blur-md"
+                    className="
+                      mt-2
+                      max-h-[390px]
+                      overflow-y-auto
+                      rounded-2xl
+                      border
+                      border-slate-200
+                      bg-white/[0.98]
+                      p-2
+                      shadow-[0_16px_40px_rgba(15,23,42,0.24)]
+                      backdrop-blur-md
+
+                      [scrollbar-width:none]
+                      [&::-webkit-scrollbar]:hidden
+                    "
                   >
-                    {searchError}
-                  </div>
-                )}
+                    {searching && (
+                      <div className="flex items-center gap-3 px-4 py-4">
+                        <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-primary-100 border-t-primary-700" />
 
-                {searchResults.length > 0 && (
-                  <div className="mt-2 space-y-1.5 rounded-2xl border border-slate-200 bg-white/98 p-2 shadow-[0_16px_40px_rgba(15,23,42,0.22)] backdrop-blur-md">
-                    {searchResults.map((result, index) => (
-                      <button
-                        key={
-                          result.placeId ||
-                          `${result.latitude}-${result.longitude}`
-                        }
-                        type="button"
-                        onClick={() => handleSelectResult(result)}
-                        className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-primary-50"
-                      >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700">
-                          <IoLocationOutline className="text-[22px]" />
-                        </span>
+                        <p className="text-[17px] text-slate-500">
+                          កំពុងស្វែងរកទីតាំង...
+                        </p>
+                      </div>
+                    )}
 
-                        <span className="min-w-0 flex-1">
-                          <span className="line-clamp-2 block text-[17px] font-semibold leading-7 text-slate-800">
-                            {result.label}
-                          </span>
+                    {!searching &&
+                      searchResults.map((result, index) => {
+                        const area = [result.city, result.state, result.country]
+                          .filter(Boolean)
+                          .join(" • ");
 
-                          <span className="mt-0.5 block text-[17px] text-slate-500">
-                            លទ្ធផលទី {index + 1}
-                          </span>
-                        </span>
-                      </button>
-                    ))}
+                        return (
+                          <button
+                            key={`${result.id}-${result.latitude}-${result.longitude}-${index}`}
+                            type="button"
+                            onClick={() => handleSelectResult(result)}
+                            className="group flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
+                          >
+                            <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700 transition group-hover:bg-white">
+                              <IoLocationOutline className="text-[23px]" />
+                            </span>
+
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[17px] font-bold leading-7 text-slate-900">
+                                {result.name}
+                              </span>
+
+                              <span className="mt-0.5 line-clamp-2 block text-[15px] leading-6 text-slate-500">
+                                {result.address}
+                              </span>
+
+                              {area && (
+                                <span className="mt-1 block truncate text-[14px] font-semibold text-primary-700">
+                                  {area}
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+
+                    {!searching &&
+                      searchResults.length === 0 &&
+                      searchError && (
+                        <div className="px-4 py-4">
+                          <p className="text-[17px] leading-7 text-slate-500">
+                            {searchError}
+                          </p>
+                        </div>
+                      )}
                   </div>
                 )}
               </div>
+
+              {/* CURRENT GPS BUTTON */}
 
               {isValidCoordinates(detectedLocation) && (
                 <button
                   type="button"
                   onClick={handleUseCurrentLocation}
-                  className="absolute bottom-5 left-4 z-[500] inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/95 px-4 text-[17px] font-bold text-primary-800 shadow-lg backdrop-blur-md transition hover:bg-primary-50"
+                  className="absolute bottom-5 left-4 z-[500] inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.95] px-4 text-[17px] font-bold text-primary-800 shadow-lg backdrop-blur-md transition hover:bg-primary-50"
                 >
                   <IoLocateOutline className="text-[22px]" />
                   ទៅទីតាំងបច្ចុប្បន្ន
@@ -504,26 +906,85 @@ export default function LocationPickerModal({
               )}
             </div>
 
+            {/* FOOTER */}
+
             <footer className="shrink-0 border-t border-slate-100 bg-white px-4 py-4 sm:px-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0 rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="text-[17px] font-medium text-slate-500">
-                    ទីតាំងដែលបានជ្រើស
-                  </p>
+                <div className="min-w-0 flex-1">
+                  {resolvingPlace ? (
+                    <div className="flex min-h-[92px] items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+                      <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-primary-100 border-t-primary-700" />
 
-                  {draftLabel && (
-                    <p className="mt-1 line-clamp-2 text-[17px] font-semibold leading-7 text-slate-800">
-                      {draftLabel}
-                    </p>
+                      <p className="text-[17px] text-slate-500">
+                        កំពុងរកព័ត៌មានអាសយដ្ឋាន...
+                      </p>
+                    </div>
+                  ) : selectedPlace ? (
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+                          <IoLocationOutline className="text-[23px]" />
+                        </span>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[15px] font-medium text-slate-500">
+                            ទីតាំងដែលបានជ្រើស
+                          </p>
+
+                          <p
+                            role="heading"
+                            aria-level={3}
+                            className="mt-0.5 text-[18px] font-bold leading-7 text-slate-900"
+                          >
+                            {selectedPlace.name}
+                          </p>
+
+                          <p className="mt-0.5 line-clamp-2 text-[16px] leading-6 text-slate-600">
+                            {selectedPlace.address}
+                          </p>
+
+                          {placeArea && (
+                            <p className="mt-1 text-[15px] font-semibold text-primary-700">
+                              {placeArea}
+                            </p>
+                          )}
+
+                          {selectedPlace.postcode && (
+                            <p className="mt-1 text-[15px] text-slate-500">
+                              លេខប្រៃសណីយ៍: {selectedPlace.postcode}
+                            </p>
+                          )}
+
+                          <p className="mt-1 break-all text-[15px] font-semibold text-slate-500">
+                            {draftLocation.latitude.toFixed(6)},{" "}
+                            {draftLocation.longitude.toFixed(6)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                      <p className="text-[17px] font-medium text-slate-500">
+                        ទីតាំងដែលបានជ្រើស
+                      </p>
+
+                      {draftLabel && (
+                        <p className="mt-1 line-clamp-2 text-[17px] font-semibold leading-7 text-slate-800">
+                          {draftLabel}
+                        </p>
+                      )}
+
+                      <p className="mt-1 break-all text-[17px] font-semibold text-slate-700">
+                        {draftLocation.latitude.toFixed(6)},{" "}
+                        {draftLocation.longitude.toFixed(6)}
+                      </p>
+                    </div>
                   )}
-
-                  <p className="mt-1 break-all text-[17px] font-semibold text-slate-700">
-                    {draftLocation.latitude.toFixed(6)},{" "}
-                    {draftLocation.longitude.toFixed(6)}
-                  </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 lg:flex">
+                {/* ACTIONS */}
+
+                <div className="grid shrink-0 grid-cols-2 gap-3 lg:flex">
                   <button
                     type="button"
                     onClick={onClose}

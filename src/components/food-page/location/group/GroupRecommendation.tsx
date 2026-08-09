@@ -227,7 +227,7 @@ export default function GroupRecommendation({
   const { data: queriedSession, refetch: refetchSession } =
     useGetMockGroupSessionQuery(inviteCode ?? "", {
       skip: !inviteCode,
-      pollingInterval: 3_000,
+      pollingInterval: 1_000,
       refetchOnFocus: true,
       refetchOnReconnect: true,
     });

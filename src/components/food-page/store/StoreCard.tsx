@@ -4,12 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
-import { IoMdTime } from "react-icons/io";
-import { CiHeart } from "react-icons/ci";
 import {
   IoHeart,
+  IoHeartOutline,
   IoLocationOutline,
-  IoRestaurantOutline,
+  IoNavigateOutline,
+  IoTimeOutline,
 } from "react-icons/io5";
 import { FaStar, FaStore } from "react-icons/fa";
 
@@ -17,6 +17,7 @@ import type { FoodStore } from "@/types/store-page";
 
 type StoreCardProps = {
   store: FoodStore;
+  distanceKm?: number | null;
   variant?: "featured" | "grid";
 };
 
@@ -42,46 +43,94 @@ function getDisplayName(store: FoodStore): string {
   return store.storeName?.trim() || "Food store";
 }
 
-function getLocationLabel(store: FoodStore): string {
-  return (
-    [store.district, store.city].filter(Boolean).join(", ") || "Restaurant"
-  );
+function getAddressLabel(store: FoodStore): string {
+  const values = [
+    store.addressLine,
+    store.commune,
+    store.district,
+    store.city,
+    store.province,
+  ]
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter(Boolean);
+
+  const uniqueValues = Array.from(new Set(values));
+
+  return uniqueValues.join(", ") || "មិនមានអាសយដ្ឋាន";
 }
 
 function getStatusLabel(store: FoodStore): string {
-  if (store.isOpenNow === true || store.operatingStatus === "OPEN") {
+  const status =
+    typeof store.operatingStatus === "string"
+      ? store.operatingStatus.trim().toUpperCase()
+      : "UNKNOWN";
+
+  if (store.isOpenNow === true || status === "OPEN") {
     return "បើកឥឡូវនេះ";
   }
 
-  if (store.isOpenNow === false || store.operatingStatus === "CLOSED") {
+  if (
+    store.isOpenNow === false ||
+    status === "CLOSED" ||
+    status === "TEMPORARILY_CLOSED" ||
+    status === "PERMANENTLY_CLOSED"
+  ) {
     return "បានបិទ";
   }
 
   return "មិនទាន់ដឹង";
 }
 
-function getPriceLabel(priceLevel: number | null): string {
-  if (priceLevel === null || !Number.isFinite(priceLevel) || priceLevel <= 0) {
-    return "--";
+function formatDistance(distanceKm?: number | null): string {
+  if (
+    distanceKm === null ||
+    distanceKm === undefined ||
+    !Number.isFinite(distanceKm)
+  ) {
+    return "មិនទាន់មានចម្ងាយ";
   }
 
-  return "$".repeat(Math.min(Math.max(Math.round(priceLevel), 1), 4));
+  if (distanceKm < 1) {
+    return `${Math.max(1, Math.round(distanceKm * 1000))} m`;
+  }
+
+  if (distanceKm < 10) {
+    return `${distanceKm.toFixed(1)} km`;
+  }
+
+  return `${Math.round(distanceKm)} km`;
+}
+
+function formatReviewCount(totalReviews?: number): string {
+  const value = Number(totalReviews ?? 0);
+
+  if (!Number.isFinite(value) || value <= 0) {
+    return "ថ្មី";
+  }
+
+  return `${Math.round(value)} review`;
+}
+
+function formatRating(averageRating?: number): string {
+  const value = Number(averageRating ?? 0);
+
+  if (!Number.isFinite(value) || value <= 0) {
+    return "ថ្មី";
+  }
+
+  return value.toFixed(1);
 }
 
 function StoreImagePlaceholder({ displayName }: { displayName: string }) {
   return (
     <div
       role="img"
-      aria-label={`${displayName} restaurant image placeholder`}
-      className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-primary-50 via-white to-secondary-50 px-4 text-center"
+      aria-label={`${displayName} store image placeholder`}
+      className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50"
     >
-      <span className="flex h-16 w-16 items-center justify-center rounded-full border border-primary-100 bg-white shadow-sm">
-        <IoRestaurantOutline className="text-[36px] text-primary-400" />
+      <span className="flex h-14 w-14 items-center justify-center rounded-full border border-primary-100 bg-white shadow-sm">
+        <FaStore className="text-[28px] text-primary-400" />
       </span>
-
-      <p className="line-clamp-1 text-[16px] font-semibold text-primary-800">
-        {displayName}
-      </p>
     </div>
   );
 }
@@ -90,7 +139,6 @@ function StoreImage({ store }: { store: FoodStore }) {
   const displayName = getDisplayName(store);
 
   const coverImageUrl = normalizeImageUrl(store.coverImageUrl);
-
   const logoImageUrl = normalizeImageUrl(store.logoUrl);
 
   const imageCandidates = Array.from(
@@ -115,10 +163,10 @@ function StoreImage({ store }: { store: FoodStore }) {
     <Image
       key={currentImageUrl}
       src={currentImageUrl}
-      alt={`${displayName} restaurant cover`}
+      alt={`${displayName} store cover`}
       fill
       unoptimized
-      sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+      sizes="(max-width: 767px) 100vw, (max-width: 1535px) 50vw, 33vw"
       onError={() => {
         setFailedImageUrls((currentFailedUrls) => {
           if (currentFailedUrls.includes(currentImageUrl)) {
@@ -148,158 +196,172 @@ function FavoriteButton({ storeName }: { storeName: string }) {
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
-
         setFavorite((current) => !current);
       }}
-      className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-800 text-white shadow-md transition hover:bg-primary-700 active:scale-90"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-800 text-white shadow-md transition hover:bg-primary-700 active:scale-90"
     >
       {favorite ? (
         <IoHeart className="text-[21px]" />
       ) : (
-        <CiHeart className="text-[28px]" />
+        <IoHeartOutline className="text-[21px]" />
       )}
     </button>
   );
 }
 
-function StoreTag({
-  children,
-  outlined = false,
+function FeaturedStoreCard({
+  store,
+  distanceKm,
 }: {
-  children: React.ReactNode;
-  outlined?: boolean;
+  store: FoodStore;
+  distanceKm?: number | null;
 }) {
+  const displayName = getDisplayName(store);
+
   return (
-    <span
-      className={`rounded-full px-3 py-1.5 text-[16px] font-medium ${
-        outlined
-          ? "border border-primary-700 bg-white text-primary-800"
-          : "bg-primary-800 text-white"
-      }`}
+    <motion.article
+      layout
+      className="group flex w-[300px] shrink-0 snap-start gap-3 overflow-hidden rounded-[20px] border border-gray-200 bg-white p-3 shadow-sm sm:w-[360px]"
     >
-      {children}
-    </span>
+      <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] bg-primary-50">
+        <StoreImage store={store} />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <FaStore className="shrink-0 text-[17px] text-secondary-400" />
+          <p className="truncate whitespace-nowrap text-[18px] font-bold text-primary-900">
+            {displayName}
+          </p>
+        </div>
+
+        <p className="mt-2 truncate whitespace-nowrap text-[17px] text-gray-500">
+          {getAddressLabel(store)}
+        </p>
+
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[17px]">
+          <span className="inline-flex items-center gap-1.5 text-accent-400">
+            <FaStar className="text-[16px]" />
+            {formatRating(store.averageRating)}
+          </span>
+
+          <span className="inline-flex items-center gap-1.5 text-primary-600">
+            <IoNavigateOutline className="text-[18px]" />
+            {formatDistance(distanceKm)}
+          </span>
+        </div>
+      </div>
+    </motion.article>
   );
 }
 
-export default function StoreCard({ store, variant = "grid" }: StoreCardProps) {
+function GridStoreCard({
+  store,
+  distanceKm,
+}: {
+  store: FoodStore;
+  distanceKm?: number | null;
+}) {
   const displayName = getDisplayName(store);
-
-  const locationLabel = getLocationLabel(store);
-
+  const addressLabel = getAddressLabel(store);
   const statusLabel = getStatusLabel(store);
-
-  const priceLabel = getPriceLabel(store.priceLevel);
-
-  const averageRating = Number.isFinite(store.averageRating)
-    ? store.averageRating
-    : 0;
+  const distanceLabel = formatDistance(distanceKm);
+  const ratingLabel = formatRating(store.averageRating);
+  const reviewCountLabel = formatReviewCount(store.totalReviews);
 
   const isOpen = statusLabel === "បើកឥឡូវនេះ";
-
   const isClosed = statusLabel === "បានបិទ";
 
   return (
     <motion.article
       layout
-      initial={{
-        opacity: 0,
-        y: 16,
-        scale: 0.98,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        scale: 1,
-      }}
-      exit={{
-        opacity: 0,
-        y: 8,
-        scale: 0.97,
-      }}
-      transition={{
-        duration: 0.25,
-        ease: "easeOut",
-      }}
-      className={`group flex h-full flex-col gap-4 rounded-[24px] border border-gray-200 bg-white p-2.5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md ${
-        variant === "featured"
-          ? "w-[290px] shrink-0 snap-start sm:w-[330px]"
-          : "w-full"
-      }`}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.24, ease: "easeOut" }}
+      className="group overflow-hidden rounded-[22px] border border-gray-200 bg-white p-3 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-3.5"
     >
-      {/* Store image */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] bg-primary-50">
-        <StoreImage store={store} />
+      <div className="relative overflow-hidden rounded-[18px]">
+        <div className="relative h-[185px] w-full bg-primary-50 sm:h-[195px] lg:h-[185px] 2xl:h-[175px]">
+          <StoreImage store={store} />
+        </div>
 
         <div className="absolute right-2 top-2">
           <FavoriteButton storeName={displayName} />
         </div>
       </div>
 
-      {/* Store information */}
-      <div className="flex flex-1 flex-col gap-2 px-1 pb-1">
-        {/* Store location */}
-        <div className="flex min-w-0 items-center gap-2 text-secondary-400">
-          <FaStore className="shrink-0 text-[17px]" />
-
-          <p className="truncate text-[16px]">{locationLabel}</p>
-        </div>
-
-        {/* Store name and price level */}
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="line-clamp-2 min-w-0 flex-1 text-[22px] font-medium leading-tight text-primary-900">
+      <div className="min-w-0 px-1 pb-1 pt-4">
+        {/* Store name with icon */}
+        <div className="flex min-w-0 items-center gap-2">
+          <FaStore className="shrink-0 text-[18px] text-secondary-400" />
+          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[20px] font-bold leading-7 text-primary-900">
             {displayName}
-          </h3>
-
-          <p className="shrink-0 text-[22px] font-medium text-primary-800">
-            {priceLabel}
           </p>
         </div>
 
-        {/* Rating, status and city */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[16px]">
-          <div className="flex items-center gap-1.5 text-accent-400">
-            <FaStar className="text-[15px]" />
+        {/* Address */}
+        <div className="mt-3 flex min-w-0 items-center gap-2 text-gray-500">
+          <IoLocationOutline className="shrink-0 text-[19px] text-primary-500" />
+          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[17px]">
+            {addressLabel}
+          </p>
+        </div>
 
-            <span>{averageRating > 0 ? averageRating.toFixed(1) : "ថ្មី"}</span>
-          </div>
+        {/* Rating, distance, reviews */}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[17px]">
+          <span className="inline-flex items-center gap-1.5 text-accent-400">
+            <FaStar className="text-[16px]" />
+            <span>{ratingLabel}</span>
+          </span>
 
-          <div
-            className={`flex items-center gap-1.5 ${
+          <span className="inline-flex items-center gap-1.5 text-primary-600">
+            <IoNavigateOutline className="text-[18px]" />
+            <span>{distanceLabel}</span>
+          </span>
+
+          <span className="truncate text-[17px] text-gray-500">
+            {reviewCountLabel}
+          </span>
+        </div>
+
+        {/* Status */}
+        <div className="mt-3 flex min-w-0 items-center gap-2 border-t border-gray-100 pt-3">
+          <IoTimeOutline
+            className={`shrink-0 text-[19px] ${
               isOpen
-                ? "text-primary-400"
+                ? "text-emerald-600"
+                : isClosed
+                  ? "text-red-500"
+                  : "text-gray-400"
+            }`}
+          />
+
+          <p
+            className={`truncate whitespace-nowrap text-[17px] ${
+              isOpen
+                ? "text-emerald-600"
                 : isClosed
                   ? "text-red-500"
                   : "text-gray-400"
             }`}
           >
-            <IoMdTime className="text-[19px]" />
-
-            <span>{statusLabel}</span>
-          </div>
-
-          <div className="flex min-w-0 items-center gap-1.5 text-primary-400">
-            <IoLocationOutline className="shrink-0 text-[19px]" />
-
-            <span className="max-w-[150px] truncate">
-              {store.city || "Unknown location"}
-            </span>
-          </div>
-        </div>
-
-        {/* Store tags */}
-        <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
-          <StoreTag>
-            {store.reviewStatus === "APPROVED"
-              ? "បានផ្ទៀងផ្ទាត់"
-              : "កំពុងពិនិត្យ"}
-          </StoreTag>
-
-          <StoreTag outlined>
-            {store.accountStatus === "ACTIVE" ? "ហាងសកម្ម" : "មិនសកម្ម"}
-          </StoreTag>
+            {statusLabel}
+          </p>
         </div>
       </div>
     </motion.article>
   );
+}
+
+export default function StoreCard({
+  store,
+  distanceKm,
+  variant = "grid",
+}: StoreCardProps) {
+  if (variant === "featured") {
+    return <FeaturedStoreCard store={store} distanceKm={distanceKm} />;
+  }
+
+  return <GridStoreCard store={store} distanceKm={distanceKm} />;
 }
