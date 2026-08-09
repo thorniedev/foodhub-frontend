@@ -6,7 +6,7 @@ export default function PopularSection() {
   return (
     <div className="my-15 ">
       {" "}
-      {/* <section className="  flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
+      <section className="  flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
         <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800">
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>{" "}
@@ -25,7 +25,7 @@ export default function PopularSection() {
         interactive
         className="custom-text-style"
       /> */}
-      <div className="flex  justify-center lg:max-w-7xl  mx-auto">
+      <div className="flex  pt-20 justify-center lg:max-w-7xl  mx-auto">
         <Image
           width={235}
           height={285}

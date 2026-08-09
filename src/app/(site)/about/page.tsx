@@ -24,9 +24,9 @@ export default function AboutPage() {
         <GoalsSection />
         <HowToUseSection />
         {/* <MarqueeSection /> */}
-        {/* <MentorSection /> */}
-        {/* <CommunitySection />
-        <MarqueeSection /> */}
+        <MentorSection />
+        <CommunitySection />
+        {/*  <MarqueeSection /> */}
         {/* <MarqueeSectionOrangeRtl /> */}
         <ContactSection />
       </div>

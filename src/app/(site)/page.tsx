@@ -176,6 +176,7 @@ import { useGetStoresQuery } from "@/app/store/locationApi";
 import { useUserLocation } from "@/hooks/useUserLocation";
 
 import type { VoiceAlertStore } from "@/hooks/useNearbyStoreVoiceAlert";
+import PopularSection from "@/components/home/popular";
 
 type StoreVoiceSource = {
   uuid?: string;
@@ -245,7 +246,7 @@ export default function Home() {
           typeof store.operatingStatus === "string"
             ? store.operatingStatus.trim().toUpperCase()
             : "UNKNOWN";
-            
+
         const storeIsOpen =
           !operatingStatus ||
           operatingStatus === "OPEN" ||
@@ -337,12 +338,12 @@ export default function Home() {
 
       <section>
         <Hero />
-        
+        <PopularSection />
         <FilterByMealTime />
 
         <FoodSearchBar />
 
-        <Model />
+        {/* <Model /> */}
 
         <SeasonSection />
 

@@ -265,7 +265,7 @@ export default function Model() {
         whileTap={{
           scale: 0.92,
         }}
-        className="group fixed bottom-6 right-6 z-[900] cursor-pointer border-0 bg-transparent p-0 outline-none md:bottom-1z0 md:right-10"
+        className="group  fixed bottom-6 right-6 z-90 cursor-pointer border-0 bg-transparent p-0 outline-none md:bottom-10 md:right-10"
       >
         {/* AI recommendation preview */}
         <motion.div
@@ -403,7 +403,8 @@ export default function Model() {
           }}
           className="pointer-events-none absolute -left-12 -top-16 hidden whitespace-nowrap rounded-[18px] rounded-br-[5px] border border-primary-100 bg-white/95 px-4 py-2.5 text-[16px] font-medium text-primary-900 shadow-[0_12px_40px_rgba(20,70,45,0.18)] backdrop-blur-xl md:block"
         >
-          តើថ្ងៃនេះអ្នកចង់ញ៉ាំអ្វី?
+          {/* តើថ្ងៃនេះអ្នកចង់ញ៉ាំអ្វី? */}
+          ណែនាំម្ហូបដោយAI
           <motion.span
             className="ml-2 inline-block text-secondary-500"
             animate={{

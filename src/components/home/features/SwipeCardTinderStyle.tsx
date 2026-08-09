@@ -168,9 +168,9 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           className="pointer-events-none object-cover"
         />
 
-        <span className="absolute left-2 top-2 rounded-full bg-primary-800 px-3 py-1 text-base font-medium text-white">
+        {/* <span className="absolute left-2 top-2 rounded-full bg-primary-800 px-3 py-1 text-base font-medium text-white">
           {matchPercentage}% Match
-        </span>
+        </span> */}
 
         <button
           type="button"
@@ -221,8 +221,23 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
             <span>{food.distanceKm} km</span>
           </div>
         </div>
+        <div className="flex items-center gap-2 overflow-hidden">
+          {food.dietaryTypes.slice(0, 2).map((diet) => (
+            <span
+              key={diet.code}
+              className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-sm text-white lg:text-[16px]"
+            >
+              {diet.name}
+            </span>
+          ))}
 
-        <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
+          {food.dietaryTypes.length > 2 && (
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600 lg:text-[16px]">
+              +{food.dietaryTypes.length - 2}
+            </span>
+          )}
+        </div>
+        {/* <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
           {food.dietaryTypes.map((diet) => (
             <span
               key={diet.code}
@@ -231,7 +246,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
               {diet.name}
             </span>
           ))}
-        </div>
+        </div> */}
       </div>
     </Link>
   );

@@ -134,10 +134,10 @@ export default function FoodCard({ food }: FoodCardProps) {
           type="button"
           aria-label={favorite ? "Remove from favorites" : "Save to favorites"}
           onClick={handleFavoriteClick}
-          className="absolute right-2 top-2 z-20 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white/95 shadow-md transition duration-200 hover:scale-105"
+          className="absolute right-2 top-2 z-20 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white shadow-md transition duration-200 hover:scale-105"
         >
           {favorite ? (
-            <FaHeart className="text-[24px] text-red-500" />
+            <FaHeart className="text-[24px] text-primary-800" />
           ) : (
             <CiHeart className="text-[28px] text-primary-800" />
           )}
