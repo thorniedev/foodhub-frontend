@@ -16,6 +16,7 @@ import {
 
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import type {
   Coordinates,
   LocationFiltersState,
@@ -53,8 +54,85 @@ import {
 } from "../store/store-page-utils";
 
 interface LocationContentProps {
-  menuItems: MenuItem[];
+  menuItems: CatalogMenuItem[];
   searchQuery?: string;
+}
+
+function toLocationMenuItem(item: CatalogMenuItem): MenuItem {
+  return {
+    uuid: item.uuid,
+    legacyId: item.id,
+    name: item.name,
+    localName: item.localName ?? item.name,
+    description: item.description ?? "",
+    localDescription: item.description ?? "",
+    thumbnail: item.thumbnail ?? "",
+    gallery: [],
+    price: item.price,
+    currencyCode: item.currencyCode,
+    preparationTimeMinutes: item.preparationTimeMinutes ?? 0,
+    availabilityStatus: item.availabilityStatus,
+    isFeatured: item.isFeatured,
+    source: item.source,
+    store: {
+      uuid: item.store?.uuid ?? "",
+      name: item.store?.name ?? "",
+      localName: item.store?.name ?? "",
+      logoUrl: "",
+      coverImageUrl: "",
+      addressLine: "",
+      district: "",
+      city: "",
+      latitude: Number(item.store?.latitude) || 0,
+      longitude: Number(item.store?.longitude) || 0,
+      operatingStatus: item.store?.operatingStatus ?? "CLOSED",
+      averageRating: Number(item.store?.averageRating) || 0,
+      totalReviews: 0,
+    },
+    food: {
+      uuid: item.foodUuid ?? item.uuid,
+      canonicalName: item.foodName ?? item.name,
+      category: item.filterData?.category ?? { code: "", name: "" },
+      cuisine: item.filterData?.cuisine ?? { code: "", name: "" },
+      spiceLevel: item.filterData?.spiceLevel ?? 0,
+      ageGroups: item.filterData?.ageGroups ?? [],
+    },
+    mealTypes: item.filterData?.mealTypes ?? [],
+    dietaryTypes: item.dietaryTypes as MenuItem["dietaryTypes"],
+    allergenDeclarations:
+      item.allergenDeclarations as MenuItem["allergenDeclarations"],
+    ingredients: item.ingredients as string[],
+    beveragePairings: [],
+    nutrition: {
+      calories: 0,
+      protein: 0,
+      carbohydrate: 0,
+      fat: 0,
+      fiber: 0,
+      sodium: 0,
+    },
+    distanceKm: 0,
+    deliveryFee: 0,
+    recommendation: {
+      isRecommended: false,
+      rankPosition: 0,
+      finalScore: 0,
+      safetyStatus: "SAFE",
+      candidateSource: item.source,
+      reasonCodes: [],
+      reasonText: "",
+      isExploration: false,
+      scoreBreakdown: {
+        mealMatch: 0,
+        cuisineMatch: 0,
+        budgetMatch: 0,
+        distanceMatch: 0,
+        popularity: 0,
+      },
+    },
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
 }
 
 function convertLocationStatus(
@@ -188,9 +266,13 @@ function hasValidCoordinates(
 }
 
 export default function LocationContent({
-  menuItems,
+  menuItems: catalogMenuItems,
   searchQuery = "",
 }: LocationContentProps) {
+  const menuItems = useMemo(
+    () => catalogMenuItems.map(toLocationMenuItem),
+    [catalogMenuItems],
+  );
   const [mode, setMode] = useState<RecommendationMode>("single");
 
   /*

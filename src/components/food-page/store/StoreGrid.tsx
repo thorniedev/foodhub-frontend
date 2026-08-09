@@ -19,6 +19,7 @@ import {
 import type { FoodStore } from "@/types/store-page";
 
 import StoreCard from "./StoreCard";
+import Link from "next/link";
 
 type StoreGridProps = {
   stores: FoodStore[];
@@ -736,12 +737,17 @@ export default function StoreGrid({
         >
           <AnimatePresence mode="popLayout">
             {stores.map((store) => (
-              <StoreCard
+              <Link
                 key={store.uuid}
-                store={store}
-                distanceKm={distanceByStoreUuid[store.uuid]}
-                variant="grid"
-              />
+                href={`/restaurant/${store.uuid}`}
+                className="block"
+              >
+                <StoreCard
+                  store={store}
+                  distanceKm={distanceByStoreUuid[store.uuid]}
+                  variant="grid"
+                />
+              </Link>
             ))}
           </AnimatePresence>
         </motion.div>

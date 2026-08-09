@@ -1,100 +1,217 @@
 "use client";
 
+import Link from "next/link";
+import Image from "next/image";
+
 import { IoMdTime } from "react-icons/io";
 import { FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining } from "react-icons/md";
 import { CiHeart } from "react-icons/ci";
-import type { FoodItem } from "@/types/food";
-import { MenuItem } from "@/types/menu-item";
-import Link from "next/link";
-import Image from "next/image";
+import { IoLocationOutline } from "react-icons/io5";
+
+import type { MenuItem } from "@/types/menu-item";
 
 type Props = {
-  food: MenuItem[];
+  food: MenuItem;
+  onViewMap?: (storeUuid: string) => void;
+  isMapSelected?: boolean;
 };
 
-export default function FooodCard({ food }: { food: MenuItem }) {
+export default function FooodCard({
+  food,
+  onViewMap,
+  isMapSelected = false,
+}: Props) {
+  const storeUuid = food.store?.uuid;
+
   return (
-    <Link
-      href={`/food/${food.uuid}`}
-      className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200 shadow-sm rounded-[24px] p-2.5"
+    <div
+      className="
+        flex h-full w-full flex-col gap-4
+        rounded-[24px]
+        border border-gray-200
+        bg-white
+        p-2.5
+        shadow-sm
+        transition
+        hover:shadow-md
+      "
     >
       {/* Image */}
-      <div className="relative flex-1 min-h-0">
-        <Image
-          width={285}
-          height={370}
-          src={food.thumbnail || "/Image/default-food.png"}
-          alt={food.localName}
-          draggable={false}
-          className="rounded-[14px] w-full h-full object-cover pointer-events-none"
-        />
+      <div className="relative overflow-hidden rounded-[14px]">
+        <Link
+          href={`/food/${food.uuid}`}
+          className="block"
+          aria-label={`View ${food.localName}`}
+        >
+          <Image
+            width={285}
+            height={170}
+            src={food.thumbnail || "/Image/default-food.png"}
+            alt={food.localName || food.name || "Food"}
+            draggable={false}
+            className="
+              h-full
+              w-full
+              rounded-[14px]
+              object-cover
+              transition-transform
+              duration-300
+              hover:scale-[1.02]
+            "
+          />
+        </Link>
 
+        {/* Favorite */}
         <button
           type="button"
           aria-label="Save food"
-          className="absolute top-2 right-2"
+          className="
+            absolute
+            right-2
+            top-2
+            z-10
+            rounded-full
+            transition
+            active:scale-95
+          "
         >
-          <CiHeart className="text-4xl p-2 bg-primary-800 rounded-full text-white" />
+          <CiHeart
+            className="
+              rounded-full
+              bg-primary-800
+              p-2
+              text-4xl
+              text-white
+            "
+          />
         </button>
       </div>
 
       {/* Content */}
-      <div className="flex flex-col gap-2 shrink-0">
+      <div className="flex flex-1 flex-col gap-2">
         {/* Store */}
         <div className="flex items-center gap-2 text-secondary-400">
           <FaStore />
-          <p className="text-sm">{food.store?.localName}</p>
+
+          <p className="text-sm">{food.store?.localName || food.store?.name}</p>
         </div>
 
         {/* Name + Price */}
-        <div className="flex justify-between items-center gap-2">
-          <p className="text-[24px] font-medium text-primary-900 line-clamp-1">
-            {food.localName}
-          </p>
+        <Link href={`/food/${food.uuid}`} className="group">
+          <div className="flex items-center justify-between gap-2">
+            <p
+              className="
+                line-clamp-1
+                text-[24px]
+                font-medium
+                text-primary-900
+                transition
+                group-hover:text-primary-700
+              "
+            >
+              {food.localName || food.name}
+            </p>
 
-          <p className="text-[24px] font-medium text-primary-800">
-            ${food.price}
-          </p>
-        </div>
+            <p className="shrink-0 text-[24px] font-medium text-primary-800">
+              ${food.price}
+            </p>
+          </div>
+        </Link>
 
         {/* Rating / Time / Distance */}
-        <div className="flex gap-4">
-          <div className="flex gap-2 items-center text-accent-400">
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <div className="flex items-center gap-2 text-accent-400">
             <FaStar />
             <span>{food.store?.averageRating ?? 0}</span>
           </div>
 
-          <div className="flex gap-2 items-center text-primary-400">
+          <div className="flex items-center gap-2 text-primary-400">
             <IoMdTime />
             <span>{food.preparationTimeMinutes} min</span>
           </div>
 
-          <div className="flex gap-2 items-center text-primary-400">
-            <MdDeliveryDining className="text-xl" />
-            <span>{food.distanceKm} km</span>
-          </div>
+          {food.distanceKm !== undefined && (
+            <div className="flex items-center gap-2 text-primary-400">
+              <MdDeliveryDining className="text-xl" />
+              <span>{food.distanceKm} km</span>
+            </div>
+          )}
         </div>
 
         {/* Dietary tags */}
-        <div className="flex gap-2 items-center flex-wrap">
-          {food.dietaryTypes?.map((diet) => (
-            <span
-              key={diet.code}
-              className="
-              bg-primary-800 
-              text-gray-100 
-              px-3 
-              py-1 
-              rounded-full 
-              text-sm
-              "
+        {food.dietaryTypes && food.dietaryTypes.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {food.dietaryTypes.map((diet) => (
+              <span
+                key={diet.code}
+                className="
+                  rounded-full
+                  bg-primary-800
+                  px-3
+                  py-1
+                  text-sm
+                  text-gray-100
+                "
+              >
+                {diet.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="mt-auto flex items-center gap-2 pt-2">
+          <Link
+            href={`/food/${food.uuid}`}
+            className="
+              flex min-h-11 flex-1
+              items-center
+              justify-center
+              rounded-xl
+              border border-gray-200
+              px-4
+              text-[15px]
+              font-medium
+              text-primary-900
+              transition
+              hover:bg-gray-50
+            "
+          >
+            មើលមុខម្ហូប
+          </Link>
+
+          {storeUuid && onViewMap && (
+            <button
+              type="button"
+              onClick={() => onViewMap(storeUuid)}
+              className={`
+                flex min-h-11 flex-1
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                px-4
+                text-[15px]
+                font-semibold
+                transition
+                active:scale-[0.98]
+                ${
+                  isMapSelected
+                    ? "bg-primary-800 text-white"
+                    : "bg-primary-50 text-primary-900 hover:bg-primary-100"
+                }
+              `}
             >
-              {diet.name}
-            </span>
-          ))}
+              <IoLocationOutline className="shrink-0 text-[19px]" />
+
+              <span className="line-clamp-1">
+                {isMapSelected ? "កំពុងបង្ហាញ" : "មើលលើផែនទី"}
+              </span>
+            </button>
+          )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

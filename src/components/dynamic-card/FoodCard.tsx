@@ -232,7 +232,7 @@ export default function FoodCard({ food }: FoodCardProps) {
       <Link
         href={`/food/${food.uuid}`}
         className="
-          flex flex-col w-full h-full  bg-white border border-gray-200 shadow-sm rounded-[24px] p-2.5
+          flex flex-col min-w-[300x] h-full  bg-white border border-gray-200 shadow-sm rounded-[24px] p-2.5
         "
       >
         {/* ========================================
@@ -251,7 +251,7 @@ export default function FoodCard({ food }: FoodCardProps) {
             "
           />
         </div> */}
-        <div className="relative flex-1 min-h-0">
+        <div className="relative  flex-1 min-h-0">
           <img
             width={485}
             height={370}
@@ -261,7 +261,7 @@ export default function FoodCard({ food }: FoodCardProps) {
             onError={() => {
               setThumbnailUrl("/Image/default-food.png");
             }}
-            className="rounded-[14px] w-[300px] h-[230px]  object-cover pointer-events-none"
+            className="rounded-[14px]  h-[190px]  object-cover pointer-events-none"
           />
 
           <button

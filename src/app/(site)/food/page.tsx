@@ -1525,7 +1525,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid max-w-4xl grid-cols-1 gap-x-10 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
+      className="grid place-items-center grid-cols-1 gap-3 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -2004,7 +2004,10 @@ export default function FoodPage() {
                   {renderSearch()}
                 </section>
 
-                <LocationContent menuItems={[]} searchQuery={searchInput} />
+                <LocationContent
+                  menuItems={menuItems}
+                  searchQuery={searchInput}
+                />
               </motion.div>
             )}
 

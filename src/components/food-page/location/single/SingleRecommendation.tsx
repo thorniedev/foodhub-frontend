@@ -1,13 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
-import { IoFilterOutline, IoRestaurantOutline } from "react-icons/io5";
+import {
+  IoFilterOutline,
+  IoLocationOutline,
+  IoRestaurantOutline,
+} from "react-icons/io5";
 
 import FooodCard from "@/components/dynamic-card/FooodCard";
 
@@ -206,8 +209,6 @@ export default function SingleRecommendation({
 
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
-  const foodCardElementsRef = useRef<Map<string, HTMLDivElement>>(new Map());
-
   /**
    * -----------------------------------------
    * STORE LOOKUP
@@ -236,6 +237,18 @@ export default function SingleRecommendation({
       }
 
       map.set(backendId, store);
+    });
+
+    return map;
+  }, [sourceStores]);
+
+  const storeByUuid = useMemo(() => {
+    const map = new Map<string, LocationStore>();
+
+    sourceStores.forEach((store) => {
+      if (store.uuid) {
+        map.set(store.uuid, store);
+      }
     });
 
     return map;
@@ -273,18 +286,18 @@ export default function SingleRecommendation({
        *
        * No conversion needed.
        */
-      if (food.store?.uuid) {
-        return food;
-      }
-
       const catalogFood = food as CatalogMenuItem;
 
       const menuItemStoreId = catalogFood.storeId;
+      const nestedStoreUuid = food.store?.uuid;
 
       /**
        * Menu item doesn't contain storeId.
        */
-      if (menuItemStoreId === null || menuItemStoreId === undefined) {
+      if (
+        !nestedStoreUuid &&
+        (menuItemStoreId === null || menuItemStoreId === undefined)
+      ) {
         return food;
       }
 
@@ -297,7 +310,11 @@ export default function SingleRecommendation({
        *
        * store.id
        */
-      const matchedStore = storeByBackendId.get(String(menuItemStoreId));
+      const matchedStore =
+        (nestedStoreUuid ? storeByUuid.get(nestedStoreUuid) : undefined) ??
+        (menuItemStoreId === null || menuItemStoreId === undefined
+          ? undefined
+          : storeByBackendId.get(String(menuItemStoreId)));
 
       /**
        * Store wasn't found.
@@ -342,7 +359,7 @@ export default function SingleRecommendation({
         store: normalizedStore,
       } as MenuItem;
     });
-  }, [menuItems, storeByBackendId]);
+  }, [menuItems, storeByBackendId, storeByUuid]);
 
   /**
    * -----------------------------------------
@@ -474,97 +491,24 @@ export default function SingleRecommendation({
   }, [filteredStores, selectedStoreId]);
 
   /**
-   * Register each food card for
-   * IntersectionObserver.
+   * Open the selected store on the map only when
+   * the user intentionally asks to see its location.
+   *
+   * Mobile/tablet:
+   * switch from the list to the map.
+   *
+   * Desktop:
+   * the split layout stays visible and the map can
+   * focus the selected store.
    */
-  const registerFoodCard = useCallback(
-    (foodUuid: string, node: HTMLDivElement | null) => {
-      if (node) {
-        foodCardElementsRef.current.set(foodUuid, node);
-
-        return;
-      }
-
-      foodCardElementsRef.current.delete(foodUuid);
-    },
-
-    [],
-  );
-
-  /**
-   * Automatically highlight the store
-   * on the map based on visible food card.
-   */
-  useEffect(() => {
-    if (
-      nearbyFoods.length === 0 ||
-      typeof IntersectionObserver === "undefined"
-    ) {
+  const handleViewDestination = (storeUuid?: string | null) => {
+    if (!storeUuid) {
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries
-          .filter(
-            (entry) => entry.isIntersecting && entry.intersectionRatio > 0,
-          )
-          .sort(
-            (first, second) =>
-              second.intersectionRatio - first.intersectionRatio,
-          );
-
-        const strongestEntry = visibleEntries[0];
-
-        if (!strongestEntry) {
-          return;
-        }
-
-        const storeId = strongestEntry.target.getAttribute(
-          "data-location-store-id",
-        );
-
-        if (storeId) {
-          setSelectedStoreId((current) =>
-            current === storeId ? current : storeId,
-          );
-        }
-      },
-
-      {
-        root: null,
-
-        rootMargin: "-12% 0px -42% 0px",
-
-        threshold: [0.15, 0.3, 0.5, 0.7, 0.9],
-      },
-    );
-
-    const registeredElements = Array.from(foodCardElementsRef.current.values());
-
-    registeredElements.forEach((element) => {
-      observer.observe(element);
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [nearbyFoods]);
-
-  /**
-   * Select first visible store initially.
-   */
-  useEffect(() => {
-    if (selectedStoreId || nearbyFoods.length === 0) {
-      return;
-    }
-
-    const firstStoreUuid = nearbyFoods[0]?.store?.uuid;
-
-    if (firstStoreUuid) {
-      setSelectedStoreId(firstStoreUuid);
-    }
-  }, [nearbyFoods, selectedStoreId]);
+    setSelectedStoreId(storeUuid);
+    setView("map");
+  };
 
   /**
    * -----------------------------------------
@@ -624,54 +568,37 @@ export default function SingleRecommendation({
 
               return (
                 <motion.div
-                  ref={(node) => registerFoodCard(food.uuid, node)}
-                  data-location-store-id={storeUuid ?? ""}
                   layout
                   key={food.uuid}
                   initial={{
                     opacity: 0,
-
                     scale: 0.97,
-
                     y: 10,
                   }}
                   animate={{
                     opacity: 1,
-
                     scale: 1,
-
                     y: 0,
                   }}
                   exit={{
                     opacity: 0,
-
                     scale: 0.97,
                   }}
                   transition={{
                     duration: 0.22,
                   }}
-                  className={`min-w-0 rounded-[24px] transition-shadow ${
-                    selected
-                      ? "ring-2 ring-primary-300 w-fit ring-offset-2 ring-offset-transparent"
-                      : ""
-                  }`}
-                  onMouseEnter={() => {
-                    if (storeUuid) {
-                      setSelectedStoreId(storeUuid);
-                    }
-                  }}
+                  className={`
+        min-w-0
+        rounded-[24px]
+        transition-shadow
+        ${selected ? "ring-2 ring-primary-300 ring-offset-2" : ""}
+      `}
                 >
-                  <Link
-                    href={`/food/${food.uuid}`}
-                    className="block h-full w-full min-w-0 self-center"
-                    onFocus={() => {
-                      if (storeUuid) {
-                        setSelectedStoreId(storeUuid);
-                      }
-                    }}
-                  >
-                    <FooodCard food={food} />
-                  </Link>
+                  <FooodCard
+                    food={food}
+                    isMapSelected={selected}
+                    onViewMap={handleViewDestination}
+                  />
                 </motion.div>
               );
             })}

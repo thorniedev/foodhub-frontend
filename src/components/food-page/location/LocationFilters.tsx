@@ -166,13 +166,21 @@ function toggleNumber(list: number[], value: number): number[] {
 }
 
 function getUniqueOptions(
-  values: Array<{ code?: string | null; name?: string | null }>,
+  values: Array<{ code?: unknown; name?: unknown }>,
 ): FilterOption[] {
   const map = new Map<string, FilterOption>();
 
   values.forEach((item) => {
-    const code = item.code?.trim();
-    const name = item.name?.trim();
+    if (!item) return;
+
+    const code =
+      typeof item.code === "string" || typeof item.code === "number"
+        ? String(item.code).trim()
+        : "";
+    const name =
+      typeof item.name === "string" || typeof item.name === "number"
+        ? String(item.name).trim()
+        : "";
     if (!code || !name) return;
 
     const existing = map.get(code);
