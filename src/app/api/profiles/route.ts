@@ -396,11 +396,11 @@ export async function POST(request: NextRequest) {
     preferredLanguage: requestBody.preferredLanguage || "km",
     avatarMediaUuid: requestBody.avatarMediaUuid ?? null,
     isDefault: requestBody.isDefault ?? false,
-    allergies: requestBody.allergies ?? [],
-    dietaryTypes: requestBody.dietaryTypes ?? [],
-    medicalConditions: requestBody.medicalConditions ?? [],
-    ingredientAvoids: requestBody.ingredientAvoids ?? [],
-    preferences: requestBody.preferences ?? null,
+    // allergies: requestBody.allergies ?? [],
+    // dietaryTypes: requestBody.dietaryTypes ?? [],
+    // medicalConditions: requestBody.medicalConditions ?? [],
+    // ingredientAvoids: requestBody.ingredientAvoids ?? [],
+    // preferences: requestBody.preferences ?? null,
   };
 
   try {

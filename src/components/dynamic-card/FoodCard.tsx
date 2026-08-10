@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import Link from "next/link";
-
 import { motion } from "framer-motion";
 
 import { CiHeart } from "react-icons/ci";
@@ -11,13 +9,44 @@ import { FaHeart, FaStar, FaStore } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
-import Image from "next/image";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type FoodCardProps = {
   food: CatalogMenuItem;
 };
 
+type MediaAccessData = {
+  uuid?: string;
+  url?: string;
+  expiresAt?: string;
+};
+
+type MediaAccessResponse = {
+  success?: boolean;
+
+  uuid?: string;
+  url?: string;
+  expiresAt?: string;
+
+  data?: MediaAccessData;
+  payload?: MediaAccessData;
+};
+
+type DietaryDisplayItem = {
+  code: string;
+  name: string;
+};
+
+/* =========================================================
+   CONSTANTS
+========================================================= */
+
 const FAVORITES_STORAGE_KEY = "foodhub-favorite-menu-items";
+
+const DEFAULT_FOOD_IMAGE = "/Image/default-food.png";
 
 /* =========================================================
    FAVORITES
@@ -35,11 +64,13 @@ function getStoredFavoriteIds(): string[] {
       return [];
     }
 
-    const parsed = JSON.parse(value);
+    const parsed: unknown = JSON.parse(value);
 
-    return Array.isArray(parsed)
-      ? parsed.filter((item): item is string => typeof item === "string")
-      : [];
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter((item): item is string => typeof item === "string");
   } catch {
     return [];
   }
@@ -49,30 +80,57 @@ function getStoredFavoriteIds(): string[] {
    MEDIA
 ========================================================= */
 
-type MediaAccessResponse = {
-  uuid: string;
-  url: string;
-  expiresAt: string;
-};
-
+/**
+ * Extract UUID from paths such as:
+ *
+ * /api/v1/media/ef62859e-2048-4ca4-9afd-dfeb566dd2cd
+ *
+ * /api/media/ef62859e-2048-4ca4-9afd-dfeb566dd2cd
+ *
+ * /media/ef62859e-2048-4ca4-9afd-dfeb566dd2cd
+ */
 function extractMediaUuid(value: string | null | undefined): string | null {
   if (!value) {
     return null;
   }
 
-  const match = value.match(/\/media\/([0-9a-fA-F-]{36})/);
+  const match = value.match(/\/media\/([0-9a-fA-F-]{36})(?:\/|$)/);
 
   return match?.[1] ?? null;
+}
+
+/**
+ * Support all of these backend responses:
+ *
+ * {
+ *   "url": "..."
+ * }
+ *
+ * {
+ *   "data": {
+ *     "url": "..."
+ *   }
+ * }
+ *
+ * {
+ *   "payload": {
+ *     "url": "..."
+ *   }
+ * }
+ */
+function getMediaUrl(response: MediaAccessResponse): string | null {
+  const media = response.payload ?? response.data ?? response;
+
+  if (typeof media.url === "string" && media.url.trim().length > 0) {
+    return media.url.trim();
+  }
+
+  return null;
 }
 
 /* =========================================================
    DIETARY TYPES
 ========================================================= */
-
-type DietaryDisplayItem = {
-  code: string;
-  name: string;
-};
 
 function getDietaryTypes(food: CatalogMenuItem): DietaryDisplayItem[] {
   if (!Array.isArray(food.dietaryTypes)) {
@@ -86,8 +144,14 @@ function getDietaryTypes(food: CatalogMenuItem): DietaryDisplayItem[] {
 
     const diet = item as Record<string, unknown>;
 
-    // Current Catalog response:
-    // dietaryTypeUuid + dietaryTypeName
+    /*
+     * Current backend response:
+     *
+     * {
+     *   dietaryTypeUuid: "...",
+     *   dietaryTypeName: "Halal"
+     * }
+     */
     if (
       typeof diet.dietaryTypeUuid === "string" &&
       typeof diet.dietaryTypeName === "string"
@@ -100,7 +164,14 @@ function getDietaryTypes(food: CatalogMenuItem): DietaryDisplayItem[] {
       ];
     }
 
-    // Backward-compatible fallback.
+    /*
+     * Backward-compatible response:
+     *
+     * {
+     *   code: "HALAL",
+     *   name: "Halal"
+     * }
+     */
     if (typeof diet.code === "string" && typeof diet.name === "string") {
       return [
         {
@@ -115,70 +186,205 @@ function getDietaryTypes(food: CatalogMenuItem): DietaryDisplayItem[] {
 }
 
 /* =========================================================
-   CARD
+   COMPONENT
 ========================================================= */
 
 export default function FoodCard({ food }: FoodCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>(
-    "/Image/default-food.png",
-  );
+
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>(DEFAULT_FOOD_IMAGE);
+
+  /* =======================================================
+     FAVORITE INITIAL STATE
+  ======================================================= */
 
   useEffect(() => {
-    setIsFavorite(getStoredFavoriteIds().includes(food.uuid));
+    const favoriteIds = getStoredFavoriteIds();
+
+    setIsFavorite(favoriteIds.includes(food.uuid));
   }, [food.uuid]);
+
+  /* =======================================================
+     MEDIA RESOLVER
+  ======================================================= */
 
   useEffect(() => {
     let cancelled = false;
 
     async function resolveThumbnail() {
-      if (!food.thumbnail) {
-        setThumbnailUrl("/Image/default-food.png");
+      const thumbnail = food.thumbnail?.trim();
+
+      /*
+       * No thumbnail.
+       */
+      if (!thumbnail) {
+        if (!cancelled) {
+          setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+        }
+
         return;
       }
 
-      // If the API ever returns a real image URL, use it directly.
-      if (
-        food.thumbnail.startsWith("http://") ||
-        food.thumbnail.startsWith("https://")
-      ) {
-        setThumbnailUrl(food.thumbnail);
+      /*
+       * Backend already returned a full URL.
+       *
+       * Example:
+       * https://storage.example.com/image.jpg
+       */
+      if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
+        if (!cancelled) {
+          setThumbnailUrl(thumbnail);
+        }
+
         return;
       }
 
-      const mediaUuid = extractMediaUuid(food.thumbnail);
+      /*
+       * Try extracting a media UUID.
+       */
+      const mediaUuid = extractMediaUuid(thumbnail);
 
+      /*
+       * No media UUID means it is probably
+       * a normal local/public image.
+       *
+       * Example:
+       * /Image/food-picture/food.jpg
+       */
       if (!mediaUuid) {
-        setThumbnailUrl("/Image/default-food.png");
+        if (!cancelled) {
+          setThumbnailUrl(thumbnail);
+        }
+
         return;
       }
+
+      /*
+       * Backend thumbnail:
+       *
+       * /api/v1/media/{uuid}
+       *
+       * Browser requests:
+       *
+       * /api/media/{uuid}/access-url
+       *
+       * Next.js proxy forwards:
+       *
+       * /api/v1/media/{uuid}/access-url
+       */
+      const apiUrl = `/api/media/${mediaUuid}/access-url`;
 
       try {
-        const response = await fetch(`/api/media/${mediaUuid}/access-url`, {
+        const response = await fetch(apiUrl, {
           method: "GET",
+
           credentials: "include",
+
           headers: {
             Accept: "application/json",
           },
+
+          cache: "no-store",
         });
+
+        /*
+         * Read text first.
+         *
+         * This lets us inspect:
+         * JSON responses,
+         * empty responses,
+         * backend error text.
+         */
+        const responseText = await response.text();
 
         if (!response.ok) {
-          throw new Error(`Failed to resolve media URL: ${response.status}`);
+          console.warn(
+            `[FOOD CARD MEDIA] Request failed: ${response.status} ${response.statusText}`,
+          );
+
+          console.warn(`[FOOD CARD MEDIA] Thumbnail: ${thumbnail}`);
+
+          console.warn(`[FOOD CARD MEDIA] UUID: ${mediaUuid}`);
+
+          console.warn(
+            `[FOOD CARD MEDIA] Response: ${responseText || "empty response"}`,
+          );
+
+          if (!cancelled) {
+            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+          }
+
+          return;
         }
 
-        const data = (await response.json()) as MediaAccessResponse;
+        /*
+         * Empty 200 response is still invalid
+         * because we need the access URL.
+         */
+        if (!responseText.trim()) {
+          console.warn(
+            `[FOOD CARD MEDIA] Empty response for media ${mediaUuid}`,
+          );
+
+          if (!cancelled) {
+            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+          }
+
+          return;
+        }
+
+        let result: MediaAccessResponse;
+
+        try {
+          result = JSON.parse(responseText) as MediaAccessResponse;
+        } catch {
+          console.warn(
+            `[FOOD CARD MEDIA] Invalid JSON response for ${mediaUuid}`,
+          );
+
+          console.warn(`[FOOD CARD MEDIA] Response: ${responseText}`);
+
+          if (!cancelled) {
+            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+          }
+
+          return;
+        }
+
+        const resolvedUrl = getMediaUrl(result);
+
+        if (!resolvedUrl) {
+          console.warn(
+            `[FOOD CARD MEDIA] Backend did not return a URL for ${mediaUuid}`,
+          );
+
+          console.warn(`[FOOD CARD MEDIA] Response: ${responseText}`);
+
+          if (!cancelled) {
+            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+          }
+
+          return;
+        }
 
         if (!cancelled) {
-          setThumbnailUrl(data.url || "/Image/default-food.png");
+          setThumbnailUrl(resolvedUrl);
         }
       } catch (error) {
-        console.error("[FOOD CARD MEDIA ERROR]", {
-          thumbnail: food.thumbnail,
-          error,
-        });
+        const message = error instanceof Error ? error.message : String(error);
+
+        /*
+         * Use console.warn instead of
+         * console.error so Next.js dev overlay
+         * doesn't make this look like a
+         * React runtime error.
+         */
+        console.warn(
+          `[FOOD CARD MEDIA] Could not resolve ${mediaUuid}: ${message}`,
+        );
 
         if (!cancelled) {
-          setThumbnailUrl("/Image/default-food.png");
+          setThumbnailUrl(DEFAULT_FOOD_IMAGE);
         }
       }
     }
@@ -190,24 +396,61 @@ export default function FoodCard({ food }: FoodCardProps) {
     };
   }, [food.thumbnail]);
 
+  /* =======================================================
+     FAVORITE TOGGLE
+  ======================================================= */
+
   const toggleFavorite = () => {
     const currentIds = getStoredFavoriteIds();
 
-    const nextIds = currentIds.includes(food.uuid)
+    const isAlreadyFavorite = currentIds.includes(food.uuid);
+
+    const nextIds = isAlreadyFavorite
       ? currentIds.filter((id) => id !== food.uuid)
       : [...currentIds, food.uuid];
 
-    window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
+    try {
+      window.localStorage.setItem(
+        FAVORITES_STORAGE_KEY,
+        JSON.stringify(nextIds),
+      );
+    } catch (error) {
+      console.warn(
+        "[FOOD FAVORITE STORAGE]",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
 
     setIsFavorite(nextIds.includes(food.uuid));
 
+    /*
+     * Allow Navbar/favorites page
+     * to update its count.
+     */
     window.dispatchEvent(new Event("foodhub-favorites-updated"));
   };
 
+  /* =======================================================
+     DISPLAY VALUES
+  ======================================================= */
+
   const displayName =
-    food.localName?.trim() || food.name || food.foodName || "Unnamed food";
+    food.localName?.trim() ||
+    food.name?.trim() ||
+    food.foodName?.trim() ||
+    "Unnamed food";
 
   const dietaryTypes = getDietaryTypes(food);
+
+  const averageRating = Number(food.store?.averageRating ?? 0);
+
+  const displayedRating = Number.isFinite(averageRating)
+    ? averageRating.toFixed(1)
+    : "0.0";
+
+  /* =======================================================
+     UI
+  ======================================================= */
 
   return (
     <motion.article
@@ -226,57 +469,69 @@ export default function FoodCard({ food }: FoodCardProps) {
       className="relative h-full w-full"
     >
       {/* ==========================================
-          MAIN CARD
+          CARD LINK
       ========================================== */}
 
       <Link
         href={`/food/${food.uuid}`}
         className="
-          flex flex-col min-w-[300x] h-full  bg-white border border-gray-200 shadow-sm rounded-[24px] p-2.5
+          flex
+          h-full
+          min-w-[300px]
+          flex-col
+          rounded-[24px]
+          border
+          border-gray-200
+          bg-white
+          p-2.5
+          shadow-sm
+          transition
+          duration-200
+          hover:-translate-y-1
+          hover:shadow-md
+          dark:border-gray-800
+          dark:bg-gray-950
         "
       >
         {/* ========================================
             IMAGE
         ======================================== */}
 
-        {/* <div className="relative flex-1 min-h-0">
-          <Image
-            src={thumbnail}
-            alt={displayName}
-            draggable={false}
-            width={285}
-            height={370}  
-            className="
-             rounded-[14px] w-full h-full object-cover pointer-events-none
-            "
-          />
-        </div> */}
-        <div className="relative  flex-1 min-h-0">
+        <div className="relative min-h-0 flex-1">
           <img
-            width={485}
-            height={370}
             src={thumbnailUrl}
             alt={displayName}
+            width={485}
+            height={370}
             draggable={false}
-            onError={() => {
-              setThumbnailUrl("/Image/default-food.png");
-            }}
-            className="rounded-[14px]  h-[190px]  object-cover pointer-events-none"
-          />
+            onError={(event) => {
+              /*
+               * Do not repeatedly set the fallback
+               * if the fallback itself fails.
+               */
+              const currentSrc = event.currentTarget.src;
 
-          <button
-            type="button"
-            aria-label="Save food"
-            className="absolute top-2 right-2"
-          >
-            <CiHeart className="text-4xl p-2 bg-primary-800 rounded-full text-white" />
-          </button>
+              if (currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
+                return;
+              }
+
+              setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+            }}
+            className="
+              h-[190px]
+              w-full
+              rounded-[14px]
+              object-cover
+              pointer-events-none
+            "
+          />
         </div>
+
         {/* ========================================
             CONTENT
         ======================================== */}
 
-        <div className="flex shrink-0 flex-col gap-2">
+        <div className="flex shrink-0 flex-col gap-2 pt-2">
           {/* STORE */}
 
           <div className="flex items-center gap-2 text-secondary-400">
@@ -294,8 +549,8 @@ export default function FoodCard({ food }: FoodCardProps) {
           <div className="flex items-center justify-between gap-2">
             <p
               className="
-                line-clamp-1
                 min-w-0
+                line-clamp-1
                 text-[24px]
                 font-medium
                 text-primary-900
@@ -316,12 +571,12 @@ export default function FoodCard({ food }: FoodCardProps) {
             >
               {food.currencyCode === "USD"
                 ? `$${food.price}`
-                : `${food.price} ${food.currencyCode}`}
+                : `${food.price} ${food.currencyCode ?? ""}`}
             </p>
           </div>
 
           {/* ======================================
-              RATING / TIME
+              RATING + PREPARATION TIME
           ====================================== */}
 
           <div className="flex flex-wrap gap-4">
@@ -330,18 +585,19 @@ export default function FoodCard({ food }: FoodCardProps) {
             <div className="flex items-center gap-2 text-accent-400">
               <FaStar />
 
-              <span>{Number(food.store?.averageRating ?? 0).toFixed(1)}</span>
+              <span>{displayedRating}</span>
             </div>
 
-            {/* TIME */}
+            {/* PREPARATION TIME */}
 
-            {food.preparationTimeMinutes !== null && (
-              <div className="flex items-center gap-2 text-primary-400">
-                <IoMdTime />
+            {food.preparationTimeMinutes !== null &&
+              food.preparationTimeMinutes !== undefined && (
+                <div className="flex items-center gap-2 text-primary-400">
+                  <IoMdTime />
 
-                <span>{food.preparationTimeMinutes} min</span>
-              </div>
-            )}
+                  <span>{food.preparationTimeMinutes} min</span>
+                </div>
+              )}
           </div>
 
           {/* ======================================
@@ -369,13 +625,10 @@ export default function FoodCard({ food }: FoodCardProps) {
           )}
 
           {/* ======================================
-              FALLBACK TAGS
+              FALLBACK FILTER TAGS
 
-              Your current list API often has:
-              dietaryTypes: []
-
-              So use the API filter data when there
-              are no dietary tags.
+              When dietaryTypes is empty,
+              use category and cuisine.
           ====================================== */}
 
           {dietaryTypes.length === 0 && (
@@ -415,10 +668,9 @@ export default function FoodCard({ food }: FoodCardProps) {
       </Link>
 
       {/* ==========================================
-          FAVORITE
+          FAVORITE BUTTON
 
-          Keep button OUTSIDE Link to avoid
-          button-inside-anchor HTML problems.
+          Must stay OUTSIDE <Link>.
       ========================================== */}
 
       <button

@@ -94,7 +94,7 @@ export default function FooodCard({
         <div className="flex items-center gap-2 text-secondary-400">
           <FaStore />
 
-          <p className="text-sm">{food.store?.localName || food.store?.name}</p>
+          <p className="text-sm">{food.store?.localName || food.store?.localName}</p>
         </div>
 
         {/* Name + Price */}

@@ -51,14 +51,14 @@ export function buildVotingLeaderboard(
         );
       }
 
+      const firstMaximumDistance = first.store.maximumMemberDistanceKm;
+      const secondMaximumDistance = second.store.maximumMemberDistanceKm;
+
       if (
-        first.store.maximumMemberDistanceKm !==
-        second.store.maximumMemberDistanceKm
+        typeof firstMaximumDistance === "number" &&
+        typeof secondMaximumDistance === "number"
       ) {
-        return (
-          first.store.maximumMemberDistanceKm -
-          second.store.maximumMemberDistanceKm
-        );
+        return firstMaximumDistance - secondMaximumDistance;
       }
 
       return second.store.averageRating - first.store.averageRating;

@@ -27,7 +27,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
       <div className="relative flex-1 min-h-0">
         {food.thumbnail && (
           <MediaImage
-            mediaPath={food.thumbnail}
+            thumbnail={food.thumbnail}
             alt={food.localName || food.name}
           />
         )}
