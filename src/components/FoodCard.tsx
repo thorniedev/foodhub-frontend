@@ -71,7 +71,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
             className="
           text-[22px]
           font-medium
-          text-primary-800
+          text-primary-800 dark:text-primary-dark
           "
           >
             {food.price}

@@ -249,7 +249,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
             {displayName}
           </p>
 
-          <p className="shrink-0 text-[22px] font-medium text-primary-800">
+          <p className="shrink-0 text-[22px] font-medium text-primary-800 dark:text-primary-dark">
             {formattedPrice}
           </p>
         </div>

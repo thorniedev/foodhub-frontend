@@ -594,7 +594,7 @@ export default function StoreGrid({
                     rounded-full
                     border border-gray-200
                     bg-white
-                    text-primary-800
+                    text-primary-800 dark:text-primary-dark
                     shadow-sm
                     transition
                     hover:border-primary-300

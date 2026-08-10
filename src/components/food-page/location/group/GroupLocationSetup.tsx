@@ -508,7 +508,7 @@ export default function GroupLocationSetup({
         <button
           type="button"
           onClick={handleAddMember}
-          className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-2xl border border-primary-200 bg-white px-5 text-[16px] font-bold text-primary-800 transition hover:bg-primary-50 focus:outline-none focus:ring-4 focus:ring-primary-100 lg:w-auto"
+          className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-2xl border border-primary-200 bg-white px-5 text-[16px] font-bold text-primary-800 dark:text-primary-dark transition hover:bg-primary-50 focus:outline-none focus:ring-4 focus:ring-primary-100 lg:w-auto"
         >
           <IoAddOutline className="text-[22px]" />
           បន្ថែមមិត្តភក្តិ

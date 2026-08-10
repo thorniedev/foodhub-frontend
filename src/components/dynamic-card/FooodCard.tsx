@@ -113,7 +113,7 @@ export default function FooodCard({
               {food.localName || food.name}
             </p>
 
-            <p className="shrink-0 text-[24px] font-medium text-primary-800">
+            <p className="shrink-0 text-[24px] font-medium text-primary-800 dark:text-primary-dark">
               ${food.price}
             </p>
           </div>

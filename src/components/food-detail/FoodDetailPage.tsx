@@ -144,7 +144,7 @@ function ScoreBar({ label, value }: ScoreBarProps) {
         />
       </div>
 
-      <p className="text-base font-semibold text-primary-800 dark:text-[#22a447] sm:text-right">
+      <p className="text-base font-semibold text-primary-800 dark:text-primary-dark dark:text-[#22a447] sm:text-right">
         {percentage}%
       </p>
     </div>
@@ -153,7 +153,7 @@ function ScoreBar({ label, value }: ScoreBarProps) {
 
 function InfoPill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-primary-100 bg-primary-50 px-3 py-1.5 text-base font-medium text-primary-800">
+    <span className="inline-flex items-center rounded-full border border-primary-100 bg-primary-50 px-3 py-1.5 text-base font-medium text-primary-800 dark:text-primary-dark">
       {children}
     </span>
   );
@@ -446,7 +446,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="mb-8 flex items-center gap-2 text-base font-semibold text-primary-800 transition hover:text-primary-600 dark:text-[#22a447]"
+          className="mb-8 flex items-center gap-2 text-base font-semibold text-primary-800 dark:text-primary-dark transition hover:text-primary-600 dark:text-[#22a447]"
         >
           <FaArrowLeft />
           ត្រឡប់ក្រោយ
@@ -550,7 +550,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 )}
               </div>
 
-              <p className="text-3xl font-bold text-primary-800">
+              <p className="text-3xl font-bold text-primary-800 dark:text-primary-dark">
                 {formatPrice(food.price, food.currencyCode)}
               </p>
             </div>
@@ -757,7 +757,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </div>
 
               <div className="text-right">
-                <p className="text-4xl font-bold text-primary-800">
+                <p className="text-4xl font-bold text-primary-800 dark:text-primary-dark">
                   {matchPercentage !== null ? `${matchPercentage}%` : "—"}
                 </p>
 
@@ -1128,7 +1128,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               <Link
                 href="/food"
-                className="flex items-center gap-2 text-base font-semibold text-primary-800 dark:text-[#22a447]"
+                className="flex items-center gap-2 text-base font-semibold text-primary-800 dark:text-primary-dark dark:text-[#22a447]"
               >
                 មើលទាំងអស់
                 <IoChevronForward />
@@ -1164,7 +1164,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               await navigator.clipboard.writeText(window.location.href);
             }}
-            className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 active:scale-95 dark:text-[#22a447]"
+            className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base font-semibold text-primary-800 dark:text-primary-dark shadow-sm transition hover:bg-primary-50 active:scale-95 dark:text-[#22a447]"
           >
             <FaShareAlt />
             ចែករំលែកមុខម្ហូប

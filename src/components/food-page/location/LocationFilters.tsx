@@ -656,7 +656,7 @@ export default function LocationFilters({
                       key={option.value}
                       className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
                         selected
-                          ? "border-primary-200 bg-primary-50 text-primary-800"
+                          ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
                           : "border-transparent text-gray-600 hover:bg-gray-50"
                       }`}
                     >

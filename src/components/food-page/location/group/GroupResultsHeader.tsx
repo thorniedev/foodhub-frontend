@@ -201,7 +201,7 @@ export default function GroupResultsHeader({
               type="button"
               disabled={!shareUrl}
               onClick={() => void copyVotingLink()}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary-200 bg-white px-4 text-[16px] font-bold text-primary-800 transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary-200 bg-white px-4 text-[16px] font-bold text-primary-800 dark:text-primary-dark transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
             >
               {copied ? (
                 <IoCheckmarkCircleOutline className="text-[20px]" />
@@ -216,7 +216,7 @@ export default function GroupResultsHeader({
               type="button"
               disabled={!shareUrl}
               onClick={() => void shareVotingLink()}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary-200 bg-white px-4 text-[16px] font-bold text-primary-800 transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary-200 bg-white px-4 text-[16px] font-bold text-primary-800 dark:text-primary-dark transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
             >
               <IoShareSocialOutline className="text-[20px]" />
               Share

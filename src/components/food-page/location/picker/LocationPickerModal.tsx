@@ -897,7 +897,7 @@ export default function LocationPickerModal({
                 <button
                   type="button"
                   onClick={handleUseCurrentLocation}
-                  className="absolute bottom-5 left-4 z-[500] inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.95] px-4 text-[17px] font-bold text-primary-800 shadow-lg backdrop-blur-md transition hover:bg-primary-50"
+                  className="absolute bottom-5 left-4 z-[500] inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.95] px-4 text-[17px] font-bold text-primary-800 dark:text-primary-dark shadow-lg backdrop-blur-md transition hover:bg-primary-50"
                 >
                   <IoLocateOutline className="text-[22px]" />
                   ទៅទីតាំងបច្ចុប្បន្ន

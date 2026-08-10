@@ -346,13 +346,13 @@ function FeatureCard({
           )}
         </span>
 
-        <span className="hidden text-left sm:block">
+        <span className="hidden text-left py-2 sm:block">
           <span className="block whitespace-nowrap text-[16px] font-bold">
             {feature.label}
           </span>
-          <span className="mt-0.5 hidden max-w-[190px] text-[13px] font-normal leading-5 text-slate-500 xl:block dark:text-slate-300">
+          {/* <span className="mt-0.5 hidden max-w-[190px] text-base font-normal leading-5 text-slate-500 xl:block dark:text-slate-300">
             {feature.description}
-          </span>
+          </span> */}
         </span>
 
         <motion.span
@@ -1060,13 +1060,13 @@ export default function FoodHubHero01({
             initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.55, delay: 0.1 }}
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white/70 px-4 py-2 text-[14px] font-semibold text-emerald-700 shadow-sm backdrop-blur-xl dark:border-emerald-300/15 dark:bg-emerald-950/35 dark:text-emerald-200"
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-white/70 px-4 py-2 text-[17px] font-semibold text-emerald-700 shadow-sm backdrop-blur-xl dark:border-emerald-300/15 dark:bg-emerald-950/35 dark:text-emerald-200"
           >
             <Sparkles className="size-4" aria-hidden />
             ការណែនាំអាហារដ៏ឆ្លាតវៃ
           </motion.div>
 
-          <h1 className="text-balance text-3xl font-semibold leading-[1.45] text-primary-800 sm:text-4xl md:text-5xl lg:text-[56px] dark:text-emerald-300">
+          <h1 className="text-balance text-3xl font-semibold leading-[1.45] text-primary-800 dark:text-primary-dark sm:text-4xl md:text-5xl lg:text-[56px] dark:text-primary-dark">
             បទពិសោធន៍ថ្មីក្នុង
             <TypingAnimation
               words={["ការស្វែងរកអាហារ", "ការជ្រើសរើសមុខម្ហូប"]}

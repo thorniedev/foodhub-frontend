@@ -407,7 +407,7 @@ export default function FilterByMealTime({
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="rounded-lg bg-primary-700 px-4 py-2 text-sm font-medium text-white"
+                className="rounded-full bg-primary-800 px-4 py-2 text-sm font-medium text-white"
               >
                 ព្យាយាមម្តងទៀត
               </button>

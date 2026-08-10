@@ -117,7 +117,7 @@ export default function HeroSection() {
             <p
               data-aos="fade-up"
               data-aos-duration="1000"
-              className="font-extrabold dark:text-white z-1 max-md:w-full lg:text-[50px] md:text-[48px] max-md:text-[38px] lg:ml-55 lg:-mt-35 md:text-center md:leading-17  text-primary-800"
+              className="font-extrabold dark:text-white z-1 max-md:w-full lg:text-[50px] md:text-[48px] max-md:text-[38px] lg:ml-55 lg:-mt-35 md:text-center md:leading-17  text-primary-800 dark:text-primary-dark"
             >
               ណែនាំអាហារដែលត្រូវនឹង <br className="md:block max-md:hidden" />{" "}
               ចំណូលចិត្តរបស់អ្នក !
@@ -220,7 +220,7 @@ export default function HeroSection() {
                 alt=""
               />
               <div className="bg-gradient-to-b from-secondary-50 shadow-xs to-white rounded-[2rem] p-8 flex flex-col items-center text-center relative h-64 border border-gray-100">
-                <h3 className="text-xl font-light text-primary-800 md:text-2xl uppercase leading-tight mb-2 font-black">
+                <h3 className="text-xl font-light text-primary-800 dark:text-primary-dark md:text-2xl uppercase leading-tight mb-2 font-black">
                   កំណត់ចំណង់ចំណូលចិត្ត
                   <br />
                   របស់លោកអ្នក
@@ -261,7 +261,7 @@ export default function HeroSection() {
 
               {/* Card 2 */}
               <div className="bg-gradient-to-b from-primary-50 to-white shadow-xs rounded-[2rem] p-8 flex flex-col items-center text-center relative h-64 border border-gray-100">
-                <h3 className="text-xl font-light text-primary-800 md:text-2xl uppercase leading-tight mb-2 font-black">
+                <h3 className="text-xl font-light text-primary-800 dark:text-primary-dark md:text-2xl uppercase leading-tight mb-2 font-black">
                   កំណត់ចំណង់ចំណូលចិត្ត
                   <br />
                   របស់លោកអ្នក
@@ -302,7 +302,7 @@ export default function HeroSection() {
 
               {/* Card 3 */}
               <div className="bg-gradient-to-b from-accent-50 to-white shadow-xs rounded-[2rem] p-8 flex flex-col items-center text-center relative h-64 border border-gray-100">
-                <h3 className="text-xl font-light text-primary-800 md:text-2xl uppercase leading-tight mb-2 font-black">
+                <h3 className="text-xl font-light text-primary-800 dark:text-primary-dark md:text-2xl uppercase leading-tight mb-2 font-black">
                   កំណត់ចំណង់ចំណូលចិត្ត
                   <br />
                   របស់លោកអ្នក

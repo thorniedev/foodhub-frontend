@@ -998,7 +998,7 @@ function FilterSidebar({
                       key={option.value}
                       className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
                         isSelected
-                          ? "border-primary-200 bg-primary-50 text-primary-800"
+                          ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
                           : "border-transparent text-gray-600 hover:bg-gray-50"
                       }`}
                     >
@@ -1545,7 +1545,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid place-items-center grid-cols-1 gap-3 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
+      className="grid place-items-center grid-cols-1  max-w-4xl gap-10 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -1891,7 +1891,7 @@ export default function FoodPage() {
                     <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
                       <FaStar className="text-[20px] text-yellow-500" />
 
-                      <p className="text-[16px] text-primary-800">
+                      <p className="text-[16px] text-primary-800 dark:text-primary-dark">
                         រកឃើញ{" "}
                         <span className="font-semibold">
                           {filteredFoods.length}

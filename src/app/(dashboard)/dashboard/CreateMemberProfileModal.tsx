@@ -838,7 +838,7 @@ export default function CreateMemberProfileModal({
                   <button
                     type="button"
                     onClick={retrySafetyOptions}
-                    className="mt-4 rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+                    className="mt-4 rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
                   >
                     ព្យាយាមម្តងទៀត
                   </button>

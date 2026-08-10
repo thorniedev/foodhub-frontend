@@ -565,7 +565,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                 shrink-0
                 text-[24px]
                 font-medium
-                text-primary-800
+                text-primary-800 dark:text-primary-dark
                 dark:text-primary-300
               "
             >

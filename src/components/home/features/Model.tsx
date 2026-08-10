@@ -175,7 +175,7 @@ export default function Model() {
               }}
             />
 
-            <RiRobot2Line className="text-[34px] text-primary-800" />
+            <RiRobot2Line className="text-[34px] text-primary-800 dark:text-primary-dark" />
           </div>
 
           <div>
@@ -787,7 +787,7 @@ export default function Model() {
                             }}
                             className={`relative flex min-w-0 items-center gap-3 rounded-t-[18px] px-3 pb-4 pt-3 text-left transition ${
                               isActive
-                                ? "bg-primary-50 text-primary-800"
+                                ? "bg-primary-50 text-primary-800 dark:text-primary-dark"
                                 : "text-gray-500 hover:bg-gray-50 hover:text-primary-700"
                             }`}
                           >

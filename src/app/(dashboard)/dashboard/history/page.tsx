@@ -109,7 +109,7 @@ function HistoryFoodCard({ item }: { item: HistoryItem }) {
           <div className="mt-4 flex items-center justify-between gap-3">
             {/* Price */}
             {item.price != null ? (
-              <p className="text-[18px] font-bold text-primary-800">
+              <p className="text-[18px] font-bold text-primary-800 dark:text-primary-dark">
                 {item.currencyCode === "USD" ? "$" : item.currencyCode || "$"}
 
                 {item.price.toFixed(2)}

@@ -35,7 +35,7 @@ export default function MenuItemCard({ item }: Props) {
           </span>
         )}
         {item.isHalal && (
-          <span className="absolute right-2 top-2 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-primary-800">
+          <span className="absolute right-2 top-2 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-primary-800 dark:text-primary-dark">
             Halal
           </span>
         )}
@@ -59,7 +59,7 @@ export default function MenuItemCard({ item }: Props) {
         </div>
 
         <div className="mt-1 flex items-center gap-2">
-          <span className="text-lg font-bold text-primary-800">
+          <span className="text-lg font-bold text-primary-800 dark:text-primary-dark">
             ${item.price.toFixed(2)}
           </span>
           {hasDiscount && (

@@ -293,7 +293,7 @@ const mentors: MentorCardProps[] = [
   },
   {
     id: "mentor-2",
-    name: "អ៊ឹង លីហហ្សា",
+    name: "អ៊ឹង លីហ៊្សា",
     role: "Mentor",
     avatar: "/about/cher.jpg",
     frameSrc: "/about/frame.png",
@@ -314,7 +314,7 @@ export default function MentorSection() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 sm:mb-16">
           <motion.h2
-            className="font-['Kantumruy_Pro',sans-serif] font-extrabold text-3xl sm:text-5xl md:text-6xl tracking-wide"
+            className=" font-extrabold text-3xl sm:text-5xl md:text-6xl "
             initial={
               reduceMotion
                 ? false
@@ -328,7 +328,9 @@ export default function MentorSection() {
             <span className="text-[#F97316]">របស់យើង</span> */}
 
             {/* // new */}
-            <span className="text-[#136C34] dark:text-[#4ADE80]">Mentors </span>
+            <span className="text-[#136C34] dark:text-primary-dark">
+              Mentors{" "}
+            </span>
             <span className="text-[#F97316] dark:text-[#FB923C]">របស់យើង</span>
           </motion.h2>
         </div>
@@ -342,7 +344,6 @@ export default function MentorSection() {
     </section>
   );
 }
-
 
 // =================================================================================================
 // // components/MentorSection.tsx

@@ -1103,7 +1103,7 @@ export default function FoodLocationMap({
                       href={directionsUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-[17px] font-bold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800"
+                      className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-[17px] font-bold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:text-primary-dark"
                     >
                       <IoNavigateOutline className="text-[18px]" />
                       ទិសដៅ

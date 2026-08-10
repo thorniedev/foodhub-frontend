@@ -221,7 +221,7 @@ export default function VotingResult({
           <button
             type="button"
             onClick={copyLink}
-            className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-5 text-[17px] font-semibold text-primary-800 transition hover:bg-primary-50"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-5 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:bg-primary-50"
           >
             {copied ? (
               <IoCheckmarkCircle className="text-[21px]" />

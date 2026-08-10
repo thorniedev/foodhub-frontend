@@ -200,7 +200,7 @@ function CheckboxOption({
 
         ${
           checked
-            ? "border-primary-200 bg-primary-50 text-primary-800"
+            ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
             : "border-transparent text-gray-600 hover:bg-gray-50"
         }
       `}
@@ -267,7 +267,7 @@ function RadioOption({
 
         ${
           checked
-            ? "border-primary-200 bg-primary-50 text-primary-800"
+            ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
             : "border-transparent text-gray-600 hover:bg-gray-50"
         }
       `}

@@ -13,7 +13,7 @@ import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommen
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950">
+    <main className="min-h-screen w-full overflow-x-hidden  dark:bg-slate-950">
       <div className="relative mx-auto w-full max-w-[1536px]">
         <AboutHeroClient />
         {/* <FoodHubSmartRecommendationSection /> */}

@@ -294,7 +294,7 @@ export default function DraggableAIAssistant({
           <div className="absolute inset-x-4 top-0 h-[3px] rounded-full bg-gradient-to-r from-cyan-400 via-primary-700 to-secondary-500" />
 
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-primary-50 text-primary-800">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-primary-50 text-primary-800 dark:text-primary-dark">
               <RiRobot2Line className="text-[27px]" />
             </div>
 

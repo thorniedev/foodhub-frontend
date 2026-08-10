@@ -62,8 +62,8 @@ export default function FoodNavTabs({
                 aria-current={isActive ? "page" : undefined}
                 className={`relative flex shrink-0 items-center gap-2 rounded-md pb-2 text-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-800/40 md:gap-3 md:text-xl ${
                   isActive
-                    ? "text-primary-800"
-                    : "text-primary-800/70 hover:text-primary-800"
+                    ? "text-primary-800 dark:text-primary-dark"
+                    : "text-primary-800 dark:text-primary-dark/70 hover:text-primary-800 dark:text-primary-dark"
                 }`}
               >
                 <Icon className="h-6 w-6 md:h-7 md:w-7" aria-hidden="true" />

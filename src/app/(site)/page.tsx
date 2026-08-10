@@ -1,159 +1,3 @@
-// "use client";
-
-// import Image from "next/image";
-// import { Button } from "@/components/ui/button";
-// import { HeroComponent } from "@/components/ui/Hero";
-// import { motion } from "motion/react";
-
-// import TextType from "@/components/TextType";
-// import { CiHeart } from "react-icons/ci";
-// import CurvedLoop from "@/components/CurvedLoop";
-// import SplitReveal from "../../../components/animata/preloader/split-reveal";
-// import Modal from "../../../components/animata/overlay/modal";
-// import { Skiper30 } from "@/components/ui/skiper-ui/skiper30";
-// import { Skiper19 } from "@/components/ui/skiper-ui/skiper19";
-// import Carousel, { slides } from "@/components/ui/Carosel";
-// import FilterByCategory from "@/components/home/filterByCategory";
-// import SeasonSection from "@/components/home/season";
-// import MealsByAgeSection from "@/components/home/age";
-// import FitFoodSection from "@/components/home/fitfood";
-// import EventSection from "@/components/home/event";
-// import LocationSection from "@/components/home/location";
-// import PopularSection from "@/components/home/popular";
-// import RecommandSection from "@/components/home/recommand";
-
-// import FilterByMealTime from "@/components/home/features/FilterByMealTime";
-// import FoodSearchBar from "@/components/home/features/FoodSearchBarComponent";
-// import SwipeCardTinderStyle from "@/components/home/features/SwipeCardTinderStyle";
-// import DisplaySwipeCard from "@/components/home/features/DisplaySwipeCard";
-// import Model from "@/components/home/features/Model";
-// import FoodSearch from "@/components/food-page/FoodSearch";
-// import { useGetMenuItemsQuery } from "../store/menuApi";
-// import { useEffect, useState } from "react";
-// import ModelFloating from "@/components/home/features/ModelFloating";
-// import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommendationSection";
-// import MinimalFoodHubRecommendationSection from "@/components/Component";
-// import HeroComponentOO1 from "@/components/home/Hero";
-// import Hero from "@/components/home/Hero";
-// import { IconCloudDemo } from "@/components/IconCloudDemo";
-
-// import { Skiper31 } from "@/components/ui/skiper-ui/skiper31";
-// import { IconCloudDemoWithImageLogo } from "@/components/ui/icon-cloud-demo-3";
-// import LocationPermissionModal from "@/components/LocationPermissionModal";
-// import { useUserLocation } from "@/hooks/useUserLocation";
-
-// export default function Home() {
-//   const { coordinates, status, error, refreshLocation } = useUserLocation();
-
-//   const [locationModalOpen, setLocationModalOpen] = useState(false);
-//   const [hasDismissedLocationModal, setHasDismissedLocationModal] =
-//     useState(false);
-
-//   useEffect(() => {
-//     if (
-//       hasDismissedLocationModal ||
-//       status === "granted" ||
-//       status === "requesting"
-//     ) {
-//       return;
-//     }
-
-//     const timer = window.setTimeout(() => {
-//       setLocationModalOpen(true);
-//     }, 700);
-
-//     return () => {
-//       window.clearTimeout(timer);
-//     };
-//   }, [hasDismissedLocationModal, status]);
-
-//   function handleEnableLocation() {
-//     refreshLocation();
-//   }
-
-//   function handleCloseLocationModal() {
-//     setLocationModalOpen(false);
-//     setHasDismissedLocationModal(true);
-//   }
-
-//   function handleOpenLocationModal() {
-//     setHasDismissedLocationModal(false);
-//     setLocationModalOpen(true);
-//   }
-//   return (
-//     <div>
-//       <LocationPermissionModal
-//         open={locationModalOpen && status !== "granted"}
-//         status={status}
-//         error={error}
-//         onEnable={handleEnableLocation}
-//         onClose={handleCloseLocationModal}
-//       />
-//       {/* <SplitReveal
-//         images={imageUrls}
-//         lockScroll={false}
-//         // onComplete={() => setReady(true)}
-//         renderProgress={({ loaded, total }) => (
-//           <p className="text-center hidden">
-//             {loaded}/{total}
-//           </p>
-//         )}
-//       /> */}
-
-//       <section className="">
-//         {/* <Skiper30 /> */}
-//         <Hero />
-
-//         {/* <IconCloudDemo /> */}
-//         {/* <HeroComponentOO1 /> */}
-
-//         {/* <MinimalFoodHubRecommendationSection /> */}
-//         <FilterByMealTime />
-//         {/* <PopularSection /> */}
-//         {/* <Skiper19/> */}
-//         {/* <Skiper26/> */}
-//         {/* <div className="hidden">
-//           <Skiper31 />
-//         </div> */}
-//         {/* <RecommandSection
-//           filters={{
-//             query: "",
-//             food: new Set(),
-//             drink: new Set(),
-//             age: new Set(),
-//           }}
-//         /> */}
-//         <FoodSearchBar />
-//         {/* <DisplaySwipeCard /> */}
-//         <Model />
-//         {/* <FoodDiscoverySection /> */}
-//         {/* <FilterByCategory /> */}
-//         <SeasonSection />
-//         {/* <CreatePost />
-//         <PostsList /> */}
-//         {/* <Skiper19/> */}
-//         {/* <div className="h-screen"></div> */}
-//         <EventSection />
-//         <LocationSection />
-//         <MealsByAgeSection />
-
-//         {/* <RecommendCardStack foods={recommendedFoods} /> */}
-//         {/* <Skiper48/> */}
-//         {/* <TinderFoodStack foods={recommendedFoods} /> */}
-//         <FitFoodSection />
-//       </section>
-
-//       {/* <CurvedLoop
-//         marqueeText="ស្វែងរកមុខម្ហូបនៅជិតអ្នកបំផុត"
-//         speed={2}
-//         curveAmount={-150}
-//         direction="left"
-//         interactive
-//         className="custom-text-style"
-//       /> */}
-//     </div>
-//   );
-// }
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -177,6 +21,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 
 import type { VoiceAlertStore } from "@/hooks/useNearbyStoreVoiceAlert";
 import PopularSection from "@/components/home/popular";
+import BannerCarousel from "@/components/home/features/BannerCarousel";
 
 type StoreVoiceSource = {
   uuid?: string;
@@ -317,9 +162,9 @@ export default function Home() {
 
     setLocationModalOpen(true);
   }
- 
+
   return (
-    <div>
+    <div className="">
       {/* <LocationPermissionModal
         open={locationModalOpen && status !== "granted"}
         status={status}
@@ -338,6 +183,7 @@ export default function Home() {
 
       <section>
         <Hero />
+        <BannerCarousel />
         <PopularSection />
         <FilterByMealTime />
 
