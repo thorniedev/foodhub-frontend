@@ -10,11 +10,13 @@ import MarqueeSectionOrangeRtl from "@/components/about/MarqueeSectionOrangeReve
 import AboutHeroClient from "@/components/about/AboutHeroClient";
 import TechnologiesSection from "@/components/about/TechnologiesSection";
 import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommendationSection";
+import MealTimeJourneySection from "@/components/MealTimeJourneySection";
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen w-full overflow-x-hidden  dark:bg-slate-950">
       <div className="relative mx-auto w-full max-w-[1536px]">
+        
         <AboutHeroClient />
         {/* <FoodHubSmartRecommendationSection /> */}
         <StatsSection />
