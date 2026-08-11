@@ -16,7 +16,7 @@ export default function LogoutButton() {
       type="button"
       onClick={handleLogout}
       disabled={isLoggingOut}
-      className="rounded-xl flex items-center  gap-2 justify-center bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-xl flex items-center  gap-2 justify-center bg-red-400/5 border border-gray-100 shadow-2xs  px-5 py-3   cursor-pointer hover:bg-red-300/30 font-semibold text-red-500 transition  disabled:cursor-not-allowed disabled:opacity-60"
     >
       {isLoggingOut ? "Signing out..." : "Logout"}
       <FiLogOut className="text-xl" />

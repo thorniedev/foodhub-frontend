@@ -331,14 +331,14 @@ export default function DashboardUserProfile({
             >
               <UserRound className="h-5 w-5" />
 
-              <span className="flex-1">View profile details</span>
+              <span className="flex-1"> គណនី</span>
             </button>
             <Link
               href="/dashboard"
               className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-base font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-[#136C34] dark:text-slate-200 dark:hover:bg-emerald-950/40"
             >
               <LuLayoutDashboard />
-              <span className="flex-1">Dashboard</span>
+              <span className="flex-1">ផ្ទាំងគ្រប់គ្រង</span>
             </Link>
             <button
               type="button"
@@ -347,7 +347,7 @@ export default function DashboardUserProfile({
             >
               <LogOut className="h-5 w-5" />
 
-              <span className="flex-1">Logout</span>
+              <span className="flex-1">ចាកចេញ</span>
             </button>
           </div>
         </PopoverContent>

@@ -22,6 +22,8 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import type { VoiceAlertStore } from "@/hooks/useNearbyStoreVoiceAlert";
 import PopularSection from "@/components/home/popular";
 import BannerCarousel from "@/components/home/features/BannerCarousel";
+import RegionFlightSection from "@/components/home/RegionFlightSection";
+import MealTimeJourneySection from "@/components/MealTimeJourneySection";
 
 type StoreVoiceSource = {
   uuid?: string;
@@ -186,7 +188,8 @@ export default function Home() {
         <BannerCarousel />
         <PopularSection />
         <FilterByMealTime />
-
+        {/* <RegionFlightSection /> */}
+        <MealTimeJourneySection />
         <FoodSearchBar />
 
         {/* <Model /> */}

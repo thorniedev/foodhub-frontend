@@ -30,11 +30,11 @@ function SocialButton({
       rel="noopener noreferrer"
       aria-label={`Open ${icon}`}
       className="
-        flex size-9 items-center justify-center
+        flex size-10 items-center justify-center
         rounded-full
         border border-gray-300
         bg-white
-        text-[#1E2E3E]
+        text-primary-800
         shadow-sm
         transition-colors
         hover:bg-gray-50
@@ -455,7 +455,7 @@ function MemberCard({
                   absolute inset-0
                   rounded-full
                   border-[3.5px]
-                  border-[#55B767]
+                  border-secondary-400
                 "
                 initial={
                   reduceMotion
@@ -490,7 +490,7 @@ function MemberCard({
                 border-[3.5px]
                 border-[#55B767]
                 bg-gray-100
-                text-sm
+                text-lg
                 text-gray-500
                 dark:bg-gray-800
                 dark:text-gray-400
@@ -547,18 +547,9 @@ function MemberCard({
 
         <motion.span
           className="
-            rounded-full
-            px-5 py-1
-            font-['Kantumruy_Pro',sans-serif]
-            text-sm
-            font-medium
-            dark:!bg-[#E86C2B]/15
-            dark:!text-[#FDBA74]
+           text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] dark:bg-[#136C34]/40 text-[#136C34] dark:text-primary-dark
+
           "
-          style={{
-            color: roleColor,
-            backgroundColor: roleBg,
-          }}
           initial={
             reduceMotion
               ? false
@@ -785,7 +776,7 @@ export default function CommunitySection() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="px-4 py-12 sm:px-8 md:py-12.5">
+    <section className="px-4 py-12 sm:px-8 md:pb-12.5">
       <div className="mx-auto max-w-7xl">
         {/* Heading */}
 
