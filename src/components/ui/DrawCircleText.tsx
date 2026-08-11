@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 
 export const DrawCircleText = () => {
   return (
-    <div className="grid place-content-center bg-primary-800     px-4 py-24 text-yellow-50">
+    <div className="grid place-content-center bg-primary-800     px-4 py- text-yellow-50">
       <p className="max-w-2xl font-bold text-center text-5xl leading-snug">
         បទពិសោធន៍ថ្មីក្នុងការ
         <span className="relative text-accent-00">
@@ -26,7 +26,7 @@ export const DrawCircleText = () => {
               strokeWidth="3"
             />
           </svg>
-        </span>{" "}
+        </span>
       </p>
     </div>
   );

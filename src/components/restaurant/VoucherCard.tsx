@@ -28,7 +28,7 @@ export default function VoucherCard({ voucher }: Props) {
           </span>
         </p>
         <p className="text-xs text-gray-500">
-          ចំណាយតិចបំផុត ${voucher.minSpend.toFixed(2)} · ផុតកំណត់{" "}
+          ចំណាយតិចបំផុត ${voucher.minSpend.toFixed(2)} · ផុតកំណត់
           {formatExpiry(voucher.expiresAt)}
         </p>
       </div>

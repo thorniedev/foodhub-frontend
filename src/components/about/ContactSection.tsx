@@ -100,7 +100,7 @@ export default function ContactSection() {
             {...rowEntrance(0.22, reduceMotion)}
             className="mt-4 text-base sm:text-lg md:text-xl font-medium "
           >
-            មានសំណួរ ឬចង់ធ្វើជាដៃគូជាមួយយើង?{" "}
+            មានសំណួរ ឬចង់ធ្វើជាដៃគូជាមួយយើង?
             <span className="">យើងរីករាយនឹងទទួលសារពីអ្នក។</span>
           </motion.p>
         </div>

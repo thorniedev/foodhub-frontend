@@ -310,7 +310,7 @@ export default function Model() {
             stiffness: 260,
             damping: 24,
           }}
-          className="pointer-events-none absolute bottom-0 right-[98px] hidden w-[290px] overflow-hidden rounded-[24px] border border-white/60 bg-white/85 p-4 text-left shadow-[0_24px_80px_rgba(18,80,55,0.28)] backdrop-blur-2xl sm:block"
+          className="pointer-events-none absolute bottom-0 right-[98px] hidden w-[290px] overflow-hidden rounded-[24px] border border-white/60 bg-white/85 p-4 text-left z-99 shadow-[0_24px_80px_rgba(18,80,55,0.28)] backdrop-blur-2xl sm:block"
         >
           <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-cyan-400 via-primary-700 to-secondary-500" />
 
@@ -423,10 +423,10 @@ export default function Model() {
             stiffness: 300,
             damping: 19,
           }}
-          className="pointer-events-none absolute -left-12 -top-16 hidden whitespace-nowrap rounded-[18px] rounded-br-[5px] border border-primary-100 bg-white/95 px-4 py-2.5 text-[16px] font-medium text-primary-900 shadow-[0_12px_40px_rgba(20,70,45,0.18)] backdrop-blur-xl md:block"
+          className="pointer-events-none absolute right-2 -top-16 hidden whitespace-nowrap rounded-[18px] rounded-br-[5px] border border-primary-100 bg-white/95 px-4 py-2.5 text-[16px] font-medium text-primary-900 shadow-[0_12px_40px_rgba(20,70,45,0.18)] backdrop-blur-xl md:block"
         >
           {/* តើថ្ងៃនេះអ្នកចង់ញ៉ាំអ្វី? */}
-          ណែនាំម្ហូបដោយAI
+          ណែនាំម្ហូបអាហារដោយAI
           <motion.span
             className="ml-2 inline-block text-secondary-500"
             animate={{

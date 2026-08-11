@@ -535,7 +535,7 @@ export default function FoodSearchBar() {
           SEARCH + FILTER BAR
       =============================================== */}
 
-      <div className="sticky top-12 z-50 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5 px-4 py-3">
+      <div className="sticky top-18 z-50 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5 px-4 pb-10">
         {/* SEARCH */}
 
         <div className="flex min-h-[60px] min-w-[280px] flex-1 items-center gap-3 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec]">
@@ -618,7 +618,7 @@ export default function FoodSearchBar() {
                     index > 0 ? "mt-5 border-t border-[#e7e6e1] pt-[18px]" : ""
                   }
                 >
-                  <p className="mb-3 text-[13px] font-semibold text-[#a3a29a]">
+                  <p className="mb-3 text-xl font-semibold text-[#a3a29a]">
                     {group.title}
                   </p>
 
@@ -636,7 +636,7 @@ export default function FoodSearchBar() {
                           key={selectionKey}
                           type="button"
                           onClick={() => toggleChip(group.key, option.code)}
-                          className={`cursor-pointer rounded-full border px-4 py-2 text-sm transition-all ${
+                          className={`cursor-pointer rounded-full border px-4 py-2 text-lg transition-all ${
                             isSelected
                               ? "border-[#1c6b45] bg-[#1c6b45] text-white"
                               : "border-[#e7e6e1] bg-white text-[#3d3d3a] hover:border-[#1c6b45]"
@@ -664,15 +664,15 @@ export default function FoodSearchBar() {
           RESULT COUNT
       =============================================== */}
 
-      {!isLoading && !isError && (
-        <div className="px-4 pb-3 text-sm text-gray-400">
-          រកឃើញ{" "}
-          <span className="font-semibold text-primary-700">
+      {/* {!isLoading && !isError && (
+        <div className="px-4 text-lg pb-3  text-gray-400">
+          រកឃើញ
+          <span className="font-semibold px-2 text-primary-700">
             {filteredFoods.length}
-          </span>{" "}
+          </span>
           មុខម្ហូប
         </div>
-      )}
+      )} */}
 
       {/* ===============================================
           GRID

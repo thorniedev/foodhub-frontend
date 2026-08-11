@@ -51,7 +51,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
         <div className="flex items-center gap-2 text-secondary-400">
           <FaStore />
 
-          <p className="text-sm">{food.store?.localName}</p>
+          <p className="text-shadow-lg">{food.store?.localName}</p>
         </div>
 
         {/* Name + Price */}
@@ -132,7 +132,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
               px-3
               py-1
               rounded-full
-              text-sm
+              text-lg
               "
             >
               {diet.name}

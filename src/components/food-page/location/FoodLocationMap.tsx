@@ -939,7 +939,7 @@ export default function FoodLocationMap({
                 {typeof userLocation?.accuracy === "number" &&
                   Number.isFinite(userLocation.accuracy) && (
                     <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-[17px] text-slate-600">
-                      ភាពត្រឹមត្រូវប្រហែល {Math.round(userLocation.accuracy)}{" "}
+                      ភាពត្រឹមត្រូវប្រហែល {Math.round(userLocation.accuracy)}
                       ម៉ែត្រ
                     </p>
                   )}

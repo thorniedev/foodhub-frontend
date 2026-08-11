@@ -497,7 +497,7 @@ export default function FoodSearch({
               </p>
 
               <p className="mt-1 text-[16px] text-gray-500">
-                រកឃើញ {suggestions.length} ជម្រើសសម្រាប់ “{value}”
+                រកឃើញ  {suggestions.length}  ជម្រើសសម្រាប់ “{value}”
               </p>
             </div>
 

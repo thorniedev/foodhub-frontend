@@ -748,7 +748,7 @@ function LiveLeaderboard({
                         }
                       `}
                     >
-                      {entry.voteCount}{" "}
+                      {entry.voteCount}
                       {entry.voteCount === 1 ? "Vote" : "Votes"}
                     </span>
                   </motion.div>

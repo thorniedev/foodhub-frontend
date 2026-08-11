@@ -660,7 +660,7 @@ function ExperienceSection({ reduceMotion }: { reduceMotion: boolean }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="text-balance text-center text-3xl font-semibold sm:text-4xl md:text-5xl lg:text-6xl"
+          className="text-balance text-center text-3xl font-semibold sm:text-4xl md:text-5xl lg:text-6xl  py-2"
         >
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>

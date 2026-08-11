@@ -537,7 +537,7 @@ export default function FoodCard({ food }: FoodCardProps) {
           <div className="flex items-center gap-2 text-secondary-400">
             <FaStore />
 
-            <p className="line-clamp-1 text-sm">
+            <p className="line-clamp-1 text-lg">
               {food.store?.name || "Unknown store"}
             </p>
           </div>
@@ -640,7 +640,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                     bg-primary-800
                     px-3
                     py-1
-                    text-sm
+                    text-lg
                     text-gray-100
                   "
                 >
@@ -655,7 +655,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                     bg-primary-800
                     px-3
                     py-1
-                    text-sm
+                    text-lg
                     text-gray-100
                   "
                 >

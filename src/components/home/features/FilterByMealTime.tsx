@@ -319,7 +319,7 @@ export default function FilterByMealTime({
 
       <section className="mb-10">
         <h2 className="text-center text-2xl font-bold text-primary-900 dark:text-white md:text-4xl">
-          បទពិសោធន៍ថ្មីក្នុង{" "}
+          បទពិសោធន៍ថ្មីក្នុង
           <TypingAnimation
             words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
             blinkCursor

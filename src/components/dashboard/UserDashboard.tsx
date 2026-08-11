@@ -555,7 +555,7 @@ export default function UserDashboard() {
       {/* Ingredient avoids - full detail tags                               */}
       {/* ------------------------------------------------------------------ */}
 
-      <SectionCard
+      {/* <SectionCard
         icon={<FaRegStar />}
         title="គ្រឿងផ្សំដែលត្រូវជៀសវាង"
         className="mt-4 sm:mt-5"
@@ -584,7 +584,7 @@ export default function UserDashboard() {
         ) : (
           <EmptyValue text="មិនមានគ្រឿងផ្សំដែលត្រូវជៀសវាង។" />
         )}
-      </SectionCard>
+      </SectionCard> */}
     </div>
   );
 }

@@ -335,7 +335,7 @@ export default function LocationPickerMap({
                   )}
 
                   <p className="mt-1 text-[14px] text-slate-400">
-                    {selectedPlace.latitude.toFixed(6)},{" "}
+                    {selectedPlace.latitude.toFixed(6)},
                     {selectedPlace.longitude.toFixed(6)}
                   </p>
                 </div>

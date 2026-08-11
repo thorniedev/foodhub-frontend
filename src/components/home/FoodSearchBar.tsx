@@ -222,7 +222,7 @@ export default function FoodSearchBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="ស្វែងរកម្ហូបអាហារ..."
-            className="h-full w-full bg-transparent text-[15px] text-[#3d3d3a] placeholder:text-[#a3a29a] outline-none"
+            className="h-full w-full bg-transparent text-lg text-[#3d3d3a] placeholder:text-[#a3a29a] outline-none"
           />
         </div>
 

@@ -329,7 +329,7 @@ export default function MentorSection() {
 
             {/* // new */}
             <span className="text-[#136C34] dark:text-primary-dark">
-              Mentors{" "}
+              Mentors
             </span>
             <span className="text-[#F97316] dark:text-[#FB923C]">របស់យើង</span>
           </motion.h2>

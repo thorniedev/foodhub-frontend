@@ -234,7 +234,7 @@ export default function StatsSection() {
                   <p>
                     {stat.highlightText && (
                       <span className="text-[#E58348]">
-                        {stat.highlightText}{" "}
+                        {stat.highlightText}
                       </span>
                     )}
                     {stat.normalText && (
@@ -247,7 +247,7 @@ export default function StatsSection() {
                     <p>
                       {stat.subTextHighlight && (
                         <span className="text-[#E58348]">
-                          {stat.subTextHighlight}{" "}
+                          {stat.subTextHighlight}
                         </span>
                       )}
                       {stat.subText && (

@@ -619,7 +619,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   <FaStar className="text-yellow-500" />
 
                   <span>
-                    {storeRating.toFixed(1)} ({food.store?.totalReviews ?? 0}{" "}
+                    {storeRating.toFixed(1)} ({food.store?.totalReviews ?? 0}
                     ការវាយតម្លៃ)
                   </span>
                 </div>

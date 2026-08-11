@@ -1225,7 +1225,7 @@ export default function FoodHubHeroSection() {
           </motion.div>
 
           <h1 className="text-balance text-3xl font-semibold leading-[1.45] text-primary-800 dark:text-primary-dark sm:text-4xl md:text-5xl lg:text-[56px] dark:text-emerald-300">
-            បទពិសោធន៍ថ្មីក្នុង{" "}
+            បទពិសោធន៍ថ្មីក្នុង
             <TypingAnimation
               words={["ការស្វែងរកអាហារ", "ការជ្រើសរើសមុខម្ហូប"]}
               blinkCursor

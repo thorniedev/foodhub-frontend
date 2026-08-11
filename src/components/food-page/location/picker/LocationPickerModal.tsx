@@ -955,7 +955,7 @@ export default function LocationPickerModal({
                           )}
 
                           <p className="mt-1 break-all text-[15px] font-semibold text-slate-500">
-                            {draftLocation.latitude.toFixed(6)},{" "}
+                            {draftLocation.latitude.toFixed(6)},
                             {draftLocation.longitude.toFixed(6)}
                           </p>
                         </div>
@@ -974,7 +974,7 @@ export default function LocationPickerModal({
                       )}
 
                       <p className="mt-1 break-all text-[17px] font-semibold text-slate-700">
-                        {draftLocation.latitude.toFixed(6)},{" "}
+                        {draftLocation.latitude.toFixed(6)},
                         {draftLocation.longitude.toFixed(6)}
                       </p>
                     </div>

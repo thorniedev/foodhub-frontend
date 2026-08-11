@@ -840,7 +840,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           </h4>
 
           <p className="mt-2 max-w-2xl text-[17px] leading-7 text-slate-500">
-            កែប្រែព័ត៌មានផ្ទាល់ខ្លួន និងចំណូលចិត្តអាហាររបស់{" "}
+            កែប្រែព័ត៌មានផ្ទាល់ខ្លួន និងចំណូលចិត្តអាហាររបស់
             <span className="font-semibold text-slate-700">
               {profile.profileName}
             </span>

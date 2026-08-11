@@ -883,12 +883,12 @@
 //         font-semibold
 //         text-white
 
-//         lg:text-6xl
+//         lg:text-6xl  py-2
 //         md:text-5xl
 //         max-md:text-3xl
 //       "
 //           >
-//             បទពិសោធន៍ថ្មីក្នុង{" "}
+//             បទពិសោធន៍ថ្មីក្នុង
 //             <motion.span
 //               initial={
 //                 reduceMotion
@@ -2992,12 +2992,12 @@ export default function Hero() {
         font-semibold
         text-white
 
-        lg:text-6xl
+        lg:text-6xl  py-2
         md:text-5xl
         max-md:text-3xl
       "
           >
-            បទពិសោធន៍ថ្មីក្នុង{" "}
+            បទពិសោធន៍ថ្មីក្នុង
             <motion.span variants={fadeIn} className="text-secondary-500">
               ការស្វែងរកអាហារ
             </motion.span>

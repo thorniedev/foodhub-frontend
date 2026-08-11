@@ -18,7 +18,7 @@ export default function TechnologiesSection() {
           </p>
           <button className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full texxt-[20px]">
             See More
-          </button>{" "}
+          </button>
           {/*  */}
         </div>
         <IconCloudDemoWithImageLogo />

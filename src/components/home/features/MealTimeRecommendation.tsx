@@ -239,7 +239,7 @@ export default function MealTimeRecommandSection({
       <div className="container mx-auto mb-10 max-w-7xl px-4">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-primary-900 md:text-4xl">
-            បទពិសោធន៍ថ្មីក្នុង{" "}
+            បទពិសោធន៍ថ្មីក្នុង
             <TypingAnimation
               words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
               blinkCursor

@@ -112,10 +112,10 @@ function DeleteProfileDialog({
           <h3 className="text-xl font-semibold text-slate-900">លុបគណនី?</h3>
 
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            តើអ្នកពិតជាចង់លុបគណនី{" "}
+            តើអ្នកពិតជាចង់លុបគណនី
             <span className="font-semibold text-slate-800">
               {profile.profileName}
-            </span>{" "}
+            </span>
             មែនទេ?
           </p>
 

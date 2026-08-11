@@ -1892,10 +1892,10 @@ export default function FoodPage() {
                       <FaStar className="text-[20px] text-yellow-500" />
 
                       <p className="text-[16px] text-primary-800 dark:text-primary-dark">
-                        រកឃើញ{" "}
+                        រកឃើញ
                         <span className="font-semibold">
                           {filteredFoods.length}
-                        </span>{" "}
+                        </span>
                         មុខម្ហូប
                       </p>
                     </div>
@@ -1981,7 +1981,7 @@ export default function FoodPage() {
                         </div>
 
                         <p className="text-[16px] text-gray-500 dark:text-gray-50">
-                          បង្ហាញ {filteredFoods.length} ក្នុងចំណោម{" "}
+                          បង្ហាញ {filteredFoods.length} ក្នុងចំណោម
                           {menuItems.length}
                         </p>
                       </div>
@@ -1989,12 +1989,12 @@ export default function FoodPage() {
                       <FoodGrid foods={filteredFoods} />
                     </section>
 
-                    <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-500 px-6 py-12 text-center text-white">
+                    <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
                       <p className="text-[28px] font-semibold md:text-[36px]">
                         បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
                       </p>
 
-                      <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-8 text-white/80">
+                      <p className="mx-auto mt-3 max-w-2xl text-[16px]  lg:text-xl leading-8 text-white/80">
                         ស្វែងរកមុខម្ហូបដែលសមនឹងចំណូលចិត្ត តម្លៃ ពេលរៀបចំ
                         ប្រភេទម្ហូប និងហាងដែលអ្នកចូលចិត្ត។
                       </p>

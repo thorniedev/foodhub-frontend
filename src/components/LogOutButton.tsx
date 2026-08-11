@@ -18,7 +18,7 @@ export default function LogoutButton() {
       disabled={isLoggingOut}
       className="rounded-xl flex items-center  gap-2 justify-center bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {isLoggingOut ? "Signing out..." : "Logout"}{" "}
+      {isLoggingOut ? "Signing out..." : "Logout"}
       <FiLogOut className="text-xl" />
     </button>
   );

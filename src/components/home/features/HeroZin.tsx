@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 export default function HeroSection() {
   return (
     <div>
-      {" "}
+      
       <div className="">
         {/* <div className="h-screen">hi</div> */}
         {/* hero */}
@@ -110,16 +110,16 @@ export default function HeroSection() {
               alt="blur-image"
               width={577}
               height={542}
-            />{" "}
+            />
             <motion.div />
-            <div className="absolute right-25 w-30 h-30 blur-[80px] animate-pulse bg-secondary-500"></div>{" "}
+            <div className="absolute right-25 w-30 h-30 blur-[80px] animate-pulse bg-secondary-500"></div>
             {/* <div className="absolute  top-10 -left-40   h-30 blur-[80px]  bg-primary-500"></div> */}
             <p
               data-aos="fade-up"
               data-aos-duration="1000"
               className="font-extrabold dark:text-white z-1 max-md:w-full lg:text-[50px] md:text-[48px] max-md:text-[38px] lg:ml-55 lg:-mt-35 md:text-center md:leading-17  text-primary-800 dark:text-primary-dark"
             >
-              ណែនាំអាហារដែលត្រូវនឹង <br className="md:block max-md:hidden" />{" "}
+              ណែនាំអាហារដែលត្រូវនឹង <br className="md:block max-md:hidden" />
               ចំណូលចិត្តរបស់អ្នក !
             </p>
             <div className="absolute md:w-full ">
@@ -201,9 +201,9 @@ export default function HeroSection() {
           />
 
           <section className=" lg:-mt-105  md:-mt-100  max-md:-mt-55 flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
-            <p className="lg:text-6xl md:text-5xl max-md:text-3xl text-center font-semibold text-white ">
+            <p className="lg:text-6xl  py-2 md:text-5xl max-md:text-3xl text-center font-semibold text-white ">
               បទពិសោធន៍ថ្មីក្នុង
-              <span className="text-secondary-500">ការស្វែងរកអាហារ</span>{" "}
+              <span className="text-secondary-500">ការស្វែងរកអាហារ</span>
             </p>
             <p className="lg:text-[24px] md:text-[20px] text-center  font-light text-accent-50">
               ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ <br />

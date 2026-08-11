@@ -107,7 +107,7 @@ function StoreHeader({ store }: { store: FoodStore }) {
         </span>
         {openingHour && (
           <span>
-            {openingHour.openTime || "08:00"} -{" "}
+            {openingHour.openTime || "08:00"} -
             {openingHour.closeTime || "21:00"}
           </span>
         )}
@@ -175,7 +175,7 @@ function StoreMenuSection({
                 <span>{Number(item.preparationTimeMinutes) || 0} min</span>
               </div>
               <p className="mt-2 text-lg font-bold text-primary-800 dark:text-primary-dark">
-                {Number(item.price || 0).toFixed(2)}{" "}
+                {Number(item.price || 0).toFixed(2)}
                 {item.currencyCode || "USD"}
               </p>
             </div>

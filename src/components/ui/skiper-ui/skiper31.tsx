@@ -211,7 +211,7 @@ const Skiper31 = () => {
           ref={targetRef3}
           className="relative -mt-[95vh] box-border flex h-[210vh] flex-col items-center justify-center gap-[2vw] overflow-hidden bg-[#f5f4f3] p-[2vw]"
         >
-          {" "}
+          
           <p className="font-geist flex items-center justify-center gap-3 text-2xl font-medium tracking-tight text-black">
             <Bracket className="h-12 text-black" />
             <span className="font-geist font-medium">
