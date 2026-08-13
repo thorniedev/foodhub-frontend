@@ -665,7 +665,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                       : "bg-red-500 text-white"
                   }`}
                 >
-                  {food.store.operatingStatus === "OPEN" ? "បើក" : "បិទ"}
+                  {food.store.operatingStatus === "OPEN"
+                    ? "បើក"
+                    : "បិទ"}
                 </span>
               </div>
 
@@ -747,7 +749,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
                   {food.store.localName &&
                     food.store.name &&
-                    food.store.localName.trim() !== food.store.name.trim() && (
+                    food.store.localName.trim() !==
+                      food.store.name.trim() && (
                       <p className="mt-0.5 line-clamp-1 text-[16px] text-gray-500">
                         {food.store.name}
                       </p>
@@ -760,7 +763,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700" />
 
                   <span className="line-clamp-2">
-                    {storeAddress || "មិនមានអាសយដ្ឋាន"}
+                    {storeAddress ||
+                      "មិនមានអាសយដ្ឋាន"}
                   </span>
                 </div>
 
@@ -807,10 +811,14 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
                     <div className="min-w-0">
                       <p className="text-[18px] font-bold text-gray-900">
-                        {Number(food.store.averageRating ?? 0).toFixed(1)}
+                        {Number(
+                          food.store.averageRating ?? 0,
+                        ).toFixed(1)}
                       </p>
 
-                      <p className="text-[13px] text-gray-500">ការវាយតម្លៃ</p>
+                      <p className="text-[13px] text-gray-500">
+                        ការវាយតម្លៃ
+                      </p>
                     </div>
                   </div>
 
@@ -847,7 +855,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                         {food.store.totalReviews ?? 0}
                       </p>
 
-                      <p className="text-[13px] text-gray-500">មតិវាយតម្លៃ</p>
+                      <p className="text-[13px] text-gray-500">
+                        មតិវាយតម្លៃ
+                      </p>
                     </div>
                   </div>
                 </div>
