@@ -1,7 +1,4 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,9 +17,7 @@ interface KeycloakClaims {
   exp?: number;
 }
 
-function decodeJwt(
-  token: string,
-): KeycloakClaims | null {
+function decodeJwt(token: string): KeycloakClaims | null {
   try {
     const parts = token.split(".");
 
@@ -30,48 +25,36 @@ function decodeJwt(
       return null;
     }
 
-    const payload = Buffer.from(
-      parts[1],
-      "base64url",
-    ).toString("utf8");
+    const payload = Buffer.from(parts[1], "base64url").toString("utf8");
 
-    return JSON.parse(
-      payload,
-    ) as KeycloakClaims;
-  } catch (error) {
-    console.error(
-      "[AUTH SESSION] Failed to decode token:",
-      error,
-    );
-
+    return JSON.parse(payload) as KeycloakClaims;
+  } catch {
     return null;
   }
 }
 
-export async function GET(
-  request: NextRequest,
-) {
-  const idToken =
-    request.cookies.get(
-      "foodhub_id_token",
-    )?.value;
+export async function GET(request: NextRequest) {
+  const idToken = request.cookies.get("foodhub_id_token")?.value;
 
-  const accessToken =
-    request.cookies.get(
-      "foodhub_access_token",
-    )?.value;
+  const accessToken = request.cookies.get("foodhub_access_token")?.value;
 
-  const token =
-    idToken ?? accessToken;
+  const token = idToken ?? accessToken;
 
+  /*
+   * IMPORTANT:
+   * Logged out is a valid session state.
+   *
+   * Return 200, not 401.
+   */
   if (!token) {
     return NextResponse.json(
       {
         authenticated: false,
-        message: "Not authenticated.",
+        user: null,
       },
       {
-        status: 401,
+        status: 200,
+
         headers: {
           "Cache-Control": "no-store",
         },
@@ -79,17 +62,17 @@ export async function GET(
     );
   }
 
-  const claims =
-    decodeJwt(token);
+  const claims = decodeJwt(token);
 
   if (!claims) {
     return NextResponse.json(
       {
         authenticated: false,
-        message: "Invalid token.",
+        user: null,
       },
       {
-        status: 401,
+        status: 200,
+
         headers: {
           "Cache-Control": "no-store",
         },
@@ -97,18 +80,19 @@ export async function GET(
     );
   }
 
-  if (
-    claims.exp &&
-    claims.exp * 1000 <= Date.now()
-  ) {
+  /*
+   * Expired session
+   */
+  if (claims.exp && claims.exp * 1000 <= Date.now()) {
     return NextResponse.json(
       {
         authenticated: false,
         expired: true,
-        message: "Token expired.",
+        user: null,
       },
       {
-        status: 401,
+        status: 200,
+
         headers: {
           "Cache-Control": "no-store",
         },
@@ -116,45 +100,22 @@ export async function GET(
     );
   }
 
-  if (!claims.sub) {
-    return NextResponse.json(
-      {
-        authenticated: false,
-        message:
-          "Token does not contain a user ID.",
-      },
-      {
-        status: 401,
-      },
-    );
-  }
-
+  /*
+   * Logged-in Keycloak user
+   */
   const user = {
-    uuid: claims.sub,
+    uuid: claims.sub ?? "",
 
-    username:
-      claims.preferred_username ??
-      "",
+    username: claims.preferred_username ?? "",
 
-    primaryEmail:
-      claims.email ?? "",
+    primaryEmail: claims.email ?? "",
 
-    firstName:
-      claims.given_name ?? null,
+    firstName: claims.given_name ?? null,
 
-    lastName:
-      claims.family_name ?? null,
+    lastName: claims.family_name ?? null,
 
-    emailVerified:
-      claims.email_verified ?? false,
+    emailVerified: claims.email_verified ?? false,
 
-    /*
-     * This means the Keycloak session
-     * is currently authenticated.
-     *
-     * It is NOT the Spring Boot database
-     * account status.
-     */
     status: "ACTIVE",
 
     lastLoginAt: null,
@@ -166,24 +127,16 @@ export async function GET(
     avatarUrl: null,
   };
 
-  console.log(
-    "[FOODHUB SESSION USER]",
-    {
-      uuid: user.uuid,
-      username: user.username,
-      email: user.primaryEmail,
-    },
-  );
-
   return NextResponse.json(
     {
       authenticated: true,
       user,
     },
     {
+      status: 200,
+
       headers: {
-        "Cache-Control":
-          "no-store",
+        "Cache-Control": "no-store",
       },
     },
   );
