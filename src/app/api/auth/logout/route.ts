@@ -1,7 +1,4 @@
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import {
   AUTH_COOKIES,
@@ -11,105 +8,63 @@ import {
 } from "@/lib/auth/keycloak";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export const dynamic =
-  "force-dynamic";
-
-export async function GET(
-  request: NextRequest,
-) {
+export async function GET(request: NextRequest) {
   try {
-    const config =
-      getAuthConfig();
+    const config = getAuthConfig();
+    const endpoints = getKeycloakEndpoints();
 
-    const endpoints =
-      getKeycloakEndpoints();
-
-    const idToken =
-      request.cookies.get(
-        AUTH_COOKIES.idToken,
-      )?.value;
+    const idToken = request.cookies.get(AUTH_COOKIES.idToken)?.value;
 
     /*
-     * If ID token is unavailable,
-     * perform local logout.
+     * If we have an ID token,
+     * logout from Keycloak too.
      */
-    if (!idToken) {
-      const response =
-        NextResponse.redirect(
-          new URL(
-            "/login",
-            config.appUrl,
-          ),
-        );
+    if (idToken) {
+      const logoutUrl = new URL(endpoints.logout);
 
-      clearAllAuthCookies(
-        response,
+      logoutUrl.searchParams.set("client_id", config.clientId);
+
+      logoutUrl.searchParams.set("id_token_hint", idToken);
+
+      /*
+       * After Keycloak logout,
+       * return to landing page.
+       */
+      logoutUrl.searchParams.set(
+        "post_logout_redirect_uri",
+        `${config.appUrl}/`,
       );
+
+      const response = NextResponse.redirect(logoutUrl);
+
+      clearAllAuthCookies(response);
 
       return response;
     }
 
     /*
-     * Keycloak RP-Initiated Logout
+     * No Keycloak ID token.
+     * Just clear local cookies
+     * and go to landing page.
      */
-    const logoutUrl =
-      new URL(
-        endpoints.logout,
-      );
+    const response = NextResponse.redirect(new URL("/", config.appUrl));
 
-    logoutUrl.searchParams.set(
-      "client_id",
-      config.clientId,
-    );
-
-    logoutUrl.searchParams.set(
-      "id_token_hint",
-      idToken,
-    );
-
-    logoutUrl.searchParams.set(
-      "post_logout_redirect_uri",
-      `${config.appUrl}/login`,
-    );
-
-    const response =
-      NextResponse.redirect(
-        logoutUrl,
-      );
-
-    /*
-     * Delete FoodHub cookies immediately.
-     */
-    clearAllAuthCookies(
-      response,
-    );
+    clearAllAuthCookies(response);
 
     return response;
   } catch (error) {
-    console.error(
-      "[KEYCLOAK LOGOUT ERROR]",
-      error,
-    );
+    console.error("[KEYCLOAK LOGOUT ERROR]", error);
 
-    const response =
-      NextResponse.redirect(
-        new URL(
-          "/login",
-          request.url,
-        ),
-      );
+    const response = NextResponse.redirect(new URL("/", request.url));
 
-    clearAllAuthCookies(
-      response,
-    );
+    clearAllAuthCookies(response);
 
     return response;
   }
 }
 
-export async function POST(
-  request: NextRequest,
-) {
+export async function POST(request: NextRequest) {
   return GET(request);
 }
