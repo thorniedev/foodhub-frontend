@@ -23,9 +23,6 @@ export const menuApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/catalog/menu-items",
         method: "GET",
-
-        // Get more items in one request.
-        // You can remove this if your backend default pagination is enough.
         params: {
           page: 0,
           size: 100,
@@ -67,8 +64,6 @@ export const menuApi = baseApi.injectEndpoints({
       MenuItemDetailQueryArg
     >({
       query: (arg) => {
-        // Keep supporting your old usage:
-        // useGetMenuItemByUuidQuery(uuid)
         if (typeof arg === "string") {
           return {
             url: `/catalog/menu-items/${encodeURIComponent(arg)}/detail`,
@@ -83,23 +78,9 @@ export const menuApi = baseApi.injectEndpoints({
           method: "GET",
 
           params: {
-            ...(sessionUuid
-              ? {
-                  sessionUuid,
-                }
-              : {}),
-
-            ...(latitude !== undefined
-              ? {
-                  latitude,
-                }
-              : {}),
-
-            ...(longitude !== undefined
-              ? {
-                  longitude,
-                }
-              : {}),
+            ...(sessionUuid ? { sessionUuid } : {}),
+            ...(latitude !== undefined ? { latitude } : {}),
+            ...(longitude !== undefined ? { longitude } : {}),
           },
         };
       },

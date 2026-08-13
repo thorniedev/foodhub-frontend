@@ -7,67 +7,202 @@ export interface CatalogCodeName {
   name: string;
 }
 
+export interface CatalogLocalizedCodeName extends CatalogCodeName {
+  localName: string | null;
+}
+
 export interface CatalogMenuItemStore {
   uuid: string;
   name: string;
-  operatingStatus: CatalogOperatingStatus;
-  averageRating: number;
+  localName: string | null;
+
+  logoUrl: string | null;
+  coverImageUrl: string | null;
+
+  /**
+   * The current sample response contains an empty array,
+   * so the inner social-item shape is intentionally not guessed.
+   */
+  social: unknown[];
+
+  addressLine: string | null;
+  district: string | null;
+  city: string | null;
+
   latitude: number;
   longitude: number;
+
+  operatingStatus: CatalogOperatingStatus;
+
+  averageRating: number;
+  totalReviews: number;
 }
 
-export interface CatalogMenuItemFilterData {
+export interface CatalogSeason {
+  code: string;
+  name: string;
+  localName: string | null;
+  suitabilityScore: number;
+  reasonText: string | null;
+}
+
+export interface CatalogEvent {
+  code: string;
+  name: string;
+  localName: string | null;
+  relevanceScore: number;
+  reasonText: string | null;
+}
+
+export interface CatalogSuitableWeather {
+  code: string;
+  name: string;
+  localName: string | null;
+  suitabilityScore: number;
+  reasonText: string | null;
+}
+
+export interface CatalogDietaryType {
+  code: string;
+  name: string;
+  verificationStatus: string;
+}
+
+export interface CatalogMenuItemFood {
+  uuid: string;
+  canonicalName: string;
+
   category: CatalogCodeName;
   cuisine: CatalogCodeName;
+
   spiceLevel: number;
-  mealTypes: CatalogCodeName[];
+
+  /**
+   * Your previous frontend type already treated these as code/name values.
+   * The current response sample contains empty arrays.
+   */
   ageGroups: CatalogCodeName[];
+  mealTypes: CatalogCodeName[];
+
+  seasons: CatalogSeason[];
+  dietaryTypes: CatalogDietaryType[];
+  events: CatalogEvent[];
+  suitableWeather: CatalogSuitableWeather[];
+}
+
+export interface CatalogNutrition {
+  calories: number;
+  fatGrams: number;
+  carbsGrams: number;
+  proteinGrams: number;
+}
+
+export interface CatalogRecommendationScoreBreakdown {
+  mealMatch?: number;
+  cuisineMatch?: number;
+  budgetMatch?: number;
+  distanceMatch?: number;
+  popularity?: number;
+
+  [key: string]: number | undefined;
 }
 
 /**
- * Exact menu-item list shape used by the current catalog endpoint.
+ * The list response you supplied currently returns recommendation: null.
  *
- * The sample response currently contains empty arrays for ingredients,
- * dietaryTypes and allergenDeclarations, so their inner object shapes
- * cannot be inferred safely from that sample alone.
+ * These fields are optional so the detail page can safely display a
+ * personalized recommendation if the detail endpoint supplies one when
+ * sessionUuid/latitude/longitude are provided.
+ */
+export interface CatalogRecommendation {
+  finalScore?: number | null;
+  reasonText?: string | null;
+  reasonCodes?: string[] | null;
+  scoreBreakdown?: CatalogRecommendationScoreBreakdown | null;
+}
+
+export interface CatalogOrigin {
+  countryCode: string;
+  countryName: string;
+  countryLocalName: string | null;
+
+  provinceCode: string | null;
+  provinceName: string | null;
+  provinceLocalName: string | null;
+
+  isTraditional: boolean;
+}
+
+export interface CatalogFilterOption {
+  seasons: CatalogSeason[];
+  events: CatalogEvent[];
+
+  /**
+   * The supplied response contains [] only,
+   * so the inner shape is intentionally not guessed.
+   */
+  provincePopularity: unknown[];
+
+  suitableWeather: CatalogSuitableWeather[];
+}
+
+/**
+ * Exact menu-item shape matching the response supplied in this chat.
  */
 export interface CatalogMenuItem {
-  id: number;
   uuid: string;
-  storeId: number;
-
-  store: CatalogMenuItemStore;
-
-  foodUuid: string | null;
-  foodName: string | null;
+  legacyId: number;
 
   name: string;
   localName: string | null;
-  description: string | null;
 
-  primaryMediaId: number | null;
+  description: string | null;
+  localDescription: string | null;
+
+  /**
+   * Example:
+   * /api/v1/catalog/menu-items/{uuid}/images/1
+   */
   thumbnail: string | null;
+  gallery: string[];
 
   price: number;
   currencyCode: string;
   preparationTimeMinutes: number | null;
 
   availabilityStatus: CatalogAvailabilityStatus;
-  ingredientDataStatus: string;
-
   isFeatured: boolean;
   source: string;
-  createdBy: number | null;
 
-  filterData: CatalogMenuItemFilterData;
+  store: CatalogMenuItemStore;
 
-  availabilityUpdatedAt: string | null;
+  distanceKm: number | null;
+
+  food: CatalogMenuItemFood;
+
+  /**
+   * The current response sample contains [] only.
+   * Keep unknown instead of inventing an object shape.
+   */
+  allergenDeclarations: unknown[];
+
+  ingredients: string[];
+
+  /**
+   * The current response sample contains [] only.
+   */
+  beveragePairings: unknown[];
+
+  nutrition: CatalogNutrition;
+
+  recommendation: CatalogRecommendation | null;
+
   createdAt: string;
   updatedAt: string;
 
-  ingredients: unknown[];
-  dietaryTypes: unknown[];
-  allergenDeclarations: unknown[];
+  origin: CatalogOrigin;
+
+  filterOption: CatalogFilterOption;
 }
 
 export interface CatalogPageSort {

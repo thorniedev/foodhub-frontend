@@ -8,6 +8,8 @@ import { CiHeart } from "react-icons/ci";
 import { FaHeart, FaStar, FaStore } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 
+import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
+
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 /* =========================================================
@@ -18,35 +20,11 @@ type FoodCardProps = {
   food: CatalogMenuItem;
 };
 
-type MediaAccessData = {
-  uuid?: string;
-  url?: string;
-  expiresAt?: string;
-};
-
-type MediaAccessResponse = {
-  success?: boolean;
-
-  uuid?: string;
-  url?: string;
-  expiresAt?: string;
-
-  data?: MediaAccessData;
-  payload?: MediaAccessData;
-};
-
-type DietaryDisplayItem = {
-  code: string;
-  name: string;
-};
-
 /* =========================================================
    CONSTANTS
 ========================================================= */
 
 const FAVORITES_STORAGE_KEY = "foodhub-favorite-menu-items";
-
-const DEFAULT_FOOD_IMAGE = "/Image/default-food.png";
 
 /* =========================================================
    FAVORITES
@@ -77,122 +55,15 @@ function getStoredFavoriteIds(): string[] {
 }
 
 /* =========================================================
-   MEDIA
-========================================================= */
-
-/**
- * Extract UUID from paths such as:
- *
- * /api/v1/media/ef62859e-2048-4ca4-9afd-dfeb566dd2cd
- *
- * /api/media/ef62859e-2048-4ca4-9afd-dfeb566dd2cd
- *
- * /media/ef62859e-2048-4ca4-9afd-dfeb566dd2cd
- */
-function extractMediaUuid(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const match = value.match(/\/media\/([0-9a-fA-F-]{36})(?:\/|$)/);
-
-  return match?.[1] ?? null;
-}
-
-/**
- * Support all of these backend responses:
- *
- * {
- *   "url": "..."
- * }
- *
- * {
- *   "data": {
- *     "url": "..."
- *   }
- * }
- *
- * {
- *   "payload": {
- *     "url": "..."
- *   }
- * }
- */
-function getMediaUrl(response: MediaAccessResponse): string | null {
-  const media = response.payload ?? response.data ?? response;
-
-  if (typeof media.url === "string" && media.url.trim().length > 0) {
-    return media.url.trim();
-  }
-
-  return null;
-}
-
-/* =========================================================
-   DIETARY TYPES
-========================================================= */
-
-function getDietaryTypes(food: CatalogMenuItem): DietaryDisplayItem[] {
-  if (!Array.isArray(food.dietaryTypes)) {
-    return [];
-  }
-
-  return food.dietaryTypes.flatMap((item) => {
-    if (typeof item !== "object" || item === null) {
-      return [];
-    }
-
-    const diet = item as Record<string, unknown>;
-
-    /*
-     * Current backend response:
-     *
-     * {
-     *   dietaryTypeUuid: "...",
-     *   dietaryTypeName: "Halal"
-     * }
-     */
-    if (
-      typeof diet.dietaryTypeUuid === "string" &&
-      typeof diet.dietaryTypeName === "string"
-    ) {
-      return [
-        {
-          code: diet.dietaryTypeUuid,
-          name: diet.dietaryTypeName,
-        },
-      ];
-    }
-
-    /*
-     * Backward-compatible response:
-     *
-     * {
-     *   code: "HALAL",
-     *   name: "Halal"
-     * }
-     */
-    if (typeof diet.code === "string" && typeof diet.name === "string") {
-      return [
-        {
-          code: diet.code,
-          name: diet.name,
-        },
-      ];
-    }
-
-    return [];
-  });
-}
-
-/* =========================================================
    COMPONENT
 ========================================================= */
 
 export default function FoodCard({ food }: FoodCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>(DEFAULT_FOOD_IMAGE);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>(
+    toFrontendApiAssetUrl(food.thumbnail),
+  );
 
   /* =======================================================
      FAVORITE INITIAL STATE
@@ -205,195 +76,11 @@ export default function FoodCard({ food }: FoodCardProps) {
   }, [food.uuid]);
 
   /* =======================================================
-     MEDIA RESOLVER
+     THUMBNAIL
   ======================================================= */
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function resolveThumbnail() {
-      const thumbnail = food.thumbnail?.trim();
-
-      /*
-       * No thumbnail.
-       */
-      if (!thumbnail) {
-        if (!cancelled) {
-          setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-        }
-
-        return;
-      }
-
-      /*
-       * Backend already returned a full URL.
-       *
-       * Example:
-       * https://storage.example.com/image.jpg
-       */
-      if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
-        if (!cancelled) {
-          setThumbnailUrl(thumbnail);
-        }
-
-        return;
-      }
-
-      /*
-       * Try extracting a media UUID.
-       */
-      const mediaUuid = extractMediaUuid(thumbnail);
-
-      /*
-       * No media UUID means it is probably
-       * a normal local/public image.
-       *
-       * Example:
-       * /Image/food-picture/food.jpg
-       */
-      if (!mediaUuid) {
-        if (!cancelled) {
-          setThumbnailUrl(thumbnail);
-        }
-
-        return;
-      }
-
-      /*
-       * Backend thumbnail:
-       *
-       * /api/v1/media/{uuid}
-       *
-       * Browser requests:
-       *
-       * /api/media/{uuid}/access-url
-       *
-       * Next.js proxy forwards:
-       *
-       * /api/v1/media/{uuid}/access-url
-       */
-      const apiUrl = `/api/media/${mediaUuid}/access-url`;
-
-      try {
-        const response = await fetch(apiUrl, {
-          method: "GET",
-
-          credentials: "include",
-
-          headers: {
-            Accept: "application/json",
-          },
-
-          cache: "no-store",
-        });
-
-        /*
-         * Read text first.
-         *
-         * This lets us inspect:
-         * JSON responses,
-         * empty responses,
-         * backend error text.
-         */
-        const responseText = await response.text();
-
-        if (!response.ok) {
-          console.warn(
-            `[FOOD CARD MEDIA] Request failed: ${response.status} ${response.statusText}`,
-          );
-
-          console.warn(`[FOOD CARD MEDIA] Thumbnail: ${thumbnail}`);
-
-          console.warn(`[FOOD CARD MEDIA] UUID: ${mediaUuid}`);
-
-          console.warn(
-            `[FOOD CARD MEDIA] Response: ${responseText || "empty response"}`,
-          );
-
-          if (!cancelled) {
-            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-          }
-
-          return;
-        }
-
-        /*
-         * Empty 200 response is still invalid
-         * because we need the access URL.
-         */
-        if (!responseText.trim()) {
-          console.warn(
-            `[FOOD CARD MEDIA] Empty response for media ${mediaUuid}`,
-          );
-
-          if (!cancelled) {
-            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-          }
-
-          return;
-        }
-
-        let result: MediaAccessResponse;
-
-        try {
-          result = JSON.parse(responseText) as MediaAccessResponse;
-        } catch {
-          console.warn(
-            `[FOOD CARD MEDIA] Invalid JSON response for ${mediaUuid}`,
-          );
-
-          console.warn(`[FOOD CARD MEDIA] Response: ${responseText}`);
-
-          if (!cancelled) {
-            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-          }
-
-          return;
-        }
-
-        const resolvedUrl = getMediaUrl(result);
-
-        if (!resolvedUrl) {
-          console.warn(
-            `[FOOD CARD MEDIA] Backend did not return a URL for ${mediaUuid}`,
-          );
-
-          console.warn(`[FOOD CARD MEDIA] Response: ${responseText}`);
-
-          if (!cancelled) {
-            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-          }
-
-          return;
-        }
-
-        if (!cancelled) {
-          setThumbnailUrl(resolvedUrl);
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-
-        /*
-         * Use console.warn instead of
-         * console.error so Next.js dev overlay
-         * doesn't make this look like a
-         * React runtime error.
-         */
-        console.warn(
-          `[FOOD CARD MEDIA] Could not resolve ${mediaUuid}: ${message}`,
-        );
-
-        if (!cancelled) {
-          setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-        }
-      }
-    }
-
-    void resolveThumbnail();
-
-    return () => {
-      cancelled = true;
-    };
+    setThumbnailUrl(toFrontendApiAssetUrl(food.thumbnail));
   }, [food.thumbnail]);
 
   /* =======================================================
@@ -423,10 +110,6 @@ export default function FoodCard({ food }: FoodCardProps) {
 
     setIsFavorite(nextIds.includes(food.uuid));
 
-    /*
-     * Allow Navbar/favorites page
-     * to update its count.
-     */
     window.dispatchEvent(new Event("foodhub-favorites-updated"));
   };
 
@@ -435,12 +118,13 @@ export default function FoodCard({ food }: FoodCardProps) {
   ======================================================= */
 
   const displayName =
-    food.localName?.trim() ||
-    food.name?.trim() ||
-    food.foodName?.trim() ||
-    "Unnamed food";
+    food.localName?.trim() || food.name?.trim() || "Unnamed food";
 
-  const dietaryTypes = getDietaryTypes(food);
+  /**
+   * IMPORTANT:
+   * dietaryTypes is inside food.food in your current response.
+   */
+  const dietaryTypes = food.food?.dietaryTypes ?? [];
 
   const averageRating = Number(food.store?.averageRating ?? 0);
 
@@ -505,10 +189,6 @@ export default function FoodCard({ food }: FoodCardProps) {
             height={370}
             draggable={false}
             onError={(event) => {
-              /*
-               * Do not repeatedly set the fallback
-               * if the fallback itself fails.
-               */
               const currentSrc = event.currentTarget.src;
 
               if (currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
@@ -610,13 +290,13 @@ export default function FoodCard({ food }: FoodCardProps) {
                 <span
                   key={diet.code}
                   className="
-                      rounded-full
-                      bg-primary-800
-                      px-3
-                      py-1
-                      text-sm
-                      text-gray-100
-                    "
+                    rounded-full
+                    bg-primary-800
+                    px-3
+                    py-1
+                    text-sm
+                    text-gray-100
+                  "
                 >
                   {diet.name}
                 </span>
@@ -625,15 +305,15 @@ export default function FoodCard({ food }: FoodCardProps) {
           )}
 
           {/* ======================================
-              FALLBACK FILTER TAGS
+              FALLBACK TAGS
 
               When dietaryTypes is empty,
-              use category and cuisine.
+              use category and cuisine from food.food.
           ====================================== */}
 
           {dietaryTypes.length === 0 && (
             <div className="flex flex-wrap items-center gap-2">
-              {food.filterData?.category && (
+              {food.food?.category && (
                 <span
                   className="
                     rounded-full
@@ -644,11 +324,11 @@ export default function FoodCard({ food }: FoodCardProps) {
                     text-gray-100
                   "
                 >
-                  {food.filterData.category.name}
+                  {food.food.category.name}
                 </span>
               )}
 
-              {food.filterData?.cuisine && (
+              {food.food?.cuisine && (
                 <span
                   className="
                     rounded-full
@@ -659,7 +339,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                     text-gray-100
                   "
                 >
-                  {food.filterData.cuisine.name}
+                  {food.food.cuisine.name}
                 </span>
               )}
             </div>
