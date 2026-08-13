@@ -5,7 +5,10 @@ import type {
   LocationSearchResult,
 } from "@/types/location-search";
 
-interface GeoapifyResult {
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+interface GeoapifyReverseResult {
   place_id?: string;
 
   name?: string;
@@ -30,8 +33,16 @@ interface GeoapifyResult {
   result_type?: string;
 }
 
-interface GeoapifyResponse {
-  results?: GeoapifyResult[];
+interface GeoapifyJsonResponse {
+  results?: GeoapifyReverseResult[];
+}
+
+interface GeoapifyGeoJsonFeature {
+  properties?: GeoapifyReverseResult;
+}
+
+interface GeoapifyGeoJsonResponse {
+  features?: GeoapifyGeoJsonFeature[];
 }
 
 function toFiniteNumber(value: unknown): number | null {
@@ -48,193 +59,351 @@ function toFiniteNumber(value: unknown): number | null {
   return null;
 }
 
-function normalizeResult(item: GeoapifyResult): LocationSearchResult | null {
-  const latitude = toFiniteNumber(item.lat);
+function isValidCoordinatePair(latitude: number, longitude: number): boolean {
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+}
 
-  const longitude = toFiniteNumber(item.lon);
+function buildAddress(result: GeoapifyReverseResult): string {
+  return (
+    result.formatted?.trim() ||
+    [result.address_line1, result.address_line2].filter(Boolean).join(", ") ||
+    result.name?.trim() ||
+    [result.city, result.district, result.state, result.country]
+      .filter(Boolean)
+      .join(", ") ||
+    "Selected location"
+  );
+}
 
-  if (
-    latitude === null ||
-    longitude === null ||
-    latitude < -90 ||
-    latitude > 90 ||
-    longitude < -180 ||
-    longitude > 180
-  ) {
-    return null;
-  }
+function buildName(result: GeoapifyReverseResult, address: string): string {
+  return (
+    result.name?.trim() ||
+    result.address_line1?.trim() ||
+    result.city?.trim() ||
+    result.district?.trim() ||
+    result.suburb?.trim() ||
+    result.state?.trim() ||
+    address
+  );
+}
 
-  const address =
-    item.formatted?.trim() ||
-    [item.address_line1, item.address_line2].filter(Boolean).join(", ") ||
-    item.name ||
-    "Selected location";
+function normalizeReverseResult(
+  result: GeoapifyReverseResult,
+  requestedLatitude: number,
+  requestedLongitude: number,
+): LocationSearchResult {
+  const responseLatitude = toFiniteNumber(result.lat);
 
-  const name =
-    item.name?.trim() ||
-    item.address_line1?.trim() ||
-    item.city?.trim() ||
-    item.district?.trim() ||
-    item.suburb?.trim() ||
-    item.state?.trim() ||
-    item.country?.trim() ||
-    address;
+  const responseLongitude = toFiniteNumber(result.lon);
+
+  const latitude =
+    responseLatitude !== null && Number.isFinite(responseLatitude)
+      ? responseLatitude
+      : requestedLatitude;
+
+  const longitude =
+    responseLongitude !== null && Number.isFinite(responseLongitude)
+      ? responseLongitude
+      : requestedLongitude;
+
+  const address = buildAddress(result);
+  const name = buildName(result, address);
 
   return {
-    id: item.place_id || `${latitude}-${longitude}`,
+    id:
+      result.place_id?.trim() ||
+      `reverse-${latitude.toFixed(7)}-${longitude.toFixed(7)}`,
 
     name,
-
     address,
 
-    addressLine1: item.address_line1 ?? null,
+    addressLine1: result.address_line1 ?? null,
 
-    addressLine2: item.address_line2 ?? null,
+    addressLine2: result.address_line2 ?? null,
 
-    city: item.city ?? null,
+    city: result.city ?? null,
 
-    district: item.district ?? item.suburb ?? null,
+    district: result.district ?? result.suburb ?? null,
 
-    county: item.county ?? null,
+    county: result.county ?? null,
 
-    state: item.state ?? null,
+    state: result.state ?? null,
 
-    postcode: item.postcode ?? null,
+    postcode: result.postcode ?? null,
 
-    country: item.country ?? null,
+    country: result.country ?? null,
 
-    countryCode: item.country_code ?? null,
+    countryCode: result.country_code?.trim().toLowerCase() ?? null,
 
     latitude,
-
     longitude,
 
-    type: item.result_type ?? null,
+    type: result.result_type ?? null,
   };
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
+function createCoordinateFallbackPlace(
+  latitude: number,
+  longitude: number,
+): LocationSearchResult {
+  const coordinateLabel = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 
-    const latitude = Number(searchParams.get("lat"));
+  return {
+    id: `coordinate-${latitude.toFixed(7)}-${longitude.toFixed(7)}`,
 
-    const longitude = Number(searchParams.get("lng"));
+    name: "ទីតាំងដែលបានជ្រើស",
+    address: coordinateLabel,
 
-    if (
-      !Number.isFinite(latitude) ||
-      !Number.isFinite(longitude) ||
-      latitude < -90 ||
-      latitude > 90 ||
-      longitude < -180 ||
-      longitude > 180
-    ) {
-      return NextResponse.json(
-        {
-          place: null,
+    addressLine1: null,
+    addressLine2: null,
 
-          message: "Latitude or longitude is invalid.",
-        } satisfies LocationReverseResponse,
-        {
-          status: 400,
-        },
-      );
-    }
+    city: null,
+    district: null,
+    county: null,
+    state: null,
+    postcode: null,
 
-    const apiKey = process.env.GEOAPIFY_API_KEY;
+    country: null,
+    countryCode: null,
 
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          place: null,
+    latitude,
+    longitude,
 
-          message: "GEOAPIFY_API_KEY is not configured.",
-        } satisfies LocationReverseResponse,
-        {
-          status: 500,
-        },
-      );
-    }
+    type: "coordinates",
+  };
+}
 
-    const params = new URLSearchParams({
-      lat: String(latitude),
+function extractResults(data: unknown): GeoapifyReverseResult[] {
+  if (typeof data !== "object" || data === null) {
+    return [];
+  }
 
-      lon: String(longitude),
+  const record = data as Record<string, unknown>;
 
-      format: "json",
-
-      limit: "1",
-
-      apiKey,
-    });
-
-    const geoapifyResponse = await fetch(
-      `https://api.geoapify.com/v1/geocode/reverse?${params.toString()}`,
-      {
-        method: "GET",
-
-        headers: {
-          Accept: "application/json",
-        },
-
-        cache: "no-store",
-      },
+  /*
+   * format=json:
+   * {
+   *   results: [...]
+   * }
+   */
+  if (Array.isArray(record.results)) {
+    return record.results.filter(
+      (value): value is GeoapifyReverseResult =>
+        typeof value === "object" && value !== null,
     );
+  }
 
-    if (!geoapifyResponse.ok) {
-      const errorText = await geoapifyResponse.text();
+  /*
+   * GeoJSON/default compatibility:
+   * {
+   *   features: [
+   *     { properties: {...} }
+   *   ]
+   * }
+   */
+  if (Array.isArray(record.features)) {
+    return record.features.flatMap((feature) => {
+      if (typeof feature !== "object" || feature === null) {
+        return [];
+      }
 
-      console.error("[GEOAPIFY REVERSE ERROR]", {
-        status: geoapifyResponse.status,
+      const properties = (feature as Record<string, unknown>).properties;
 
-        response: errorText,
-      });
+      return typeof properties === "object" && properties !== null
+        ? [properties as GeoapifyReverseResult]
+        : [];
+    });
+  }
 
-      return NextResponse.json(
-        {
-          place: null,
+  return [];
+}
 
-          message: "មិនអាចរកព័ត៌មានអាសយដ្ឋានទីតាំងនេះបានទេ។",
-        } satisfies LocationReverseResponse,
-        {
-          status: geoapifyResponse.status,
-        },
-      );
-    }
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
 
-    const data = (await geoapifyResponse.json()) as GeoapifyResponse;
+  const latitude = Number(searchParams.get("lat"));
 
-    const firstResult = Array.isArray(data.results)
-      ? data.results[0]
-      : undefined;
+  /*
+   * Frontend currently sends `lng`.
+   * Geoapify itself expects `lon`.
+   *
+   * Accept both at our internal API
+   * boundary to avoid frontend coupling.
+   */
+  const longitude = Number(searchParams.get("lng") ?? searchParams.get("lon"));
 
-    if (!firstResult) {
-      return NextResponse.json({
-        place: null,
-
-        message: "រកមិនឃើញព័ត៌មានអាសយដ្ឋានសម្រាប់ទីតាំងនេះ។",
-      } satisfies LocationReverseResponse);
-    }
-
-    const place = normalizeResult(firstResult);
-
-    return NextResponse.json({
-      place,
-
-      message: place ? null : "រកមិនឃើញព័ត៌មានអាសយដ្ឋានសម្រាប់ទីតាំងនេះ។",
-    } satisfies LocationReverseResponse);
-  } catch (error) {
-    console.error("[LOCATION REVERSE ERROR]", error);
-
+  if (!isValidCoordinatePair(latitude, longitude)) {
     return NextResponse.json(
       {
         place: null,
-
-        message: "មានបញ្ហាក្នុងការរកព័ត៌មានអាសយដ្ឋាន។",
+        message: "កូអរដោនេទីតាំងមិនត្រឹមត្រូវ។",
       } satisfies LocationReverseResponse,
       {
-        status: 500,
+        status: 400,
       },
     );
+  }
+
+  const apiKey = process.env.GEOAPIFY_API_KEY?.trim();
+
+  if (!apiKey) {
+    console.error("[MAP REVERSE] GEOAPIFY_API_KEY is missing");
+
+    return NextResponse.json(
+      {
+        place: createCoordinateFallbackPlace(latitude, longitude),
+        message: "GEOAPIFY_API_KEY is not configured. Using coordinates only.",
+      } satisfies LocationReverseResponse,
+      {
+        /*
+         * Coordinate selection is still
+         * valid even without a label.
+         */
+        status: 200,
+      },
+    );
+  }
+
+  const geoapifyParams = new URLSearchParams({
+    lat: String(latitude),
+
+    /*
+     * IMPORTANT:
+     * Geoapify parameter is `lon`,
+     * not `lng`.
+     */
+    lon: String(longitude),
+
+    format: "json",
+
+    /*
+     * Khmer address labels where
+     * supported by Geoapify.
+     */
+    lang: "km",
+
+    limit: "1",
+
+    apiKey,
+  });
+
+  const geoapifyUrl = `https://api.geoapify.com/v1/geocode/reverse?${geoapifyParams.toString()}`;
+
+  try {
+    const geoapifyResponse = await fetch(geoapifyUrl, {
+      method: "GET",
+
+      headers: {
+        Accept: "application/json",
+      },
+
+      cache: "no-store",
+    });
+
+    const responseText = await geoapifyResponse.text();
+
+    if (!geoapifyResponse.ok) {
+      console.error("[GEOAPIFY REVERSE ERROR]", {
+        status: geoapifyResponse.status,
+
+        statusText: geoapifyResponse.statusText,
+
+        response: responseText,
+      });
+
+      /*
+       * Reverse geocoding is only
+       * enrichment. The coordinates
+       * themselves remain usable.
+       */
+      return NextResponse.json(
+        {
+          place: createCoordinateFallbackPlace(latitude, longitude),
+
+          message: "មិនអាចរកឈ្មោះអាសយដ្ឋានបានទេ។ កំពុងប្រើកូអរដោនេដែលបានជ្រើស។",
+        } satisfies LocationReverseResponse,
+        {
+          status: 200,
+        },
+      );
+    }
+
+    let parsed: unknown;
+
+    try {
+      parsed = responseText.trim() ? JSON.parse(responseText) : {};
+    } catch (error) {
+      console.error("[MAP REVERSE] Invalid Geoapify JSON", {
+        response: responseText,
+        error,
+      });
+
+      return NextResponse.json({
+        place: createCoordinateFallbackPlace(latitude, longitude),
+
+        message:
+          "មិនអាចអានព័ត៌មានអាសយដ្ឋានបានទេ។ កំពុងប្រើកូអរដោនេដែលបានជ្រើស។",
+      } satisfies LocationReverseResponse);
+    }
+
+    const results = extractResults(parsed);
+
+    const firstResult = results[0];
+
+    if (!firstResult) {
+      /*
+       * This is NOT an application error.
+       * A map coordinate can be perfectly
+       * valid even when no nearby address
+       * exists in the geocoder.
+       */
+      return NextResponse.json({
+        place: createCoordinateFallbackPlace(latitude, longitude),
+
+        message:
+          "រកមិនឃើញឈ្មោះអាសយដ្ឋានជាក់លាក់។ កំពុងប្រើកូអរដោនេដែលបានជ្រើស។",
+      } satisfies LocationReverseResponse);
+    }
+
+    const place = normalizeReverseResult(firstResult, latitude, longitude);
+
+    console.log("[MAP REVERSE SUCCESS]", {
+      requested: {
+        latitude,
+        longitude,
+      },
+
+      place: {
+        name: place.name,
+        country: place.country,
+        countryCode: place.countryCode,
+      },
+    });
+
+    return NextResponse.json({
+      place,
+      message: null,
+    } satisfies LocationReverseResponse);
+  } catch (error) {
+    console.error("[MAP REVERSE CONNECTION ERROR]", error);
+
+    /*
+     * A temporary Geoapify/network
+     * problem should not stop the user
+     * from selecting a valid point.
+     */
+    return NextResponse.json({
+      place: createCoordinateFallbackPlace(latitude, longitude),
+
+      message:
+        "សេវាអាសយដ្ឋានមិនអាចប្រើបានបណ្ដោះអាសន្ន។ កំពុងប្រើកូអរដោនេដែលបានជ្រើស។",
+    } satisfies LocationReverseResponse);
   }
 }

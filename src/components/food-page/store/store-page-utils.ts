@@ -166,9 +166,13 @@ export function applyStoreFilters(
       case "name-asc":
         return first.storeName.localeCompare(second.storeName);
       case "rating":
-        return Number(second.averageRating ?? 0) - Number(first.averageRating ?? 0);
+        return (
+          Number(second.averageRating ?? 0) - Number(first.averageRating ?? 0)
+        );
       case "reviews":
-        return Number(second.totalReviews ?? 0) - Number(first.totalReviews ?? 0);
+        return (
+          Number(second.totalReviews ?? 0) - Number(first.totalReviews ?? 0)
+        );
       case "default":
       default:
         return 0;
@@ -233,9 +237,7 @@ function readUrlCandidate(value: unknown): string | null {
 
   const url = value.trim();
 
-  return url.startsWith("http://") || url.startsWith("https://")
-    ? url
-    : null;
+  return url.startsWith("http://") || url.startsWith("https://") ? url : null;
 }
 
 /**

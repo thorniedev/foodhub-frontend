@@ -238,10 +238,9 @@ function GridStoreCard({
         <div className="relative h-[185px] w-full bg-primary-50 sm:h-[195px] lg:h-[185px] 2xl:h-[175px]">
           <StoreImage store={store} />
         </div>
-
-        <div className="absolute line-clamp-1 right-2 top-2">
+        {/* <div className="absolute line-clamp-1 right-2 top-2">
           <FavoriteButton storeName={displayName} />
-        </div>
+        </div> */}
       </div>
 
       <div className="min-w-0 px-1 pb-1 pt-4">

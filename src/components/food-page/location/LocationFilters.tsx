@@ -314,10 +314,18 @@ export default function LocationFilters({
   const categoryOptions = useMemo(
     () =>
       getUniqueOptions(
-        menuItems.map((item) => ({
-          code: item.food.category.code,
-          name: item.food.category.name,
-        })),
+        menuItems.flatMap((item) => {
+          const category = item.food?.category;
+
+          return category?.code && category?.name
+            ? [
+                {
+                  code: category.code,
+                  name: category.name,
+                },
+              ]
+            : [];
+        }),
       ),
     [menuItems],
   );
@@ -325,10 +333,18 @@ export default function LocationFilters({
   const cuisineOptions = useMemo(
     () =>
       getUniqueOptions(
-        menuItems.map((item) => ({
-          code: item.food.cuisine.code,
-          name: item.food.cuisine.name,
-        })),
+        menuItems.flatMap((item) => {
+          const cuisine = item.food?.cuisine;
+
+          return cuisine?.code && cuisine?.name
+            ? [
+                {
+                  code: cuisine.code,
+                  name: cuisine.name,
+                },
+              ]
+            : [];
+        }),
       ),
     [menuItems],
   );
@@ -337,7 +353,7 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.mealTypes.map((option) => ({
+          (item.mealTypes ?? []).map((option) => ({
             code: option.code,
             name: option.name,
           })),
@@ -350,7 +366,7 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.dietaryTypes.map((option) => ({
+          (item.dietaryTypes ?? []).map((option) => ({
             code: option.code,
             name: option.name,
           })),
@@ -363,7 +379,7 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.food.ageGroups.map((option) => ({
+          (item.food?.ageGroups ?? []).map((option) => ({
             code: option.code,
             name: option.name,
           })),
@@ -376,10 +392,26 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.allergenDeclarations.map((option) => ({
-            code: option.code,
-            name: option.name,
-          })),
+          (item.allergenDeclarations ?? []).flatMap((option) => {
+            if (!option) {
+              return [];
+            }
+
+            const code =
+              typeof option.code === "string" ? option.code.trim() : "";
+
+            const name =
+              typeof option.name === "string" ? option.name.trim() : code;
+
+            return code && name
+              ? [
+                  {
+                    code,
+                    name,
+                  },
+                ]
+              : [];
+          }),
         ),
       ),
     [menuItems],
@@ -389,15 +421,24 @@ export default function LocationFilters({
     const map = new Map<string, FilterOption>();
 
     menuItems.forEach((item) => {
-      const existing = map.get(item.store.uuid);
+      const uuid = item.store?.uuid?.trim();
+      const name =
+        item.store?.localName?.trim() || item.store?.name?.trim() || "";
+
+      if (!uuid || !name) {
+        return;
+      }
+
+      const existing = map.get(uuid);
+
       if (existing) {
         existing.count += 1;
         return;
       }
 
-      map.set(item.store.uuid, {
-        code: item.store.uuid,
-        name: item.store.localName || item.store.name,
+      map.set(uuid, {
+        code: uuid,
+        name,
         count: 1,
       });
     });
@@ -411,10 +452,22 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.ingredients.map((ingredient) => ({
-            code: ingredient,
-            name: ingredient,
-          })),
+          (item.ingredients ?? []).flatMap((ingredient) => {
+            if (typeof ingredient !== "string") {
+              return [];
+            }
+
+            const value = ingredient.trim();
+
+            return value
+              ? [
+                  {
+                    code: value,
+                    name: value,
+                  },
+                ]
+              : [];
+          }),
         ),
       ),
     [menuItems],

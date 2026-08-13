@@ -39,9 +39,7 @@ function getRating(store: FoodStore): number {
   return Number.isFinite(store.averageRating) ? store.averageRating : 0;
 }
 
-function getFeaturedStores(
-  stores: FoodStore[],
-): FoodStore[] {
+function getFeaturedStores(stores: FoodStore[]): FoodStore[] {
   /**
    * List response has no accountStatus/reviewStatus.
    * Rank using only fields that actually exist on StoreListItem.
@@ -49,29 +47,19 @@ function getFeaturedStores(
   return [...stores]
     .sort((first, second) => {
       const openNowDifference =
-        Number(second.isOpenNow) -
-        Number(first.isOpenNow);
+        Number(second.isOpenNow) - Number(first.isOpenNow);
 
       if (openNowDifference !== 0) {
         return openNowDifference;
       }
 
-      const ratingDifference =
-        getRating(second) -
-        getRating(first);
+      const ratingDifference = getRating(second) - getRating(first);
 
       if (ratingDifference !== 0) {
         return ratingDifference;
       }
 
-      return (
-        Number(
-          second.totalReviews ?? 0,
-        ) -
-        Number(
-          first.totalReviews ?? 0,
-        )
-      );
+      return Number(second.totalReviews ?? 0) - Number(first.totalReviews ?? 0);
     })
     .slice(0, MAX_FEATURED_STORES);
 }
@@ -81,22 +69,11 @@ function getDisplayName(store: FoodStore): string {
 }
 
 function getAddressLabel(store: FoodStore): string {
-  const values = [
-    store.addressLine,
-    store.city,
-    store.province,
-  ]
-    .map((value) =>
-      typeof value === "string"
-        ? value.trim()
-        : "",
-    )
+  const values = [store.addressLine, store.city, store.province]
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
     .filter(Boolean);
 
-  return (
-    Array.from(new Set(values)).join(", ") ||
-    "មិនមានអាសយដ្ឋាន"
-  );
+  return Array.from(new Set(values)).join(", ") || "មិនមានអាសយដ្ឋាន";
 }
 
 function FeaturedStoreBanner({
@@ -110,18 +87,13 @@ function FeaturedStoreBanner({
 
   const addressLabel = getAddressLabel(store);
 
-  const statusLabel =
-    getStoreOpenNowLabel(store);
+  const statusLabel = getStoreOpenNowLabel(store);
 
-  const distanceLabel =
-    formatStoreDistance(
-      distanceKm ??
-        getBackendDistanceKm(store),
-    );
+  const distanceLabel = formatStoreDistance(
+    distanceKm ?? getBackendDistanceKm(store),
+  );
 
-
-  const isOpen =
-    store.isOpenNow === true;
+  const isOpen = store.isOpenNow === true;
 
   const isClosed = !isOpen;
 
@@ -660,7 +632,7 @@ export default function StoreGrid({
             grid grid-cols-1
             gap-5
 
-            md:grid-cols-2
+            md:grid-cols-3
             2xl:grid-cols-3
           "
         >

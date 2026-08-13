@@ -202,47 +202,101 @@ export default function LocationPickerModal({
 
     setResolvingPlace(true);
 
+    /*
+     * Always keep a coordinate label.
+     * Reverse geocoding is enrichment,
+     * not a requirement for selecting
+     * a valid map point.
+     */
+    const coordinateLabel = `${Number(location.latitude).toFixed(6)}, ${Number(
+      location.longitude,
+    ).toFixed(6)}`;
+
     try {
       const params = new URLSearchParams({
         lat: String(location.latitude),
 
+        /*
+         * Internal FoodHub API accepts
+         * lng and converts it to Geoapify's
+         * required `lon` parameter.
+         */
         lng: String(location.longitude),
       });
 
       const response = await fetch(`/api/maps/reverse?${params.toString()}`, {
         method: "GET",
 
+        headers: {
+          Accept: "application/json",
+        },
+
         signal: controller.signal,
+
+        cache: "no-store",
       });
 
-      const data = (await response.json()) as LocationReverseResponse;
+      let data: LocationReverseResponse | null = null;
 
-      if (!response.ok) {
-        throw new Error(data.message || "មិនអាចរកព័ត៌មានអាសយដ្ឋានបានទេ។");
+      try {
+        data = (await response.json()) as LocationReverseResponse;
+      } catch {
+        /*
+         * Keep the selected point even
+         * if the server response cannot
+         * be parsed.
+         */
       }
 
-      /*
-       * Ignore an old request
-       * if a newer one started.
-       */
       if (reverseRequestRef.current !== controller) {
         return;
       }
 
-      setSelectedPlace(data.place);
+      if (!response.ok) {
+        console.warn("[LOCATION REVERSE LOOKUP FAILED]", {
+          status: response.status,
 
-      setDraftLabel(data.place?.address ?? data.place?.name ?? null);
+          message: data?.message ?? response.statusText,
+
+          location,
+        });
+
+        setSelectedPlace(null);
+
+        setDraftLabel(coordinateLabel);
+
+        return;
+      }
+
+      if (data?.place) {
+        setSelectedPlace(data.place);
+
+        setDraftLabel(data.place.address || data.place.name || coordinateLabel);
+
+        return;
+      }
+
+      /*
+       * Valid coordinates but the
+       * geocoder did not find an address.
+       */
+      setSelectedPlace(null);
+
+      setDraftLabel(coordinateLabel);
     } catch (error) {
       if (isAbortError(error)) {
         return;
       }
 
-      console.error("[LOCATION REVERSE LOOKUP]", error);
+      console.warn("[LOCATION REVERSE LOOKUP NETWORK ERROR]", error);
 
       if (reverseRequestRef.current === controller) {
         setSelectedPlace(null);
 
-        setDraftLabel(null);
+        /*
+         * Do NOT erase the user's point.
+         */
+        setDraftLabel(coordinateLabel);
       }
     } finally {
       if (reverseRequestRef.current === controller) {

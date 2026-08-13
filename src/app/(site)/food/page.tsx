@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   IoChevronBack,
   IoChevronDown,
+  IoFilterOutline,
   IoNutritionOutline,
   IoPricetagOutline,
   IoRefresh,
@@ -806,6 +807,17 @@ type FilterSidebarProps = {
   storeOptions: StoreFilterOption[];
   ingredientOptions: FilterOption[];
   hasPositiveRatingData: boolean;
+
+  /**
+   * Desktop:
+   * - sticky collapsible sidebar
+   *
+   * Mobile/tablet:
+   * - full-height content inside drawer
+   */
+  mobile?: boolean;
+
+  onClose?: () => void;
 };
 
 function FilterSidebar({
@@ -824,6 +836,8 @@ function FilterSidebar({
   storeOptions,
   ingredientOptions,
   hasPositiveRatingData,
+  mobile = false,
+  onClose,
 }: FilterSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -855,6 +869,13 @@ function FilterSidebar({
 
   const activeFilterCount = countActiveFilters(filters);
 
+  /**
+   * Mobile filter drawer should always show
+   * the complete filter UI. Collapse mode is
+   * desktop-only.
+   */
+  const isCollapsed = mobile ? false : collapsed;
+
   const toggleSection = (key: string) => {
     setOpenSections((previous) => ({
       ...previous,
@@ -869,30 +890,38 @@ function FilterSidebar({
   return (
     <motion.aside
       animate={{
-        width: collapsed ? 78 : 300,
+        width: mobile ? "100%" : isCollapsed ? 78 : 300,
       }}
       transition={{
         type: "spring",
         stiffness: 320,
         damping: 34,
       }}
-      className="sticky top-28 hidden h-[calc(100vh-8rem)] shrink-0 self-start lg:block"
+      className={
+        mobile
+          ? "h-full w-full"
+          : "sticky top-28 hidden h-[calc(100vh-8rem)] shrink-0 self-start lg:block"
+      }
     >
-      <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm">
+      <div
+        className={`flex h-full flex-col overflow-hidden bg-white ${
+          mobile ? "" : "rounded-[24px] border border-gray-100 shadow-sm"
+        }`}
+      >
         {/* Header */}
 
         <div
           className={`shrink-0 border-b border-gray-100 bg-white ${
-            collapsed ? "p-3" : "p-5"
+            isCollapsed ? "p-3" : "p-5"
           }`}
         >
           <div
             className={`flex items-center ${
-              collapsed ? "justify-center" : "justify-between"
+              isCollapsed ? "justify-center" : "justify-between"
             }`}
           >
             <AnimatePresence mode="wait" initial={false}>
-              {!collapsed && (
+              {!isCollapsed && (
                 <motion.div
                   key="filter-heading"
                   initial={{
@@ -927,29 +956,40 @@ function FilterSidebar({
               )}
             </AnimatePresence>
 
-            <motion.button
-              type="button"
-              onClick={() => setCollapsed((previous) => !previous)}
-              whileHover={{
-                scale: 1.06,
-              }}
-              whileTap={{
-                scale: 0.9,
-              }}
-              aria-label={collapsed ? "Expand filters" : "Collapse filters"}
-              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
-            >
-              <motion.span
-                animate={{
-                  rotate: collapsed ? 180 : 0,
-                }}
+            {mobile ? (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close food filters"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-[26px] leading-none text-gray-500 transition hover:bg-gray-100"
               >
-                <IoChevronBack className="text-[21px]" />
-              </motion.span>
-            </motion.button>
+                ×
+              </button>
+            ) : (
+              <motion.button
+                type="button"
+                onClick={() => setCollapsed((previous) => !previous)}
+                whileHover={{
+                  scale: 1.06,
+                }}
+                whileTap={{
+                  scale: 0.9,
+                }}
+                aria-label={isCollapsed ? "Expand filters" : "Collapse filters"}
+                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+              >
+                <motion.span
+                  animate={{
+                    rotate: isCollapsed ? 180 : 0,
+                  }}
+                >
+                  <IoChevronBack className="text-[21px]" />
+                </motion.span>
+              </motion.button>
+            )}
           </div>
 
-          {!collapsed && (
+          {!isCollapsed && (
             <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2.5">
               <p className="text-[16px] text-gray-500">
                 {activeFilterCount} តម្រងបានជ្រើស
@@ -967,7 +1007,7 @@ function FilterSidebar({
           )}
         </div>
 
-        {collapsed ? (
+        {isCollapsed ? (
           <div className="flex flex-1 flex-col items-center gap-3 overflow-y-auto px-3 py-4">
             {[
               {
@@ -1819,6 +1859,8 @@ export default function FoodPage() {
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
   const {
     data: menuItems = [],
     isLoading,
@@ -2016,6 +2058,44 @@ export default function FoodPage() {
   const activeFilterCount = countActiveFilters(filters);
 
   /* =======================================================
+     MOBILE FILTER DRAWER
+  ======================================================= */
+
+  useEffect(() => {
+    if (!mobileFiltersOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileFiltersOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [mobileFiltersOpen]);
+
+  /**
+   * Do not leave the Food filter drawer
+   * open when switching to Location/Store.
+   */
+  useEffect(() => {
+    if (activePageTab !== "food") {
+      setMobileFiltersOpen(false);
+    }
+  }, [activePageTab]);
+
+  /* =======================================================
      SHARED SEARCH
   ======================================================= */
 
@@ -2124,6 +2204,43 @@ export default function FoodPage() {
                 <section className="rounded-full border border-gray-100 bg-white p-1 shadow-sm">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     {renderSearch()}
+
+                    {/* Mobile / tablet Food filter button */}
+                    <button
+                      type="button"
+                      onClick={() => setMobileFiltersOpen(true)}
+                      className="
+                        relative
+                        flex
+                        min-h-[56px]
+                        shrink-0
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-full
+                        bg-primary-800
+                        px-5
+                        text-[16px]
+                        font-semibold
+                        text-white
+                        shadow-sm
+                        transition
+                        hover:bg-primary-700
+                        active:scale-[0.98]
+                        lg:hidden
+                      "
+                      aria-label="Open food filters"
+                    >
+                      <IoFilterOutline className="text-[21px]" />
+
+                      <span>តម្រង</span>
+
+                      {activeFilterCount > 0 && (
+                        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary-500 px-1.5 text-[14px] font-bold text-white">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </button>
 
                     <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
                       <FaStar className="text-[20px] text-yellow-500" />
@@ -2247,6 +2364,109 @@ export default function FoodPage() {
             )}
 
             {/* =================================================
+                MOBILE / TABLET FOOD FILTER DRAWER
+            ================================================= */}
+
+            <AnimatePresence>
+              {activePageTab === "food" && mobileFiltersOpen && (
+                <motion.div
+                  key="food-mobile-filter-drawer"
+                  initial={{
+                    opacity: 0,
+                  }}
+                  animate={{
+                    opacity: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                  }}
+                  className="fixed inset-0 z-[120] lg:hidden"
+                >
+                  {/* Overlay */}
+
+                  <motion.button
+                    type="button"
+                    aria-label="Close food filters"
+                    initial={{
+                      opacity: 0,
+                    }}
+                    animate={{
+                      opacity: 1,
+                    }}
+                    exit={{
+                      opacity: 0,
+                    }}
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="absolute inset-0 cursor-default bg-black/45 backdrop-blur-[2px]"
+                  />
+
+                  {/* Drawer */}
+
+                  <motion.div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Food filters"
+                    initial={{
+                      y: "100%",
+                    }}
+                    animate={{
+                      y: 0,
+                    }}
+                    exit={{
+                      y: "100%",
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 320,
+                      damping: 32,
+                    }}
+                    className="
+                        absolute
+                        inset-x-0
+                        bottom-0
+                        h-[90dvh]
+                        overflow-hidden
+                        rounded-t-[30px]
+                        bg-white
+                        shadow-2xl
+
+                        sm:left-auto
+                        sm:right-0
+                        sm:top-0
+                        sm:h-full
+                        sm:w-[390px]
+                        sm:rounded-none
+                        sm:rounded-l-[30px]
+                      "
+                  >
+                    <FilterSidebar
+                      mobile
+                      filters={filters}
+                      onChange={setFilters}
+                      categoryOptions={categoryOptions}
+                      cuisineOptions={cuisineOptions}
+                      mealTypeOptions={mealTypeOptions}
+                      dietaryTypeOptions={dietaryTypeOptions}
+                      ageGroupOptions={ageGroupOptions}
+                      seasonOptions={seasonOptions}
+                      eventOptions={eventOptions}
+                      weatherOptions={weatherOptions}
+                      originCountryOptions={originCountryOptions}
+                      allergenOptions={allergenOptions}
+                      storeOptions={storeOptions}
+                      ingredientOptions={ingredientOptions}
+                      hasPositiveRatingData={hasPositiveRatingData}
+                      onClose={() => setMobileFiltersOpen(false)}
+                    />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* =================================================
                 LOCATION TAB
 
                 IMPORTANT:
@@ -2278,14 +2498,14 @@ export default function FoodPage() {
                   ease: "easeOut",
                 }}
               >
-                {/* <section className="mb-4 rounded-full border border-gray-100 bg-white p-1 shadow-sm">
+                <section className="mb-4 rounded-full border border-gray-100 bg-white p-1 shadow-sm">
                   {renderSearch()}
                 </section>
 
                 <LocationContent
                   menuItems={menuItems}
                   searchQuery={searchInput}
-                /> */}
+                />
               </motion.div>
             )}
 

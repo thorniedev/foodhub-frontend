@@ -389,8 +389,7 @@ export default function StoreFilters({
       key: "operatingStatus",
       label: "ស្ថានភាពហាង",
       icon: <FaStore />,
-      visible:
-        operatingStatusOptions.length > 0,
+      visible: operatingStatusOptions.length > 0,
     },
     {
       key: "city",
@@ -402,8 +401,7 @@ export default function StoreFilters({
       key: "province",
       label: "ខេត្ត",
       icon: <IoLocationOutline />,
-      visible:
-        provinceOptions.length > 0,
+      visible: provinceOptions.length > 0,
     },
     {
       key: "rating",
@@ -691,19 +689,14 @@ export default function StoreFilters({
               title="ស្ថានភាពឥឡូវនេះ"
               icon={<FaStore />}
               isOpen={openSections.status}
-              onToggle={() =>
-                toggleSection("status")
-              }
+              onToggle={() => toggleSection("status")}
             >
               <div className="space-y-1">
                 <CheckboxOption
                   label="បង្ហាញតែហាងដែលកំពុងបើកឥឡូវនេះ"
                   checked={filters.openNowOnly}
                   onChange={() =>
-                    updateFilter(
-                      "openNowOnly",
-                      !filters.openNowOnly,
-                    )
+                    updateFilter("openNowOnly", !filters.openNowOnly)
                   }
                 />
               </div>
@@ -717,29 +710,16 @@ export default function StoreFilters({
               <FilterSection
                 title="ស្ថានភាពប្រតិបត្តិការ"
                 icon={<FaStore />}
-                isOpen={
-                  openSections.operatingStatus
-                }
-                onToggle={() =>
-                  toggleSection(
-                    "operatingStatus",
-                  )
-                }
+                isOpen={openSections.operatingStatus}
+                onToggle={() => toggleSection("operatingStatus")}
               >
                 <OptionList
-                  options={
-                    operatingStatusOptions
-                  }
-                  selectedValues={
-                    filters.operatingStatuses
-                  }
+                  options={operatingStatusOptions}
+                  selectedValues={filters.operatingStatuses}
                   onToggle={(value) =>
                     updateFilter(
                       "operatingStatuses",
-                      toggleStoreFilterValue(
-                        filters.operatingStatuses,
-                        value,
-                      ),
+                      toggleStoreFilterValue(filters.operatingStatuses, value),
                     )
                   }
                 />
@@ -755,22 +735,15 @@ export default function StoreFilters({
                 title="ទីក្រុង"
                 icon={<IoLocationOutline />}
                 isOpen={openSections.city}
-                onToggle={() =>
-                  toggleSection("city")
-                }
+                onToggle={() => toggleSection("city")}
               >
                 <OptionList
                   options={cityOptions}
-                  selectedValues={
-                    filters.cities
-                  }
+                  selectedValues={filters.cities}
                   onToggle={(value) =>
                     updateFilter(
                       "cities",
-                      toggleStoreFilterValue(
-                        filters.cities,
-                        value,
-                      ),
+                      toggleStoreFilterValue(filters.cities, value),
                     )
                   }
                 />
@@ -785,25 +758,16 @@ export default function StoreFilters({
               <FilterSection
                 title="ខេត្ត / រាជធានី"
                 icon={<IoLocationOutline />}
-                isOpen={
-                  openSections.province
-                }
-                onToggle={() =>
-                  toggleSection("province")
-                }
+                isOpen={openSections.province}
+                onToggle={() => toggleSection("province")}
               >
                 <OptionList
                   options={provinceOptions}
-                  selectedValues={
-                    filters.provinces
-                  }
+                  selectedValues={filters.provinces}
                   onToggle={(value) =>
                     updateFilter(
                       "provinces",
-                      toggleStoreFilterValue(
-                        filters.provinces,
-                        value,
-                      ),
+                      toggleStoreFilterValue(filters.provinces, value),
                     )
                   }
                 />
@@ -819,30 +783,20 @@ export default function StoreFilters({
                 title="ការវាយតម្លៃអប្បបរមា"
                 icon={<FaStar />}
                 isOpen={openSections.rating}
-                onToggle={() =>
-                  toggleSection("rating")
-                }
+                onToggle={() => toggleSection("rating")}
               >
                 <div className="flex flex-wrap gap-2">
-                  {RATING_OPTIONS.map(
-                    (option) => {
-                      const selected =
-                        filters.minimumRating ===
-                        option.value;
+                  {RATING_OPTIONS.map((option) => {
+                    const selected = filters.minimumRating === option.value;
 
-                      return (
-                        <button
-                          key={String(
-                            option.value,
-                          )}
-                          type="button"
-                          onClick={() =>
-                            updateFilter(
-                              "minimumRating",
-                              option.value,
-                            )
-                          }
-                          className={`
+                    return (
+                      <button
+                        key={String(option.value)}
+                        type="button"
+                        onClick={() =>
+                          updateFilter("minimumRating", option.value)
+                        }
+                        className={`
                             min-h-[42px]
                             rounded-full
                             border px-3.5 py-2
@@ -856,12 +810,11 @@ export default function StoreFilters({
                                 : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50"
                             }
                           `}
-                        >
-                          {option.label}
-                        </button>
-                      );
-                    },
-                  )}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </FilterSection>
             )}

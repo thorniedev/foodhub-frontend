@@ -13,10 +13,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm } from "@/lib/location/geo";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
-import type {
-  FoodStore,
-  StorePageFilters,
-} from "@/types/store-page";
+import type { FoodStore, StorePageFilters } from "@/types/store-page";
 
 import StoreFilters from "./StoreFilters";
 import StoreGrid from "./StoreGrid";
@@ -75,32 +72,20 @@ export default function StoreContent({
     [storeData],
   );
 
-  const operatingStatusOptions =
-    useMemo(
-      () =>
-        getStoreFilterOptions(
-          storeData,
-          (store) =>
-            store.operatingStatus,
-          (value) =>
-            formatOperatingStatusLabel(
-              value,
-            ),
-        ),
-      [storeData],
-    );
+  const operatingStatusOptions = useMemo(
+    () =>
+      getStoreFilterOptions(
+        storeData,
+        (store) => store.operatingStatus,
+        (value) => formatOperatingStatusLabel(value),
+      ),
+    [storeData],
+  );
 
-  const hasAverageRatingData =
-    useMemo(
-      () =>
-        storeData.some(
-          (store) =>
-            Number(
-              store.averageRating ?? 0,
-            ) > 0,
-        ),
-      [storeData],
-    );
+  const hasAverageRatingData = useMemo(
+    () => storeData.some((store) => Number(store.averageRating ?? 0) > 0),
+    [storeData],
+  );
 
   const filteredStores = useMemo(
     () => applyStoreFilters(storeData, deferredSearchQuery, filters),
@@ -113,96 +98,62 @@ export default function StoreContent({
    *
    * We compute it once here instead of recalculating inside every card.
    */
-  const distanceByStoreUuid =
-    useMemo<Record<string, number>>(
-      () => {
-        return storeData.reduce<
-          Record<string, number>
-        >((result, store) => {
-          /**
-           * Prefer distanceMeters from the list API when present.
-           */
-          const backendDistanceKm =
-            getBackendDistanceKm(store);
+  const distanceByStoreUuid = useMemo<Record<string, number>>(() => {
+    return storeData.reduce<Record<string, number>>((result, store) => {
+      /**
+       * Prefer distanceMeters from the list API when present.
+       */
+      const backendDistanceKm = getBackendDistanceKm(store);
 
-          if (
-            backendDistanceKm !== null
-          ) {
-            result[store.uuid] =
-              backendDistanceKm;
+      if (backendDistanceKm !== null) {
+        result[store.uuid] = backendDistanceKm;
 
-            return result;
-          }
+        return result;
+      }
 
-          /**
-           * Current response returns distanceMeters: null,
-           * so fall back to calculating from the user's position.
-           */
-          if (!coordinates) {
-            return result;
-          }
+      /**
+       * Current response returns distanceMeters: null,
+       * so fall back to calculating from the user's position.
+       */
+      if (!coordinates) {
+        return result;
+      }
 
-          const userLatitude = Number(
-            coordinates.latitude,
-          );
+      const userLatitude = Number(coordinates.latitude);
 
-          const userLongitude = Number(
-            coordinates.longitude,
-          );
+      const userLongitude = Number(coordinates.longitude);
 
-          const storeLatitude = Number(
-            store.latitude,
-          );
+      const storeLatitude = Number(store.latitude);
 
-          const storeLongitude = Number(
-            store.longitude,
-          );
+      const storeLongitude = Number(store.longitude);
 
-          if (
-            !Number.isFinite(
-              userLatitude,
-            ) ||
-            !Number.isFinite(
-              userLongitude,
-            ) ||
-            !Number.isFinite(
-              storeLatitude,
-            ) ||
-            !Number.isFinite(
-              storeLongitude,
-            )
-          ) {
-            return result;
-          }
+      if (
+        !Number.isFinite(userLatitude) ||
+        !Number.isFinite(userLongitude) ||
+        !Number.isFinite(storeLatitude) ||
+        !Number.isFinite(storeLongitude)
+      ) {
+        return result;
+      }
 
-          const distance =
-            calculateDistanceKm(
-              {
-                latitude:
-                  userLatitude,
-                longitude:
-                  userLongitude,
-              },
-              {
-                latitude:
-                  storeLatitude,
-                longitude:
-                  storeLongitude,
-              },
-            );
+      const distance = calculateDistanceKm(
+        {
+          latitude: userLatitude,
+          longitude: userLongitude,
+        },
+        {
+          latitude: storeLatitude,
+          longitude: storeLongitude,
+        },
+      );
 
-          if (
-            Number.isFinite(distance)
-          ) {
-            result[store.uuid] =
-              distance;
-          }
+      if (Number.isFinite(distance)) {
+        result[store.uuid] = distance;
+      }
 
-          return result;
-        }, {});
-      },
-      [coordinates, storeData],
-    );
+      return result;
+    }, {});
+  }, [coordinates, storeData]);
 
   const activeFilterCount = countActiveStoreFilters(filters);
 
