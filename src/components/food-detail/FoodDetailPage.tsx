@@ -524,37 +524,66 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 ))}
               </div>
             )}
+            <div className="mt-auto grid gap-3 pt-7 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setIsBookmarked((previous) => !previous)}
+                className={`flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold transition active:scale-95 ${
+                  isBookmarked
+                    ? "bg-secondary-500 text-white"
+                    : "bg-primary-800 text-white hover:bg-primary-700"
+                }`}
+              >
+                <FaRegHeart />
+
+                {isBookmarked ? "បានរក្សាទុក" : "រក្សាទុកមុខម្ហូប"}
+              </button>
+
+              <a
+                href={locationUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 rounded-full bg-secondary-500 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-secondary-400 active:scale-95"
+              >
+                <FaMapMarkerAlt />
+                មើលទីតាំង
+              </a>
+            </div>
           </div>
 
           {/* Food overview */}
           <div className="flex flex-col">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="flex flex-wrap gap-2">
-                  <InfoPill>{food.food.category.name}</InfoPill>
-                  <InfoPill>{food.food.cuisine.name}</InfoPill>
-
-                  <InfoPill>
-                    {food.availabilityStatus === "AVAILABLE"
-                      ? "មានលក់"
-                      : "មិនមានលក់"}
-                  </InfoPill>
-                </div>
-
-                <h1 className="mt-5 text-3xl font-bold leading-tight text-primary-950 sm:text-4xl">
-                  {displayName}
-                </h1>
-
-                {food.localName && food.name && (
-                  <p className="mt-2 text-lg text-gray-500">{food.name}</p>
-                )}
-              </div>
-
-              <p className="text-3xl font-bold text-primary-800">
-                {formatPrice(food.price, food.currencyCode)}
+            <div className="flex items-center justify-between">
+              <p className="text-3xl text-primary-800 font-bold leading-tight  sm:text-4xl">
+                {displayName}
               </p>
-            </div>
+              <div className=" flex justify-center">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const shareData = {
+                      title: displayName,
+                      text:
+                        food.localDescription ??
+                        food.description ??
+                        displayName,
+                      url: window.location.href,
+                    };
 
+                    if (navigator.share) {
+                      await navigator.share(shareData);
+                      return;
+                    }
+
+                    await navigator.clipboard.writeText(window.location.href);
+                  }}
+                  className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 active:scale-95"
+                >
+                  <FaShareAlt />
+                  ចែករំលែកមុខម្ហូប
+                </button>
+              </div>
+            </div>
             {food.localDescription && (
               <p className="mt-6 text-base leading-8 text-gray-600">
                 {food.localDescription}
@@ -622,7 +651,28 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </div>
               </div>
             </div>
+            <div className="flex mt-6 flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="flex flex-wrap gap-2">
+                  {/* <InfoPill>{food.food.category.name}</InfoPill>
+                  <InfoPill>{food.food.cuisine.name}</InfoPill> */}
 
+                  <InfoPill>
+                    {food.availabilityStatus === "AVAILABLE"
+                      ? "មានលក់"
+                      : "មិនមានលក់"}
+                  </InfoPill>
+                </div>
+
+                {/* {food.localName && food.name && (
+                  <p className="mt-2 text-lg text-gray-500">{food.name}</p>
+                )} */}
+              </div>
+
+              <p className="text-3xl font-bold text-primary-800">
+                {formatPrice(food.price, food.currencyCode)}
+              </p>
+            </div>
             {/* Main stats */}
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
@@ -695,38 +745,12 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </p>
               )}
             </div>
-
             {/* Actions */}
-            <div className="mt-auto grid gap-3 pt-7 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setIsBookmarked((previous) => !previous)}
-                className={`flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold transition active:scale-95 ${
-                  isBookmarked
-                    ? "bg-secondary-500 text-white"
-                    : "bg-primary-800 text-white hover:bg-primary-700"
-                }`}
-              >
-                <FaRegHeart />
-
-                {isBookmarked ? "បានរក្សាទុក" : "រក្សាទុកមុខម្ហូប"}
-              </button>
-
-              <a
-                href={locationUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-full bg-secondary-500 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-secondary-400 active:scale-95"
-              >
-                <FaMapMarkerAlt />
-                មើលទីតាំង
-              </a>
-            </div>
           </div>
         </section>
-
+        <section></section>
         {/* Recommendation and rating */}
-        <section className="mt-14 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           {/* AI recommendation */}
           <article className="rounded-[26px] border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-100 pb-5">
@@ -735,9 +759,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   FoodHub AI
                 </p>
 
-                <h2 className="mt-1 text-2xl font-semibold text-primary-900">
+                <p className="mt-1 text-2xl font-semibold text-primary-900">
                   កម្រិតសមស្របសម្រាប់អ្នក
-                </h2>
+                </p>
               </div>
 
               {matchPercentage !== null && (
@@ -792,9 +816,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
           {/* Rating card */}
           <article className="rounded-[26px] border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
-            <h2 className="text-2xl font-semibold text-primary-900">
+            <p className="text-2xl font-semibold text-primary-900">
               ការវាយតម្លៃភោជនីយដ្ឋាន
-            </h2>
+            </p>
 
             <div className="mt-6 flex items-center gap-6">
               <div>
@@ -864,9 +888,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 <IoRestaurantOutline className="text-2xl text-primary-700" />
               </div>
 
-              <h2 className="text-xl font-semibold text-primary-900">
+              <p className="text-xl font-semibold text-primary-900">
                 គ្រឿងផ្សំ
-              </h2>
+              </p>
             </div>
 
             {food.ingredients.length > 0 ? (
@@ -908,9 +932,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 <IoNutritionOutline className="text-2xl text-green-700" />
               </div>
 
-              <h2 className="text-xl font-semibold text-primary-900">
+              <p className="text-xl font-semibold text-primary-900">
                 តម្លៃអាហារូបត្ថម្ភ
-              </h2>
+              </p>
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
@@ -953,9 +977,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 <IoAlertCircleOutline className="text-2xl text-orange-500" />
               </div>
 
-              <h2 className="text-xl font-semibold text-primary-900">
+              <p className="text-xl font-semibold text-primary-900">
                 អាឡែស៊ី និងសុវត្ថិភាព
-              </h2>
+              </p>
             </div>
 
             {allergenLabels.length === 0 ? (
@@ -1140,9 +1164,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   អ្នកប្រហែលជាចូលចិត្ត
                 </p>
 
-                <h2 className="mt-2 text-3xl font-bold text-primary-900">
+                <p className="mt-2 text-3xl font-bold text-primary-900">
                   មុខម្ហូបស្រដៀងគ្នា
-                </h2>
+                </p>
               </div>
 
               <Link
@@ -1163,29 +1187,6 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         )}
 
         {/* Share button */}
-        <div className="mt-10 flex justify-center">
-          <button
-            type="button"
-            onClick={async () => {
-              const shareData = {
-                title: displayName,
-                text: food.localDescription ?? food.description ?? displayName,
-                url: window.location.href,
-              };
-
-              if (navigator.share) {
-                await navigator.share(shareData);
-                return;
-              }
-
-              await navigator.clipboard.writeText(window.location.href);
-            }}
-            className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 active:scale-95"
-          >
-            <FaShareAlt />
-            ចែករំលែកមុខម្ហូប
-          </button>
-        </div>
       </div>
     </main>
   );

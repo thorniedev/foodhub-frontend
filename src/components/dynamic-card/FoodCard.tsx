@@ -187,16 +187,16 @@ export default function FoodCard({ food }: FoodCardProps) {
             alt={displayName}
             width={485}
             height={370}
-            draggable={false}
-            onError={(event) => {
-              const currentSrc = event.currentTarget.src;
+            // draggable={false}
+            // onError={(event) => {
+            //   const currentSrc = event.currentTarget.src;
 
-              if (currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
-                return;
-              }
+            //   if (currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
+            //     return;
+            //   }
 
-              setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-            }}
+            //   setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+            // }}
             className="
               h-[190px]
               w-full

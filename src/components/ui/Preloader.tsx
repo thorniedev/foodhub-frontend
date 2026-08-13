@@ -9,7 +9,7 @@ const ONCE_PER_SESSION = true;
 
 export default function Preloader({
   label = "កំពុងរៀបចំមុខម្ហូប...",
-  word = "FOODHUB",
+  word = "ម្ហូបអាហារ",
 }: {
   label?: string;
   word?: string;
@@ -110,7 +110,7 @@ export default function Preloader({
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="overflow-hidden">
               <motion.h2
-                className="text-4xl font-bold tracking-[0.3em] text-accent-400 md:text-6xl"
+                className="text-4xl​ py-20 font-bold tracking-[0.3em] text-accent-400 md:text-6xl"
                 initial={{ y: "110%" }}
                 animate={{ y: 0 }}
                 exit={{

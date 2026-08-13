@@ -1944,7 +1944,7 @@ export default function FoodPage() {
 
                     {/* FEATURED */}
 
-                    {featuredFoods.length > 0 && (
+                    {/* {featuredFoods.length > 0 && (
                       <section className="mt-8">
                         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                           <div>
@@ -1964,16 +1964,16 @@ export default function FoodPage() {
 
                         <FoodGrid foods={featuredFoods} />
                       </section>
-                    )}
+                    )} */}
 
                     {/* ALL FOODS */}
 
-                    <section className="mt-12">
+                    <section className="mt-6">
                       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                         <div>
-                          <p className="text-[16px] font-semibold text-secondary-500">
+                          {/* <p className="text-[16px] font-semibold text-secondary-500">
                             មុខម្ហូបទាំងអស់
-                          </p>
+                          </p> */}
 
                           <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
                             ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
