@@ -596,61 +596,263 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </p>
             )}
 
-            {/* Store */}
-            <div className="mt-6 rounded-[22px] border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-50">
-                  {food.store.logoUrl ? (
-                    <ApiImage
-                      src={food.store.logoUrl}
-                      alt={storeDisplayName}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <FaStore className="text-2xl text-primary-700" />
-                  )}
-                </div>
+            {/* =====================================================
+                STORE PROFILE
+            ===================================================== */}
 
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-lg font-semibold text-primary-900">
-                    {storeDisplayName}
-                  </p>
+            <Link
+              href={`/store/${food.store.uuid}`}
+              aria-label={`View ${storeDisplayName} store profile`}
+              className="
+                group
+                mt-6
+                block
+                overflow-hidden
+                rounded-[24px]
+                border
+                border-gray-200
+                bg-white
+                shadow-sm
+                transition
+                duration-200
+                hover:-translate-y-0.5
+                hover:border-primary-200
+                hover:shadow-md
+              "
+            >
+              {/* COVER */}
 
-                  {food.store.localName && (
-                    <p className="truncate text-base text-gray-500">
-                      {food.store.name}
-                    </p>
-                  )}
-                </div>
+              <div className="relative h-28 overflow-hidden bg-gradient-to-r from-primary-800 to-primary-600 sm:h-32">
+                {food.store.coverImageUrl ? (
+                  <ApiImage
+                    src={food.store.coverImageUrl}
+                    alt={`${storeDisplayName} cover`}
+                    className="
+                      h-full
+                      w-full
+                      object-cover
+                      transition-transform
+                      duration-300
+                      group-hover:scale-[1.02]
+                    "
+                  />
+                ) : (
+                  <div
+                    className="
+                      flex
+                      h-full
+                      w-full
+                      items-center
+                      justify-center
+                      bg-gradient-to-r
+                      from-primary-800
+                      via-primary-700
+                      to-secondary-500
+                    "
+                  >
+                    <FaStore className="text-5xl text-white/30" />
+                  </div>
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+
+                {/* STATUS */}
 
                 <span
-                  className={`rounded-full px-3 py-1.5 text-base font-semibold ${
+                  className={`absolute right-3 top-3 rounded-full px-3 py-1.5 text-[14px] font-semibold shadow-sm ${
                     food.store.operatingStatus === "OPEN"
-                      ? "bg-green-50 text-green-700"
-                      : "bg-red-50 text-red-600"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-red-500 text-white"
                   }`}
                 >
                   {food.store.operatingStatus === "OPEN" ? "បើក" : "បិទ"}
                 </span>
               </div>
 
-              <div className="mt-4 grid gap-3 border-t border-gray-100 pt-4 sm:grid-cols-2">
-                <div className="flex items-start gap-2 text-base text-gray-600">
+              {/* STORE PROFILE CONTENT */}
+
+              <div className="relative px-4 pb-4 sm:px-5 sm:pb-5">
+                {/* LOGO / PROFILE IMAGE */}
+
+                <div
+                  className="
+                    -mt-9
+                    flex
+                    items-end
+                    justify-between
+                    gap-3
+                  "
+                >
+                  <div
+                    className="
+                      relative
+                      flex
+                      h-[76px]
+                      w-[76px]
+                      shrink-0
+                      items-center
+                      justify-center
+                      overflow-hidden
+                      rounded-full
+                      border-4
+                      border-white
+                      bg-primary-50
+                      shadow-md
+                    "
+                  >
+                    {food.store.logoUrl ? (
+                      <ApiImage
+                        src={food.store.logoUrl}
+                        alt={`${storeDisplayName} logo`}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <FaStore className="text-[30px] text-primary-700" />
+                    )}
+                  </div>
+
+                  <div
+                    className="
+                      mb-1
+                      flex
+                      items-center
+                      gap-1
+                      text-[15px]
+                      font-semibold
+                      text-primary-700
+                      transition
+                      group-hover:translate-x-1
+                    "
+                  >
+                    <span>មើលហាង</span>
+                    <IoChevronForward className="text-[18px]" />
+                  </div>
+                </div>
+
+                {/* NAME */}
+
+                <div className="mt-3">
+                  <p
+                    className="
+                      line-clamp-1
+                      text-[22px]
+                      font-bold
+                      text-primary-900
+                      transition
+                      group-hover:text-primary-700
+                    "
+                  >
+                    {storeDisplayName}
+                  </p>
+
+                  {food.store.localName &&
+                    food.store.name &&
+                    food.store.localName.trim() !== food.store.name.trim() && (
+                      <p className="mt-0.5 line-clamp-1 text-[16px] text-gray-500">
+                        {food.store.name}
+                      </p>
+                    )}
+                </div>
+
+                {/* ADDRESS */}
+
+                <div className="mt-3 flex items-start gap-2 text-[16px] leading-6 text-gray-600">
                   <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700" />
 
-                  <span>{storeAddress || "មិនមានអាសយដ្ឋាន"}</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-base text-gray-600">
-                  <FaStar className="text-yellow-500" />
-
-                  <span>
-                    {food.store.averageRating.toFixed(1)} (
-                    {food.store.totalReviews} ការវាយតម្លៃ)
+                  <span className="line-clamp-2">
+                    {storeAddress || "មិនមានអាសយដ្ឋាន"}
                   </span>
                 </div>
+
+                {/* STORE STATS */}
+
+                <div
+                  className="
+                    mt-4
+                    grid
+                    grid-cols-2
+                    gap-3
+                    border-t
+                    border-gray-100
+                    pt-4
+                  "
+                >
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      rounded-2xl
+                      bg-amber-50
+                      px-3
+                      py-3
+                    "
+                  >
+                    <div
+                      className="
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-white
+                        text-amber-500
+                        shadow-sm
+                      "
+                    >
+                      <FaStar />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[18px] font-bold text-gray-900">
+                        {Number(food.store.averageRating ?? 0).toFixed(1)}
+                      </p>
+
+                      <p className="text-[13px] text-gray-500">ការវាយតម្លៃ</p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      rounded-2xl
+                      bg-primary-50
+                      px-3
+                      py-3
+                    "
+                  >
+                    <div
+                      className="
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-white
+                        text-primary-700
+                        shadow-sm
+                      "
+                    >
+                      <FaStore />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[18px] font-bold text-gray-900">
+                        {food.store.totalReviews ?? 0}
+                      </p>
+
+                      <p className="text-[13px] text-gray-500">មតិវាយតម្លៃ</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </Link>
             <div className="flex mt-6 flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="flex flex-wrap gap-2">
