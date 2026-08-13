@@ -1,4 +1,5 @@
 import { baseApi } from "@/app/store/baseApi";
+
 import type { CurrentUser } from "@/types/user/current-user";
 
 export interface UpdateCurrentUserRequest {
@@ -6,13 +7,22 @@ export interface UpdateCurrentUserRequest {
   lastName: string;
 }
 
+interface CurrentUserSessionResponse {
+  authenticated: boolean;
+  user: CurrentUser;
+}
+
 export const currentUserApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCurrentUser: builder.query<CurrentUser, void>({
       query: () => ({
-        url: "/users/me",
+        url: "/auth/session",
         method: "GET",
       }),
+
+      transformResponse: (response: CurrentUserSessionResponse) =>
+        response.user,
+
       providesTags: ["User"],
     }),
 
@@ -25,22 +35,10 @@ export const currentUserApi = baseApi.injectEndpoints({
 
       invalidatesTags: ["User"],
     }),
-
-    syncCurrentUser: builder.mutation<CurrentUser, void>({
-      query: () => ({
-        url: "/users/me/sync",
-        method: "PUT",
-      }),
-
-      invalidatesTags: ["User"],
-    }),
   }),
 
   overrideExisting: false,
 });
 
-export const {
-  useGetCurrentUserQuery,
-  useUpdateCurrentUserMutation,
-  useSyncCurrentUserMutation,
-} = currentUserApi;
+export const { useGetCurrentUserQuery, useUpdateCurrentUserMutation } =
+  currentUserApi;

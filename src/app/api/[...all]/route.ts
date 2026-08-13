@@ -4,20 +4,16 @@ export const runtime = "nodejs";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Local development:
- *
- * BACKEND_API_URL=http://localhost:7070
- *
- * Production/deployed backend:
- *
- * BACKEND_API_URL=https://food.chanthorndev.site
- *
- * You can also continue using NEXT_PUBLIC_API_BASE_URL.
+/*
+ * ==========================================
+ * BACKEND URL
+ * ==========================================
  */
-const configuredBackendUrl = (
-  process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL
-)?.replace(/\/+$/, "");
+
+const configuredBackendUrl = process.env.BACKEND_API_URL?.trim().replace(
+  /\/+$/,
+  "",
+);
 
 const backendApiUrl = configuredBackendUrl
   ? /\/api\/v1$/i.test(configuredBackendUrl)
@@ -25,78 +21,56 @@ const backendApiUrl = configuredBackendUrl
     : `${configuredBackendUrl}/api/v1`
   : null;
 
-/**
- * Backend routes that may pass through the Next.js proxy.
- *
- * Example:
- *
- * browser:
- * /api/meetup/groups
- *
- * Next proxy:
- * http://localhost:7070/api/v1/meetup/groups
+/*
+ * ==========================================
+ * ALLOWED BACKEND ROUTES
+ * ==========================================
  */
+
 const allowedRoutes: Record<string, ReadonlySet<string>> = {
-  "auth/register": new Set(["POST"]),
-
-  "auth/login": new Set(["POST"]),
-
-  "auth/logout": new Set(["POST"]),
-
-  "auth/refresh": new Set(["POST"]),
-
   "users/me": new Set(["GET", "PATCH", "DELETE"]),
 
-  "users/me/sync": new Set(["PUT"]),
+  "users/me/sync": new Set(["POST"]),
 
   users: new Set(["GET", "POST"]),
-  media: new Set(["GET"]),
-  /*
-   * We need all of these because profile child routes include:
-   *
-   * GET    /profiles/{uuid}
-   * PATCH  /profiles/{uuid}
-   * DELETE /profiles/{uuid}
-   *
-   * PUT /profiles/{uuid}/safety/allergies
-   * PUT /profiles/{uuid}/safety/dietary-types
-   * PUT /profiles/{uuid}/safety/medical-conditions
-   * PUT /profiles/{uuid}/safety/ingredient-avoids
-   */
+
   profiles: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+
   catalog: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-  /*
-   * Safety option endpoints:
-   *
-   * GET /safety/allergens
-   * GET /safety/dietary-types
-   * GET /safety/medical-conditions
-   */
+
   safety: new Set(["GET"]),
 
-  stores: new Set(["GET", "POST"]),
+  stores: new Set(["GET", "POST", "PATCH", "DELETE"]),
 
-  "menu-items": new Set(["GET", "PATCH", "DELETE"]),
+  media: new Set(["GET"]),
 
-  /**
-   * Meetup routes currently required:
-   *
-   * POST  /meetup/groups
-   * GET   /meetup/groups/share/{shareToken}
-   * PATCH /meetup/groups/{meetupUuid}
-   * POST  /meetup/groups/{meetupUuid}/cancel
-   * POST  /meetup/groups/{meetupUuid}/meeting-point
-   * POST  /meetup/groups/{meetupUuid}/recommendations
-   * POST  /meetup/groups/{meetupUuid}/finish-voting
-   *
-   * PATCH /meetup/participants/{participantUuid}/location
-   * POST  /meetup/participants/{participantUuid}/leave
-   *
-   * POST  /meetup/votes
-   * GET   /meetup/votes/meetup/{meetupUuid}
-   */
-  meetup: new Set(["GET", "POST", "PATCH", "DELETE"]),
+  "menu-items": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+
+  meetup: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 };
+
+/*
+ * Only these routes are allowed
+ * to use top-level prefix matching.
+ *
+ * /profiles/uuid
+ * /catalog/foods/uuid
+ * /safety/medical-conditions
+ * etc.
+ *
+ * Notice "users" is NOT here.
+ * This prevents /users/random-path
+ * accidentally being allowed.
+ */
+const nestedRoutePrefixes = new Set([
+  "profiles",
+  "catalog",
+  "safety",
+  "stores",
+  "media",
+  "menu-items",
+  "meetup",
+]);
 
 interface RouteContext {
   params: Promise<{
@@ -104,12 +78,49 @@ interface RouteContext {
   }>;
 }
 
+function resolveRouteRule(all: string[], backendPath: string) {
+  /*
+   * Exact route first.
+   */
+  const exactRule = allowedRoutes[backendPath];
+
+  if (exactRule) {
+    return exactRule;
+  }
+
+  const firstSegment = all[0];
+
+  if (nestedRoutePrefixes.has(firstSegment)) {
+    return allowedRoutes[firstSegment];
+  }
+
+  return undefined;
+}
+
+function requiresAuthentication(backendPath: string) {
+  if (backendPath === "users/me" || backendPath === "users/me/sync") {
+    return true;
+  }
+
+  if (backendPath === "profiles" || backendPath.startsWith("profiles/")) {
+    return true;
+  }
+
+  return false;
+}
+
 async function forwardRequest(
   request: NextRequest,
   context: RouteContext,
 ): Promise<Response> {
+  /*
+   * ==========================================
+   * BACKEND CONFIGURATION
+   * ==========================================
+   */
+
   if (!backendApiUrl) {
-    console.error("[FOODHUB PROXY] Backend API URL is missing.");
+    console.error("[FOODHUB PROXY] BACKEND_API_URL is missing.");
 
     return NextResponse.json(
       {
@@ -136,23 +147,16 @@ async function forwardRequest(
 
   const backendPath = all.join("/");
 
-  /**
-   * Try an exact match first.
-   *
-   * Otherwise use first segment.
-   *
-   * Example:
-   *
-   * meetup/groups/abc/cancel
-   *
-   * resolves to:
-   *
-   * meetup
+  /*
+   * ==========================================
+   * ROUTE ALLOW LIST
+   * ==========================================
    */
-  const routeRule = allowedRoutes[backendPath] ?? allowedRoutes[all[0]];
+
+  const routeRule = resolveRouteRule(all, backendPath);
 
   if (!routeRule) {
-    console.error("[FOODHUB PROXY] Route is not allowed:", backendPath);
+    console.error("[FOODHUB PROXY] Route not allowed:", backendPath);
 
     return NextResponse.json(
       {
@@ -187,21 +191,58 @@ async function forwardRequest(
     );
   }
 
-  const incomingUrl = new URL(request.url);
-
-  /**
-   * Encode every path segment independently.
+  /*
+   * ==========================================
+   * BACKEND TARGET URL
+   * ==========================================
    */
+
   const safeBackendPath = all
     .map((segment) => encodeURIComponent(segment))
     .join("/");
 
   const targetUrl = new URL(`${backendApiUrl}/${safeBackendPath}`);
 
-  /**
-   * Preserve query params.
+  targetUrl.search = request.nextUrl.search;
+
+  /*
+   * ==========================================
+   * AUTHORIZATION
+   * ==========================================
    */
-  targetUrl.search = incomingUrl.search;
+
+  const incomingAuthorization = request.headers.get("authorization");
+
+  const accessToken = request.cookies.get("foodhub_access_token")?.value;
+
+  if (
+    requiresAuthentication(backendPath) &&
+    !incomingAuthorization &&
+    !accessToken
+  ) {
+    console.warn("[FOODHUB PROXY] Authentication required:", {
+      path: backendPath,
+    });
+
+    return NextResponse.json(
+      {
+        status: 401,
+
+        errorCode: "UNAUTHORIZED",
+
+        message: "Authentication is required.",
+      },
+      {
+        status: 401,
+      },
+    );
+  }
+
+  /*
+   * ==========================================
+   * REQUEST HEADERS
+   * ==========================================
+   */
 
   const requestHeaders = new Headers();
 
@@ -216,26 +257,27 @@ async function forwardRequest(
     requestHeaders.set("Content-Type", contentType);
   }
 
-  /**
-   * Forward bearer token.
-   *
-   * First use Authorization supplied directly.
-   *
-   * Otherwise use FoodHub login cookie.
-   */
-  const incomingAuthorization = request.headers.get("authorization");
-
-  const accessToken = request.cookies.get("foodhub_access_token")?.value;
-
   if (incomingAuthorization) {
     requestHeaders.set("Authorization", incomingAuthorization);
   } else if (accessToken) {
     requestHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
+  /*
+   * ==========================================
+   * BODY
+   * ==========================================
+   */
+
   const canHaveBody = request.method !== "GET" && request.method !== "HEAD";
 
   const requestBody = canHaveBody ? await request.arrayBuffer() : undefined;
+
+  /*
+   * ==========================================
+   * TIMEOUT
+   * ==========================================
+   */
 
   const controller = new AbortController();
 
@@ -270,7 +312,14 @@ async function forwardRequest(
       signal: controller.signal,
     });
 
-    const responseBody = await backendResponse.arrayBuffer();
+    const responseBody =
+      request.method === "HEAD" ? null : await backendResponse.arrayBuffer();
+
+    /*
+     * ==========================================
+     * RESPONSE HEADERS
+     * ==========================================
+     */
 
     const responseHeaders = new Headers();
 
@@ -286,6 +335,12 @@ async function forwardRequest(
       responseHeaders.set("Location", location);
     }
 
+    const cacheControl = backendResponse.headers.get("cache-control");
+
+    if (cacheControl) {
+      responseHeaders.set("Cache-Control", cacheControl);
+    }
+
     console.log("[FOODHUB PROXY RESPONSE]", {
       method: request.method,
 
@@ -294,28 +349,48 @@ async function forwardRequest(
       status: backendResponse.status,
     });
 
+    /*
+     * ==========================================
+     * BACKEND ERROR LOGGING
+     * ==========================================
+     */
+
     if (!backendResponse.ok) {
-      try {
-        const errorText = new TextDecoder().decode(responseBody);
+      let errorText = "";
 
-        console.error("[FOODHUB BACKEND ERROR]", {
-          status: backendResponse.status,
-
-          backendUrl: targetUrl.toString(),
-
-          response: errorText,
-        });
-      } catch {
-        console.error("[FOODHUB BACKEND ERROR]", {
-          status: backendResponse.status,
-
-          backendUrl: targetUrl.toString(),
-        });
+      if (responseBody) {
+        try {
+          errorText = new TextDecoder().decode(responseBody);
+        } catch {
+          errorText = "[Unable to decode backend response]";
+        }
       }
+
+      console.error("[FOODHUB BACKEND ERROR]", {
+        status: backendResponse.status,
+
+        backendUrl: targetUrl.toString(),
+
+        response: errorText,
+      });
     }
 
-    return new Response(responseBody.byteLength > 0 ? responseBody : null, {
-      status: backendResponse.status,
+    /*
+     * ==========================================
+     * RETURN BACKEND RESPONSE
+     * ==========================================
+     */
+
+    const status = backendResponse.status;
+
+    const mustNotHaveBody =
+      request.method === "HEAD" ||
+      status === 204 ||
+      status === 205 ||
+      status === 304;
+
+    return new Response(mustNotHaveBody ? null : responseBody, {
+      status,
 
       headers: responseHeaders,
     });
@@ -360,3 +435,5 @@ export const PUT = forwardRequest;
 export const PATCH = forwardRequest;
 
 export const DELETE = forwardRequest;
+
+export const HEAD = forwardRequest;

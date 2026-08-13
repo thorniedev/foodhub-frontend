@@ -1,66 +1,115 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
-export async function GET(request: NextRequest) {
-  const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL;
-  const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
-  const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID;
+import {
+  AUTH_COOKIES,
+  clearAllAuthCookies,
+  getAuthConfig,
+  getKeycloakEndpoints,
+} from "@/lib/auth/keycloak";
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
+export const runtime = "nodejs";
 
-  const idToken = request.cookies.get("foodhub_id_token")?.value;
+export const dynamic =
+  "force-dynamic";
 
-  const postLogoutRedirectUri = `${appUrl}/login?loggedOut=true`;
+export async function GET(
+  request: NextRequest,
+) {
+  try {
+    const config =
+      getAuthConfig();
 
-  let redirectUrl = new URL(postLogoutRedirectUri);
+    const endpoints =
+      getKeycloakEndpoints();
 
-  /*
-   * Log out from Keycloak SSO as well as FoodHub.
-   */
-  if (keycloakUrl && realm && clientId) {
-    redirectUrl = new URL(
-      `${keycloakUrl.replace(/\/$/, "")}` +
-        `/realms/${realm}` +
-        `/protocol/openid-connect/logout`,
-    );
-
-    redirectUrl.searchParams.set(
-      "post_logout_redirect_uri",
-      postLogoutRedirectUri,
-    );
-
-    redirectUrl.searchParams.set("client_id", clientId);
+    const idToken =
+      request.cookies.get(
+        AUTH_COOKIES.idToken,
+      )?.value;
 
     /*
-     * Supplying id_token_hint allows Keycloak
-     * to identify the current login session.
+     * If ID token is unavailable,
+     * perform local logout.
      */
-    if (idToken) {
-      redirectUrl.searchParams.set("id_token_hint", idToken);
+    if (!idToken) {
+      const response =
+        NextResponse.redirect(
+          new URL(
+            "/login",
+            config.appUrl,
+          ),
+        );
+
+      clearAllAuthCookies(
+        response,
+      );
+
+      return response;
     }
+
+    /*
+     * Keycloak RP-Initiated Logout
+     */
+    const logoutUrl =
+      new URL(
+        endpoints.logout,
+      );
+
+    logoutUrl.searchParams.set(
+      "client_id",
+      config.clientId,
+    );
+
+    logoutUrl.searchParams.set(
+      "id_token_hint",
+      idToken,
+    );
+
+    logoutUrl.searchParams.set(
+      "post_logout_redirect_uri",
+      `${config.appUrl}/login`,
+    );
+
+    const response =
+      NextResponse.redirect(
+        logoutUrl,
+      );
+
+    /*
+     * Delete FoodHub cookies immediately.
+     */
+    clearAllAuthCookies(
+      response,
+    );
+
+    return response;
+  } catch (error) {
+    console.error(
+      "[KEYCLOAK LOGOUT ERROR]",
+      error,
+    );
+
+    const response =
+      NextResponse.redirect(
+        new URL(
+          "/login",
+          request.url,
+        ),
+      );
+
+    clearAllAuthCookies(
+      response,
+    );
+
+    return response;
   }
+}
 
-  const response = NextResponse.redirect(redirectUrl);
-
-  const expiredCookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    path: "/",
-    maxAge: 0,
-  };
-
-  response.cookies.set("foodhub_access_token", "", expiredCookieOptions);
-
-  response.cookies.set("foodhub_refresh_token", "", expiredCookieOptions);
-
-  response.cookies.set("foodhub_id_token", "", expiredCookieOptions);
-
-  response.cookies.set("foodhub_oauth_state", "", expiredCookieOptions);
-
-  response.cookies.set("foodhub_code_verifier", "", expiredCookieOptions);
-
-  response.cookies.set("foodhub_return_to", "", expiredCookieOptions);
-
-  return response;
+export async function POST(
+  request: NextRequest,
+) {
+  return GET(request);
 }

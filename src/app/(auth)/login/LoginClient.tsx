@@ -1,59 +1,83 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import {
+  useSearchParams,
+} from "next/navigation";
 
-type LoginClientProps = {
-  returnTo: string;
-};
+function safeReturnTo(
+  value: string | null,
+) {
+  if (
+    !value ||
+    !value.startsWith("/") ||
+    value.startsWith("//")
+  ) {
+    return "/dashboard";
+  }
 
-export default function LoginClient({ returnTo }: LoginClientProps) {
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  return value;
+}
 
-  const handleLogin = () => {
-    setIsRedirecting(true);
+export default function LoginClient() {
+  const searchParams =
+    useSearchParams();
 
-    window.location.assign(
-      `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`,
+  const returnTo =
+    safeReturnTo(
+      searchParams.get(
+        "returnTo",
+      ),
     );
-  };
+
+  const error =
+    searchParams.get(
+      "error",
+    );
+
+  const errorDescription =
+    searchParams.get(
+      "error_description",
+    );
+
+  const loginUrl =
+    `/api/auth/login?returnTo=${encodeURIComponent(
+      returnTo,
+    )}`;
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
-      <section className="w-full max-w-md space-y-8">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">FoodHub</h1>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+      <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-[#136C34]">
+            FoodHub
+          </h1>
 
-          <h2 className="text-xl font-semibold">Sign in to your account</h2>
-
-          <p className="text-muted-foreground">
-            Continue with your Keycloak-powered FoodHub session.
+          <p className="mt-3 text-slate-500">
+            Sign in to continue to
+            your FoodHub account.
           </p>
         </div>
 
-        <div className="space-y-4">
-          <button
-            type="button"
-            onClick={handleLogin}
-            disabled={isRedirecting}
-            className="w-full rounded-xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isRedirecting
-              ? "Redirecting to Keycloak..."
-              : "Continue with Keycloak"}
-          </button>
+        {error && (
+          <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 p-4">
+            <p className="font-semibold text-red-700">
+              Login failed
+            </p>
 
-          <div className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?
-            <Link
-              href="/register"
-              className="font-semibold text-primary underline-offset-4 hover:underline"
-            >
-              Create one
-            </Link>
+            <p className="mt-1 text-sm text-red-600">
+              {errorDescription ??
+                error}
+            </p>
           </div>
-        </div>
-      </section>
+        )}
+
+        <a
+          href={loginUrl}
+          className="mt-7 flex h-12 w-full items-center justify-center rounded-xl bg-[#136C34] font-semibold text-white transition hover:bg-[#0f592b]"
+        >
+          Login with FoodHub
+        </a>
+      </div>
     </main>
   );
 }
