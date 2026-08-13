@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import Image from "next/image";
-
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
@@ -18,8 +16,15 @@ import {
 
 import type { FoodStore } from "@/types/store-page";
 
-import StoreCard from "./StoreCard";
 import Link from "next/link";
+
+import StoreCard, { StoreImage } from "./StoreCard";
+
+import {
+  formatStoreDistance,
+  getBackendDistanceKm,
+  getStoreOpenNowLabel,
+} from "./store-page-utils";
 
 type StoreGridProps = {
   stores: FoodStore[];
@@ -34,43 +39,41 @@ function getRating(store: FoodStore): number {
   return Number.isFinite(store.averageRating) ? store.averageRating : 0;
 }
 
-function getFeaturedStores(stores: FoodStore[]): FoodStore[] {
-  const preferredStores = stores.filter(
-    (store) =>
-      store.accountStatus === "ACTIVE" && store.reviewStatus === "APPROVED",
-  );
-
-  const source = preferredStores.length > 0 ? preferredStores : stores;
-
-  return [...source]
+function getFeaturedStores(
+  stores: FoodStore[],
+): FoodStore[] {
+  /**
+   * List response has no accountStatus/reviewStatus.
+   * Rank using only fields that actually exist on StoreListItem.
+   */
+  return [...stores]
     .sort((first, second) => {
-      const ratingDifference = getRating(second) - getRating(first);
+      const openNowDifference =
+        Number(second.isOpenNow) -
+        Number(first.isOpenNow);
+
+      if (openNowDifference !== 0) {
+        return openNowDifference;
+      }
+
+      const ratingDifference =
+        getRating(second) -
+        getRating(first);
 
       if (ratingDifference !== 0) {
         return ratingDifference;
       }
 
-      return (second.totalReviews ?? 0) - (first.totalReviews ?? 0);
+      return (
+        Number(
+          second.totalReviews ?? 0,
+        ) -
+        Number(
+          first.totalReviews ?? 0,
+        )
+      );
     })
     .slice(0, MAX_FEATURED_STORES);
-}
-
-function normalizeImageUrl(value?: string | null): string | null {
-  const imageUrl = value?.trim();
-
-  if (!imageUrl) {
-    return null;
-  }
-
-  if (
-    imageUrl.startsWith("/") ||
-    imageUrl.startsWith("http://") ||
-    imageUrl.startsWith("https://")
-  ) {
-    return imageUrl;
-  }
-
-  return `/${imageUrl}`;
 }
 
 function getDisplayName(store: FoodStore): string {
@@ -80,57 +83,20 @@ function getDisplayName(store: FoodStore): string {
 function getAddressLabel(store: FoodStore): string {
   const values = [
     store.addressLine,
-    store.commune,
-    store.district,
     store.city,
     store.province,
   ]
-    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .map((value) =>
+      typeof value === "string"
+        ? value.trim()
+        : "",
+    )
     .filter(Boolean);
 
-  return Array.from(new Set(values)).join(", ") || "មិនមានអាសយដ្ឋាន";
-}
-
-function getStatusLabel(store: FoodStore): string {
-  const status =
-    typeof store.operatingStatus === "string"
-      ? store.operatingStatus.trim().toUpperCase()
-      : "UNKNOWN";
-
-  if (store.isOpenNow === true || status === "OPEN") {
-    return "បើកឥឡូវនេះ";
-  }
-
-  if (
-    store.isOpenNow === false ||
-    status === "CLOSED" ||
-    status === "TEMPORARILY_CLOSED" ||
-    status === "PERMANENTLY_CLOSED"
-  ) {
-    return "បានបិទ";
-  }
-
-  return "មិនទាន់ដឹង";
-}
-
-function formatDistance(distanceKm?: number | null): string {
-  if (
-    distanceKm === null ||
-    distanceKm === undefined ||
-    !Number.isFinite(distanceKm)
-  ) {
-    return "មិនទាន់មានចម្ងាយ";
-  }
-
-  if (distanceKm < 1) {
-    return `${Math.max(1, Math.round(distanceKm * 1000))} m`;
-  }
-
-  if (distanceKm < 10) {
-    return `${distanceKm.toFixed(1)} km`;
-  }
-
-  return `${Math.round(distanceKm)} km`;
+  return (
+    Array.from(new Set(values)).join(", ") ||
+    "មិនមានអាសយដ្ឋាន"
+  );
 }
 
 function FeaturedStoreBanner({
@@ -144,16 +110,20 @@ function FeaturedStoreBanner({
 
   const addressLabel = getAddressLabel(store);
 
-  const statusLabel = getStatusLabel(store);
+  const statusLabel =
+    getStoreOpenNowLabel(store);
 
-  const distanceLabel = formatDistance(distanceKm);
+  const distanceLabel =
+    formatStoreDistance(
+      distanceKm ??
+        getBackendDistanceKm(store),
+    );
 
-  const imageUrl =
-    normalizeImageUrl(store.coverImageUrl) || normalizeImageUrl(store.logoUrl);
 
-  const isOpen = statusLabel === "បើកឥឡូវនេះ";
+  const isOpen =
+    store.isOpenNow === true;
 
-  const isClosed = statusLabel === "បានបិទ";
+  const isClosed = !isOpen;
 
   return (
     <motion.article
@@ -200,48 +170,7 @@ function FeaturedStoreBanner({
             md:h-[270px]
           "
         >
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={`${displayName} store cover`}
-              fill
-              unoptimized
-              sizes="
-                (max-width: 767px) 100vw,
-                45vw
-              "
-              className="object-cover"
-            />
-          ) : (
-            <div
-              className="
-                flex h-full w-full
-                items-center justify-center
-                bg-gradient-to-br
-                from-primary-50
-                via-white
-                to-secondary-50
-              "
-            >
-              <span
-                className="
-                  flex h-20 w-20
-                  items-center justify-center
-                  rounded-full
-                  border border-primary-100
-                  bg-white
-                  shadow-sm
-                "
-              >
-                <IoRestaurantOutline
-                  className="
-                    text-[38px]
-                    text-primary-400
-                  "
-                />
-              </span>
-            </div>
-          )}
+          <StoreImage store={store} />
 
           <div
             className="
@@ -259,7 +188,7 @@ function FeaturedStoreBanner({
                 inline-flex
                 rounded-full
                 px-3 py-1.5
-                text-[17px]
+                text-[18px]
                 font-semibold
                 shadow-sm
 
@@ -290,7 +219,7 @@ function FeaturedStoreBanner({
         >
           <p
             className="
-              text-[17px]
+              text-[18px]
               font-semibold
               text-secondary-500
             "
@@ -337,7 +266,7 @@ function FeaturedStoreBanner({
                 min-w-0 flex-1
                 truncate
                 whitespace-nowrap
-                text-[17px]
+                text-[18px]
               "
             >
               {addressLabel}
@@ -351,7 +280,7 @@ function FeaturedStoreBanner({
               flex-wrap
               items-center
               gap-x-5 gap-y-2
-              text-[17px]
+              text-[18px]
             "
           >
             <span
@@ -501,7 +430,7 @@ export default function StoreGrid({
           className="
             mx-auto mt-2
             max-w-md
-            text-[17px]
+            text-[18px]
             leading-7
             text-gray-500
           "
@@ -520,7 +449,7 @@ export default function StoreGrid({
             rounded-full
             bg-primary-800
             px-5
-            text-[17px]
+            text-[18px]
             font-semibold
             text-white
             transition
@@ -555,7 +484,7 @@ export default function StoreGrid({
             <div className="min-w-0">
               <p
                 className="
-                  text-[17px]
+                  text-[18px]
                   font-semibold
                   text-secondary-500
                 "
@@ -687,7 +616,7 @@ export default function StoreGrid({
           <div>
             <p
               className="
-                text-[17px]
+                text-[18px]
                 font-semibold
                 text-secondary-500
               "
@@ -715,7 +644,7 @@ export default function StoreGrid({
               border border-gray-200
               bg-white
               px-4 py-2
-              text-[17px]
+              text-[18px]
               font-semibold
               text-gray-600
               shadow-sm

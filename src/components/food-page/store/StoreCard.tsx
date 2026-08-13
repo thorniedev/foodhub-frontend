@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 import {
@@ -15,90 +14,29 @@ import { FaStar, FaStore } from "react-icons/fa";
 
 import type { FoodStore } from "@/types/store-page";
 
+import {
+  formatStoreDistance,
+  getBackendDistanceKm,
+  resolveStoreMediaUrl,
+  getStoreOpenNowLabel,
+} from "./store-page-utils";
+
 type StoreCardProps = {
   store: FoodStore;
   distanceKm?: number | null;
   variant?: "featured" | "grid";
 };
 
-function normalizeImageUrl(value?: string | null): string | null {
-  const imageUrl = value?.trim();
-
-  if (!imageUrl) {
-    return null;
-  }
-
-  if (
-    imageUrl.startsWith("/") ||
-    imageUrl.startsWith("http://") ||
-    imageUrl.startsWith("https://")
-  ) {
-    return imageUrl;
-  }
-
-  return `/${imageUrl}`;
-}
-
 function getDisplayName(store: FoodStore): string {
   return store.storeName?.trim() || "Food store";
 }
 
 function getAddressLabel(store: FoodStore): string {
-  const values = [
-    store.addressLine,
-    store.commune,
-    store.district,
-    store.city,
-    store.province,
-  ]
+  const values = [store.addressLine, store.city, store.province]
     .map((value) => (typeof value === "string" ? value.trim() : ""))
     .filter(Boolean);
 
-  const uniqueValues = Array.from(new Set(values));
-
-  return uniqueValues.join(", ") || "មិនមានអាសយដ្ឋាន";
-}
-
-function getStatusLabel(store: FoodStore): string {
-  const status =
-    typeof store.operatingStatus === "string"
-      ? store.operatingStatus.trim().toUpperCase()
-      : "UNKNOWN";
-
-  if (store.isOpenNow === true || status === "OPEN") {
-    return "បើកឥឡូវនេះ";
-  }
-
-  if (
-    store.isOpenNow === false ||
-    status === "CLOSED" ||
-    status === "TEMPORARILY_CLOSED" ||
-    status === "PERMANENTLY_CLOSED"
-  ) {
-    return "បានបិទ";
-  }
-
-  return "មិនទាន់ដឹង";
-}
-
-function formatDistance(distanceKm?: number | null): string {
-  if (
-    distanceKm === null ||
-    distanceKm === undefined ||
-    !Number.isFinite(distanceKm)
-  ) {
-    return "មិនទាន់មានចម្ងាយ";
-  }
-
-  if (distanceKm < 1) {
-    return `${Math.max(1, Math.round(distanceKm * 1000))} m`;
-  }
-
-  if (distanceKm < 10) {
-    return `${distanceKm.toFixed(1)} km`;
-  }
-
-  return `${Math.round(distanceKm)} km`;
+  return Array.from(new Set(values)).join(", ") || "មិនមានអាសយដ្ឋាន";
 }
 
 function formatReviewCount(totalReviews?: number): string {
@@ -135,48 +73,60 @@ function StoreImagePlaceholder({ displayName }: { displayName: string }) {
   );
 }
 
-function StoreImage({ store }: { store: FoodStore }) {
+export function StoreImage({ store }: { store: FoodStore }) {
   const displayName = getDisplayName(store);
 
-  const coverImageUrl = normalizeImageUrl(store.coverImageUrl);
-  const logoImageUrl = normalizeImageUrl(store.logoUrl);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageFailed, setImageFailed] = useState(false);
+  const [isResolving, setIsResolving] = useState(Boolean(store.logoMediaUuid));
 
-  const imageCandidates = Array.from(
-    new Set(
-      [coverImageUrl, logoImageUrl].filter((imageUrl): imageUrl is string =>
-        Boolean(imageUrl),
-      ),
-    ),
-  );
+  useEffect(() => {
+    let cancelled = false;
 
-  const [failedImageUrls, setFailedImageUrls] = useState<string[]>([]);
+    setImageUrl(null);
+    setImageFailed(false);
+    setIsResolving(Boolean(store.logoMediaUuid));
 
-  const currentImageUrl = imageCandidates.find(
-    (imageUrl) => !failedImageUrls.includes(imageUrl),
-  );
+    async function loadLogo() {
+      const resolvedUrl = await resolveStoreMediaUrl(store.logoMediaUuid);
 
-  if (!currentImageUrl) {
+      if (cancelled) {
+        return;
+      }
+
+      setImageUrl(resolvedUrl);
+      setIsResolving(false);
+    }
+
+    void loadLogo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [store.logoMediaUuid]);
+
+  if (isResolving) {
+    return <div className="h-full w-full animate-pulse bg-primary-50" />;
+  }
+
+  if (!imageUrl || imageFailed) {
     return <StoreImagePlaceholder displayName={displayName} />;
   }
 
   return (
-    <Image
-      key={currentImageUrl}
-      src={currentImageUrl}
-      alt={`${displayName} store cover`}
-      fill
-      unoptimized
-      sizes="(max-width: 767px) 100vw, (max-width: 1535px) 50vw, 33vw"
+    <img
+      src={imageUrl}
+      alt={`${displayName} store logo`}
+      draggable={false}
       onError={() => {
-        setFailedImageUrls((currentFailedUrls) => {
-          if (currentFailedUrls.includes(currentImageUrl)) {
-            return currentFailedUrls;
-          }
-
-          return [...currentFailedUrls, currentImageUrl];
+        console.warn("[STORE CARD IMAGE] Signed URL failed", {
+          storeUuid: store.uuid,
+          logoMediaUuid: store.logoMediaUuid,
+          imageUrl,
         });
+        setImageFailed(true);
       }}
-      className="object-cover transition duration-500 group-hover:scale-105"
+      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
     />
   );
 }
@@ -229,17 +179,17 @@ function FeaturedStoreCard({
 
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
-          <FaStore className="shrink-0 text-[17px] text-secondary-400" />
+          <FaStore className="shrink-0 text-[18px] text-secondary-400" />
           <p className="truncate whitespace-nowrap text-[18px] font-bold text-primary-900">
             {displayName}
           </p>
         </div>
 
-        <p className="mt-2 truncate whitespace-nowrap text-[17px] text-gray-500">
+        <p className="mt-2 truncate whitespace-nowrap text-[18px] text-gray-500">
           {getAddressLabel(store)}
         </p>
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[17px]">
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[18px]">
           <span className="inline-flex items-center gap-1.5 text-accent-400">
             <FaStar className="text-[16px]" />
             {formatRating(store.averageRating)}
@@ -247,7 +197,7 @@ function FeaturedStoreCard({
 
           <span className="inline-flex items-center gap-1.5 text-primary-600">
             <IoNavigateOutline className="text-[18px]" />
-            {formatDistance(distanceKm)}
+            {formatStoreDistance(distanceKm ?? getBackendDistanceKm(store))}
           </span>
         </div>
       </div>
@@ -264,13 +214,16 @@ function GridStoreCard({
 }) {
   const displayName = getDisplayName(store);
   const addressLabel = getAddressLabel(store);
-  const statusLabel = getStatusLabel(store);
-  const distanceLabel = formatDistance(distanceKm);
+  const statusLabel = getStoreOpenNowLabel(store);
+
+  const distanceLabel = formatStoreDistance(
+    distanceKm ?? getBackendDistanceKm(store),
+  );
   const ratingLabel = formatRating(store.averageRating);
   const reviewCountLabel = formatReviewCount(store.totalReviews);
 
-  const isOpen = statusLabel === "បើកឥឡូវនេះ";
-  const isClosed = statusLabel === "បានបិទ";
+  const isOpen = store.isOpenNow === true;
+  const isClosed = !isOpen;
 
   return (
     <motion.article
@@ -303,13 +256,13 @@ function GridStoreCard({
         {/* Address */}
         <div className="mt-3 flex min-w-0 items-center gap-2 text-gray-500">
           <IoLocationOutline className="shrink-0 text-[19px] text-primary-500" />
-          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[17px]">
+          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[18px]">
             {addressLabel}
           </p>
         </div>
 
         {/* Rating, distance, reviews */}
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[17px]">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[18px]">
           <span className="inline-flex items-center gap-1.5 text-accent-400">
             <FaStar className="text-[16px]" />
             <span>{ratingLabel}</span>
@@ -320,7 +273,7 @@ function GridStoreCard({
             <span>{distanceLabel}</span>
           </span>
 
-          <span className="truncate text-[17px] text-gray-500">
+          <span className="truncate text-[18px] text-gray-500">
             {reviewCountLabel}
           </span>
         </div>
@@ -338,7 +291,7 @@ function GridStoreCard({
           />
 
           <p
-            className={`truncate whitespace-nowrap text-[17px] ${
+            className={`truncate whitespace-nowrap text-[18px] ${
               isOpen
                 ? "text-emerald-600"
                 : isClosed

@@ -8,7 +8,6 @@ import {
   IoChevronDown,
   IoCloseOutline,
   IoLocationOutline,
-  IoPricetagOutline,
   IoSwapVerticalOutline,
 } from "react-icons/io5";
 
@@ -31,10 +30,10 @@ type StoreFiltersProps = {
   onChange: (filters: StorePageFilters) => void;
 
   cityOptions: StorePageOption[];
-  districtOptions: StorePageOption[];
   provinceOptions: StorePageOption[];
   operatingStatusOptions: StorePageOption[];
-  priceLevelOptions: StorePageOption[];
+
+  hasAverageRatingData: boolean;
 
   onClose?: () => void;
 };
@@ -93,12 +92,10 @@ const SORT_OPTIONS: Array<{
 
 const OPEN_SECTION_DEFAULTS: Record<string, boolean> = {
   status: true,
-  city: true,
-  district: false,
+  city: false,
   province: false,
-  operatingStatus: false,
+  operatingStatus: true,
   rating: false,
-  price: false,
   sort: true,
 };
 
@@ -127,7 +124,7 @@ function FilterSection({
         <span className="flex min-w-0 items-center gap-2.5">
           <span className="shrink-0 text-[20px] text-primary-700">{icon}</span>
 
-          <span className="truncate text-[17px] font-semibold text-primary-900">
+          <span className="truncate text-[18px] font-semibold text-primary-900">
             {title}
           </span>
         </span>
@@ -218,7 +215,7 @@ function CheckboxOption({
           "
         />
 
-        <span className="min-w-0 truncate text-[17px] leading-6">{label}</span>
+        <span className="min-w-0 truncate text-[18px] leading-6">{label}</span>
       </span>
 
       {typeof count === "number" && (
@@ -227,7 +224,7 @@ function CheckboxOption({
             flex h-8 min-w-8
             shrink-0 items-center
             justify-center rounded-full
-            px-2 text-[17px] font-medium
+            px-2 text-[18px] font-medium
 
             ${
               checked
@@ -285,7 +282,7 @@ function RadioOption({
         "
       />
 
-      <span className="text-[17px] leading-6">{label}</span>
+      <span className="text-[18px] leading-6">{label}</span>
     </label>
   );
 }
@@ -307,7 +304,7 @@ function OptionList({
 }) {
   if (options.length === 0) {
     return (
-      <p className="rounded-xl bg-gray-50 px-3 py-3 text-[17px] leading-7 text-gray-400">
+      <p className="rounded-xl bg-gray-50 px-3 py-3 text-[18px] leading-7 text-gray-400">
         មិនមានទិន្នន័យសម្រាប់តម្រងនេះទេ។
       </p>
     );
@@ -336,10 +333,9 @@ export default function StoreFilters({
   filters,
   onChange,
   cityOptions,
-  districtOptions,
   provinceOptions,
   operatingStatusOptions,
-  priceLevelOptions,
+  hasAverageRatingData,
   onClose,
 }: StoreFiltersProps) {
   const isDrawer = Boolean(onClose);
@@ -385,35 +381,43 @@ export default function StoreFilters({
   const collapsedItems = [
     {
       key: "status",
-      label: "ស្ថានភាព",
+      label: "បើកឥឡូវនេះ",
       icon: <FaStore />,
+      visible: true,
+    },
+    {
+      key: "operatingStatus",
+      label: "ស្ថានភាពហាង",
+      icon: <FaStore />,
+      visible:
+        operatingStatusOptions.length > 0,
     },
     {
       key: "city",
       label: "ទីក្រុង",
       icon: <IoLocationOutline />,
+      visible: cityOptions.length > 0,
     },
     {
-      key: "district",
-      label: "ខណ្ឌ ឬស្រុក",
+      key: "province",
+      label: "ខេត្ត",
       icon: <IoLocationOutline />,
+      visible:
+        provinceOptions.length > 0,
     },
     {
       key: "rating",
       label: "ការវាយតម្លៃ",
       icon: <FaStar />,
-    },
-    {
-      key: "price",
-      label: "តម្លៃ",
-      icon: <IoPricetagOutline />,
+      visible: hasAverageRatingData,
     },
     {
       key: "sort",
       label: "តម្រៀប",
       icon: <IoSwapVerticalOutline />,
+      visible: true,
     },
-  ];
+  ].filter((item) => item.visible);
 
   return (
     <motion.aside
@@ -495,7 +499,7 @@ export default function StoreFilters({
                           rounded-full
                           bg-secondary-500
                           px-2
-                          text-[17px]
+                          text-[18px]
                           font-semibold text-white
                         "
                       >
@@ -504,7 +508,7 @@ export default function StoreFilters({
                     )}
                   </div>
 
-                  <p className="mt-1 text-[17px] leading-7 text-gray-400">
+                  <p className="mt-1 text-[18px] leading-7 text-gray-400">
                     ស្វែងរកហាងដែលសមនឹងអ្នក
                   </p>
                 </motion.div>
@@ -578,7 +582,7 @@ export default function StoreFilters({
                 px-3 py-2.5
               "
             >
-              <p className="min-w-0 text-[17px] text-gray-500">
+              <p className="min-w-0 text-[18px] text-gray-500">
                 {activeFilterCount} តម្រងបានជ្រើស
               </p>
 
@@ -588,7 +592,7 @@ export default function StoreFilters({
                 onClick={resetFilters}
                 className="
                   shrink-0
-                  text-[17px]
+                  text-[18px]
                   font-medium
                   text-secondary-500
                   transition
@@ -680,194 +684,187 @@ export default function StoreFilters({
             "
           >
             {/* -------------------------------------------------------------- */}
-            {/* Status                                                         */}
+            {/* Open now                                                       */}
             {/* -------------------------------------------------------------- */}
 
             <FilterSection
-              title="ស្ថានភាពហាង"
+              title="ស្ថានភាពឥឡូវនេះ"
               icon={<FaStore />}
               isOpen={openSections.status}
-              onToggle={() => toggleSection("status")}
+              onToggle={() =>
+                toggleSection("status")
+              }
             >
               <div className="space-y-1">
                 <CheckboxOption
-                  label="បង្ហាញតែហាងដែលកំពុងបើក"
+                  label="បង្ហាញតែហាងដែលកំពុងបើកឥឡូវនេះ"
                   checked={filters.openNowOnly}
                   onChange={() =>
-                    updateFilter("openNowOnly", !filters.openNowOnly)
-                  }
-                />
-
-                <CheckboxOption
-                  label="បានអនុម័ត"
-                  checked={filters.approvedOnly}
-                  onChange={() =>
-                    updateFilter("approvedOnly", !filters.approvedOnly)
-                  }
-                />
-
-                <CheckboxOption
-                  label="គណនីសកម្ម"
-                  checked={filters.activeOnly}
-                  onChange={() =>
-                    updateFilter("activeOnly", !filters.activeOnly)
+                    updateFilter(
+                      "openNowOnly",
+                      !filters.openNowOnly,
+                    )
                   }
                 />
               </div>
-            </FilterSection>
-
-            {/* -------------------------------------------------------------- */}
-            {/* City                                                           */}
-            {/* -------------------------------------------------------------- */}
-
-            <FilterSection
-              title="ទីក្រុង"
-              icon={<IoLocationOutline />}
-              isOpen={openSections.city}
-              onToggle={() => toggleSection("city")}
-            >
-              <OptionList
-                options={cityOptions}
-                selectedValues={filters.cities}
-                onToggle={(value) =>
-                  updateFilter(
-                    "cities",
-                    toggleStoreFilterValue(filters.cities, value),
-                  )
-                }
-              />
-            </FilterSection>
-
-            {/* -------------------------------------------------------------- */}
-            {/* District                                                       */}
-            {/* -------------------------------------------------------------- */}
-
-            <FilterSection
-              title="ខណ្ឌ ឬស្រុក"
-              icon={<IoLocationOutline />}
-              isOpen={openSections.district}
-              onToggle={() => toggleSection("district")}
-            >
-              <OptionList
-                options={districtOptions}
-                selectedValues={filters.districts}
-                onToggle={(value) =>
-                  updateFilter(
-                    "districts",
-                    toggleStoreFilterValue(filters.districts, value),
-                  )
-                }
-              />
-            </FilterSection>
-
-            {/* -------------------------------------------------------------- */}
-            {/* Province                                                       */}
-            {/* -------------------------------------------------------------- */}
-
-            <FilterSection
-              title="ខេត្ត"
-              icon={<IoLocationOutline />}
-              isOpen={openSections.province}
-              onToggle={() => toggleSection("province")}
-            >
-              <OptionList
-                options={provinceOptions}
-                selectedValues={filters.provinces}
-                onToggle={(value) =>
-                  updateFilter(
-                    "provinces",
-                    toggleStoreFilterValue(filters.provinces, value),
-                  )
-                }
-              />
             </FilterSection>
 
             {/* -------------------------------------------------------------- */}
             {/* Operating status                                               */}
             {/* -------------------------------------------------------------- */}
 
-            <FilterSection
-              title="ស្ថានភាពប្រតិបត្តិការ"
-              icon={<FaStore />}
-              isOpen={openSections.operatingStatus}
-              onToggle={() => toggleSection("operatingStatus")}
-            >
-              <OptionList
-                options={operatingStatusOptions}
-                selectedValues={filters.operatingStatuses}
-                onToggle={(value) =>
-                  updateFilter(
-                    "operatingStatuses",
-                    toggleStoreFilterValue(filters.operatingStatuses, value),
+            {operatingStatusOptions.length > 0 && (
+              <FilterSection
+                title="ស្ថានភាពប្រតិបត្តិការ"
+                icon={<FaStore />}
+                isOpen={
+                  openSections.operatingStatus
+                }
+                onToggle={() =>
+                  toggleSection(
+                    "operatingStatus",
                   )
                 }
-              />
-            </FilterSection>
+              >
+                <OptionList
+                  options={
+                    operatingStatusOptions
+                  }
+                  selectedValues={
+                    filters.operatingStatuses
+                  }
+                  onToggle={(value) =>
+                    updateFilter(
+                      "operatingStatuses",
+                      toggleStoreFilterValue(
+                        filters.operatingStatuses,
+                        value,
+                      ),
+                    )
+                  }
+                />
+              </FilterSection>
+            )}
+
+            {/* -------------------------------------------------------------- */}
+            {/* City                                                           */}
+            {/* -------------------------------------------------------------- */}
+
+            {cityOptions.length > 0 && (
+              <FilterSection
+                title="ទីក្រុង"
+                icon={<IoLocationOutline />}
+                isOpen={openSections.city}
+                onToggle={() =>
+                  toggleSection("city")
+                }
+              >
+                <OptionList
+                  options={cityOptions}
+                  selectedValues={
+                    filters.cities
+                  }
+                  onToggle={(value) =>
+                    updateFilter(
+                      "cities",
+                      toggleStoreFilterValue(
+                        filters.cities,
+                        value,
+                      ),
+                    )
+                  }
+                />
+              </FilterSection>
+            )}
+
+            {/* -------------------------------------------------------------- */}
+            {/* Province                                                       */}
+            {/* -------------------------------------------------------------- */}
+
+            {provinceOptions.length > 0 && (
+              <FilterSection
+                title="ខេត្ត / រាជធានី"
+                icon={<IoLocationOutline />}
+                isOpen={
+                  openSections.province
+                }
+                onToggle={() =>
+                  toggleSection("province")
+                }
+              >
+                <OptionList
+                  options={provinceOptions}
+                  selectedValues={
+                    filters.provinces
+                  }
+                  onToggle={(value) =>
+                    updateFilter(
+                      "provinces",
+                      toggleStoreFilterValue(
+                        filters.provinces,
+                        value,
+                      ),
+                    )
+                  }
+                />
+              </FilterSection>
+            )}
 
             {/* -------------------------------------------------------------- */}
             {/* Rating                                                         */}
             {/* -------------------------------------------------------------- */}
 
-            <FilterSection
-              title="ការវាយតម្លៃអប្បបរមា"
-              icon={<FaStar />}
-              isOpen={openSections.rating}
-              onToggle={() => toggleSection("rating")}
-            >
-              <div className="flex flex-wrap gap-2">
-                {RATING_OPTIONS.map((option) => {
-                  const selected = filters.minimumRating === option.value;
-
-                  return (
-                    <button
-                      key={String(option.value)}
-                      type="button"
-                      onClick={() =>
-                        updateFilter("minimumRating", option.value)
-                      }
-                      className={`
-                        min-h-[42px]
-                        rounded-full
-                        border px-3.5 py-2
-                        text-[17px]
-                        font-medium
-                        transition-colors
-
-                        ${
-                          selected
-                            ? "border-primary-800 bg-primary-800 text-white"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50"
-                        }
-                      `}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </FilterSection>
-
-            {/* -------------------------------------------------------------- */}
-            {/* Price                                                          */}
-            {/* -------------------------------------------------------------- */}
-
-            <FilterSection
-              title="កម្រិតតម្លៃ"
-              icon={<IoPricetagOutline />}
-              isOpen={openSections.price}
-              onToggle={() => toggleSection("price")}
-            >
-              <OptionList
-                options={priceLevelOptions}
-                selectedValues={filters.priceLevels}
-                onToggle={(value) =>
-                  updateFilter(
-                    "priceLevels",
-                    toggleStoreFilterValue(filters.priceLevels, value),
-                  )
+            {hasAverageRatingData && (
+              <FilterSection
+                title="ការវាយតម្លៃអប្បបរមា"
+                icon={<FaStar />}
+                isOpen={openSections.rating}
+                onToggle={() =>
+                  toggleSection("rating")
                 }
-              />
-            </FilterSection>
+              >
+                <div className="flex flex-wrap gap-2">
+                  {RATING_OPTIONS.map(
+                    (option) => {
+                      const selected =
+                        filters.minimumRating ===
+                        option.value;
+
+                      return (
+                        <button
+                          key={String(
+                            option.value,
+                          )}
+                          type="button"
+                          onClick={() =>
+                            updateFilter(
+                              "minimumRating",
+                              option.value,
+                            )
+                          }
+                          className={`
+                            min-h-[42px]
+                            rounded-full
+                            border px-3.5 py-2
+                            text-[18px]
+                            font-medium
+                            transition-colors
+
+                            ${
+                              selected
+                                ? "border-primary-800 bg-primary-800 text-white"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50"
+                            }
+                          `}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    },
+                  )}
+                </div>
+              </FilterSection>
+            )}
 
             {/* -------------------------------------------------------------- */}
             {/* Sort                                                           */}

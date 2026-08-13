@@ -66,6 +66,11 @@ type FilterState = {
   dietaryTypeCodes: string[];
   ageGroupCodes: string[];
 
+  seasonCodes: string[];
+  eventCodes: string[];
+  weatherCodes: string[];
+  originCountryCodes: string[];
+
   excludedAllergenCodes: string[];
   storeIds: string[];
   ingredientNames: string[];
@@ -73,6 +78,7 @@ type FilterState = {
 
   availabilityOnly: boolean;
   featuredOnly: boolean;
+  traditionalOnly: boolean;
 
   priceTier: PriceTier;
 
@@ -119,15 +125,15 @@ const SPICE_OPTIONS: NumericOption[] = [
 const PREPARATION_OPTIONS: NumericOption[] = [
   {
     value: 10,
-    label: "ក្រោម 10 នាទី",
-  },
-  {
-    value: 15,
-    label: "ក្រោម 15 នាទី",
+    label: "10 នាទី ឬតិច",
   },
   {
     value: 20,
-    label: "ក្រោម 20 នាទី",
+    label: "20 នាទី ឬតិច",
+  },
+  {
+    value: 30,
+    label: "30 នាទី ឬតិច",
   },
 ];
 
@@ -156,6 +162,11 @@ const DEFAULT_FILTERS: FilterState = {
   dietaryTypeCodes: [],
   ageGroupCodes: [],
 
+  seasonCodes: [],
+  eventCodes: [],
+  weatherCodes: [],
+  originCountryCodes: [],
+
   excludedAllergenCodes: [],
   storeIds: [],
   ingredientNames: [],
@@ -163,6 +174,7 @@ const DEFAULT_FILTERS: FilterState = {
 
   availabilityOnly: true,
   featuredOnly: false,
+  traditionalOnly: false,
 
   priceTier: null,
 
@@ -204,31 +216,68 @@ function matchesPriceTier(price: number, tier: PriceTier): boolean {
 }
 
 function getMealTypes(food: CatalogMenuItem): CatalogCodeName[] {
-  return Array.isArray(food.filterData?.mealTypes)
-    ? food.filterData.mealTypes
-    : [];
+  return Array.isArray(food.food?.mealTypes) ? food.food.mealTypes : [];
 }
 
 function getAgeGroups(food: CatalogMenuItem): CatalogCodeName[] {
-  return Array.isArray(food.filterData?.ageGroups)
-    ? food.filterData.ageGroups
+  return Array.isArray(food.food?.ageGroups) ? food.food.ageGroups : [];
+}
+
+function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.dietaryTypes)
+    ? food.food.dietaryTypes.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
+    : [];
+}
+
+function getSeasons(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.seasons)
+    ? food.food.seasons.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
+    : [];
+}
+
+function getEvents(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.events)
+    ? food.food.events.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
+    : [];
+}
+
+function getSuitableWeather(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.suitableWeather)
+    ? food.food.suitableWeather.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
     : [];
 }
 
 /**
- * Current list type intentionally has unknown[] for these arrays,
- * because the API sample did not prove their inner shape.
+ * The current response now proves allergen objects such as:
  *
- * We only use entries that really contain string code + name.
+ * {
+ *   code: "ត្រី",
+ *   name: "ត្រី",
+ *   declarationType: "CONTAINS",
+ *   riskLevel: "HIGH",
+ *   verificationStatus: "VERIFIED"
+ * }
+ *
+ * CatalogMenuItem still safely allows unknown[] here, so we narrow at runtime.
  */
-function getCodeNameUnknownArray(
-  values: unknown[] | null | undefined,
-): CatalogCodeName[] {
-  if (!Array.isArray(values)) {
+function getAllergens(food: CatalogMenuItem): CatalogCodeName[] {
+  if (!Array.isArray(food.allergenDeclarations)) {
     return [];
   }
 
-  return values.flatMap((value) => {
+  return food.allergenDeclarations.flatMap((value) => {
     if (typeof value !== "object" || value === null) {
       return [];
     }
@@ -248,36 +297,28 @@ function getCodeNameUnknownArray(
   });
 }
 
-function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
-  return getCodeNameUnknownArray(food.dietaryTypes);
-}
-
-function getAllergens(food: CatalogMenuItem): CatalogCodeName[] {
-  return getCodeNameUnknownArray(food.allergenDeclarations);
-}
-
 function getIngredientNames(food: CatalogMenuItem): string[] {
   if (!Array.isArray(food.ingredients)) {
     return [];
   }
 
-  return food.ingredients.flatMap((value) => {
-    if (typeof value === "string") {
-      return [value];
-    }
+  return food.ingredients.filter(
+    (value): value is string =>
+      typeof value === "string" && value.trim().length > 0,
+  );
+}
 
-    if (typeof value === "object" && value !== null) {
-      const record = value as Record<string, unknown>;
+function getOriginCountry(food: CatalogMenuItem): CatalogCodeName | null {
+  const origin = food.origin;
 
-      const candidate = record.name ?? record.ingredientName;
+  if (!origin?.countryCode || !origin?.countryName) {
+    return null;
+  }
 
-      if (typeof candidate === "string") {
-        return [candidate];
-      }
-    }
-
-    return [];
-  });
+  return {
+    code: origin.countryCode,
+    name: origin.countryLocalName?.trim() || origin.countryName,
+  };
 }
 
 /* =========================================================
@@ -291,56 +332,20 @@ function matchesSearch(food: CatalogMenuItem, query: string): boolean {
     return true;
   }
 
-  const mealTypes = getMealTypes(food);
+  /**
+   * Search the same complete CatalogMenuItem object that is passed to FoodCard.
+   * This includes current nested category, cuisine, dietary, age group,
+   * meal type, seasons, events, weather, ingredients, allergens,
+   * nutrition, store, origin, price, preparation time, etc.
+   */
+  const searchableText = normalizeText(JSON.stringify(food));
 
-  const ageGroups = getAgeGroups(food);
+  const tokens = normalizedQuery
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
 
-  const dietaryTypes = getDietaryTypes(food);
-
-  const allergens = getAllergens(food);
-
-  const ingredients = getIngredientNames(food);
-
-  const searchableValues: unknown[] = [
-    food.name,
-    food.localName,
-    food.foodName,
-    food.description,
-    food.source,
-
-    food.price,
-    food.currencyCode,
-
-    food.preparationTimeMinutes,
-    food.availabilityStatus,
-    food.ingredientDataStatus,
-
-    food.store?.name,
-    food.store?.operatingStatus,
-    food.store?.averageRating,
-
-    food.filterData?.category?.code,
-    food.filterData?.category?.name,
-
-    food.filterData?.cuisine?.code,
-    food.filterData?.cuisine?.name,
-
-    food.filterData?.spiceLevel,
-
-    ...mealTypes.flatMap((item) => [item.code, item.name]),
-
-    ...ageGroups.flatMap((item) => [item.code, item.name]),
-
-    ...dietaryTypes.flatMap((item) => [item.code, item.name]),
-
-    ...allergens.flatMap((item) => [item.code, item.name]),
-
-    ...ingredients,
-  ];
-
-  return searchableValues.some((value) =>
-    normalizeText(value).includes(normalizedQuery),
-  );
+  return tokens.every((token) => searchableText.includes(token));
 }
 
 /* =========================================================
@@ -401,7 +406,7 @@ function applyFilters(
       return false;
     }
 
-    const category = food.filterData?.category;
+    const category = food.food?.category;
 
     if (
       filters.categoryCodes.length > 0 &&
@@ -410,7 +415,7 @@ function applyFilters(
       return false;
     }
 
-    const cuisine = food.filterData?.cuisine;
+    const cuisine = food.food?.cuisine;
 
     if (
       filters.cuisineCodes.length > 0 &&
@@ -443,6 +448,47 @@ function applyFilters(
       filters.ageGroupCodes.length > 0 &&
       !ageGroups.some((item) => filters.ageGroupCodes.includes(item.code))
     ) {
+      return false;
+    }
+
+    const seasons = getSeasons(food);
+
+    if (
+      filters.seasonCodes.length > 0 &&
+      !seasons.some((item) => filters.seasonCodes.includes(item.code))
+    ) {
+      return false;
+    }
+
+    const events = getEvents(food);
+
+    if (
+      filters.eventCodes.length > 0 &&
+      !events.some((item) => filters.eventCodes.includes(item.code))
+    ) {
+      return false;
+    }
+
+    const suitableWeather = getSuitableWeather(food);
+
+    if (
+      filters.weatherCodes.length > 0 &&
+      !suitableWeather.some((item) => filters.weatherCodes.includes(item.code))
+    ) {
+      return false;
+    }
+
+    const originCountry = getOriginCountry(food);
+
+    if (
+      filters.originCountryCodes.length > 0 &&
+      (!originCountry ||
+        !filters.originCountryCodes.includes(originCountry.code))
+    ) {
+      return false;
+    }
+
+    if (filters.traditionalOnly && !food.origin?.isTraditional) {
       return false;
     }
 
@@ -479,7 +525,7 @@ function applyFilters(
 
     if (
       filters.spiceLevels.length > 0 &&
-      !filters.spiceLevels.includes(food.filterData?.spiceLevel ?? -1)
+      !filters.spiceLevels.includes(food.food?.spiceLevel ?? -1)
     ) {
       return false;
     }
@@ -571,6 +617,10 @@ function countActiveFilters(filters: FilterState): number {
     filters.mealTypeCodes.length +
     filters.dietaryTypeCodes.length +
     filters.ageGroupCodes.length +
+    filters.seasonCodes.length +
+    filters.eventCodes.length +
+    filters.weatherCodes.length +
+    filters.originCountryCodes.length +
     filters.excludedAllergenCodes.length +
     filters.storeIds.length +
     filters.ingredientNames.length +
@@ -578,7 +628,8 @@ function countActiveFilters(filters: FilterState): number {
     (filters.priceTier ? 1 : 0) +
     (filters.maximumPreparationMinutes !== null ? 1 : 0) +
     (filters.minimumRating !== null ? 1 : 0) +
-    (filters.featuredOnly ? 1 : 0)
+    (filters.featuredOnly ? 1 : 0) +
+    (filters.traditionalOnly ? 1 : 0)
   );
 }
 
@@ -608,7 +659,7 @@ function FilterSection({
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between text-left"
       >
-        <span className="flex items-center gap-2 text-[16px] font-semibold text-primary-900">
+        <span className="flex items-center gap-2 text-[18px] font-semibold text-primary-900">
           <span className="text-[20px] text-primary-700">{icon}</span>
 
           {title}
@@ -679,11 +730,11 @@ function CheckboxOption({
           className="h-4 w-4 shrink-0 accent-primary-800"
         />
 
-        <span className="truncate text-[16px] text-gray-600">{label}</span>
+        <span className="truncate text-[18px] text-gray-600">{label}</span>
       </span>
 
       {typeof count === "number" && (
-        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[16px] text-gray-500">
+        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[18px] text-gray-500">
           {count}
         </span>
       )}
@@ -717,7 +768,7 @@ function SingleChoice<T extends string | number>({
             key={String(option.value)}
             type="button"
             onClick={() => onChange(isSelected ? null : option.value)}
-            className={`rounded-full border px-3 py-2 text-[16px] transition ${
+            className={`rounded-full border px-3 py-2 text-[18px] transition ${
               isSelected
                 ? "border-primary-800 bg-primary-800 text-white"
                 : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50"
@@ -746,9 +797,15 @@ type FilterSidebarProps = {
   dietaryTypeOptions: FilterOption[];
   ageGroupOptions: FilterOption[];
 
+  seasonOptions: FilterOption[];
+  eventOptions: FilterOption[];
+  weatherOptions: FilterOption[];
+  originCountryOptions: FilterOption[];
+
   allergenOptions: FilterOption[];
   storeOptions: StoreFilterOption[];
   ingredientOptions: FilterOption[];
+  hasPositiveRatingData: boolean;
 };
 
 function FilterSidebar({
@@ -759,9 +816,14 @@ function FilterSidebar({
   mealTypeOptions,
   dietaryTypeOptions,
   ageGroupOptions,
+  seasonOptions,
+  eventOptions,
+  weatherOptions,
+  originCountryOptions,
   allergenOptions,
   storeOptions,
   ingredientOptions,
+  hasPositiveRatingData,
 }: FilterSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -774,6 +836,11 @@ function FilterSidebar({
     mealType: true,
     dietaryType: false,
     ageGroup: false,
+
+    seasons: false,
+    events: false,
+    weather: false,
+    origin: false,
 
     allergens: false,
     spice: false,
@@ -1015,7 +1082,7 @@ function FilterSidebar({
                         className="h-4 w-4 shrink-0 accent-primary-800"
                       />
 
-                      <span className="text-[16px]">{option.label}</span>
+                      <span className="text-[18px]">{option.label}</span>
                     </label>
                   );
                 })}
@@ -1037,7 +1104,7 @@ function FilterSidebar({
                   value={categoryQuery}
                   onChange={(event) => setCategoryQuery(event.target.value)}
                   placeholder="ស្វែងរកប្រភេទម្ហូប"
-                  className="w-full bg-transparent text-[16px] text-gray-600 outline-none placeholder:text-gray-400"
+                  className="w-full bg-transparent text-[18px] text-gray-600 outline-none placeholder:text-gray-400"
                 />
               </div>
 
@@ -1191,6 +1258,141 @@ function FilterSidebar({
               </FilterSection>
             )}
 
+            {/* SEASONS */}
+
+            {seasonOptions.length > 0 && (
+              <FilterSection
+                title="រដូវកាល"
+                icon={<IoTimeOutline />}
+                isOpen={openSections.seasons}
+                onToggle={() => toggleSection("seasons")}
+              >
+                <div className="space-y-1">
+                  {seasonOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.seasonCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          seasonCodes: toggleInList(
+                            filters.seasonCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* EVENTS */}
+
+            {eventOptions.length > 0 && (
+              <FilterSection
+                title="ឱកាស និងព្រឹត្តិការណ៍"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.events}
+                onToggle={() => toggleSection("events")}
+              >
+                <div className="space-y-1">
+                  {eventOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.eventCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          eventCodes: toggleInList(
+                            filters.eventCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* SUITABLE WEATHER */}
+
+            {weatherOptions.length > 0 && (
+              <FilterSection
+                title="អាកាសធាតុសមស្រប"
+                icon={<FaFire />}
+                isOpen={openSections.weather}
+                onToggle={() => toggleSection("weather")}
+              >
+                <div className="space-y-1">
+                  {weatherOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.weatherCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          weatherCodes: toggleInList(
+                            filters.weatherCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* ORIGIN */}
+
+            {originCountryOptions.length > 0 && (
+              <FilterSection
+                title="ប្រភពដើម"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.origin}
+                onToggle={() => toggleSection("origin")}
+              >
+                <div className="space-y-1">
+                  {originCountryOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.originCountryCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          originCountryCodes: toggleInList(
+                            filters.originCountryCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+
+                  <CheckboxOption
+                    label="ម្ហូបប្រពៃណី"
+                    checked={filters.traditionalOnly}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        traditionalOnly: !filters.traditionalOnly,
+                      })
+                    }
+                  />
+                </div>
+              </FilterSection>
+            )}
+
             {/* ALLERGENS */}
 
             {allergenOptions.length > 0 && (
@@ -1200,7 +1402,7 @@ function FilterSidebar({
                 isOpen={openSections.allergens}
                 onToggle={() => toggleSection("allergens")}
               >
-                <p className="mb-3 text-[16px] leading-7 text-orange-600">
+                <p className="mb-3 text-[18px] leading-7 text-orange-600">
                   មុខម្ហូបដែលមានអាឡែស៊ីដែលបានជ្រើសនឹងត្រូវដកចេញ។
                 </p>
 
@@ -1282,23 +1484,25 @@ function FilterSidebar({
 
             {/* RATING */}
 
-            <FilterSection
-              title="ការវាយតម្លៃ"
-              icon={<FaStar />}
-              isOpen={openSections.rating}
-              onToggle={() => toggleSection("rating")}
-            >
-              <SingleChoice
-                options={RATING_OPTIONS}
-                selected={filters.minimumRating}
-                onChange={(value) =>
-                  onChange({
-                    ...filters,
-                    minimumRating: value,
-                  })
-                }
-              />
-            </FilterSection>
+            {hasPositiveRatingData && (
+              <FilterSection
+                title="ការវាយតម្លៃ"
+                icon={<FaStar />}
+                isOpen={openSections.rating}
+                onToggle={() => toggleSection("rating")}
+              >
+                <SingleChoice
+                  options={RATING_OPTIONS}
+                  selected={filters.minimumRating}
+                  onChange={(value) =>
+                    onChange({
+                      ...filters,
+                      minimumRating: value,
+                    })
+                  }
+                />
+              </FilterSection>
+            )}
 
             {/* STORES */}
 
@@ -1658,14 +1862,14 @@ export default function FoodPage() {
   }, [searchInput]);
 
   /* =======================================================
-     OPTIONS FROM NEW filterData
+     OPTIONS FROM CURRENT API RESPONSE
   ======================================================= */
 
   const categoryOptions = useMemo(
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) => {
-          const category = item.filterData?.category;
+          const category = item.food?.category;
 
           return category
             ? [
@@ -1684,7 +1888,7 @@ export default function FoodPage() {
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) => {
-          const cuisine = item.filterData?.cuisine;
+          const cuisine = item.food?.cuisine;
 
           return cuisine
             ? [
@@ -1711,6 +1915,34 @@ export default function FoodPage() {
 
   const ageGroupOptions = useMemo(
     () => getUniqueOptions(menuItems.flatMap((item) => getAgeGroups(item))),
+    [menuItems],
+  );
+
+  const seasonOptions = useMemo(
+    () => getUniqueOptions(menuItems.flatMap((item) => getSeasons(item))),
+    [menuItems],
+  );
+
+  const eventOptions = useMemo(
+    () => getUniqueOptions(menuItems.flatMap((item) => getEvents(item))),
+    [menuItems],
+  );
+
+  const weatherOptions = useMemo(
+    () =>
+      getUniqueOptions(menuItems.flatMap((item) => getSuitableWeather(item))),
+    [menuItems],
+  );
+
+  const originCountryOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.flatMap((item) => {
+          const origin = getOriginCountry(item);
+
+          return origin ? [origin] : [];
+        }),
+      ),
     [menuItems],
   );
 
@@ -1755,6 +1987,11 @@ export default function FoodPage() {
           })),
         ),
       ),
+    [menuItems],
+  );
+
+  const hasPositiveRatingData = useMemo(
+    () => menuItems.some((item) => Number(item.store?.averageRating ?? 0) > 0),
     [menuItems],
   );
 
@@ -1925,9 +2162,14 @@ export default function FoodPage() {
                     mealTypeOptions={mealTypeOptions}
                     dietaryTypeOptions={dietaryTypeOptions}
                     ageGroupOptions={ageGroupOptions}
+                    seasonOptions={seasonOptions}
+                    eventOptions={eventOptions}
+                    weatherOptions={weatherOptions}
+                    originCountryOptions={originCountryOptions}
                     allergenOptions={allergenOptions}
                     storeOptions={storeOptions}
                     ingredientOptions={ingredientOptions}
+                    hasPositiveRatingData={hasPositiveRatingData}
                   />
 
                   <main className="min-w-0 flex-1">
@@ -2036,14 +2278,14 @@ export default function FoodPage() {
                   ease: "easeOut",
                 }}
               >
-                <section className="mb-4 rounded-full border border-gray-100 bg-white p-1 shadow-sm">
+                {/* <section className="mb-4 rounded-full border border-gray-100 bg-white p-1 shadow-sm">
                   {renderSearch()}
                 </section>
 
                 <LocationContent
                   menuItems={menuItems}
                   searchQuery={searchInput}
-                />
+                /> */}
               </motion.div>
             )}
 
