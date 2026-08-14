@@ -283,24 +283,53 @@ export default function FoodCard({ food }: FoodCardProps) {
           {/* ======================================
               DIETARY TAGS
           ====================================== */}
+          {/* ======================================
+    DIETARY TAGS
+====================================== */}
 
           {dietaryTypes.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {dietaryTypes.map((diet) => (
+            <div className="flex items-center gap-2 overflow-hidden">
+              {dietaryTypes.slice(0, 2).map((diet) => (
                 <span
                   key={diet.code}
+                  title={diet.name}
                   className="
-                    rounded-full
-                    bg-primary-800
-                    px-3
-                    py-1
-                    text-sm
-                    text-gray-100
-                  "
+         
+          shrink-0
+          truncate
+          rounded-full
+          bg-primary-800
+          px-2
+          py-1
+          text-center
+          text-sm
+          text-gray-100
+        "
                 >
                   {diet.name}
                 </span>
               ))}
+
+              {dietaryTypes.length > 2 && (
+                <span
+                  className="
+         w-8 h-8 justify-center
+          shrink-0
+          rounded-full
+          bg-gray-100
+          
+          py-1
+          text-center
+          text-sm
+          font-medium
+          text-gray-600
+          dark:bg-gray-800
+          dark:text-gray-300
+        "
+                >
+                  +{dietaryTypes.length - 2}
+                </span>
+              )}
             </div>
           )}
 

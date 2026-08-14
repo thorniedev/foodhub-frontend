@@ -1073,10 +1073,10 @@ function FilterSidebar({
             >
               <div className="flex flex-col gap-2">
                 {[
-                  {
-                    label: "មុខម្ហូបពិសេស",
-                    value: "featured",
-                  },
+                  // {
+                  //   label: "មុខម្ហូបពិសេស",
+                  //   value: "featured",
+                  // },
                   {
                     label: "ចំណាត់ថ្នាក់ខ្ពស់",
                     value: "rating",
