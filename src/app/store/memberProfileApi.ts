@@ -37,6 +37,41 @@ interface UpdateMemberProfileRequest {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                    MEDIA                                   */
+/* -------------------------------------------------------------------------- */
+
+export type MediaPurpose =
+  | "PROFILE_AVATAR"
+  | "CATALOG_ALLERGEN_ICON"
+  | "CATALOG_DIETARY_TYPE_ICON"
+  | "CATALOG_FOOD_PRIMARY"
+  | "STORE_LOGO"
+  | "STORE_COVER"
+  | "STORE_GALLERY"
+  | "REPORT_PDF"
+  | "REPORT_XLSX"
+  | "REPORT_CSV";
+
+export interface MediaUploadResponse {
+  uuid: string;
+  originalFilename: string;
+  mimeType: string;
+  sizeBytes: number;
+  widthPx?: number | null;
+  heightPx?: number | null;
+  createdAt: string;
+}
+
+interface UploadMediaRequest {
+  file: File;
+  purpose: MediaPurpose;
+}
+
+interface GetMediaAccessUrlResponse {
+  url: string;
+}
+
+/* -------------------------------------------------------------------------- */
 /*                               PROFILE SAFETY                               */
 /* -------------------------------------------------------------------------- */
 
@@ -145,6 +180,34 @@ export const memberProfileApi = baseApi.injectEndpoints({
       }),
 
       invalidatesTags: ["MemberProfile"],
+    }),
+
+    /* ---------------------------------------------------------------------- */
+    /*                            UPLOAD MEDIA FILE                           */
+    /* ---------------------------------------------------------------------- */
+
+    uploadMedia: builder.mutation<MediaUploadResponse, UploadMediaRequest>({
+      query: ({ file, purpose }) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        return {
+          url: `/media?purpose=${encodeURIComponent(purpose)}`,
+          method: "POST",
+          body: formData,
+        };
+      },
+    }),
+
+    /* ---------------------------------------------------------------------- */
+    /*                          GET MEDIA ACCESS URL                          */
+    /* ---------------------------------------------------------------------- */
+
+    getMediaAccessUrl: builder.query<GetMediaAccessUrlResponse, string>({
+      query: (mediaUuid) => ({
+        url: `/media/${encodeURIComponent(mediaUuid)}/access-url`,
+        method: "GET",
+      }),
     }),
 
     /* ====================================================================== */
@@ -298,6 +361,10 @@ export const {
   useCreateMemberProfileMutation,
   useUpdateMemberProfileMutation,
   useDeleteMemberProfileMutation,
+
+  /* Media */
+  useUploadMediaMutation,
+  useGetMediaAccessUrlQuery,
 
   /* Safety options */
   useGetAllergenOptionsQuery,

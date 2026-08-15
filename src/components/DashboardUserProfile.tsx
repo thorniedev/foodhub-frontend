@@ -20,6 +20,13 @@ import {
 } from "@/app/store/auth/currentUserApi";
 
 import {
+  useGetMemberProfilesQuery,
+  useGetMediaAccessUrlQuery,
+} from "@/app/store/memberProfileApi";
+
+import type { MemberProfile } from "@/types/member-profile/member-profile";
+
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -107,6 +114,22 @@ export default function DashboardUserProfile({
   console.log("current user data ,", user);
   const [updateCurrentUser, { isLoading: isUpdating }] =
     useUpdateCurrentUserMutation();
+
+  /* Fetch default profile to get its avatarMediaUuid */
+  const { data: profilesData } = useGetMemberProfilesQuery();
+  const defaultProfile = useMemo<MemberProfile | undefined>(
+    () => profilesData?.contents?.find((p) => p.isDefault),
+    [profilesData],
+  );
+
+  /* Resolve avatar CDN URL from the default profile's avatarMediaUuid */
+  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
+    defaultProfile?.avatarMediaUuid ?? "",
+    { skip: !defaultProfile?.avatarMediaUuid },
+  );
+
+  /* Use fetched CDN URL, falling back to the avatarUrl prop */
+  const resolvedAvatarUrl = avatarAccessUrlData?.url ?? avatarUrl ?? null;
 
   useEffect(() => {
     if (!user) {
@@ -252,9 +275,9 @@ export default function DashboardUserProfile({
           className="group flex max-w-64 items-center gap-1 rounded-xl px-2 py-1.5 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#136C34]/30 dark:hover:bg-slate-800"
         >
           <div className="relative shrink-0">
-            {avatarUrl ? (
+            {resolvedAvatarUrl ? (
               <Image
-                src={avatarUrl}
+                src={resolvedAvatarUrl}
                 alt={userName}
                 width={40}
                 height={40}
@@ -298,9 +321,9 @@ export default function DashboardUserProfile({
           className="w-72 rounded-2xl border border-slate-200 p-2 shadow-xl dark:border-slate-800"
         >
           <div className="flex items-center gap-3 border-b border-slate-100 p-3 dark:border-slate-800">
-            {avatarUrl ? (
+            {resolvedAvatarUrl ? (
               <Image
-                src={avatarUrl}
+                src={resolvedAvatarUrl}
                 alt={userName}
                 width={48}
                 height={48}
@@ -378,9 +401,9 @@ export default function DashboardUserProfile({
           </div>
           <div className="space-y-6">
             <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-              {avatarUrl ? (
+              {resolvedAvatarUrl ? (
                 <Image
-                  src={avatarUrl}
+                  src={resolvedAvatarUrl}
                   alt={userName}
                   width={64}
                   height={64}

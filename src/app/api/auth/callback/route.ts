@@ -209,6 +209,33 @@ export async function GET(request: NextRequest) {
     // Remove temporary OAuth cookies
     clearLoginCookies(response);
 
+    // Sync user with FoodHub backend database
+    try {
+      const configuredBackendUrl = process.env.BACKEND_API_URL?.trim().replace(/\/+$/, "");
+      if (configuredBackendUrl) {
+        const syncUrl = /\/api\/v1$/i.test(configuredBackendUrl)
+          ? `${configuredBackendUrl}/users/me/sync`
+          : `${configuredBackendUrl}/api/v1/users/me/sync`;
+
+        fetch(syncUrl, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+          cache: "no-store",
+        })
+          .then((res) => {
+            console.log("[USER SYNC STATUS ON LOGIN]", res.status);
+          })
+          .catch((err) => {
+            console.warn("[USER SYNC FETCH ERROR ON LOGIN]", err);
+          });
+      }
+    } catch (syncError) {
+      console.warn("[USER SYNC WARNING ON LOGIN]", syncError);
+    }
+
     console.log("[KEYCLOAK LOGIN SUCCESS]", {
       returnTo,
 

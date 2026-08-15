@@ -113,12 +113,12 @@ const enforcementLabels: Record<DietaryEnforcementLevel, string> = {
 
 const initialFormState: CreateProfileForm = {
   profileName: "",
-  relationship: "CHILD",
+  relationship: "SELF",
   gender: "MALE",
   dateOfBirth: "",
   preferredLanguage: "km",
   avatarMediaUuid: null,
-  isDefault: false,
+  isDefault: true,
   allergies: [],
   dietaryTypes: [],
   medicalConditions: [],
@@ -329,7 +329,7 @@ export default function CreateMemberProfileModal({
     dateOfBirth: form.dateOfBirth,
     preferredLanguage: form.preferredLanguage,
     avatarMediaUuid: form.avatarMediaUuid,
-    isDefault: form.isDefault,
+    isDefault: form.relationship === "SELF" ? true : form.isDefault,
   });
 
   const toggleAllergy = (allergenCode: string) => {

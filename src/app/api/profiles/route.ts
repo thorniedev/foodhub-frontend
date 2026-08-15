@@ -236,6 +236,70 @@ function createBackendResponse(data: unknown, status: number) {
   });
 }
 
+function decodeJwt(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = Buffer.from(parts[1], "base64url").toString("utf8");
+    return JSON.parse(payload) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+async function syncUser(backendApiUrl: string, accessToken: string): Promise<boolean> {
+  const claims = decodeJwt(accessToken);
+  console.log("[SYNC USER ATTEMPT] Claims:", {
+    sub: claims?.sub,
+    email: claims?.email,
+    username: claims?.preferred_username,
+  });
+
+  // 1. Try GET /users/me (triggers user creation/lookup in some Spring Boot auth filters)
+  try {
+    const res = await fetch(`${backendApiUrl}/users/me`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: "no-store",
+    });
+    const text = await res.text();
+    console.log("[SYNC USER via GET /users/me]", res.status, text);
+    if (res.ok) return true;
+  } catch (err) {
+    console.warn("[SYNC USER GET /users/me error]", err);
+  }
+
+  // 2. Try POST /users
+  try {
+    const res = await fetch(`${backendApiUrl}/users`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        keycloakId: claims?.sub,
+        username: claims?.preferred_username || claims?.email,
+        email: claims?.email,
+        firstName: claims?.given_name,
+        lastName: claims?.family_name,
+      }),
+      cache: "no-store",
+    });
+    const text = await res.text();
+    console.log("[SYNC USER via POST /users]", res.status, text);
+    if (res.ok || res.status === 409) return true;
+  } catch (err) {
+    console.warn("[SYNC USER POST /users error]", err);
+  }
+
+  return false;
+}
+
 /**
  * GET /api/profiles?page=0&size=20
  */
@@ -281,6 +345,28 @@ export async function GET(request: NextRequest) {
         response: responseData,
         url: backendUrl.toString(),
       });
+
+      // If user not found in backend database (new user) or has no profiles yet, return empty list
+      if (backendResponse.status === 404) {
+        console.log("No profiles found for user (404), returning empty profile collection.");
+        return NextResponse.json(
+          {
+            contents: [],
+            pageNumber: 0,
+            pageSize: 20,
+            totalElements: 0,
+            totalPages: 0,
+            first: true,
+            last: true,
+          },
+          {
+            status: 200,
+            headers: {
+              "Cache-Control": "no-store",
+            },
+          },
+        );
+      }
     }
 
     return createBackendResponse(responseData, backendResponse.status);
@@ -395,7 +481,7 @@ export async function POST(request: NextRequest) {
     dateOfBirth: requestBody.dateOfBirth,
     preferredLanguage: requestBody.preferredLanguage || "km",
     avatarMediaUuid: requestBody.avatarMediaUuid ?? null,
-    isDefault: requestBody.isDefault ?? false,
+    isDefault: requestBody.relationship === "SELF" ? true : (requestBody.isDefault ?? false),
     // allergies: requestBody.allergies ?? [],
     // dietaryTypes: requestBody.dietaryTypes ?? [],
     // medicalConditions: requestBody.medicalConditions ?? [],
@@ -430,6 +516,27 @@ export async function POST(request: NextRequest) {
         response: responseData,
         url: backendUrl,
       });
+
+      // If user not synced in backend database, auto-sync and retry create
+      if (backendResponse.status === 404) {
+        console.log("User not synced for create profile, attempting auto-sync...");
+        const synced = await syncUser(backendApiUrl, accessToken);
+        if (synced) {
+          console.log("Auto-sync succeeded, retrying POST /profiles...");
+          const retryResponse = await fetch(backendUrl, {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(payload),
+            cache: "no-store",
+          });
+          const retryData = await parseBackendResponse(retryResponse);
+          return createBackendResponse(retryData, retryResponse.status);
+        }
+      }
     }
 
     return createBackendResponse(responseData, backendResponse.status);

@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo, type ReactNode } from "react";
+import { useRef, useState, useMemo, type ReactNode } from "react";
 import { IoCameraOutline } from "react-icons/io5";
 import { FaRegStar, FaRegUser, FaUtensils } from "react-icons/fa";
 import { RiShieldCheckLine } from "react-icons/ri";
 import { FiAlertTriangle } from "react-icons/fi";
+import { LoaderCircle } from "lucide-react";
 
 import {
   useGetAllergenOptionsQuery,
@@ -13,6 +15,9 @@ import {
   useGetMedicalConditionOptionsQuery,
   useGetMemberProfileByIdQuery,
   useGetMemberProfilesQuery,
+  useUploadMediaMutation,
+  useUpdateMemberProfileMutation,
+  useGetMediaAccessUrlQuery,
 } from "@/app/store/memberProfileApi";
 
 import type {
@@ -336,9 +341,13 @@ export default function UserDashboard() {
         <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
           <div className="-mt-8 flex flex-col gap-4 sm:-mt-10 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
             <div className="flex min-w-0 items-end gap-3 sm:gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-[#136C34] text-[20px] font-bold text-white shadow-sm sm:h-20 sm:w-20 sm:text-[26px]">
-                {getInitials(profile.profileName)}
-              </div>
+              {/* ---- Avatar with upload overlay ---- */}
+              <AvatarUpload
+                profileUuid={profile.uuid}
+                avatarMediaUuid={profile.avatarMediaUuid}
+                profileName={profile.profileName}
+                onRefresh={() => void refetchDetail()}
+              />
 
               <div className="min-w-0 pb-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -585,6 +594,154 @@ export default function UserDashboard() {
           <EmptyValue text="មិនមានគ្រឿងផ្សំដែលត្រូវជៀសវាង។" />
         )}
       </SectionCard> */}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                             AVATAR UPLOAD                                  */
+/* -------------------------------------------------------------------------- */
+
+interface AvatarUploadProps {
+  profileUuid: string;
+  avatarMediaUuid: string | null;
+  profileName: string;
+  onRefresh: () => void;
+}
+
+function AvatarUpload({
+  profileUuid,
+  avatarMediaUuid,
+  profileName,
+  onRefresh,
+}: AvatarUploadProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const [uploadMedia, { isLoading: isUploading }] = useUploadMediaMutation();
+  const [updateProfile, { isLoading: isUpdating }] =
+    useUpdateMemberProfileMutation();
+
+  /* Fetch the CDN URL for the current avatar */
+  const { data: accessUrlData } = useGetMediaAccessUrlQuery(
+    avatarMediaUuid ?? "",
+    { skip: !avatarMediaUuid },
+  );
+
+  const isProcessing = isUploading || isUpdating;
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    /* Reset the input so the same file can be re-selected */
+    event.target.value = "";
+
+    if (!file) return;
+
+    /* Basic client-side validation */
+    if (!file.type.startsWith("image/")) {
+      setUploadError("សូមជ្រើសរើសរូបភាពប្រភេទ JPG, PNG ឬ WebP");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("ទំហំឯកសារមិនត្រូវលើសពី 5 MB");
+      return;
+    }
+
+    setUploadError(null);
+
+    try {
+      /* 1. Upload the file to the media service */
+      const mediaResult = await uploadMedia({
+        file,
+        purpose: "PROFILE_AVATAR",
+      }).unwrap();
+
+      /* 2. Patch the profile with the new avatar UUID */
+      await updateProfile({
+        uuid: profileUuid,
+        body: { avatarMediaUuid: mediaResult.uuid },
+      }).unwrap();
+
+      /* 3. Re-fetch the profile so the new URL is picked up */
+      onRefresh();
+    } catch (err: unknown) {
+      if (typeof err === "object" && err !== null && "data" in err) {
+        const data = (err as { data?: { message?: string } }).data;
+        setUploadError(data?.message ?? "មិនអាចផ្ទុករូបភាពបានទេ។ សូមព្យាយាមមើលទៀត។");
+      } else if (err instanceof Error) {
+        setUploadError(err.message);
+      } else {
+        setUploadError("មិនអាចផ្ទុករូបភាពបានទេ។ សូមព្យាយាមមើលទៀត។");
+      }
+    }
+  };
+
+  const initials = getInitials(profileName);
+
+  return (
+    <div className="shrink-0">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        id="dashboard-avatar-input"
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onChange={(e) => void handleFileChange(e)}
+        disabled={isProcessing}
+      />
+
+      {/* Avatar circle */}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isProcessing}
+        title="ផ្លាស់ប្ដូររូបតំណាង"
+        aria-label="ផ្លាស់ប្ដូររូបតំណាង"
+        className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:h-20 sm:w-20 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {/* Photo or initials background */}
+        {accessUrlData?.url ? (
+          <Image
+            src={accessUrlData.url}
+            alt={profileName}
+            fill
+            className="object-cover"
+            sizes="80px"
+          />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center bg-[#136C34] text-[20px] font-bold text-white sm:text-[26px]">
+            {initials}
+          </span>
+        )}
+
+        {/* Spinner overlay while uploading */}
+        {isProcessing && (
+          <span className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <LoaderCircle className="h-6 w-6 animate-spin text-white" />
+          </span>
+        )}
+
+        {/* Camera hover overlay */}
+        {!isProcessing && (
+          <span className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+            <IoCameraOutline className="text-[22px] text-white" />
+            <span className="text-[10px] font-semibold text-white">
+              ផ្លាស់ប្ដូរ
+            </span>
+          </span>
+        )}
+      </button>
+
+      {/* Inline upload error */}
+      {uploadError && (
+        <p className="mt-1.5 max-w-[140px] text-center text-[13px] leading-5 text-red-600">
+          {uploadError}
+        </p>
+      )}
     </div>
   );
 }

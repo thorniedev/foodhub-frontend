@@ -462,8 +462,8 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   safety: new Set(["GET"]),
   stores: new Set(["GET", "POST", "PATCH", "DELETE"]),
 
-  // Required for /api/media/{uuid}/access-url
-  media: new Set(["GET"]),
+  // Required for /api/media/{uuid}/access-url and avatar upload
+  media: new Set(["GET", "POST"]),
 
   "menu-items": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   meetup: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
@@ -507,6 +507,10 @@ function requiresAuthentication(backendPath: string) {
   }
 
   if (backendPath === "profiles" || backendPath.startsWith("profiles/")) {
+    return true;
+  }
+
+  if (backendPath === "media" || backendPath.startsWith("media/")) {
     return true;
   }
 
@@ -695,6 +699,46 @@ async function forwardRequest(
         backendUrl: targetUrl.toString(),
         response: errorText,
       });
+
+      // Auto-sync brand new users who don't exist in backend database yet
+      if (backendResponse.status === 404 && accessToken) {
+        if (backendPath.startsWith("profiles") || backendPath.startsWith("users/me")) {
+          console.log("[FOODHUB PROXY] 404 detected, attempting auto user sync...");
+          try {
+            const syncUrl = `${backendApiUrl}/users/me/sync`;
+            const syncRes = await fetch(syncUrl, {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              cache: "no-store",
+            });
+            if (syncRes.ok) {
+              console.log("[FOODHUB PROXY] Auto user sync succeeded, retrying request...");
+              const retryRes = await fetch(targetUrl, {
+                method: request.method,
+                headers: requestHeaders,
+                body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
+                cache: "no-store",
+                redirect: "manual",
+              });
+              const retryBody = request.method === "HEAD" ? null : await retryRes.arrayBuffer();
+              const retryHeaders = new Headers();
+              const retryContentType = retryRes.headers.get("content-type");
+              if (retryContentType) retryHeaders.set("Content-Type", retryContentType);
+              const retryStatus = retryRes.status;
+              const retryMustNotHaveBody = request.method === "HEAD" || retryStatus === 204 || retryStatus === 205 || retryStatus === 304;
+              return new Response(retryMustNotHaveBody ? null : retryBody, {
+                status: retryStatus,
+                headers: retryHeaders,
+              });
+            }
+          } catch (syncErr) {
+            console.warn("[FOODHUB PROXY] Auto user sync failed:", syncErr);
+          }
+        }
+      }
     }
 
     const status = backendResponse.status;
