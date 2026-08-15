@@ -433,7 +433,7 @@ export default function LocationContent({
   const sourceStores = useMemo<LocationStore[]>(
     () =>
       Array.isArray(sourceStoreData)
-        ? (sourceStoreData as LocationStore[])
+        ? (sourceStoreData as unknown as LocationStore[])
         : [],
     [sourceStoreData],
   );

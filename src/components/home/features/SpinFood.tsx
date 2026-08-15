@@ -143,25 +143,19 @@ type DisplayCodeName = {
 };
 
 function getDietaryTypes(food: CatalogMenuItem): DisplayCodeName[] {
-  if (!Array.isArray(food.dietaryTypes)) {
+  if (!Array.isArray(food.food?.dietaryTypes)) {
     return [];
   }
 
-  return food.dietaryTypes.flatMap((item) => {
-    if (typeof item !== "object" || item === null) {
-      return [];
-    }
-
-    const value = item as Record<string, unknown>;
-
-    if (typeof value.code !== "string" || typeof value.name !== "string") {
+  return food.food.dietaryTypes.flatMap((item) => {
+    if (!item.code || !item.name) {
       return [];
     }
 
     return [
       {
-        code: value.code,
-        name: value.name,
+        code: item.code,
+        name: item.name,
       },
     ];
   });
@@ -264,7 +258,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
 
   const badgeText = food.isFeatured
     ? "Featured"
-    : food.filterData?.category?.name || "Available";
+    : food.food?.category?.name || "Available";
 
   return (
     <motion.div
@@ -454,15 +448,15 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
                   ))
                 ) : (
                   <>
-                    {food.filterData?.category && (
+                    {food.food?.category && (
                       <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white">
-                        {food.filterData.category.name}
+                        {food.food.category.name}
                       </span>
                     )}
 
-                    {food.filterData?.cuisine && (
+                    {food.food?.cuisine && (
                       <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white">
-                        {food.filterData.cuisine.name}
+                        {food.food.cuisine.name}
                       </span>
                     )}
                   </>

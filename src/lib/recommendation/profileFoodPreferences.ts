@@ -38,7 +38,7 @@ function valuesFromUnknown(value: unknown): string[] {
 }
 
 function foodDietaryValues(food: CatalogMenuItem): string[] {
-  return valuesFromUnknown(food.dietaryTypes);
+  return valuesFromUnknown(food.food?.dietaryTypes);
 }
 
 function foodAllergenValues(food: CatalogMenuItem): string[] {

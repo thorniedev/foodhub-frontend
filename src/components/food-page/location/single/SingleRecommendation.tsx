@@ -595,7 +595,7 @@ export default function SingleRecommendation({
       `}
                 >
                   <FooodCard
-                    food={food}
+                    food={food as unknown as import("@/types/catalog-menu-item").CatalogMenuItem}
                     isMapSelected={selected}
                     onViewMap={handleViewDestination}
                   />

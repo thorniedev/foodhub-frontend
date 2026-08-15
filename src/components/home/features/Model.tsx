@@ -55,19 +55,13 @@ function getPreferenceLabels(foods: CatalogMenuItem[]): string[] {
   const values = new Set<string>();
 
   foods.slice(0, 6).forEach((food) => {
-    if (!Array.isArray(food.dietaryTypes)) {
+    if (!Array.isArray(food.food?.dietaryTypes)) {
       return;
     }
 
-    food.dietaryTypes.forEach((item) => {
-      if (typeof item !== "object" || item === null) {
-        return;
-      }
-
-      const diet = item as Record<string, unknown>;
-
-      if (typeof diet.name === "string") {
-        values.add(diet.name);
+    food.food.dietaryTypes.forEach((item) => {
+      if (item.name) {
+        values.add(item.name);
       }
     });
   });
