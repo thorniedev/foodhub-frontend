@@ -188,6 +188,9 @@ export default function Home() {
       /> */}
 
       <section>
+        {" "}
+        <MealTimeJourneySection />
+        {/* <BrushRevealSection /> */}
         <Hero />
         {/* <ZoomThroughSection /> */}
         {/* <BrushRevealSection /> */}
@@ -195,22 +198,14 @@ export default function Home() {
         <PopularSection />
         <FilterByMealTime />
         {/* <RegionFlightSection /> */}
-        {/* <MealTimeJourneySection />
-        <BrushRevealSection /> */}
         {/* <FlavorIndexSection /> */}
         {/* <MarketWallSection /> */}
         <FoodSearchBar />
-
         {/* <Model /> */}
-
         <SeasonSection />
-
         <EventSection />
-
         <LocationSection />
-
         <MealsByAgeSection />
-
         <FitFoodSection />
       </section>
     </div>

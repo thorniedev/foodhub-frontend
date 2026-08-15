@@ -990,6 +990,529 @@
 
 //version 4
 
+// "use client";
+
+// import { useRef, useState } from "react";
+// import {
+//   motion,
+//   useScroll,
+//   useTransform,
+//   useSpring,
+//   useReducedMotion,
+//   useMotionValueEvent,
+//   useMotionTemplate,
+//   MotionValue,
+// } from "framer-motion";
+
+// const MEALS = [
+//   {
+//     label: "អាហារពេលព្រឹក",
+//     dish: "បបរគ្រឿង",
+//     time: "០៦:៣០",
+//     note: "ចាប់ផ្ដើមថ្ងៃដោយភាពស្រាល",
+//     img: "/Image/food/food1.png",
+//   },
+//   {
+//     label: "អាហារថ្ងៃត្រង់",
+//     dish: "សម្លម្ជូរ",
+//     time: "១២:០០",
+//     note: "ឆ្អែតពេញ សម្រាប់រសៀលវែង",
+//     img: "/Image/food/food4.png",
+//   },
+//   {
+//     label: "អាហារពេលល្ងាច",
+//     dish: "ឡុកឡាក់",
+//     time: "១៨:៣០",
+//     note: "ក្ដៅៗ ជាមួយក្រុមគ្រួសារ",
+//     img: "/Image/food/food7.png",
+//   },
+//   {
+//     label: "អាហារសម្រន់",
+//     dish: "នំចាក់",
+//     time: "២១:០០",
+//     note: "ផ្អែមបន្តិច មុនចូលដំណេក",
+//     img: "/Image/food/food9.png",
+//   },
+// ];
+
+// const STARS: [number, number][] = [
+//   [12, 18],
+//   [24, 9],
+//   [37, 22],
+//   [48, 12],
+//   [61, 20],
+//   [72, 8],
+//   [83, 24],
+//   [91, 14],
+//   [18, 32],
+//   [55, 30],
+//   [67, 35],
+//   [30, 15],
+// ];
+
+// export default function MealTimeJourneySection() {
+//   const reduce = useReducedMotion();
+//   const ref = useRef<HTMLDivElement>(null);
+//   const [active, setActive] = useState(0);
+
+//   const { scrollYProgress } = useScroll({
+//     target: ref,
+//     offset: ["start start", "end end"],
+//   });
+
+//   const progress = useSpring(scrollYProgress, {
+//     stiffness: 65,
+//     damping: 25,
+//     mass: 0.45,
+//     restDelta: 0.0005,
+//   });
+
+//   const span = 1 / (MEALS.length + 0.5);
+
+//   useMotionValueEvent(progress, "change", (v) => {
+//     setActive(Math.min(MEALS.length - 1, Math.max(0, Math.floor(v / span))));
+//   });
+
+//   /* ---------------- sky ---------------- */
+//   const skyTop = useTransform(
+//     progress,
+//     [0, 0.22, 0.5, 0.76, 1],
+//     ["#1e3a5f", "#2563a0", "#3b8fd4", "#7c2d12", "#031b0d"],
+//   );
+//   const skyMid = useTransform(
+//     progress,
+//     [0, 0.22, 0.5, 0.76, 1],
+//     ["#7c3f12", "#c2410c", "#86c5e8", "#c2410c", "#052e16"],
+//   );
+//   const skyLow = useTransform(
+//     progress,
+//     [0, 0.22, 0.5, 0.76, 1],
+//     ["#facc15", "#fdba74", "#fef9c3", "#f97316", "#0d2f1a"],
+//   );
+//   const sky = useMotionTemplate`linear-gradient(to bottom, ${skyTop} 0%, ${skyMid} 52%, ${skyLow} 100%)`;
+
+//   /* ---------------- sun path ---------------- */
+//   const sunX = useTransform(progress, [0, 1], ["6%", "94%"]);
+//   const sunY = useTransform(
+//     progress,
+//     [0, 0.12, 0.3, 0.5, 0.7, 0.88, 1],
+//     ["86%", "58%", "30%", "17%", "30%", "58%", "86%"],
+//   );
+
+//   /* ---------------- sun shape ---------------- */
+//   // wider than tall near the horizon — atmospheric refraction
+//   const sunScaleX = useTransform(
+//     progress,
+//     [0, 0.18, 0.5, 0.82, 1],
+//     [1.28, 1.18, 1, 1.18, 1.28],
+//   );
+//   const sunScaleY = useTransform(
+//     progress,
+//     [0, 0.18, 0.5, 0.82, 1],
+//     [1.0, 1.1, 1, 1.1, 1.0],
+//   );
+
+//   /* ---------------- sun colour ---------------- */
+//   const coreColor = useTransform(
+//     progress,
+//     [0, 0.2, 0.5, 0.8, 1],
+//     ["#ffb367", "#ffe1a3", "#ffffff", "#ffd08a", "#ff9d4d"],
+//   );
+//   const haloColor = useTransform(
+//     progress,
+//     [0, 0.2, 0.5, 0.8, 1],
+//     ["#f97316", "#fbbf24", "#fef3c7", "#fb923c", "#ea580c"],
+//   );
+//   const rimColor = useTransform(
+//     progress,
+//     [0, 0.2, 0.5, 0.8, 1],
+//     ["#c2410c", "#f59e0b", "#facc15", "#ea580c", "#9a3412"],
+//   );
+//   const discGradient = useMotionTemplate`radial-gradient(circle at 50% 46%, ${coreColor} 0%, ${coreColor} 16%, ${haloColor} 54%, ${rimColor} 100%)`;
+
+//   /* ---------------- sun light ---------------- */
+//   const glowRGBA = useTransform(
+//     progress,
+//     [0, 0.2, 0.5, 0.8, 1],
+//     [
+//       "rgba(249,115,22,0.42)",
+//       "rgba(251,191,36,0.50)",
+//       "rgba(254,243,199,0.62)",
+//       "rgba(251,146,60,0.50)",
+//       "rgba(194,65,12,0.40)",
+//     ],
+//   );
+//   const nearGlow = useMotionTemplate`radial-gradient(circle, ${glowRGBA} 0%, transparent 62%)`;
+//   const wideGlow = useMotionTemplate`radial-gradient(circle, ${glowRGBA} 0%, transparent 72%)`;
+
+//   const bloomA = useTransform(progress, [0, 0.5, 1], [26, 54, 26]);
+//   const bloomB = useTransform(progress, [0, 0.5, 1], [40, 90, 40]);
+//   const bloom = useMotionTemplate`0 0 ${bloomA}px ${bloomB}px ${glowRGBA}`;
+
+//   // shafts read at low angles, not overhead
+//   const shaftOpacity = useTransform(
+//     progress,
+//     [0.06, 0.26, 0.5, 0.74, 0.94],
+//     [0, 0.3, 0.1, 0.3, 0],
+//   );
+//   const washOpacity = useTransform(
+//     progress,
+//     [0, 0.5, 0.85, 1],
+//     [0.16, 0.08, 0.2, 0],
+//   );
+
+//   // lens ghosts mirrored through screen centre
+//   const ghostLeft = useMotionTemplate`calc(100% - ${sunX})`;
+//   const ghostTop = useMotionTemplate`calc(100% - ${sunY})`;
+//   const ghostLeftB = useMotionTemplate`calc(50% + (100% - ${sunX} - 50%) * 0.5)`;
+//   const ghostTopB = useMotionTemplate`calc(50% + (100% - ${sunY} - 50%) * 0.5)`;
+//   const ghostOpacity = useTransform(progress, [0.12, 0.5, 0.88], [0, 0.14, 0]);
+
+//   const horizonHaze = useMotionTemplate`linear-gradient(to top, ${haloColor} 0%, transparent 85%)`;
+
+//   /* ---------------- stage ---------------- */
+//   const starOpacity = useTransform(progress, [0.74, 0.95], [0, 1]);
+//   const dialRotate = useTransform(progress, [0, 1], [0, 360]);
+//   const sheen = useMotionTemplate`radial-gradient(circle at ${sunX} -10%, rgba(255,255,255,0.28), transparent 62%)`;
+
+//   return (
+//     <div ref={ref} style={{ height: `${(MEALS.length + 0.5) * 100}vh` }}>
+//       <motion.section
+//         className="sticky top-0 h-screen overflow-hidden"
+//         style={{
+//           backgroundImage: reduce ? "linear-gradient(#052e16,#0d2f1a)" : sky,
+//         }}
+//       >
+//         {/* stars */}
+//         <motion.div
+//           className="pointer-events-none absolute inset-0 z-0"
+//           style={{ opacity: reduce ? 0 : starOpacity }}
+//         >
+//           {STARS.map(([l, t], i) => (
+//             <motion.span
+//               key={i}
+//               className="absolute rounded-full bg-white"
+//               style={{
+//                 left: `${l}%`,
+//                 top: `${t}%`,
+//                 width: i % 3 === 0 ? 3 : 2,
+//                 height: i % 3 === 0 ? 3 : 2,
+//               }}
+//               animate={{ opacity: [0.35, 1, 0.35] }}
+//               transition={{
+//                 duration: 2.6 + (i % 4),
+//                 repeat: Infinity,
+//                 ease: "easeInOut",
+//               }}
+//             />
+//           ))}
+//         </motion.div>
+
+//         {/* volumetric shafts */}
+//         <motion.div
+//           className="pointer-events-none absolute z-[9] h-[150vh] w-[150vh] mix-blend-screen"
+//           style={{
+//             left: sunX,
+//             top: sunY,
+//             x: "-50%",
+//             y: "-50%",
+//             opacity: reduce ? 0 : shaftOpacity,
+//             filter: "blur(42px)",
+//             background:
+//               "conic-gradient(from 12deg, transparent 0deg 16deg, rgba(255,236,180,0.55) 22deg 30deg, transparent 36deg 62deg, rgba(255,236,180,0.35) 68deg 78deg, transparent 84deg 120deg, rgba(255,236,180,0.45) 128deg 138deg, transparent 146deg 200deg, rgba(255,236,180,0.30) 208deg 216deg, transparent 224deg 360deg)",
+//             maskImage:
+//               "radial-gradient(circle, black 6%, rgba(0,0,0,0.35) 30%, transparent 66%)",
+//             WebkitMaskImage:
+//               "radial-gradient(circle, black 6%, rgba(0,0,0,0.35) 30%, transparent 66%)",
+//           }}
+//         />
+
+//         {/* sun */}
+//         <div className="pointer-events-none absolute inset-0 z-10">
+//           <motion.div
+//             className="absolute"
+//             style={{ left: sunX, top: sunY, x: "-50%", y: "-50%" }}
+//           >
+//             {/* wide atmospheric scatter */}
+//             <motion.div
+//               className="absolute left-1/2 top-1/2 h-[70vh] w-[70vh] -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
+//               style={{
+//                 backgroundImage: reduce ? "none" : wideGlow,
+//                 filter: "blur(30px)",
+//                 opacity: 0.7,
+//               }}
+//             />
+//             {/* near glow */}
+//             <motion.div
+//               className="absolute left-1/2 top-1/2 h-[26vh] w-[26vh] -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
+//               style={{
+//                 backgroundImage: reduce ? "none" : nearGlow,
+//                 filter: "blur(14px)",
+//               }}
+//             />
+//             {/* disc */}
+//             <motion.div
+//               className="h-20 w-20 rounded-full md:h-28 md:w-28"
+//               style={{
+//                 backgroundImage: reduce ? "none" : discGradient,
+//                 backgroundColor: reduce ? "#facc15" : undefined,
+//                 boxShadow: reduce
+//                   ? "0 0 60px 70px rgba(250,204,21,0.2)"
+//                   : bloom,
+//                 scaleX: reduce ? 1 : sunScaleX,
+//                 scaleY: reduce ? 1 : sunScaleY,
+//                 filter: "blur(0.6px)",
+//               }}
+//             />
+//           </motion.div>
+
+//           {/* lens ghosts */}
+//           <motion.span
+//             className="absolute h-16 w-16 rounded-full mix-blend-screen"
+//             style={{
+//               left: ghostLeft,
+//               top: ghostTop,
+//               x: "-50%",
+//               y: "-50%",
+//               opacity: reduce ? 0 : ghostOpacity,
+//               background:
+//                 "radial-gradient(circle, rgba(255,224,150,0.9) 0%, transparent 70%)",
+//               filter: "blur(6px)",
+//             }}
+//           />
+//           <motion.span
+//             className="absolute h-8 w-8 rounded-full mix-blend-screen"
+//             style={{
+//               left: ghostLeftB,
+//               top: ghostTopB,
+//               x: "-50%",
+//               y: "-50%",
+//               opacity: reduce ? 0 : ghostOpacity,
+//               background:
+//                 "radial-gradient(circle, rgba(255,246,214,0.9) 0%, transparent 70%)",
+//               filter: "blur(3px)",
+//             }}
+//           />
+//         </div>
+
+//         {/* warm light wash */}
+//         <motion.div
+//           className="pointer-events-none absolute inset-0 z-[12] mix-blend-soft-light"
+//           style={{
+//             backgroundColor: reduce ? "transparent" : haloColor,
+//             opacity: reduce ? 0 : washOpacity,
+//           }}
+//         />
+
+//         {/* horizon haze */}
+//         <motion.div
+//           className="pointer-events-none absolute inset-x-0 bottom-0 z-[13] h-[38%]"
+//           style={{
+//             backgroundImage: reduce ? "none" : horizonHaze,
+//             opacity: reduce ? 0 : 0.28,
+//             filter: "blur(18px)",
+//           }}
+//         />
+
+//         {/* hills — the sun rises out of and sets behind these */}
+//         <svg
+//           viewBox="0 0 1440 260"
+//           preserveAspectRatio="none"
+//           className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-[26vh] w-full"
+//         >
+//           <path
+//             d="M0,150 C220,90 360,180 560,140 C760,100 900,190 1120,150 C1280,120 1380,160 1440,140 L1440,260 L0,260 Z"
+//             fill="#0b3d22"
+//             opacity="0.9"
+//           />
+//           <path
+//             d="M0,196 C260,150 420,220 660,190 C880,162 1040,225 1240,196 C1340,182 1400,200 1440,192 L1440,260 L0,260 Z"
+//             fill="#052e16"
+//           />
+//         </svg>
+
+//         {/* grain */}
+//         <svg className="pointer-events-none absolute inset-0 z-[16] h-full w-full opacity-[0.12] mix-blend-overlay">
+//           <filter id="mealGrain">
+//             <feTurbulence
+//               type="fractalNoise"
+//               baseFrequency="0.85"
+//               numOctaves="3"
+//             />
+//           </filter>
+//           <rect width="100%" height="100%" filter="url(#mealGrain)" />
+//         </svg>
+
+//         {/* header */}
+//         {/* <div className="absolute inset-x-0 top-0 z-30 px-6 pt-8 text-center md:pt-10">
+//           <span className="text-lg font-medium tracking-[0.2em] text-white/80">
+//             គ្រប់ពេលវេលា
+//           </span>
+//           <h2 className="mx-auto mt-3 max-w-2xl text-2xl font-bold leading-snug text-white drop-shadow-[0_2px_12px_rgba(5,46,22,0.7)] md:text-4xl">
+//             រាល់ពេលវេលា មានរសជាតិដែលសាកសមនឹងអ្នក
+//           </h2>
+//         </div> */}
+
+//         {/* stage */}
+//         <div className="relative z-20 flex h-full items-center justify-center px-6">
+//           <div className="relative h-[38vh] w-[38vh] max-h-[330px] max-w-[330px]">
+//             {/* dial */}
+//             <svg
+//               viewBox="0 0 200 200"
+//               className="absolute inset-[-9%] h-[118%] w-[118%] -rotate-90"
+//             >
+//               <defs>
+//                 <linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="1">
+//                   <stop offset="0%" stopColor="#fde047" />
+//                   <stop offset="55%" stopColor="#facc15" />
+//                   <stop offset="100%" stopColor="#fb923c" />
+//                 </linearGradient>
+//               </defs>
+//               <circle
+//                 cx="100"
+//                 cy="100"
+//                 r="92"
+//                 fill="none"
+//                 stroke="rgba(255,255,255,0.18)"
+//                 strokeWidth="2"
+//               />
+//               <motion.circle
+//                 cx="100"
+//                 cy="100"
+//                 r="92"
+//                 fill="none"
+//                 stroke="url(#dialGrad)"
+//                 strokeWidth="3"
+//                 strokeLinecap="round"
+//                 style={{ pathLength: reduce ? 1 : progress }}
+//               />
+//             </svg>
+
+//             {/* orbiting knob */}
+//             <motion.div
+//               className="pointer-events-none absolute inset-[-9%]"
+//               style={{ rotate: reduce ? 360 : dialRotate }}
+//             >
+//               <span className="absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-300 shadow-[0_0_20px_6px_rgba(250,204,21,0.45)]" />
+//             </motion.div>
+
+//             {/* photo aperture */}
+//             <div className="absolute inset-0 overflow-hidden rounded-full shadow-2xl shadow-primary-950/60">
+//               {MEALS.map((m, i) => (
+//                 <Aperture
+//                   key={m.label}
+//                   meal={m}
+//                   index={i}
+//                   span={span}
+//                   progress={progress}
+//                   reduce={!!reduce}
+//                 />
+//               ))}
+//               <motion.div
+//                 className="pointer-events-none absolute inset-0 rounded-full"
+//                 style={{ backgroundImage: reduce ? "none" : sheen }}
+//               />
+//               <div className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-white/25" />
+//             </div>
+
+//             {/* time chip */}
+//             <div className="absolute -top-3 left-1/2 z-30 -translate-x-1/2 rounded-full border border-white/20 bg-primary-950/60 px-5 py-1.5 backdrop-blur-md">
+//               <span className="font-mono text-lg tabular-nums text-accent-300">
+//                 {MEALS[active].time}
+//               </span>
+//             </div>
+
+//             {/* glass panel */}
+//             {/* <motion.div
+//               key={MEALS[active].dish}
+//               initial={reduce ? false : { opacity: 0, y: 16 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+//               className="absolute -bottom-16 left-1/2 z-30 w-[86vw] max-w-sm -translate-x-1/2 rounded-3xl border border-white/20 bg-white/[0.09] px-7 py-5 text-center shadow-xl shadow-primary-950/40 backdrop-blur-xl"
+//             >
+//               <p className="text-2xl font-black text-white md:text-3xl">
+//                 {MEALS[active].dish}
+//               </p>
+//               <p className="mt-2 text-lg text-white/75">{MEALS[active].note}</p>
+//               <span className="mt-4 inline-block rounded-full bg-accent-400 px-5 py-1.5 text-lg font-bold text-primary-950">
+//                 {MEALS[active].label}
+//               </span>
+//             </motion.div> */}
+//           </div>
+//         </div>
+
+//         {/* timeline */}
+//         <div className="absolute inset-x-0 bottom-8 z-30 px-8 md:px-20">
+//           <div className="relative mx-auto flex max-w-2xl items-center justify-between">
+//             <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/20" />
+//             <motion.span
+//               className="absolute left-0 top-1/2 h-px w-full origin-left -translate-y-1/2 bg-accent-300"
+//               style={{ scaleX: reduce ? 1 : progress }}
+//             />
+//             {MEALS.map((m, i) => (
+//               <span
+//                 key={m.time}
+//                 className={`relative block h-3.5 w-3.5 rounded-full transition-all duration-500 ${
+//                   i === active
+//                     ? "scale-125 bg-accent-300 shadow-[0_0_16px_4px_rgba(250,204,21,0.45)]"
+//                     : i < active
+//                       ? "bg-accent-400/60"
+//                       : "bg-white/30"
+//                 }`}
+//               />
+//             ))}
+//           </div>
+//         </div>
+//       </motion.section>
+//     </div>
+//   );
+// }
+
+// function Aperture({
+//   meal,
+//   index,
+//   span,
+//   progress,
+//   reduce,
+// }: {
+//   meal: (typeof MEALS)[number];
+//   index: number;
+//   span: number;
+//   progress: MotionValue<number>;
+//   reduce: boolean;
+// }) {
+//   const start = index === 0 ? -0.001 : index * span;
+//   const end = index * span + span * 0.68;
+
+//   const radius = useTransform(progress, [start, end], [0, 76]);
+//   const clipPath = useTransform(radius, (r) => `circle(${r}% at 50% 50%)`);
+//   const scale = useTransform(progress, [start, end + span * 0.3], [1.22, 1.02]);
+//   const rotate = useTransform(progress, [start, end], [-5, 0]);
+
+//   return (
+//     <motion.div
+//       className="absolute inset-0"
+//       style={{
+//         clipPath: reduce ? "circle(76% at 50% 50%)" : clipPath,
+//         zIndex: index + 1,
+//         willChange: "clip-path",
+//       }}
+//     >
+//       <motion.img
+//         src={meal.img}
+//         alt={meal.label}
+//         className="h-full w-full object-cover"
+//         style={{
+//           scale: reduce ? 1 : scale,
+//           rotate: reduce ? 0 : rotate,
+//           willChange: "transform",
+//         }}
+//       />
+//       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary-950/45" />
+//     </motion.div>
+//   );
+// }
+
 "use client";
 
 import { useRef, useState } from "react";
@@ -1010,14 +1533,14 @@ const MEALS = [
     dish: "បបរគ្រឿង",
     time: "០៦:៣០",
     note: "ចាប់ផ្ដើមថ្ងៃដោយភាពស្រាល",
-    img: "/Image/food/food1.png",
+    img: "/Image/food/food4.png",
   },
   {
     label: "អាហារថ្ងៃត្រង់",
     dish: "សម្លម្ជូរ",
     time: "១២:០០",
     note: "ឆ្អែតពេញ សម្រាប់រសៀលវែង",
-    img: "/Image/food/food4.png",
+    img: "/Image/food/food5.png",
   },
   {
     label: "អាហារពេលល្ងាច",
@@ -1026,13 +1549,13 @@ const MEALS = [
     note: "ក្ដៅៗ ជាមួយក្រុមគ្រួសារ",
     img: "/Image/food/food7.png",
   },
-  {
-    label: "អាហារសម្រន់",
-    dish: "នំចាក់",
-    time: "២១:០០",
-    note: "ផ្អែមបន្តិច មុនចូលដំណេក",
-    img: "/Image/food/food9.png",
-  },
+  // {
+  //   label: "អាហារសម្រន់",
+  //   dish: "នំចាក់",
+  //   time: "២១:០០",
+  //   note: "ផ្អែមបន្តិច មុនចូលដំណេក",
+  //   img: "/Image/food/food9.png",
+  // },
 ];
 
 const STARS: [number, number][] = [
@@ -1174,6 +1697,22 @@ export default function MealTimeJourneySection() {
   const starOpacity = useTransform(progress, [0.74, 0.95], [0, 1]);
   const dialRotate = useTransform(progress, [0, 1], [0, 360]);
   const sheen = useMotionTemplate`radial-gradient(circle at ${sunX} -10%, rgba(255,255,255,0.28), transparent 62%)`;
+
+  /* ---------------- chicken + coop ---------------- */
+  // everything is measured in px from the coop's doorway (the wrapper anchor),
+  // so the chicken lands on the ramp at any viewport width.
+  // phase 1 (0 → 0.15): walk the ridge.  phase 2 (0.15 → 0.2): climb the ramp.
+  const chickenX = useTransform(progress, [0, 0.15, 0.2], [-360, -80, 0]);
+  const chickenY = useTransform(
+    progress,
+    [0, 0.08, 0.15, 0.2],
+    [-16, -9, -2, -40],
+  );
+  const chickenTilt = useTransform(progress, [0.15, 0.17, 0.2], [0, -12, -12]);
+  // gone by lunchtime — it's inside the coop
+  const chickenOpacity = useTransform(progress, [0, 0.185, 0.2], [1, 1, 0]);
+  // lamp inside the coop, on from dusk
+  const coopLight = useTransform(progress, [0.64, 0.8, 1], [0, 0.85, 1]);
 
   return (
     <div ref={ref} style={{ height: `${(MEALS.length + 0.5) * 100}vh` }}>
@@ -1330,6 +1869,188 @@ export default function MealTimeJourneySection() {
             fill="#052e16"
           />
         </svg>
+
+        {/* dawn scene — the chicken walks the ridge and climbs into its coop
+            before lunch. anchor point = the coop doorway, sitting on the ridge. */}
+        <div
+          className="pointer-events-none absolute bottom-[6.3vh] left-[38%] z-[15]"
+          style={{ opacity: reduce ? 0 : 1 }}
+        >
+          {/* --- behind the chicken: coop interior + ramp --- */}
+          <div className="absolute bottom-0 left-0 h-[150px] w-[179px] -translate-x-[34%] translate-y-[9.5%] md:h-[172px] md:w-[205px]">
+            <svg viewBox="0 0 100 84" className="h-full w-full">
+              {/* ramp up to the doorway */}
+              <path
+                d="M27,55 L-8,76"
+                stroke="#03210e"
+                strokeWidth="7"
+                fill="none"
+              />
+              {/* rungs */}
+              <g stroke="#0c3a1e" strokeWidth="1.6" strokeLinecap="round">
+                <path d="M20,56 L17,62" />
+                <path d="M11,61 L8,67" />
+                <path d="M2,66 L-1,72" />
+              </g>
+              {/* dark interior seen through the door + window */}
+              <rect x="20" y="22" width="60" height="34" fill="#01120a" />
+              {/* lamp inside, on from dusk */}
+              <motion.rect
+                x="58"
+                y="30"
+                width="16"
+                height="12"
+                fill="#facc15"
+                style={{ opacity: reduce ? 0 : coopLight }}
+              />
+              <motion.rect
+                x="25"
+                y="34"
+                width="18"
+                height="22"
+                fill="#f59e0b"
+                style={{ opacity: reduce ? 0 : coopLight }}
+                opacity={0.35}
+              />
+            </svg>
+          </div>
+
+          {/* --- the chicken --- */}
+          <motion.div
+            className="absolute bottom-0 left-0"
+            style={{
+              x: chickenX,
+              y: chickenY,
+              rotate: reduce ? 0 : chickenTilt,
+              opacity: reduce ? 0 : chickenOpacity,
+            }}
+          >
+            <motion.div
+              animate={{ y: [0, -2.5, 0, -1.5, 0] }}
+              transition={{
+                duration: 0.9,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              <div className="-translate-x-1/2 translate-y-[4.5%]">
+                <svg
+                  viewBox="0 0 66 56"
+                  className="h-[50px] w-[59px] md:h-[58px] md:w-[68px]"
+                  style={{
+                    filter: "drop-shadow(-2px -1px 2px rgba(255,178,90,0.5))",
+                  }}
+                >
+                  <g fill="#03210e">
+                    {/* tail */}
+                    <path d="M14,27 C8,19 6,10 12,5 C14,14 19,19 22,23 Z" />
+                    {/* body */}
+                    <ellipse cx="30" cy="30" rx="19" ry="14" />
+
+                    {/* neck + head + comb + beak, gentle peck bob */}
+                    <motion.g
+                      style={{
+                        transformOrigin: "40px 28px",
+                        transformBox: "view-box",
+                      }}
+                      animate={{ rotate: [0, 4, 0, -3, 0] }}
+                      transition={{
+                        duration: 1.8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <ellipse
+                        cx="43"
+                        cy="22"
+                        rx="6.5"
+                        ry="9"
+                        transform="rotate(-32 43 22)"
+                      />
+                      <circle cx="49" cy="16" r="8" />
+                      <path d="M44,9 C45,4 48,4 48.5,7.5 C50,3 54,5 53,9 C50.5,7.6 46.5,7.8 44,9 Z" />
+                      <path d="M57,15 L64,17 L57,20 Z" />
+                      <circle cx="55" cy="23" r="2.6" />
+                      <circle
+                        cx="52"
+                        cy="15"
+                        r="1.2"
+                        fill="rgba(255,214,150,0.6)"
+                      />
+                    </motion.g>
+                  </g>
+
+                  {/* legs */}
+                  <g
+                    stroke="#03210e"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    fill="none"
+                  >
+                    <motion.g
+                      style={{
+                        transformOrigin: "26px 40px",
+                        transformBox: "view-box",
+                      }}
+                      animate={{ rotate: [16, -16, 16] }}
+                      transition={{
+                        duration: 0.9,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <path d="M26,40 L26,53" />
+                      <path d="M22,53.5 L31,53.5" />
+                    </motion.g>
+                    <motion.g
+                      style={{
+                        transformOrigin: "35px 40px",
+                        transformBox: "view-box",
+                      }}
+                      animate={{ rotate: [-16, 16, -16] }}
+                      transition={{
+                        duration: 0.9,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <path d="M35,40 L35,53" />
+                      <path d="M31,53.5 L40,53.5" />
+                    </motion.g>
+                  </g>
+                </svg>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* --- in front of the chicken: the coop itself --- */}
+          <div className="absolute bottom-0 left-0 h-[150px] w-[179px] -translate-x-[34%] translate-y-[9.5%] md:h-[172px] md:w-[205px]">
+            <svg
+              viewBox="0 0 100 84"
+              className="h-full w-full"
+              style={{
+                filter: "drop-shadow(-2px -1px 2px rgba(255,178,90,0.4))",
+              }}
+            >
+              {/* stilts */}
+              <path
+                d="M26,56 h6 v20 h-6 Z M68,56 h6 v20 h-6 Z"
+                fill="#03210e"
+              />
+              {/* floor lip */}
+              <path d="M17,55 h66 v4 h-66 Z" fill="#03210e" />
+              {/* walls, with the doorway and window cut out */}
+              <path
+                fillRule="evenodd"
+                d="M20,22 H80 V56 H20 Z M25,56 V36 A9,9 0 0 1 43,36 V56 Z M58,30 H74 V42 H58 Z"
+                fill="#03210e"
+              />
+              {/* roof */}
+              <path d="M10,27 L52,3 L94,27 Z" fill="#03210e" />
+              <path d="M49,7 h6 v-5 h-6 Z" fill="#03210e" />
+            </svg>
+          </div>
+        </div>
 
         {/* grain */}
         <svg className="pointer-events-none absolute inset-0 z-[16] h-full w-full opacity-[0.12] mix-blend-overlay">
