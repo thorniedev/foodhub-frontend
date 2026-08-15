@@ -440,8 +440,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   const locationUrl = `https://www.google.com/maps?q=${food.store.latitude},${food.store.longitude}`;
 
-  const pairingLabels = food.beveragePairings.map(getUnknownLabel);
-  const allergenLabels = food.allergenDeclarations.map(getUnknownLabel);
+  const pairingLabels = (food.beveragePairings ?? []).map(getUnknownLabel);
+  const allergenLabels = (food.allergenDeclarations ?? []).map(getUnknownLabel);
 
   return (
     <main className="min-h-screen bg-[#f7f9f7] pt-15">
