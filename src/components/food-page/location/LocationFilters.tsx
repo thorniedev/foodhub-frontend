@@ -166,13 +166,21 @@ function toggleNumber(list: number[], value: number): number[] {
 }
 
 function getUniqueOptions(
-  values: Array<{ code?: string | null; name?: string | null }>,
+  values: Array<{ code?: unknown; name?: unknown }>,
 ): FilterOption[] {
   const map = new Map<string, FilterOption>();
 
   values.forEach((item) => {
-    const code = item.code?.trim();
-    const name = item.name?.trim();
+    if (!item) return;
+
+    const code =
+      typeof item.code === "string" || typeof item.code === "number"
+        ? String(item.code).trim()
+        : "";
+    const name =
+      typeof item.name === "string" || typeof item.name === "number"
+        ? String(item.name).trim()
+        : "";
     if (!code || !name) return;
 
     const existing = map.get(code);
@@ -306,10 +314,18 @@ export default function LocationFilters({
   const categoryOptions = useMemo(
     () =>
       getUniqueOptions(
-        menuItems.map((item) => ({
-          code: item.food.category.code,
-          name: item.food.category.name,
-        })),
+        menuItems.flatMap((item) => {
+          const category = item.food?.category;
+
+          return category?.code && category?.name
+            ? [
+                {
+                  code: category.code,
+                  name: category.name,
+                },
+              ]
+            : [];
+        }),
       ),
     [menuItems],
   );
@@ -317,10 +333,18 @@ export default function LocationFilters({
   const cuisineOptions = useMemo(
     () =>
       getUniqueOptions(
-        menuItems.map((item) => ({
-          code: item.food.cuisine.code,
-          name: item.food.cuisine.name,
-        })),
+        menuItems.flatMap((item) => {
+          const cuisine = item.food?.cuisine;
+
+          return cuisine?.code && cuisine?.name
+            ? [
+                {
+                  code: cuisine.code,
+                  name: cuisine.name,
+                },
+              ]
+            : [];
+        }),
       ),
     [menuItems],
   );
@@ -329,7 +353,7 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.mealTypes.map((option) => ({
+          (item.mealTypes ?? []).map((option) => ({
             code: option.code,
             name: option.name,
           })),
@@ -342,7 +366,7 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.dietaryTypes.map((option) => ({
+          (item.dietaryTypes ?? []).map((option) => ({
             code: option.code,
             name: option.name,
           })),
@@ -355,7 +379,7 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.food.ageGroups.map((option) => ({
+          (item.food?.ageGroups ?? []).map((option) => ({
             code: option.code,
             name: option.name,
           })),
@@ -368,10 +392,26 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.allergenDeclarations.map((option) => ({
-            code: option.code,
-            name: option.name,
-          })),
+          (item.allergenDeclarations ?? []).flatMap((option) => {
+            if (!option) {
+              return [];
+            }
+
+            const code =
+              typeof option.code === "string" ? option.code.trim() : "";
+
+            const name =
+              typeof option.name === "string" ? option.name.trim() : code;
+
+            return code && name
+              ? [
+                  {
+                    code,
+                    name,
+                  },
+                ]
+              : [];
+          }),
         ),
       ),
     [menuItems],
@@ -381,15 +421,24 @@ export default function LocationFilters({
     const map = new Map<string, FilterOption>();
 
     menuItems.forEach((item) => {
-      const existing = map.get(item.store.uuid);
+      const uuid = item.store?.uuid?.trim();
+      const name =
+        item.store?.localName?.trim() || item.store?.name?.trim() || "";
+
+      if (!uuid || !name) {
+        return;
+      }
+
+      const existing = map.get(uuid);
+
       if (existing) {
         existing.count += 1;
         return;
       }
 
-      map.set(item.store.uuid, {
-        code: item.store.uuid,
-        name: item.store.localName || item.store.name,
+      map.set(uuid, {
+        code: uuid,
+        name,
         count: 1,
       });
     });
@@ -403,10 +452,22 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          item.ingredients.map((ingredient) => ({
-            code: ingredient,
-            name: ingredient,
-          })),
+          (item.ingredients ?? []).flatMap((ingredient) => {
+            if (typeof ingredient !== "string") {
+              return [];
+            }
+
+            const value = ingredient.trim();
+
+            return value
+              ? [
+                  {
+                    code: value,
+                    name: value,
+                  },
+                ]
+              : [];
+          }),
         ),
       ),
     [menuItems],
@@ -648,7 +709,7 @@ export default function LocationFilters({
                       key={option.value}
                       className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
                         selected
-                          ? "border-primary-200 bg-primary-50 text-primary-800"
+                          ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
                           : "border-transparent text-gray-600 hover:bg-gray-50"
                       }`}
                     >

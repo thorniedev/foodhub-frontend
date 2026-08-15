@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark, Store, Star, Clock, Bike } from "lucide-react";
+import { Bookmark, Store, Star, Clock, Bike, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FavoriteFoodItem } from "@/types/favorite";
 import Image from "next/image";
@@ -18,6 +18,7 @@ export default function FavoriteFoodRow({
   onViewMore,
 }: FavoriteFoodRowProps) {
   const [saved, setSaved] = useState(true);
+  const imageUrl = item.imageUrl?.trim();
 
   const handleToggleSaved = () => {
     setSaved((s) => !s);
@@ -26,14 +27,23 @@ export default function FavoriteFoodRow({
 
   return (
     <div className="relative flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-2.5 sm:items-center sm:gap-4 sm:p-3">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <Image
-        src={item.imageUrl}
-        alt={item.dishName}
-        width={100}
-        height={100}
-        className="h-16 w-16 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
-      />
+      {imageUrl ? (
+        <Image
+          src={imageUrl}
+          alt={item.dishName}
+          width={100}
+          height={100}
+          className="h-16 w-16 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
+        />
+      ) : (
+        <div
+          role="img"
+          aria-label={`${item.dishName} image unavailable`}
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 sm:h-20 sm:w-20"
+        >
+          <Utensils className="h-7 w-7" />
+        </div>
+      )}
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-base font-semibold text-slate-800 sm:text-xl">

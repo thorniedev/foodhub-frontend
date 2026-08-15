@@ -216,7 +216,7 @@ export default function GroupVotingPanel({
                 transition
                 hover:border-primary-200
                 hover:bg-primary-50
-                hover:text-primary-800
+                hover:text-primary-800 dark:text-primary-dark
                 sm:right-4 sm:top-4
               "
             >
@@ -250,7 +250,7 @@ export default function GroupVotingPanel({
               ) : !session ? (
                 <div className="flex min-h-[300px] items-center justify-center text-center">
                   <div>
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-800">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-800 dark:text-primary-dark">
                       <FaStore className="text-[26px]" />
                     </div>
 
@@ -472,7 +472,7 @@ export default function GroupVotingPanel({
                                       ${
                                         selected
                                           ? "bg-primary-800 text-white"
-                                          : "bg-primary-50 text-primary-800"
+                                          : "bg-primary-50 text-primary-800 dark:text-primary-dark"
                                       }
                                     `}
                                 >
@@ -619,7 +619,7 @@ function LiveLeaderboard({
             bg-primary-50
             px-3 py-1.5
             text-[17px] font-bold
-            text-primary-800
+            text-primary-800 dark:text-primary-dark
           "
         >
           {votedCount}/{memberCount} voted
@@ -743,12 +743,12 @@ function LiveLeaderboard({
                         text-[17px] font-bold
                         ${
                           entry.rank === 3
-                            ? "bg-white text-primary-800"
+                            ? "bg-white text-primary-800 dark:text-primary-dark"
                             : "bg-white/15 text-white"
                         }
                       `}
                     >
-                      {entry.voteCount}{" "}
+                      {entry.voteCount}
                       {entry.voteCount === 1 ? "Vote" : "Votes"}
                     </span>
                   </motion.div>
@@ -763,7 +763,7 @@ function LiveLeaderboard({
                 Consensus progress
               </p>
 
-              <p className="text-[17px] font-bold text-primary-800">
+              <p className="text-[17px] font-bold text-primary-800 dark:text-primary-dark">
                 {votedCount}/{memberCount} voted
               </p>
             </div>

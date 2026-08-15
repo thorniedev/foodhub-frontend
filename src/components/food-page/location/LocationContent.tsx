@@ -16,6 +16,7 @@ import {
 
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import type {
   Coordinates,
   LocationFiltersState,
@@ -53,8 +54,198 @@ import {
 } from "../store/store-page-utils";
 
 interface LocationContentProps {
-  menuItems: MenuItem[];
+  menuItems: CatalogMenuItem[];
   searchQuery?: string;
+}
+
+function normalizeLocationAllergens(
+  values: CatalogMenuItem["allergenDeclarations"],
+): MenuItem["allergenDeclarations"] {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  return values.flatMap((value) => {
+    if (typeof value !== "object" || value === null) {
+      return [];
+    }
+
+    const record = value as Record<string, unknown>;
+
+    const code = typeof record.code === "string" ? record.code.trim() : "";
+
+    const name = typeof record.name === "string" ? record.name.trim() : code;
+
+    if (!code || !name) {
+      return [];
+    }
+
+    return [
+      {
+        ...record,
+        code,
+        name,
+      },
+    ];
+  }) as MenuItem["allergenDeclarations"];
+}
+
+function toLocationMenuItem(item: CatalogMenuItem): MenuItem {
+  const category = item.food?.category ?? {
+    code: "",
+    name: "",
+  };
+
+  const cuisine = item.food?.cuisine ?? {
+    code: "",
+    name: "",
+  };
+
+  const ageGroups = Array.isArray(item.food?.ageGroups)
+    ? item.food.ageGroups
+    : [];
+
+  const mealTypes = Array.isArray(item.food?.mealTypes)
+    ? item.food.mealTypes
+    : [];
+
+  const dietaryTypes = Array.isArray(item.food?.dietaryTypes)
+    ? item.food.dietaryTypes
+    : [];
+
+  const ingredients = Array.isArray(item.ingredients)
+    ? item.ingredients.filter(
+      (value): value is string =>
+        typeof value === "string" && value.trim().length > 0,
+    )
+    : [];
+
+  const recommendationScore = Number(item.recommendation?.finalScore ?? 0);
+
+  const scoreBreakdown = item.recommendation?.scoreBreakdown;
+
+  const converted = {
+    uuid: item.uuid,
+    legacyId: Number(item.legacyId ?? 0),
+
+    name: item.name,
+    localName: item.localName ?? item.name,
+
+    description: item.description ?? "",
+    localDescription: item.localDescription ?? item.description ?? "",
+
+    thumbnail: item.thumbnail ?? "",
+    gallery: Array.isArray(item.gallery) ? item.gallery : [],
+
+    price: Number(item.price ?? 0),
+    currencyCode: item.currencyCode,
+
+    preparationTimeMinutes: item.preparationTimeMinutes ?? 0,
+
+    availabilityStatus: item.availabilityStatus,
+    isFeatured: Boolean(item.isFeatured),
+    source: item.source,
+
+    store: {
+      uuid: item.store?.uuid ?? "",
+      name: item.store?.name ?? "",
+      localName: item.store?.localName ?? item.store?.name ?? "",
+      logoUrl: item.store?.logoUrl ?? "",
+      coverImageUrl: item.store?.coverImageUrl ?? "",
+      addressLine: item.store?.addressLine ?? "",
+      district: item.store?.district ?? "",
+      city: item.store?.city ?? "",
+      latitude: Number(item.store?.latitude) || 0,
+      longitude: Number(item.store?.longitude) || 0,
+      operatingStatus: item.store?.operatingStatus ?? "CLOSED",
+      averageRating: Number(item.store?.averageRating) || 0,
+      totalReviews: Number(item.store?.totalReviews) || 0,
+    },
+
+    food: {
+      uuid: item.food?.uuid ?? item.uuid,
+      canonicalName: item.food?.canonicalName ?? item.name,
+      category,
+      cuisine,
+      spiceLevel: Number(item.food?.spiceLevel ?? 0),
+      ageGroups,
+    },
+
+    /*
+     * LocationFilter's legacy MenuItem model keeps these at top level.
+     * The current CatalogMenuItem response keeps them under item.food.
+     */
+    mealTypes,
+    dietaryTypes,
+
+    allergenDeclarations: normalizeLocationAllergens(item.allergenDeclarations),
+
+    ingredients,
+    beveragePairings: [],
+
+    nutrition: {
+      calories: Number(item.nutrition?.calories ?? 0),
+      protein: Number(item.nutrition?.proteinGrams ?? 0),
+      carbohydrate: Number(item.nutrition?.carbsGrams ?? 0),
+      fat: Number(item.nutrition?.fatGrams ?? 0),
+      fiber: 0,
+      sodium: 0,
+    },
+
+    distanceKm:
+      item.distanceKm === null || item.distanceKm === undefined
+        ? 0
+        : Number(item.distanceKm),
+
+    deliveryFee: 0,
+
+    recommendation: {
+      isRecommended:
+        Number.isFinite(recommendationScore) && recommendationScore > 0,
+      rankPosition: 0,
+      finalScore: Number.isFinite(recommendationScore)
+        ? recommendationScore
+        : 0,
+      safetyStatus: "SAFE",
+      candidateSource: item.source,
+      reasonCodes: item.recommendation?.reasonCodes ?? [],
+      reasonText: item.recommendation?.reasonText ?? "",
+      isExploration: false,
+      scoreBreakdown: {
+        mealMatch: Number(scoreBreakdown?.mealMatch ?? 0),
+        cuisineMatch: Number(scoreBreakdown?.cuisineMatch ?? 0),
+        budgetMatch: Number(scoreBreakdown?.budgetMatch ?? 0),
+        distanceMatch: Number(scoreBreakdown?.distanceMatch ?? 0),
+        popularity: Number(scoreBreakdown?.popularity ?? 0),
+      },
+    },
+
+    /*
+     * Context used by LocationFilters for season/event/weather/origin.
+     * These are extra compatibility fields on top of the old MenuItem model.
+     */
+    origin: item.origin
+      ? {
+        provinceCode: item.origin.provinceCode,
+        provinceName: item.origin.provinceName,
+        provinceLocalName: item.origin.provinceLocalName,
+      }
+      : undefined,
+
+    recommendationContext: {
+      seasons: Array.isArray(item.food?.seasons) ? item.food.seasons : [],
+      events: Array.isArray(item.food?.events) ? item.food.events : [],
+      provincePopularity: [],
+      suitableWeather: Array.isArray(item.food?.suitableWeather)
+        ? item.food.suitableWeather
+        : [],
+    },
+
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+
+  return converted as MenuItem;
 }
 
 function convertLocationStatus(
@@ -188,9 +379,13 @@ function hasValidCoordinates(
 }
 
 export default function LocationContent({
-  menuItems,
+  menuItems: catalogMenuItems,
   searchQuery = "",
 }: LocationContentProps) {
+  const menuItems = useMemo(
+    () => catalogMenuItems.map(toLocationMenuItem),
+    [catalogMenuItems],
+  );
   const [mode, setMode] = useState<RecommendationMode>("single");
 
   /*
@@ -209,10 +404,8 @@ export default function LocationContent({
   const [groupStoreFilters, setGroupStoreFilters] = useState<StorePageFilters>({
     ...DEFAULT_STORE_FILTERS,
     cities: [...DEFAULT_STORE_FILTERS.cities],
-    districts: [...DEFAULT_STORE_FILTERS.districts],
     provinces: [...DEFAULT_STORE_FILTERS.provinces],
     operatingStatuses: [...DEFAULT_STORE_FILTERS.operatingStatuses],
-    priceLevels: [...DEFAULT_STORE_FILTERS.priceLevels],
   });
 
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -240,7 +433,7 @@ export default function LocationContent({
   const sourceStores = useMemo<LocationStore[]>(
     () =>
       Array.isArray(sourceStoreData)
-        ? (sourceStoreData as LocationStore[])
+        ? (sourceStoreData as unknown as LocationStore[])
         : [],
     [sourceStoreData],
   );
@@ -320,11 +513,6 @@ export default function LocationContent({
     [storePageStores],
   );
 
-  const districtOptions = useMemo(
-    () => getStoreFilterOptions(storePageStores, (store) => store.district),
-    [storePageStores],
-  );
-
   const provinceOptions = useMemo(
     () => getStoreFilterOptions(storePageStores, (store) => store.province),
     [storePageStores],
@@ -336,8 +524,8 @@ export default function LocationContent({
     [storePageStores],
   );
 
-  const priceLevelOptions = useMemo(
-    () => getStoreFilterOptions(storePageStores, (store) => store.priceLevel),
+  const hasAverageRatingData = useMemo(
+    () => storePageStores.some((store) => Number(store.averageRating ?? 0) > 0),
     [storePageStores],
   );
 
@@ -450,10 +638,9 @@ export default function LocationContent({
     filters: groupStoreFilters,
     onChange: setGroupStoreFilters,
     cityOptions,
-    districtOptions,
     provinceOptions,
     operatingStatusOptions,
-    priceLevelOptions,
+    hasAverageRatingData,
   };
 
   return (

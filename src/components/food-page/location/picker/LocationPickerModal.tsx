@@ -202,47 +202,101 @@ export default function LocationPickerModal({
 
     setResolvingPlace(true);
 
+    /*
+     * Always keep a coordinate label.
+     * Reverse geocoding is enrichment,
+     * not a requirement for selecting
+     * a valid map point.
+     */
+    const coordinateLabel = `${Number(location.latitude).toFixed(6)}, ${Number(
+      location.longitude,
+    ).toFixed(6)}`;
+
     try {
       const params = new URLSearchParams({
         lat: String(location.latitude),
 
+        /*
+         * Internal FoodHub API accepts
+         * lng and converts it to Geoapify's
+         * required `lon` parameter.
+         */
         lng: String(location.longitude),
       });
 
       const response = await fetch(`/api/maps/reverse?${params.toString()}`, {
         method: "GET",
 
+        headers: {
+          Accept: "application/json",
+        },
+
         signal: controller.signal,
+
+        cache: "no-store",
       });
 
-      const data = (await response.json()) as LocationReverseResponse;
+      let data: LocationReverseResponse | null = null;
 
-      if (!response.ok) {
-        throw new Error(data.message || "មិនអាចរកព័ត៌មានអាសយដ្ឋានបានទេ។");
+      try {
+        data = (await response.json()) as LocationReverseResponse;
+      } catch {
+        /*
+         * Keep the selected point even
+         * if the server response cannot
+         * be parsed.
+         */
       }
 
-      /*
-       * Ignore an old request
-       * if a newer one started.
-       */
       if (reverseRequestRef.current !== controller) {
         return;
       }
 
-      setSelectedPlace(data.place);
+      if (!response.ok) {
+        console.warn("[LOCATION REVERSE LOOKUP FAILED]", {
+          status: response.status,
 
-      setDraftLabel(data.place?.address ?? data.place?.name ?? null);
+          message: data?.message ?? response.statusText,
+
+          location,
+        });
+
+        setSelectedPlace(null);
+
+        setDraftLabel(coordinateLabel);
+
+        return;
+      }
+
+      if (data?.place) {
+        setSelectedPlace(data.place);
+
+        setDraftLabel(data.place.address || data.place.name || coordinateLabel);
+
+        return;
+      }
+
+      /*
+       * Valid coordinates but the
+       * geocoder did not find an address.
+       */
+      setSelectedPlace(null);
+
+      setDraftLabel(coordinateLabel);
     } catch (error) {
       if (isAbortError(error)) {
         return;
       }
 
-      console.error("[LOCATION REVERSE LOOKUP]", error);
+      console.warn("[LOCATION REVERSE LOOKUP NETWORK ERROR]", error);
 
       if (reverseRequestRef.current === controller) {
         setSelectedPlace(null);
 
-        setDraftLabel(null);
+        /*
+         * Do NOT erase the user's point.
+         */
+        setDraftLabel(coordinateLabel);
       }
     } finally {
       if (reverseRequestRef.current === controller) {
@@ -897,7 +951,7 @@ export default function LocationPickerModal({
                 <button
                   type="button"
                   onClick={handleUseCurrentLocation}
-                  className="absolute bottom-5 left-4 z-[500] inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.95] px-4 text-[17px] font-bold text-primary-800 shadow-lg backdrop-blur-md transition hover:bg-primary-50"
+                  className="absolute bottom-5 left-4 z-[500] inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.95] px-4 text-[17px] font-bold text-primary-800 dark:text-primary-dark shadow-lg backdrop-blur-md transition hover:bg-primary-50"
                 >
                   <IoLocateOutline className="text-[22px]" />
                   ទៅទីតាំងបច្ចុប្បន្ន
@@ -955,7 +1009,7 @@ export default function LocationPickerModal({
                           )}
 
                           <p className="mt-1 break-all text-[15px] font-semibold text-slate-500">
-                            {draftLocation.latitude.toFixed(6)},{" "}
+                            {draftLocation.latitude.toFixed(6)},
                             {draftLocation.longitude.toFixed(6)}
                           </p>
                         </div>
@@ -974,7 +1028,7 @@ export default function LocationPickerModal({
                       )}
 
                       <p className="mt-1 break-all text-[17px] font-semibold text-slate-700">
-                        {draftLocation.latitude.toFixed(6)},{" "}
+                        {draftLocation.latitude.toFixed(6)},
                         {draftLocation.longitude.toFixed(6)}
                       </p>
                     </div>

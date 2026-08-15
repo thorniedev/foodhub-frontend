@@ -153,11 +153,14 @@ function normalizeSelectedLocation(value: unknown): SelectedLocation | null {
     return null;
   }
 
-  const candidate = value as Partial<SelectedLocation>;
-
-  if (!isValidCoordinates(candidate)) {
+  // Validate coordinates first using the original unknown value.
+  if (!isValidCoordinates(value)) {
     return null;
   }
+
+  // After coordinate validation, treat the stored object
+  // as a partial SelectedLocation so label/selectedAt are accessible.
+  const candidate = value as Partial<SelectedLocation> & Coordinates;
 
   return {
     latitude: candidate.latitude,

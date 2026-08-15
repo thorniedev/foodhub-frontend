@@ -219,7 +219,7 @@ function WinPopup({
             type="button"
             onClick={onClose}
             aria-label="បិទ"
-            className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-primary-800 shadow-sm backdrop-blur transition-colors hover:bg-white"
+            className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-primary-800 dark:text-primary-dark shadow-sm backdrop-blur transition-colors hover:bg-white"
           >
             <IoClose className="text-lg" />
           </button>
@@ -332,7 +332,7 @@ function CollectionSheet({
             type="button"
             onClick={onClose}
             aria-label="បិទ"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-primary-800 transition-colors hover:bg-gray-200"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-primary-800 dark:text-primary-dark transition-colors hover:bg-gray-200"
           >
             <IoClose className="text-lg" />
           </button>

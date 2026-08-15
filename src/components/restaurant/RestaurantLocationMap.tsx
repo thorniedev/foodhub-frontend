@@ -31,7 +31,7 @@ export default function RestaurantLocationMap({
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="mb-3 flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-primary-800 lg:hidden cursor-pointer"
+        className="mb-3 flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-primary-800 dark:text-primary-dark lg:hidden cursor-pointer"
       >
         <span className="flex items-center gap-2">
           <FaMapMarkerAlt />

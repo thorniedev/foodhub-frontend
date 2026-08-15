@@ -1,7 +1,8 @@
 import React from "react";
 
 import { motion } from "motion/react";
-const CircularBadge = () => (
+import Link from "next/link";
+export const CircularBadge = () => (
   <div className="relative w-28 h-28 md:w-36 md:h-36 text-white bg-primary-400 rounded-full flex items-center justify-center shadow-xl rotate-12 hover:scale-105 transition-transform cursor-pointer border-[3px] border-black/5">
     <div className="absolute  inset-1 animate-[spin_10s_linear_infinite_reverse]">
       <svg
@@ -41,9 +42,9 @@ const CircularBadge = () => (
 );
 export default function LocationSection() {
   return (
-    <section className="container md:pb-30 max-md:pb-60 flex max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center mx-auto max-w-7xl">
+    <section className="container md:pb-30 max-md:pb-60 flex  max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center lg:pt-6 mx-auto max-w-7xl">
       <div className="flex  relative  flex-col gap-12.5">
-        <p className="lg:text-7xl md:text-[38px] max-md:text-[30px] font-bold dark:text-[#22a447] text-primary-800">
+        <p className="lg:text-7xl md:text-[38px] max-md:text-[30px] font-bold  text-primary-800 dark:text-primary-dark">
           ស្វែងរកមុខម្ហូបនៅ
           <span className="text-secondary-400">ជិតអ្នកបំផុត</span>
         </p>
@@ -52,9 +53,12 @@ export default function LocationSection() {
           <br className="md:block max-md:hidden" />
           ដើម្បីសន្សំពេលវេលា និងរីករាយជាមួយអាហារដែលអ្នកចូលចិត្ត។
         </p>
-        <button className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full texxt-[20px]">
-          ទីតាំងនៅជិតនេះ{" "}
-        </button>{" "}
+        <Link
+          href={"/food"}
+          className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full texxt-[20px]"
+        >
+          ទីតាំងនៅជិតនេះ
+        </Link>
         <motion.div
           className="absolute md:-right-45 max-md:rotate-90 max-md:-bottom-10 max-md:self-end  md:top-35"
           animate={{

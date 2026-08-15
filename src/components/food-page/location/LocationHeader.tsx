@@ -127,7 +127,7 @@ export default function LocationHeader({
               <button
                 type="button"
                 onClick={onOpenFilters}
-                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
               >
                 <IoOptionsOutline className="text-[22px]" />
                 តម្រង
@@ -138,7 +138,7 @@ export default function LocationHeader({
               type="button"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-400"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-400"
             >
               <motion.span
                 animate={
@@ -240,7 +240,7 @@ export default function LocationHeader({
           className={`flex min-h-14 items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
             manualLocationActive
               ? "border-primary-700 bg-primary-800 text-white shadow-sm"
-              : "border-primary-200 bg-white text-primary-800 hover:bg-primary-50"
+              : "border-primary-200 bg-white text-primary-800 dark:text-primary-dark hover:bg-primary-50"
           }`}
         >
           <span
@@ -343,7 +343,7 @@ function RecommendationModeSwitch({
             className={`flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 text-[17px] font-semibold transition ${
               selected
                 ? "bg-primary-800 text-white shadow-sm"
-                : "text-gray-600 hover:bg-white hover:text-primary-800"
+                : "text-gray-600 hover:bg-white hover:text-primary-800 dark:text-primary-dark"
             }`}
           >
             <span className="text-[21px]">{option.icon}</span>  
@@ -368,7 +368,7 @@ function InfoChip({ icon, label, variant }: InfoChipProps) {
     <div
       className={`flex min-h-10 items-center gap-2 rounded-full border px-3.5 py-2 ${
         variant === "green"
-          ? "border-primary-100 bg-primary-50 text-primary-800"
+          ? "border-primary-100 bg-primary-50 text-primary-800 dark:text-primary-dark"
           : "border-gray-200 bg-gray-50 text-gray-600"
       }`}
     >

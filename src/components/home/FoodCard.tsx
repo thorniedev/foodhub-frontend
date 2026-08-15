@@ -53,7 +53,7 @@ function FoodCard({ food }: { food: MenuItem }) {
             {food.localName}
           </p>
 
-          <p className="text-[24px] font-medium text-primary-800">
+          <p className="text-[24px] font-medium text-primary-800 dark:text-primary-dark">
             ${food.price}
           </p>
         </div>

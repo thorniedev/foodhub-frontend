@@ -16,9 +16,7 @@ export default function DashboardLayout({
         {/* Row below the navbar: Aside + page content */}
         <div className="flex flex-1">
           <Aside />
-          <main className="flex-1 overflow-y-auto bg-slate-50 p-4 lg:p-6">
-            {children}
-          </main>
+          <main className="flex-1 overflow-y-auto bg-slate-50">{children}</main>
         </div>
       </div>
     </SidebarProvider>

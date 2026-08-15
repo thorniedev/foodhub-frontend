@@ -133,7 +133,7 @@ export default function NearbyStoreCard({
             absolute right-3 top-3
             flex h-11 w-11 items-center justify-center
             rounded-full bg-white/95
-            text-[24px] text-primary-800
+            text-[24px] text-primary-800 dark:text-primary-dark
             shadow-md backdrop-blur-md
             transition hover:scale-105
           "
@@ -272,8 +272,8 @@ export default function NearbyStoreCard({
 
               ${
                 selected
-                  ? "border-primary-200 bg-primary-50 text-primary-800"
-                  : "border-gray-200 bg-white text-gray-700 dark:text-gray-100 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800"
+                  ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
+                  : "border-gray-200 bg-white text-gray-700 dark:text-gray-100 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800 dark:text-primary-dark"
               }
             `}
           >

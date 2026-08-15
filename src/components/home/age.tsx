@@ -38,7 +38,7 @@ export default function MealsByAgeSection() {
 
         {/* Heading */}
         <section className="flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
-          <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800">
+          <p className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
             ចំណីអាហារ
             <span className="text-secondary-500">ទៅតាមវ័យ</span>
           </p>
@@ -61,7 +61,7 @@ export default function MealsByAgeSection() {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
               whileHover={{ y: -4 }}
-              className="group flex flex-col items-center text-center rounded-3xl border border-slate-200/80
+              className="group flex flex-col items-center text-center rounded-[2rem] border border-slate-200/80
                          bg-white px-6 py-10 sm:py-12 shadow-sm hover:shadow-lg
                          transition-shadow duration-300 cursor-pointer
                          sm:[&:last-child]:col-span-2 lg:[&:last-child]:col-span-1"
@@ -74,7 +74,7 @@ export default function MealsByAgeSection() {
                 {/* {group.icon} */}
               </div>
 
-              <h3 className="mt-6 text-lg sm:text-xl font-bold text-primary-800">
+              <h3 className="mt-6 text-lg sm:text-xl font-bold text-primary-800 dark:text-primary-dark">
                 {group.label}
               </h3>
 

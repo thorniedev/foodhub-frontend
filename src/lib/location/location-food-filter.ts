@@ -421,7 +421,7 @@ function deriveStoreFromFood(food: MenuItem): LocationStore | null {
   return {
     uuid: source.uuid,
     storeName: displayName,
-    description: source.description ?? null,
+    description: source.name ?? null,
     addressLine: source.addressLine ?? "",
     commune: null,
     district: source.district ?? null,

@@ -5,12 +5,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IoSearchOutline } from "react-icons/io5";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
-
 import FoodCard from "@/components/dynamic-card/FoodCard";
-
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import SortDropdown from "./SortDropdown";
+/* =========================================================
+   TYPES
+========================================================= */
 
-type FilterGroupKey = "category" | "cuisine" | "dietary" | "age";
+type FilterGroupKey =
+  | "category"
+  | "cuisine"
+  | "dietary"
+  | "age"
+  | "mealType"
+  | "allergen"
+  | "preparationTime";
 
 type FilterOption = {
   code: string;
@@ -21,7 +30,19 @@ type ChipGroup = {
   title: string;
   key: FilterGroupKey;
   options: FilterOption[];
+  description?: string;
 };
+
+type SortOption =
+  | "default"
+  | "price-asc"
+  | "price-desc"
+  | "preparation-asc"
+  | "preparation-desc"
+  | "rating-desc"
+  | "name-asc";
+
+type PreparationRangeCode = "UNDER_10" | "MIN_11_20" | "MIN_21_30" | "OVER_30";
 
 /* =========================================================
    TEXT NORMALIZER
@@ -31,126 +52,238 @@ function normalizeText(value: unknown): string {
   return String(value ?? "")
     .trim()
     .toLowerCase()
-    .normalize("NFKC");
-}
-
-/* =========================================================
-   SAFE ARRAY HELPERS
-========================================================= */
-
-function getAgeGroups(food: CatalogMenuItem) {
-  return Array.isArray(food.filterData?.ageGroups)
-    ? food.filterData.ageGroups
-    : [];
-}
-
-function getMealTypes(food: CatalogMenuItem) {
-  return Array.isArray(food.filterData?.mealTypes)
-    ? food.filterData.mealTypes
-    : [];
+    .normalize("NFKC")
+    .replace(/[_\-]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 /**
- * Your current CatalogMenuItem type has:
+ * GLOBAL SEARCH
  *
- * dietaryTypes: unknown[]
+ * This searches the ENTIRE menu item object returned by the backend,
+ * including nested values such as:
  *
- * because the API sample currently returns empty arrays.
+ * name, localName, descriptions, price, currency, store information,
+ * category, cuisine, spice level, age groups, seasons, meal types,
+ * dietary types, events, weather, ingredients, allergens, nutrition,
+ * recommendation, origin, filterOption, source, status, etc.
  *
- * This safely reads dietary objects only when the backend
- * actually provides code/name.
+ * JSON.stringify also includes the property names, so a query such as
+ * "calories", "proteinGrams", "countryName", "rainy", "HALAL", etc.
+ * can match.
  */
-function getDietaryOptions(food: CatalogMenuItem): FilterOption[] {
-  if (!Array.isArray(food.dietaryTypes)) {
-    return [];
+function buildGlobalSearchText(food: CatalogMenuItem): string {
+  try {
+    return normalizeText(JSON.stringify(food));
+  } catch {
+    return normalizeText(
+      [
+        food.uuid,
+        food.name,
+        food.localName,
+        food.description,
+        food.localDescription,
+        food.price,
+        food.currencyCode,
+        food.store?.name,
+        food.food?.category?.name,
+        food.food?.cuisine?.name,
+      ].join(" "),
+    );
   }
-
-  return food.dietaryTypes.flatMap((item) => {
-    if (typeof item !== "object" || item === null) {
-      return [];
-    }
-
-    const dietary = item as Record<string, unknown>;
-
-    if (typeof dietary.code === "string" && typeof dietary.name === "string") {
-      return [
-        {
-          code: dietary.code,
-          name: dietary.name,
-        },
-      ];
-    }
-
-    return [];
-  });
 }
 
-/* =========================================================
-   SEARCH
-========================================================= */
-
-function matchesQuery(food: CatalogMenuItem, query: string): boolean {
+function matchesGlobalQuery(food: CatalogMenuItem, query: string): boolean {
   const normalizedQuery = normalizeText(query);
 
   if (!normalizedQuery) {
     return true;
   }
 
-  const ageGroups = getAgeGroups(food);
-  const mealTypes = getMealTypes(food);
-  const dietaryTypes = getDietaryOptions(food);
+  const searchableText = buildGlobalSearchText(food);
 
-  const ingredients = Array.isArray(food.ingredients)
-    ? food.ingredients.filter(
-        (item): item is string => typeof item === "string",
-      )
-    : [];
+  /**
+   * Multi-word search:
+   * "khmer halal rainy"
+   *
+   * Every word must exist somewhere in the full menu-item response.
+   */
+  const tokens = normalizedQuery
+    .split(" ")
+    .map((token) => token.trim())
+    .filter(Boolean);
 
-  const searchableValues = [
-    food.name,
-    food.localName,
-    food.foodName,
-    food.description,
-
-    food.store?.name,
-
-    food.filterData?.category?.name,
-    food.filterData?.category?.code,
-
-    food.filterData?.cuisine?.name,
-    food.filterData?.cuisine?.code,
-
-    ...ageGroups.flatMap((ageGroup) => [ageGroup.code, ageGroup.name]),
-
-    ...mealTypes.flatMap((mealType) => [mealType.code, mealType.name]),
-
-    ...dietaryTypes.flatMap((diet) => [diet.code, diet.name]),
-
-    ...ingredients,
-  ];
-
-  return searchableValues.some((value) =>
-    normalizeText(value).includes(normalizedQuery),
-  );
+  return tokens.every((token) => searchableText.includes(token));
 }
 
 /* =========================================================
-   SELECTED FILTER MATCH
+   SAFE DATA HELPERS
 ========================================================= */
 
-function hasSelectedValue(
-  itemValues: string[],
-  selectedValues: Set<string>,
-): boolean {
-  if (selectedValues.size === 0) {
-    return true;
+function getCategory(food: CatalogMenuItem): FilterOption | null {
+  const category = food.food?.category;
+
+  if (!category?.code || !category?.name) {
+    return null;
   }
 
-  const normalizedItems = itemValues.map(normalizeText);
+  return {
+    code: category.code,
+    name: category.name,
+  };
+}
 
-  return [...selectedValues].some((selectedValue) =>
-    normalizedItems.includes(normalizeText(selectedValue)),
-  );
+function getCuisine(food: CatalogMenuItem): FilterOption | null {
+  const cuisine = food.food?.cuisine;
+
+  if (!cuisine?.code || !cuisine?.name) {
+    return null;
+  }
+
+  return {
+    code: cuisine.code,
+    name: cuisine.name,
+  };
+}
+
+function getAgeGroups(food: CatalogMenuItem): FilterOption[] {
+  if (!Array.isArray(food.food?.ageGroups)) {
+    return [];
+  }
+
+  return food.food.ageGroups.flatMap((ageGroup) => {
+    if (!ageGroup?.code || !ageGroup?.name) {
+      return [];
+    }
+
+    return [
+      {
+        code: ageGroup.code,
+        name: ageGroup.name,
+      },
+    ];
+  });
+}
+
+function getMealTypes(food: CatalogMenuItem): FilterOption[] {
+  if (!Array.isArray(food.food?.mealTypes)) {
+    return [];
+  }
+
+  return food.food.mealTypes.flatMap((mealType) => {
+    if (!mealType?.code || !mealType?.name) {
+      return [];
+    }
+
+    return [
+      {
+        code: mealType.code,
+        name: mealType.name,
+      },
+    ];
+  });
+}
+
+function getDietaryOptions(food: CatalogMenuItem): FilterOption[] {
+  if (!Array.isArray(food.food?.dietaryTypes)) {
+    return [];
+  }
+
+  return food.food.dietaryTypes.flatMap((dietary) => {
+    if (!dietary?.code || !dietary?.name) {
+      return [];
+    }
+
+    return [
+      {
+        code: dietary.code,
+        name: dietary.name,
+      },
+    ];
+  });
+}
+
+/**
+ * allergenDeclarations is still unknown[] in your verified type because
+ * the response sample currently contains [].
+ *
+ * This helper safely supports common backend shapes without forcing
+ * a wrong TypeScript interface:
+ *
+ * { code, name }
+ * { allergenCode, allergenName }
+ * { allergen: { code, name } }
+ * "PEANUT"
+ */
+function getAllergenOptions(food: CatalogMenuItem): FilterOption[] {
+  if (!Array.isArray(food.allergenDeclarations)) {
+    return [];
+  }
+
+  return food.allergenDeclarations.flatMap((item, index) => {
+    if (typeof item === "string") {
+      const value = item.trim();
+
+      return value
+        ? [
+            {
+              code: value,
+              name: value,
+            },
+          ]
+        : [];
+    }
+
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const record = item as Record<string, unknown>;
+
+    const nestedAllergen =
+      typeof record.allergen === "object" && record.allergen !== null
+        ? (record.allergen as Record<string, unknown>)
+        : null;
+
+    const codeCandidate =
+      record.code ??
+      record.allergenCode ??
+      record.allergenUuid ??
+      nestedAllergen?.code ??
+      nestedAllergen?.uuid;
+
+    const nameCandidate =
+      record.name ??
+      record.allergenName ??
+      record.localName ??
+      nestedAllergen?.name ??
+      nestedAllergen?.localName;
+
+    const code =
+      typeof codeCandidate === "string" && codeCandidate.trim()
+        ? codeCandidate.trim()
+        : typeof nameCandidate === "string" && nameCandidate.trim()
+          ? nameCandidate.trim()
+          : `allergen-${index}`;
+
+    const name =
+      typeof nameCandidate === "string" && nameCandidate.trim()
+        ? nameCandidate.trim()
+        : typeof codeCandidate === "string" && codeCandidate.trim()
+          ? codeCandidate.trim()
+          : null;
+
+    if (!name) {
+      return [];
+    }
+
+    return [
+      {
+        code,
+        name,
+      },
+    ];
+  });
 }
 
 /* =========================================================
@@ -161,16 +294,159 @@ function getUniqueOptions(values: FilterOption[]): FilterOption[] {
   const optionMap = new Map<string, FilterOption>();
 
   values.forEach((item) => {
-    if (!item.code) {
+    const code = item.code?.trim();
+    const name = item.name?.trim();
+
+    if (!code || !name) {
       return;
     }
 
-    if (!optionMap.has(item.code)) {
-      optionMap.set(item.code, item);
+    const key = normalizeText(code);
+
+    if (!optionMap.has(key)) {
+      optionMap.set(key, {
+        code,
+        name,
+      });
     }
   });
 
-  return Array.from(optionMap.values());
+  return Array.from(optionMap.values()).sort((first, second) =>
+    first.name.localeCompare(second.name),
+  );
+}
+
+/* =========================================================
+   FILTER MATCH HELPERS
+========================================================= */
+
+function hasSelectedValue(
+  itemValues: string[],
+  selectedValues: Set<string>,
+): boolean {
+  if (selectedValues.size === 0) {
+    return true;
+  }
+
+  const normalizedItems = new Set(itemValues.map(normalizeText));
+
+  /**
+   * Multiple chips inside the same group use OR.
+   *
+   * Example:
+   * Cuisine = Khmer OR Thai
+   */
+  return [...selectedValues].some((selectedValue) =>
+    normalizedItems.has(normalizeText(selectedValue)),
+  );
+}
+
+function containsExcludedAllergen(
+  food: CatalogMenuItem,
+  excludedAllergens: Set<string>,
+): boolean {
+  if (excludedAllergens.size === 0) {
+    return false;
+  }
+
+  const allergenOptions = getAllergenOptions(food);
+
+  const itemValues = allergenOptions.flatMap((allergen) => [
+    normalizeText(allergen.code),
+    normalizeText(allergen.name),
+  ]);
+
+  return [...excludedAllergens].some((selectedAllergen) => {
+    const normalizedSelected = normalizeText(selectedAllergen);
+
+    return itemValues.includes(normalizedSelected);
+  });
+}
+
+function matchesPreparationRange(
+  minutes: number | null,
+  selectedRanges: Set<string>,
+): boolean {
+  if (selectedRanges.size === 0) {
+    return true;
+  }
+
+  if (minutes === null || !Number.isFinite(minutes)) {
+    return false;
+  }
+
+  return [...selectedRanges].some((range) => {
+    switch (range as PreparationRangeCode) {
+      case "UNDER_10":
+        return minutes <= 10;
+
+      case "MIN_11_20":
+        return minutes >= 11 && minutes <= 20;
+
+      case "MIN_21_30":
+        return minutes >= 21 && minutes <= 30;
+
+      case "OVER_30":
+        return minutes > 30;
+
+      default:
+        return true;
+    }
+  });
+}
+
+/* =========================================================
+   SORT
+========================================================= */
+
+function sortFoods(
+  foods: CatalogMenuItem[],
+  sortBy: SortOption,
+): CatalogMenuItem[] {
+  const sorted = [...foods];
+
+  switch (sortBy) {
+    case "price-asc":
+      return sorted.sort((a, b) => a.price - b.price);
+
+    case "price-desc":
+      return sorted.sort((a, b) => b.price - a.price);
+
+    case "preparation-asc":
+      return sorted.sort((a, b) => {
+        const first = a.preparationTimeMinutes ?? Number.POSITIVE_INFINITY;
+        const second = b.preparationTimeMinutes ?? Number.POSITIVE_INFINITY;
+
+        return first - second;
+      });
+
+    case "preparation-desc":
+      return sorted.sort((a, b) => {
+        const first = a.preparationTimeMinutes ?? Number.NEGATIVE_INFINITY;
+        const second = b.preparationTimeMinutes ?? Number.NEGATIVE_INFINITY;
+
+        return second - first;
+      });
+
+    case "rating-desc":
+      return sorted.sort(
+        (a, b) =>
+          Number(b.store?.averageRating ?? 0) -
+          Number(a.store?.averageRating ?? 0),
+      );
+
+    case "name-asc":
+      return sorted.sort((a, b) => {
+        const first = a.localName?.trim() || a.name;
+        const second = b.localName?.trim() || b.name;
+
+        return first.localeCompare(second);
+      });
+
+    case "default":
+    default:
+      return sorted;
+  }
 }
 
 /* =========================================================
@@ -189,11 +465,8 @@ function GridIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
     >
       <rect x="3" y="3" width="7" height="7" rx="1.5" />
-
       <rect x="14" y="3" width="7" height="7" rx="1.5" />
-
       <rect x="3" y="14" width="7" height="7" rx="1.5" />
-
       <rect x="14" y="14" width="7" height="7" rx="1.5" />
     </svg>
   );
@@ -226,6 +499,8 @@ export default function FoodSearchBar() {
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  const [sortBy, setSortBy] = useState<SortOption>("default");
+
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -255,76 +530,60 @@ export default function FoodSearchBar() {
   }, []);
 
   /* =======================================================
-     BUILD FILTER OPTIONS FROM NEW API DATA
+     BUILD FILTER OPTIONS FROM CURRENT API RESPONSE
   ======================================================= */
 
   const chipGroups = useMemo<ChipGroup[]>(() => {
-    // ---------------------------------------
-    // CATEGORY
-    // food.filterData.category
-    // ---------------------------------------
-
     const categories = getUniqueOptions(
       menuItems.flatMap((item) => {
-        const category = item.filterData?.category;
+        const category = getCategory(item);
 
-        if (!category) {
-          return [];
-        }
-
-        return [
-          {
-            code: category.code,
-            name: category.name,
-          },
-        ];
+        return category ? [category] : [];
       }),
     );
-
-    // ---------------------------------------
-    // CUISINE
-    // food.filterData.cuisine
-    // ---------------------------------------
 
     const cuisines = getUniqueOptions(
       menuItems.flatMap((item) => {
-        const cuisine = item.filterData?.cuisine;
+        const cuisine = getCuisine(item);
 
-        if (!cuisine) {
-          return [];
-        }
-
-        return [
-          {
-            code: cuisine.code,
-            name: cuisine.name,
-          },
-        ];
+        return cuisine ? [cuisine] : [];
       }),
     );
-
-    // ---------------------------------------
-    // DIETARY TYPES
-    // API currently may return []
-    // ---------------------------------------
 
     const dietaryTypes = getUniqueOptions(
       menuItems.flatMap((item) => getDietaryOptions(item)),
     );
 
-    // ---------------------------------------
-    // AGE GROUPS
-    // food.filterData.ageGroups
-    // ---------------------------------------
-
     const ageGroups = getUniqueOptions(
-      menuItems.flatMap((item) =>
-        getAgeGroups(item).map((ageGroup) => ({
-          code: ageGroup.code,
-          name: ageGroup.name,
-        })),
-      ),
+      menuItems.flatMap((item) => getAgeGroups(item)),
     );
+
+    const mealTypes = getUniqueOptions(
+      menuItems.flatMap((item) => getMealTypes(item)),
+    );
+
+    const allergens = getUniqueOptions(
+      menuItems.flatMap((item) => getAllergenOptions(item)),
+    );
+
+    const preparationOptions: FilterOption[] = [
+      {
+        code: "UNDER_10",
+        name: "≤ 10 នាទី",
+      },
+      {
+        code: "MIN_11_20",
+        name: "11 - 20 នាទី",
+      },
+      {
+        code: "MIN_21_30",
+        name: "21 - 30 នាទី",
+      },
+      {
+        code: "OVER_30",
+        name: "> 30 នាទី",
+      },
+    ];
 
     const groups: ChipGroup[] = [
       {
@@ -332,32 +591,44 @@ export default function FoodSearchBar() {
         key: "category",
         options: categories,
       },
-
       {
         title: "ម្ហូបតាមប្រទេស",
         key: "cuisine",
         options: cuisines,
       },
-
       {
         title: "របបអាហារ",
         key: "dietary",
         options: dietaryTypes,
       },
-
       {
         title: "ក្រុមអាយុ",
         key: "age",
         options: ageGroups,
       },
+      {
+        title: "ពេលអាហារ",
+        key: "mealType",
+        options: mealTypes,
+      },
+      {
+        title: "ជៀសវាងអាឡែស៊ី",
+        key: "allergen",
+        options: allergens,
+        description: "មុខម្ហូបដែលមានអាឡែស៊ីដែលបានជ្រើសនឹងត្រូវដកចេញពីលទ្ធផល។",
+      },
+      {
+        title: "ពេលរៀបចំ",
+        key: "preparationTime",
+        options: preparationOptions,
+      },
     ];
 
     /**
-     * Don't show empty filter groups.
+     * Dynamic backend groups are hidden when the API does not provide
+     * any values.
      *
-     * For example your current API may return:
-     *
-     * dietaryTypes: []
+     * Preparation time is always available because its ranges are local.
      */
     return groups.filter((group) => group.options.length > 0);
   }, [menuItems]);
@@ -367,7 +638,7 @@ export default function FoodSearchBar() {
   ======================================================= */
 
   function getSelectionKey(group: FilterGroupKey, code: string): string {
-    return `${group}:${code}`;
+    return `${group}::${code}`;
   }
 
   function toggleChip(group: FilterGroupKey, code: string) {
@@ -388,6 +659,7 @@ export default function FoodSearchBar() {
 
   function clearAll() {
     setSelected(new Set());
+    setSortBy("default");
   }
 
   /* =======================================================
@@ -395,107 +667,103 @@ export default function FoodSearchBar() {
   ======================================================= */
 
   const groupedSelected = useMemo(() => {
-    const category = new Set<string>();
-    const cuisine = new Set<string>();
-    const dietary = new Set<string>();
-    const age = new Set<string>();
+    const groups: Record<FilterGroupKey, Set<string>> = {
+      category: new Set<string>(),
+      cuisine: new Set<string>(),
+      dietary: new Set<string>(),
+      age: new Set<string>(),
+      mealType: new Set<string>(),
+      allergen: new Set<string>(),
+      preparationTime: new Set<string>(),
+    };
 
     selected.forEach((value) => {
-      const [group, code] = value.split(":");
+      const separatorIndex = value.indexOf("::");
 
-      if (!code) {
+      if (separatorIndex === -1) {
         return;
       }
 
-      if (group === "category") {
-        category.add(code);
+      const group = value.slice(0, separatorIndex) as FilterGroupKey;
+      const code = value.slice(separatorIndex + 2);
+
+      if (!code || !(group in groups)) {
+        return;
       }
 
-      if (group === "cuisine") {
-        cuisine.add(code);
-      }
-
-      if (group === "dietary") {
-        dietary.add(code);
-      }
-
-      if (group === "age") {
-        age.add(code);
-      }
+      groups[group].add(code);
     });
 
-    return {
-      category,
-      cuisine,
-      dietary,
-      age,
-    };
+    return groups;
   }, [selected]);
 
   /* =======================================================
-     FILTER FOODS
+     FILTER + GLOBAL SEARCH + SORT
   ======================================================= */
 
   const filteredFoods = useMemo(() => {
-    return menuItems.filter((food) => {
-      // Only available foods
-      if (food.availabilityStatus !== "AVAILABLE") {
-        return false;
-      }
-
-      const category = food.filterData?.category;
-
-      const cuisine = food.filterData?.cuisine;
-
-      const ageGroups = getAgeGroups(food);
+    const result = menuItems.filter((food) => {
+      const category = getCategory(food);
+      const cuisine = getCuisine(food);
 
       const dietaryTypes = getDietaryOptions(food);
-
-      // ---------------------------------------
-      // CATEGORY
-      // ---------------------------------------
+      const ageGroups = getAgeGroups(food);
+      const mealTypes = getMealTypes(food);
 
       const matchesCategory = hasSelectedValue(
         category ? [category.code] : [],
         groupedSelected.category,
       );
 
-      // ---------------------------------------
-      // CUISINE
-      // ---------------------------------------
-
       const matchesCuisine = hasSelectedValue(
         cuisine ? [cuisine.code] : [],
         groupedSelected.cuisine,
       );
-
-      // ---------------------------------------
-      // DIETARY
-      // ---------------------------------------
 
       const matchesDietary = hasSelectedValue(
         dietaryTypes.map((diet) => diet.code),
         groupedSelected.dietary,
       );
 
-      // ---------------------------------------
-      // AGE
-      // ---------------------------------------
-
       const matchesAge = hasSelectedValue(
         ageGroups.map((ageGroup) => ageGroup.code),
         groupedSelected.age,
       );
 
+      const matchesMealType = hasSelectedValue(
+        mealTypes.map((mealType) => mealType.code),
+        groupedSelected.mealType,
+      );
+
+      /**
+       * Allergy filters work as EXCLUSION filters.
+       *
+       * If user chooses PEANUT, foods declaring PEANUT are removed.
+       */
+      const containsAllergy = containsExcludedAllergen(
+        food,
+        groupedSelected.allergen,
+      );
+
+      const matchesPreparation = matchesPreparationRange(
+        food.preparationTimeMinutes,
+        groupedSelected.preparationTime,
+      );
+
       return (
-        matchesQuery(food, searchInput) &&
+        matchesGlobalQuery(food, searchInput) &&
         matchesCategory &&
         matchesCuisine &&
         matchesDietary &&
-        matchesAge
+        matchesAge &&
+        matchesMealType &&
+        !containsAllergy &&
+        matchesPreparation
       );
     });
-  }, [menuItems, searchInput, groupedSelected]);
+
+    return sortFoods(result, sortBy);
+  }, [menuItems, searchInput, groupedSelected, sortBy]);
 
   /* =======================================================
      SELECTED LABELS
@@ -521,7 +789,7 @@ export default function FoodSearchBar() {
 
   const label =
     count === 0
-      ? "ប្រភេទអាហារ"
+      ? "តម្រងអាហារ"
       : selectedLabels.slice(0, 2).join(", ") +
         (count > 2 ? ` +${count - 2}` : "");
 
@@ -530,12 +798,12 @@ export default function FoodSearchBar() {
   ======================================================= */
 
   return (
-    <div className="container mx-auto w-full pt-12.5 max-w-7xl text-[#3d3d3a]">
+    <div className="container mx-auto w-full max-w-7xl pt-12.5 text-[#3d3d3a]">
       {/* ===============================================
           SEARCH + FILTER BAR
       =============================================== */}
 
-      <div className="sticky top-12 z-50 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5 px-4 py-3">
+      <div className="sticky top-18 z-50 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5 px-4 pb-6">
         {/* SEARCH */}
 
         <div className="flex min-h-[60px] min-w-[280px] flex-1 items-center gap-3 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec]">
@@ -545,7 +813,7 @@ export default function FoodSearchBar() {
             type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="ស្វែងរកម្ហូបអាហារ..."
+            placeholder="ស្វែងរកគ្រប់ព័ត៌មានម្ហូប..."
             className="h-full w-full bg-transparent text-[15px] outline-none placeholder:text-[#a3a29a]"
           />
 
@@ -554,12 +822,16 @@ export default function FoodSearchBar() {
               type="button"
               onClick={() => setSearchInput("")}
               className="cursor-pointer text-sm text-gray-400 hover:text-gray-700"
+              aria-label="Clear search"
             >
               ✕
             </button>
           )}
         </div>
 
+        {/* SORT */}
+
+        <SortDropdown value={sortBy} onChange={setSortBy} />
         {/* FILTER */}
 
         <div ref={wrapRef} className="relative z-50 min-w-[220px] flex-none">
@@ -592,14 +864,16 @@ export default function FoodSearchBar() {
           {/* DROPDOWN */}
 
           <div
-            className={`absolute right-0 top-[calc(100%+10px)] z-50 w-[380px] max-w-[80vw] rounded-[18px] border border-[#e7e6e1] bg-white p-5 shadow-xl transition-all ${
+            className={`absolute right-0 top-[calc(100%+10px)] z-50 w-[420px] max-w-[90vw] rounded-[18px] border border-[#e7e6e1] bg-white p-5 shadow-xl transition-all ${
               isOpen
                 ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none -translate-y-2 scale-[0.98] opacity-0"
             }`}
           >
-            <div className="mb-3 flex items-center justify-end">
-              {count > 0 && (
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-sm text-gray-400">ជ្រើសតម្រងច្រើនបាន</p>
+
+              {(count > 0 || sortBy !== "default") && (
                 <button
                   type="button"
                   onClick={clearAll}
@@ -618,9 +892,15 @@ export default function FoodSearchBar() {
                     index > 0 ? "mt-5 border-t border-[#e7e6e1] pt-[18px]" : ""
                   }
                 >
-                  <p className="mb-3 text-[13px] font-semibold text-[#a3a29a]">
+                  <p className="mb-1 text-xl font-semibold text-[#a3a29a]">
                     {group.title}
                   </p>
+
+                  {group.description && (
+                    <p className="mb-3 text-sm leading-6 text-gray-400">
+                      {group.description}
+                    </p>
+                  )}
 
                   <div className="flex flex-wrap gap-2">
                     {group.options.map((option) => {
@@ -636,9 +916,11 @@ export default function FoodSearchBar() {
                           key={selectionKey}
                           type="button"
                           onClick={() => toggleChip(group.key, option.code)}
-                          className={`cursor-pointer rounded-full border px-4 py-2 text-sm transition-all ${
+                          className={`cursor-pointer rounded-full border px-4 py-2 text-base transition-all ${
                             isSelected
-                              ? "border-[#1c6b45] bg-[#1c6b45] text-white"
+                              ? group.key === "allergen"
+                                ? "border-red-500 bg-red-500 text-white"
+                                : "border-[#1c6b45] bg-[#1c6b45] text-white"
                               : "border-[#e7e6e1] bg-white text-[#3d3d3a] hover:border-[#1c6b45]"
                           }`}
                         >
@@ -661,16 +943,27 @@ export default function FoodSearchBar() {
       </div>
 
       {/* ===============================================
-          RESULT COUNT
+          RESULT SUMMARY
       =============================================== */}
 
       {!isLoading && !isError && (
-        <div className="px-4 pb-3 text-sm text-gray-400">
-          រកឃើញ{" "}
+        <div className="flex flex-wrap items-center gap-2 px-4 pb-3 text-base text-gray-400">
+          <span>រកឃើញ</span>
+
           <span className="font-semibold text-primary-700">
             {filteredFoods.length}
-          </span>{" "}
-          មុខម្ហូប
+          </span>
+
+          <span>មុខម្ហូប</span>
+
+          {searchInput.trim() && (
+            <>
+              <span>សម្រាប់</span>
+              <span className="max-w-[260px] truncate font-medium text-gray-600">
+                “{searchInput.trim()}”
+              </span>
+            </>
+          )}
         </div>
       )}
 
@@ -723,7 +1016,7 @@ export default function FoodSearchBar() {
               >
                 <IoSearchOutline className="mx-auto mb-4 text-[34px] text-gray-300" />
 
-                <p>រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង</p>
+                <p>រកមិនឃើញលទ្ធផលដែលត្រូវនឹងការស្វែងរក និងតម្រង</p>
               </motion.div>
             )}
 

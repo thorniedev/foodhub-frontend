@@ -26,7 +26,7 @@ function SocialButton({ icon, href, index = 0 }: SocialButtonProps) {
       aria-label={`Open ${icon}`}
       // className="size-10 sm:size-11 rounded-full bg-white text-[#1E2E3E] border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors focus:outline-none shadow-xs"
       // new
-      className="size-10 sm:size-11 rounded-full bg-white dark:bg-[#1e3e29] text-[#1E2E3E] dark:text-white border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none shadow-xs"
+      className="size-10 sm:size-11 rounded-full bg-white dark:bg-[#1e3e29] text-primary-800 dark:text-white border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none shadow-xs"
       initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.6 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, amount: 0.5 }}
@@ -245,7 +245,7 @@ function MentorCard({
         <motion.span
           // className="font-['Kantumruy_Pro',sans-serif] text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] text-[#136C34]"
           // new
-          className="font-['Kantumruy_Pro',sans-serif] text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] dark:bg-[#136C34]/40 text-[#136C34] dark:text-[#00ff55]"
+          className=" text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] dark:bg-[#136C34]/40 text-[#136C34] dark:text-primary-dark"
           initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.85 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.5 }}
@@ -293,7 +293,7 @@ const mentors: MentorCardProps[] = [
   },
   {
     id: "mentor-2",
-    name: "អ៊ឹង លីហហ្សា",
+    name: "អ៊ឹង លីហ៊្សា",
     role: "Mentor",
     avatar: "/about/cher.jpg",
     frameSrc: "/about/frame.png",
@@ -310,11 +310,11 @@ export default function MentorSection() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className=" py-14 md:py-24 px-4 sm:px-8">
+    <section className=" py-12.5 px-4 sm:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 sm:mb-16">
           <motion.h2
-            className="font-['Kantumruy_Pro',sans-serif] font-extrabold text-3xl sm:text-5xl md:text-6xl tracking-wide"
+            className=" font-extrabold text-3xl sm:text-5xl md:text-6xl "
             initial={
               reduceMotion
                 ? false
@@ -328,7 +328,9 @@ export default function MentorSection() {
             <span className="text-[#F97316]">របស់យើង</span> */}
 
             {/* // new */}
-            <span className="text-[#136C34] dark:text-[#4ADE80]">Mentors </span>
+            <span className="text-[#136C34] dark:text-primary-dark">
+              Mentors
+            </span>
             <span className="text-[#F97316] dark:text-[#FB923C]">របស់យើង</span>
           </motion.h2>
         </div>
@@ -342,7 +344,6 @@ export default function MentorSection() {
     </section>
   );
 }
-
 
 // =================================================================================================
 // // components/MentorSection.tsx

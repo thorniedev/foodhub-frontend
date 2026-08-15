@@ -1,25 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import { FiLogOut } from "react-icons/fi";
+import {
+  LogOut,
+} from "lucide-react";
 
-export default function LogoutButton() {
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+interface LogOutButtonProps {
+  className?: string;
+}
 
-  const handleLogout = () => {
-    setIsLoggingOut(true);
-    window.location.assign("/api/auth/logout");
-  };
+export default function LogOutButton({
+  className = "",
+}: LogOutButtonProps) {
+  const handleLogout =
+    () => {
+      window.location.href =
+        "/api/auth/logout";
+    };
 
   return (
     <button
       type="button"
-      onClick={handleLogout}
-      disabled={isLoggingOut}
-      className="rounded-xl flex items-center  gap-2 justify-center bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+      onClick={
+        handleLogout
+      }
+      className={`flex items-center gap-2 ${className}`}
     >
-      {isLoggingOut ? "Signing out..." : "Logout"}{" "}
-      <FiLogOut className="text-xl" />
+      <LogOut
+        size={18}
+      />
+
+      <span>
+        Logout
+      </span>
     </button>
   );
 }

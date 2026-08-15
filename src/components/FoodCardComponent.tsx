@@ -49,7 +49,7 @@ export default function FoodCardComponent({ food }: Props) {
             {name}
           </p>
 
-          <p className="text-[24px] font-medium text-primary-800">${price}</p>
+          <p className="text-[24px] font-medium text-primary-800 dark:text-primary-dark">${price}</p>
         </div>
 
         <div className="flex gap-4">

@@ -248,7 +248,7 @@ export default function NearbyStoreVoiceAlert({
               </div>
 
               <p className="mt-1  text-[14px] leading-6 text-slate-500 dark:text-slate-300">
-                ជូនដំណឹងពេលមានហាងត្រូវចំណូលចិត្តក្នុងចម្ងាយ{" "}
+                ជូនដំណឹងពេលមានហាងត្រូវចំណូលចិត្តក្នុងចម្ងាយ
                 {formatKhmerNumber(radiusMeters)} ម៉ែត្រ
               </p>
             </div>

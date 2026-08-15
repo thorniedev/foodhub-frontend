@@ -59,7 +59,7 @@ export default function AboutHeroClient() {
               </button>
 
               <div className="p-6 sm:p-8">
-                <p className="text-2xl font-semibold text-primary-800 dark:text-[#22a447]">
+                <p className="text-2xl font-semibold text-primary-800 dark:text-primary-dark dark:text-[#22a447]">
                   FoodHub AI Assistant
                 </p>
 

@@ -1,99 +1,416 @@
 import React from "react";
-
+import { motion } from "framer-motion";
+import { group, riseReveal, VIEWPORT } from "@/lib/reveal";
 export default function EventSection() {
   return (
-    <div className="my-15 flex flex-col gap-12.5">
-      <section className="flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
-        <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800">
+    <div className="py-12.5">
+      {/* =========================================
+          SECTION HEADER
+      ========================================== */}
+      <section className="  flex flex-col lg:pb-12.5 items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full">
+        <p className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>
         </p>
-
-        <p className="lg:text-[24px] md:text-[20px] text-center font-light text-gray-700 dark:text-gray-100 max-md:text-[16px]">
-          ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ
-          <br />
+        <p className="lg:text-[24px] md:text-[20px] text-center  font-light text-gray-700 dark:text-gray-100 max-md:text-[16px]">
+          ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ <br />
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
         </p>
       </section>
 
+      {/* =========================================
+          SEASONAL FOOD GRID
+      ========================================== */}
       <div
         data-aos="fade-up"
         data-aos-delay="150"
-        className="grid grid-cols-2 container lg:px-0 md:px-4 mx-auto max-w-7xl sm:grid-cols-2 md:grid-cols-5 gap-4 items-center place-content-center"
+        className="
+          container
+          mx-auto
+          grid
+          max-w-7xl
+          grid-cols-2
+          items-center
+          gap-4
+          px-4
+          sm:grid-cols-2
+          md:grid-cols-5
+          lg:px-0
+          
+        "
       >
-        {/* Left Content */}
+        {/* ======================================
+            LEFT CONTENT
+        ======================================= */}
         <div
           data-aos="fade-right"
           data-aos-delay="150"
-          className="flex flex-col justify-between h-full"
+          className="flex h-full flex-col justify-between"
         >
           <div className="mb-6 pl-0.5">
-            <p className="lg:text-[36px]  md:text-[22px] max-md:text-[26px] font-bold text-primary-800 dark:text-[#22a447] leading-tight mb-4">
+            <p className="mb-4 text-[26px] font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[22px] lg:text-[36px]">
               ចំណីអាហារស្រប <br />
               <span className="text-secondary-500">តាមរដូវកាលខ្មែរ</span>
             </p>
 
-            <p className="text-gray-500 dark:text-white max-lg:text-[16px] text-xl">
+            <p className="text-xl text-gray-500 dark:text-white max-lg:text-[16px]">
               ស្វែងរកមុខម្ហូបដែលសមស្របនឹងរដូវកាលនីមួយៗ
             </p>
           </div>
 
-          <div className="rounded-2xl overflow-hidden shadow-md">
+          {/* FOOD 1 */}
+          <div
+            className="
+              group
+              relative
+              overflow-hidden
+              rounded-2xl
+              shadow-md
+            "
+          >
             <img
               src="/Image/food-picture/food-21.webp"
-              alt="New Dish"
-              className="w-full h-40 object-cover"
+              alt="Fish Amok"
+              className="
+                h-40
+                w-full
+                object-cover
+                transition-transform
+                duration-700
+                ease-out
+                group-hover:scale-110
+              "
             />
+
+            {/* Gradient */}
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black/80
+                via-black/20
+                to-transparent
+                opacity-0
+                transition-opacity
+                duration-500
+                group-hover:opacity-100
+              "
+            />
+
+            {/* Food Name */}
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-x-0
+                bottom-0
+                z-10
+                translate-y-5
+                p-4
+                opacity-0
+                transition-all
+                duration-500
+                ease-out
+                group-hover:translate-y-0
+                group-hover:opacity-100
+              "
+            >
+              <p className="text-lg font-semibold text-white">
+                បុណ្យភ្ជុំបិណ្ឌ
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Column 2 */}
+        {/* ======================================
+            COLUMN 2
+        ======================================= */}
         <div data-aos="fade-up" data-aos-delay="250">
-          <div className="rounded-2xl flex flex-col justify-between gap-4 overflow-hidden">
-            <img
-              src="/Image/food-picture/food-20.jpg"
-              alt="Dishes"
-              className="w-full h-40 rounded-2xl object-cover"
-            />
+          <div className="flex flex-col justify-between gap-4 overflow-hidden rounded-2xl">
+            {/* FOOD 2 */}
+            <div className="group relative overflow-hidden rounded-2xl">
+              <img
+                src="/Image/food-picture/food-20.jpg"
+                alt="Khmer Seasonal Dish"
+                className="
+                  h-40
+                  w-full
+                  object-cover
+                  transition-transform
+                  duration-700
+                  ease-out
+                  group-hover:scale-110
+                "
+              />
 
-            <img
-              src="/Image/food-picture/food-19.jpg"
-              alt="Snack"
-              className="w-full h-40 rounded-2xl object-cover"
-            />
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  inset-0
+                  bg-gradient-to-t
+                  from-black/80
+                  via-black/20
+                  to-transparent
+                  opacity-0
+                  transition-opacity
+                  duration-500
+                  group-hover:opacity-100
+                "
+              />
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  inset-x-0
+                  bottom-0
+                  z-10
+                  translate-y-5
+                  p-4
+                  opacity-0
+                  transition-all
+                  duration-500
+                  group-hover:translate-y-0
+                  group-hover:opacity-100
+                "
+              >
+                <p className="text-lg font-semibold text-white">
+                  បុណ្យចូលឆ្នាំខ្មែរ
+                </p>
+              </div>
+            </div>
+
+            {/* FOOD 3 */}
+            <div className="group relative overflow-hidden rounded-2xl">
+              <img
+                src="/Image/food-picture/food-19.jpg"
+                alt="Khmer Snack"
+                className="
+                  h-[160px]
+                  w-full
+                  object-cover
+                  transition-transform
+                  duration-700
+                  ease-out
+                  group-hover:scale-110
+                "
+              />
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  inset-0
+                  bg-gradient-to-t
+                  from-black/80
+                  via-black/20
+                  to-transparent
+                  opacity-0
+                  transition-opacity
+                  duration-500
+                  group-hover:opacity-100
+                "
+              />
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  inset-x-0
+                  bottom-0
+                  z-10
+                  translate-y-5
+                  p-4
+                  opacity-0
+                  transition-all
+                  duration-500
+                  group-hover:translate-y-0
+                  group-hover:opacity-100
+                "
+              >
+                <p className="text-lg font-semibold text-white">បុណ្យអុំទូក</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Column 3 */}
+        {/* ======================================
+            COLUMN 3
+        ======================================= */}
         <div data-aos="zoom-in" data-aos-delay="300" className="h-full">
-          <img
-            src="/Image/food-picture/food-22.jpg"
-            alt="Gyoza"
-            className="w-full h-[340px] object-cover rounded-2xl shadow-md"
-          />
+          <div className="group relative  h-[340px] overflow-hidden rounded-2xl shadow-md">
+            <img
+              src="/Image/food-picture/food-22.jpg"
+              alt="Khmer Dumpling"
+              className="
+                h-[340px]
+                w-full
+                object-cover
+                transition-transform
+                duration-700
+                ease-out
+                group-hover:scale-110
+              "
+            />
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black/80
+                via-black/20
+                to-transparent
+                opacity-0
+                transition-opacity
+                duration-500
+                group-hover:opacity-100
+              "
+            />
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-x-0
+                bottom-0
+                z-10
+                translate-y-6
+                p-5
+                opacity-0
+                transition-all
+                duration-500
+                ease-out
+                group-hover:translate-y-0
+                group-hover:opacity-100
+              "
+            >
+              <p className="text-xl font-semibold text-white">រដូវវស្សា</p>
+            </div>
+          </div>
         </div>
 
-        {/* Column 4 */}
+        {/* ======================================
+            COLUMN 4
+        ======================================= */}
         <div data-aos="zoom-in" data-aos-delay="400" className="h-full">
-          <img
-            src="/Image/food-picture/food-25.jpg"
-            alt="Pasta"
-            className="w-full h-[340px] object-cover rounded-2xl shadow-md"
-          />
+          <div className="group relative h-[340px] overflow-hidden rounded-2xl shadow-md">
+            <img
+              src="/Image/food-picture/food-25.jpg"
+              alt="Seasonal Pasta"
+              className="
+                h-[340px]
+                w-full
+                object-cover
+                transition-transform
+                duration-700
+                ease-out
+                group-hover:scale-110
+              "
+            />
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black/80
+                via-black/20
+                to-transparent
+                opacity-0
+                transition-opacity
+                duration-500
+                group-hover:opacity-100
+              "
+            />
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-x-0
+                bottom-0
+                z-10
+                translate-y-6
+                p-5
+                opacity-0
+                transition-all
+                duration-500
+                ease-out
+                group-hover:translate-y-0
+                group-hover:opacity-100
+              "
+            >
+              <p className="text-xl font-semibold text-white">រដូវក្តៅ</p>
+            </div>
+          </div>
         </div>
 
-        {/* Column 5 */}
+        {/* ======================================
+            COLUMN 5
+        ======================================= */}
         <div
           data-aos="zoom-in"
           data-aos-delay="400"
-          className="h-full max-sm:col-span-2"
+          className=" h-[340px] max-sm:col-span-2"
         >
-          <img
-            src="/Image/food-picture/food-24.jpg"
-            alt="Penne"
-            className="w-full h-[340px] object-cover rounded-2xl shadow-md"
-          />
+          <div className="group relative h-full overflow-hidden rounded-2xl shadow-md">
+            <img
+              src="/Image/food-picture/food-24.jpg"
+              alt="Seasonal Penne"
+              className="
+                h-[340px]
+                w-full
+                object-cover
+                transition-transform
+                duration-700
+                ease-out
+                group-hover:scale-110
+              "
+            />
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black/80
+                via-black/20
+                to-transparent
+                opacity-0
+                transition-opacity
+                duration-500
+                group-hover:opacity-100
+              "
+            />
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-x-0
+                bottom-0
+                z-10
+                translate-y-6
+                p-5
+                opacity-0
+                transition-all
+                duration-500
+                ease-out
+                group-hover:translate-y-0
+                group-hover:opacity-100
+              "
+            >
+              <p className="text-xl font-semibold text-white">រដូវរងា</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

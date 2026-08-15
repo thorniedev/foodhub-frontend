@@ -497,7 +497,7 @@ export default function FoodSearch({
               </p>
 
               <p className="mt-1 text-[16px] text-gray-500">
-                រកឃើញ {suggestions.length} ជម្រើសសម្រាប់ “{value}”
+                រកឃើញ  {suggestions.length}  ជម្រើសសម្រាប់ “{value}”
               </p>
             </div>
 
@@ -561,7 +561,7 @@ export default function FoodSearch({
                           </div>
                         </div>
 
-                        <p className="shrink-0 text-[16px] dark:text-[#22a447] font-semibold text-primary-800">
+                        <p className="shrink-0 text-[16px] dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
                           {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: food.currencyCode || "USD",

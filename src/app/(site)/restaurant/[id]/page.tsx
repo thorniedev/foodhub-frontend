@@ -48,7 +48,7 @@
 //       <div className="mx-auto max-w-360 px-4 py-6 sm:px-6">
 //         <Link
 //           href="/"
-//           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-800 hover:text-primary-600"
+//           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-800 dark:text-primary-dark hover:text-primary-600"
 //         >
 //         <FaArrowLeft />
 //           ត្រឡប់ក្រោយ
@@ -158,7 +158,7 @@ export default function RestaurantDetailPage() {
       <div className="mx-auto max-w-360 px-4 py-6 sm:px-6">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-800 hover:text-primary-600"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-800 dark:text-primary-dark hover:text-primary-600"
         >
           <FaArrowLeft />
           ត្រឡប់ក្រោយ

@@ -49,7 +49,7 @@ export default function MobileLocationToolbar({
         type="button"
         onClick={onOpenFilters}
         aria-label="Open location filters"
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-primary-800 shadow-sm transition hover:border-primary-300"
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-primary-800 dark:text-primary-dark shadow-sm transition hover:border-primary-300"
       >
         <IoFilterOutline className="text-[22px]" />
       </button>

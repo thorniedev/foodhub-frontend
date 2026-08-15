@@ -54,7 +54,7 @@ export default function FoodNavTabs({
               type="button"
               onClick={() => onTabChange(tab.id)}
               className={`relative flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full px-5 py-1.5 text-[16px] font-semibold transition-colors ${
-                isActive ? "text-white" : "text-primary-800 hover:bg-primary-50"
+                isActive ? "text-white" : "text-primary-800 dark:text-primary-dark hover:bg-primary-50"
               }`}
             >
               {isActive && (

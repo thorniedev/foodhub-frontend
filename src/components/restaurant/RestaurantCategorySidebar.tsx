@@ -69,7 +69,7 @@
 //                   className={`flex w-full items-center gap-2.5 rounded-2xl px-3 py-2.5 text-left text-sm font-medium transition-colors cursor-pointer ${
 //                     active
 //                       ? "bg-primary-800 text-white"
-//                       : "text-gray-600 hover:bg-primary-50 hover:text-primary-800"
+//                       : "text-gray-600 hover:bg-primary-50 hover:text-primary-800 dark:text-primary-dark"
 //                   }`}
 //                 >
 //                   <CategoryIcon
@@ -185,8 +185,8 @@ export default function RestaurantCategorySidebar({ categories }: Props) {
                   aria-current={active}
                   className={`flex w-full items-center gap-2.5 rounded-2xl px-3 py-2.5 text-left text-sm font-medium transition-colors cursor-pointer ${
                     active
-                      ? "bg-primary-50 text-primary-800"
-                      : "text-gray-600 hover:bg-primary-50 hover:text-primary-800"
+                      ? "bg-primary-50 text-primary-800 dark:text-primary-dark"
+                      : "text-gray-600 hover:bg-primary-50 hover:text-primary-800 dark:text-primary-dark"
                   }`}
                 >
                   <CategoryIcon
@@ -221,7 +221,7 @@ export default function RestaurantCategorySidebar({ categories }: Props) {
               aria-current={active}
               className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-sm font-medium transition-colors cursor-pointer ${
                 active
-                  ? "border-primary-800 bg-primary-50 text-primary-800"
+                  ? "border-primary-800 bg-primary-50 text-primary-800 dark:text-primary-dark"
                   : "border-gray-200 text-gray-600"
               }`}
             >

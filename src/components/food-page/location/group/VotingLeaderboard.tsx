@@ -264,7 +264,7 @@ export default function VotingLeaderboard({
                   <button
                     type="button"
                     onClick={copyVotingLink}
-                    className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-4 text-[17px] font-semibold text-primary-800 transition hover:bg-primary-50"
+                    className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-4 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:bg-primary-50"
                   >
                     {copied ? (
                       <IoCheckmarkCircle className="text-[21px]" />
@@ -318,7 +318,7 @@ export default function VotingLeaderboard({
                         >
                           <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
 
-                          <span className="absolute left-3 top-3 flex h-10 min-w-10 items-center justify-center rounded-full bg-white px-3 text-[17px] font-bold text-primary-800 shadow-sm">
+                          <span className="absolute left-3 top-3 flex h-10 min-w-10 items-center justify-center rounded-full bg-white px-3 text-[17px] font-bold text-primary-800 dark:text-primary-dark shadow-sm">
                             #{index + 1}
                           </span>
 

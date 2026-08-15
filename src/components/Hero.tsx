@@ -566,7 +566,7 @@ function HeroStage({ reduceMotion }: { reduceMotion: boolean }) {
             delay: 0.7,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="relative z-20 -mt-4 max-w-[850px] dark:text-white text-balance text-center text-[36px] font-extrabold leading-[1.35] text-primary-800 sm:text-[44px] md:-mt-10 md:text-[50px] lg:-mt-14 lg:ml-48 lg:text-left lg:text-[54px]"
+          className="relative z-20 -mt-4 max-w-[850px] dark:text-white text-balance text-center text-[36px] font-extrabold leading-[1.35] text-primary-800 dark:text-primary-dark sm:text-[44px] md:-mt-10 md:text-[50px] lg:-mt-14 lg:ml-48 lg:text-left lg:text-[54px]"
         >
           ណែនាំអាហារដែលត្រូវនឹង
           <br className="hidden md:block" /> ចំណូលចិត្តរបស់អ្នក !
@@ -660,7 +660,7 @@ function ExperienceSection({ reduceMotion }: { reduceMotion: boolean }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="text-balance text-center text-3xl font-semibold sm:text-4xl md:text-5xl lg:text-6xl"
+          className="text-balance text-center text-3xl font-semibold sm:text-4xl md:text-5xl lg:text-6xl  py-2"
         >
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>
@@ -718,7 +718,7 @@ function ExperienceSection({ reduceMotion }: { reduceMotion: boolean }) {
                 {index + 1}
               </motion.span>
 
-              <h3 className="mt-2 text-xl font-black uppercase leading-tight text-primary-800 md:text-2xl">
+              <h3 className="mt-2 text-xl font-black uppercase leading-tight text-primary-800 dark:text-primary-dark md:text-2xl">
                 {step.title}
               </h3>
 

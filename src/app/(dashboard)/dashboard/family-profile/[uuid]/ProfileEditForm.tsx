@@ -8,13 +8,18 @@ import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowLeft,
+  CalendarDays,
   Check,
+  ChevronDown,
   HeartPulse,
+  Languages,
   LoaderCircle,
   RefreshCw,
   Salad,
   Save,
   ShieldAlert,
+  UserRound,
+  UsersRound,
 } from "lucide-react";
 
 import {
@@ -325,11 +330,9 @@ function PreferenceSection({
         </div>
 
         <div>
-          <h2 className="text-[22px] font-bold text-slate-900">{title}</h2>
+          <p className="text-4xl font-bold text-primary-800">{title}</p>
 
-          <p className="mt-1 text-[17px] leading-7 text-slate-500">
-            {description}
-          </p>
+          <p className=" text-lg pt-6  text-slate-500">{description}</p>
         </div>
       </div>
 
@@ -790,7 +793,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         <div className="text-center">
           <LoaderCircle className="mx-auto h-9 w-9 animate-spin text-emerald-600" />
 
-          <p className="mt-4 text-[17px] text-slate-500">
+          <p className="mt-4 text-lg text-slate-500">
             កំពុងទាញយកព័ត៌មានគណនី...
           </p>
         </div>
@@ -809,7 +812,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           <button
             type="button"
             onClick={() => void refetchProfile()}
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-[17px] font-medium text-white"
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-lg font-medium text-white"
           >
             <RefreshCw className="h-5 w-5" />
             ព្យាយាមម្តងទៀត
@@ -823,209 +826,248 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Back */}
 
-      <Link
-        href={`/dashboard/family-profile/${uuid}`}
-        className="inline-flex items-center gap-2 text-[17px] font-medium text-slate-600 transition hover:text-emerald-700"
-      >
-        <ArrowLeft className="h-5 w-5" />
-        ត្រឡប់ទៅព័ត៌មានលម្អិត
-      </Link>
-
       {/* Header */}
 
-      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h4 className="text-[28px] font-bold text-slate-900 sm:text-[32px]">
-            កែប្រែគណនី
-          </h4>
+      {/* Header */}
+      <div className=" fixed top-18 w-full container  max-w-6xl z-40 mb-8">
+        <div className="flex w-full p-1 items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/90  shadow-lg shadow-slate-200/40 backdrop-blur-xl sm:rounded-full">
+          {/* Back */}
+          <Link
+            href={`/dashboard/family-profile/${uuid}`}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-slate-600 transition bg-slate-100 hover:text-primary-800"
+            aria-label="ត្រឡប់ក្រោយ"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
 
-          <p className="mt-2 max-w-2xl text-[17px] leading-7 text-slate-500">
-            កែប្រែព័ត៌មានផ្ទាល់ខ្លួន និងចំណូលចិត្តអាហាររបស់{" "}
-            <span className="font-semibold text-slate-700">
-              {profile.profileName}
-            </span>
-            ។
-          </p>
+          {/* Title */}
+          {/* <div className="min-w-0 flex-1 px-1">
+            <p className="truncate text-[17px] font-bold text-primary-800 sm:text-[20px]">
+              កែប្រែគណនី
+            </p>
+
+            <p className="hidden truncate text-lg  text-slate-500 sm:block">
+              កំពុងកែប្រែព័ត៌មានរបស់{" "}
+              <span className="font-semibold text-slate-700">
+                {profile.profileName}
+              </span>
+            </p>
+          </div> */}
+
+          {/* Save */}
+          <button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={
+              isSaving || isLoadingSafetyOptions || hasSafetyOptionError
+            }
+            className="inline-flex h-12 cursor-pointer   shrink-0 items-center justify-center gap-2 rounded-full bg-primary-800 px-4 text-[16px] font-semibold text-white transition hover:bg-primary-900 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-[17px]"
+          >
+            {isSaving ? (
+              <>
+                <LoaderCircle className="h-5 w-5 animate-spin" />
+
+                <span className="hidden sm:inline">កំពុងរក្សាទុក...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-5 w-5" />
+
+                <span className="hidden sm:inline">រក្សាទុក</span>
+              </>
+            )}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => void handleSave()}
-          disabled={isSaving || isLoadingSafetyOptions}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-[17px] font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSaving ? (
-            <>
-              <LoaderCircle className="h-5 w-5 animate-spin" />
-              កំពុងរក្សាទុក...
-            </>
-          ) : (
-            <>
-              <Save className="h-5 w-5" />
-              រក្សាទុកការផ្លាស់ប្តូរ
-            </>
-          )}
-        </button>
       </div>
-
       {/* Basic info */}
 
-      <section className="mt-7 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7">
-        <div>
-          <h2 className="text-[23px] font-bold text-slate-900">ព័ត៌មានគណនី</h2>
+      <section className="mt-7 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+        {/* Header */}
+        <div className="border-b border-slate-100 pb-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800">
+              <UserRound className="h-6 w-6" />
+            </div>
 
-          <p className="mt-2 text-[17px] text-slate-500">
-            កែប្រែព័ត៌មានមូលដ្ឋានរបស់សមាជិក។
-          </p>
+            <div>
+              <h2 className="text-[24px] font-bold text-primary-800 sm:text-[28px]">
+                ព័ត៌មានគណនី
+              </h2>
+
+              <p className="mt-2 text-lg leading-7 text-slate-500">
+                កែប្រែព័ត៌មានមូលដ្ឋានរបស់សមាជិក។
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="mt-7 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
           {/* Name */}
-
           <div className="md:col-span-2">
             <label
               htmlFor="edit-profile-name"
-              className="mb-2 block text-[17px] font-semibold text-slate-700"
+              className="mb-2.5 block text-lg font-semibold text-slate-700"
             >
               ឈ្មោះគណនី
             </label>
 
-            <input
-              id="edit-profile-name"
-              value={form.profileName}
-              onChange={(event) =>
-                setForm((previous) => ({
-                  ...previous,
-                  profileName: event.target.value,
-                }))
-              }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px] text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-            />
+            <div className="relative">
+              <UserRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+              <input
+                id="edit-profile-name"
+                value={form.profileName}
+                onChange={(event) =>
+                  setForm((previous) => ({
+                    ...previous,
+                    profileName: event.target.value,
+                  }))
+                }
+                className="min-h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-4 text-lg text-primary-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+              />
+            </div>
           </div>
 
           {/* Relationship */}
-
           <div>
             <label
               htmlFor="edit-relationship"
-              className="mb-2 block text-[17px] font-semibold text-slate-700"
+              className="mb-2.5 block text-lg font-semibold text-slate-700"
             >
               ទំនាក់ទំនង
             </label>
 
-            <select
-              id="edit-relationship"
-              value={form.relationship}
-              disabled={profile.relationship === "SELF"}
-              onChange={(event) =>
-                setForm((previous) => ({
-                  ...previous,
+            <div className="relative">
+              <UsersRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
-                  relationship: event.target.value as MemberRelationship,
-                }))
-              }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px] text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
-            >
-              {Object.entries(relationshipLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              <select
+                id="edit-relationship"
+                value={form.relationship}
+                disabled={profile.relationship === "SELF"}
+                onChange={(event) =>
+                  setForm((previous) => ({
+                    ...previous,
+                    relationship: event.target.value as MemberRelationship,
+                  }))
+                }
+                className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+              >
+                {Object.entries(relationshipLabels).map(([value, label]) => (
+                  <option key={value} value={value} className="text-lg">
+                    {label}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+            </div>
 
             {profile.relationship === "SELF" && (
-              <p className="mt-2 text-[17px] leading-7 text-slate-500">
+              <p className="mt-2.5 text-lg leading-7 text-slate-500">
                 គណនីខ្លួនឯងមិនអាចប្តូរទំនាក់ទំនងទៅជាសមាជិកផ្សេងបានទេ។
               </p>
             )}
           </div>
 
           {/* Gender */}
-
           <div>
             <label
               htmlFor="edit-gender"
-              className="mb-2 block text-[17px] font-semibold text-slate-700"
+              className="mb-2.5 block text-lg font-semibold text-slate-700"
             >
               ភេទ
             </label>
 
-            <select
-              id="edit-gender"
-              value={form.gender}
-              onChange={(event) =>
-                setForm((previous) => ({
-                  ...previous,
+            <div className="relative">
+              <UserRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
-                  gender: event.target.value as MemberGender,
-                }))
-              }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px] text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-            >
-              {Object.entries(genderLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              <select
+                id="edit-gender"
+                value={form.gender}
+                onChange={(event) =>
+                  setForm((previous) => ({
+                    ...previous,
+                    gender: event.target.value as MemberGender,
+                  }))
+                }
+                className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+              >
+                {Object.entries(genderLabels).map(([value, label]) => (
+                  <option key={value} value={value} className="text-lg">
+                    {label}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+            </div>
           </div>
 
-          {/* DOB */}
-
+          {/* Date of birth */}
           <div>
             <label
               htmlFor="edit-dob"
-              className="mb-2 block text-[17px] font-semibold text-slate-700"
+              className="mb-2.5 block text-lg font-semibold text-slate-700"
             >
               ថ្ងៃខែឆ្នាំកំណើត
             </label>
 
-            <input
-              id="edit-dob"
-              type="date"
-              max={maxDate}
-              value={form.dateOfBirth}
-              onChange={(event) =>
-                setForm((previous) => ({
-                  ...previous,
+            <div className="relative">
+              <CalendarDays className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
-                  dateOfBirth: event.target.value,
-                }))
-              }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px] text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-            />
+              <input
+                id="edit-dob"
+                type="date"
+                max={maxDate}
+                value={form.dateOfBirth}
+                onChange={(event) =>
+                  setForm((previous) => ({
+                    ...previous,
+                    dateOfBirth: event.target.value,
+                  }))
+                }
+                className="min-h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-4 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+              />
+            </div>
           </div>
 
           {/* Language */}
-
           <div>
             <label
               htmlFor="edit-language"
-              className="mb-2 block text-[17px] font-semibold text-slate-700"
+              className="mb-2.5 block text-lg font-semibold text-slate-700"
             >
               ភាសាដែលពេញចិត្ត
             </label>
 
-            <select
-              id="edit-language"
-              value={form.preferredLanguage}
-              onChange={(event) =>
-                setForm((previous) => ({
-                  ...previous,
+            <div className="relative">
+              <Languages className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
-                  preferredLanguage: event.target.value,
-                }))
-              }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px] text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-            >
-              <option value="km">ភាសាខ្មែរ</option>
+              <select
+                id="edit-language"
+                value={form.preferredLanguage}
+                onChange={(event) =>
+                  setForm((previous) => ({
+                    ...previous,
+                    preferredLanguage: event.target.value,
+                  }))
+                }
+                className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+              >
+                <option value="km" className="text-lg">
+                  ភាសាខ្មែរ
+                </option>
 
-              <option value="en">English</option>
-            </select>
+                <option value="en" className="text-lg">
+                  English
+                </option>
+              </select>
+
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+            </div>
           </div>
         </div>
       </section>
-
       {/* Safety load error */}
 
       {hasSafetyOptionError && (
@@ -1038,14 +1080,14 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 មិនអាចទាញយកជម្រើសសុវត្ថិភាពបានទេ។
               </p>
 
-              <p className="mt-2 text-[17px] leading-7 text-red-600">
+              <p className="mt-2 text-lg leading-7 text-red-600">
                 សូមព្យាយាមទាញយកឡើងវិញ មុនពេលរក្សាទុកការផ្លាស់ប្តូរ។
               </p>
 
               <button
                 type="button"
                 onClick={retrySafetyOptions}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-[17px] font-semibold text-red-700 ring-1 ring-red-200 transition hover:bg-red-100"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-lg font-semibold text-red-700 ring-1 ring-red-200 transition hover:bg-red-100"
               >
                 <RefreshCw className="h-5 w-5" />
                 ព្យាយាមម្តងទៀត
@@ -1064,7 +1106,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           <div className="text-center">
             <LoaderCircle className="mx-auto h-8 w-8 animate-spin text-emerald-600" />
 
-            <p className="mt-3 text-[17px] text-slate-500">
+            <p className="mt-3 text-lg text-slate-500">
               កំពុងទាញយកជម្រើសចំណូលចិត្ត...
             </p>
           </div>
@@ -1083,124 +1125,141 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             icon={<ShieldAlert className="h-6 w-6" />}
           >
             {allergenOptions.length === 0 ? (
-              <p className="rounded-xl bg-slate-50 p-4 text-[17px] text-slate-500">
+              <p className="rounded-xl bg-slate-50 p-4 text-lg text-slate-500">
                 មិនមានជម្រើសអាឡែហ្ស៊ី។
               </p>
             ) : (
-              <div className="space-y-3">
-                {allergenOptions.map((option) => {
-                  const selectedItem = form.allergies.find(
-                    (item) => item.allergenCode === option.code,
+              <div className="space-y-5">
+                {/* Allergy tags */}
+                <div className="flex flex-wrap gap-3">
+                  {allergenOptions.map((option) => {
+                    const isSelected = form.allergies.some(
+                      (item) => item.allergenCode === option.code,
+                    );
+
+                    return (
+                      <button
+                        key={option.code}
+                        type="button"
+                        onClick={() => toggleAllergy(option.code)}
+                        className={`rounded-full border px-5 py-2.5 text-[17px] font-medium transition-all duration-200 ${
+                          isSelected
+                            ? "border-primary-800 bg-primary-800 text-white shadow-sm"
+                            : "border-slate-300 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50 hover:text-primary-800"
+                        }`}
+                      >
+                        {option.localName || option.name || option.code}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Selected allergies */}
+                {/* {form.allergies.map((selectedItem) => {
+                  const option = allergenOptions.find(
+                    (item) => item.code === selectedItem.allergenCode,
                   );
 
-                  const isSelected = Boolean(selectedItem);
+                  if (!option) return null;
 
                   return (
                     <div
-                      key={option.code}
-                      className={`rounded-2xl border p-4 transition ${
-                        isSelected
-                          ? "border-emerald-300 bg-emerald-50/60"
-                          : "border-slate-200 bg-slate-50"
-                      }`}
+                      key={selectedItem.allergenCode}
+                      className="grid gap-4 rounded-2xl border border-primary-800/20 bg-primary-50/50 p-5 md:grid-cols-2"
                     >
-                      <label className="flex cursor-pointer items-start gap-4">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleAllergy(option.code)}
-                          className="mt-1.5 h-5 w-5 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-
-                        <span>
-                          <span className="block text-[18px] font-semibold text-slate-900">
+                      <div className="flex items-start justify-between gap-4 md:col-span-2">
+                        <div>
+                          <p className="text-[18px] font-semibold text-primary-800">
                             {option.localName || option.name || option.code}
-                          </span>
+                          </p>
 
                           {option.description && (
-                            <span className="mt-1 block text-[17px] leading-7 text-slate-500">
+                            <p className="mt-1 text-base leading-7 text-slate-500">
                               {option.description}
-                            </span>
+                            </p>
                           )}
-                        </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleAllergy(option.code)}
+                          className="shrink-0 text-sm font-medium text-red-500 transition hover:text-red-600"
+                        >
+                          លុប
+                        </button>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-lg font-semibold text-slate-700">
+                          កម្រិតធ្ងន់ធ្ងរ
+                        </label>
+
+                        <select
+                          value={selectedItem.severity}
+                          onChange={(event) =>
+                            updateAllergy(option.code, {
+                              severity: event.target.value as ProfileSeverity,
+                            })
+                          }
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                        >
+                          {Object.entries(severityLabels).map(
+                            ([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-lg font-semibold text-slate-700">
+                          ចំណាំអំពីប្រតិកម្ម
+                        </label>
+
+                        <input
+                          value={selectedItem.reactionNotes}
+                          onChange={(event) =>
+                            updateAllergy(option.code, {
+                              reactionNotes: event.target.value,
+                            })
+                          }
+                          placeholder="បញ្ចូលចំណាំ"
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                        />
+                      </div>
+
+                      <label className="flex cursor-pointer items-center gap-3 text-lg text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={selectedItem.avoidCrossContact}
+                          onChange={(event) =>
+                            updateAllergy(option.code, {
+                              avoidCrossContact: event.target.checked,
+                            })
+                          }
+                          className="h-5 w-5 rounded border-slate-300"
+                        />
+                        ជៀសវាងការប៉ះពាល់ឆ្លង
                       </label>
 
-                      {selectedItem && (
-                        <div className="mt-5 grid gap-4 border-t border-emerald-200 pt-5 md:grid-cols-2">
-                          <div>
-                            <label className="mb-2 block text-[17px] font-semibold text-slate-700">
-                              កម្រិតធ្ងន់ធ្ងរ
-                            </label>
-
-                            <select
-                              value={selectedItem.severity}
-                              onChange={(event) =>
-                                updateAllergy(option.code, {
-                                  severity: event.target
-                                    .value as ProfileSeverity,
-                                })
-                              }
-                              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px]"
-                            >
-                              {Object.entries(severityLabels).map(
-                                ([value, label]) => (
-                                  <option key={value} value={value}>
-                                    {label}
-                                  </option>
-                                ),
-                              )}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="mb-2 block text-[17px] font-semibold text-slate-700">
-                              ចំណាំអំពីប្រតិកម្ម
-                            </label>
-
-                            <input
-                              value={selectedItem.reactionNotes}
-                              onChange={(event) =>
-                                updateAllergy(option.code, {
-                                  reactionNotes: event.target.value,
-                                })
-                              }
-                              placeholder="បញ្ចូលចំណាំ"
-                              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px]"
-                            />
-                          </div>
-
-                          <label className="flex cursor-pointer items-center gap-3 text-[17px] text-slate-700">
-                            <input
-                              type="checkbox"
-                              checked={selectedItem.avoidCrossContact}
-                              onChange={(event) =>
-                                updateAllergy(option.code, {
-                                  avoidCrossContact: event.target.checked,
-                                })
-                              }
-                              className="h-5 w-5"
-                            />
-                            ជៀសវាងការប៉ះពាល់ឆ្លង
-                          </label>
-
-                          <label className="flex cursor-pointer items-center gap-3 text-[17px] text-slate-700">
-                            <input
-                              type="checkbox"
-                              checked={selectedItem.medicallyDiagnosed}
-                              onChange={(event) =>
-                                updateAllergy(option.code, {
-                                  medicallyDiagnosed: event.target.checked,
-                                })
-                              }
-                              className="h-5 w-5"
-                            />
-                            បានវិនិច្ឆ័យដោយវេជ្ជបណ្ឌិត
-                          </label>
-                        </div>
-                      )}
+                      <label className="flex cursor-pointer items-center gap-3 text-lg text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={selectedItem.medicallyDiagnosed}
+                          onChange={(event) =>
+                            updateAllergy(option.code, {
+                              medicallyDiagnosed: event.target.checked,
+                            })
+                          }
+                          className="h-5 w-5 rounded border-slate-300"
+                        />
+                        បានវិនិច្ឆ័យដោយវេជ្ជបណ្ឌិត
+                      </label>
                     </div>
                   );
-                })}
+                })} */}
               </div>
             )}
           </PreferenceSection>
@@ -1213,100 +1272,115 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             icon={<Salad className="h-6 w-6" />}
           >
             {dietaryOptions.length === 0 ? (
-              <p className="rounded-xl bg-slate-50 p-4 text-[17px] text-slate-500">
+              <p className="rounded-xl bg-slate-50 p-4 text-lg text-slate-500">
                 មិនមានជម្រើសរបបអាហារ។
               </p>
             ) : (
-              <div className="space-y-3">
-                {dietaryOptions.map((option) => {
-                  const selectedItem = form.dietaryTypes.find(
-                    (item) => item.dietaryTypeCode === option.code,
+              <div className="space-y-5">
+                <div className="flex flex-wrap gap-3">
+                  {dietaryOptions.map((option) => {
+                    const isSelected = form.dietaryTypes.some(
+                      (item) => item.dietaryTypeCode === option.code,
+                    );
+
+                    return (
+                      <button
+                        key={option.code}
+                        type="button"
+                        onClick={() => toggleDietaryType(option.code)}
+                        className={`rounded-full border px-5 py-2.5 text-[17px] font-medium transition-all duration-200 ${
+                          isSelected
+                            ? "border-primary-800 bg-primary-800 text-white shadow-sm"
+                            : "border-slate-300 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50 hover:text-primary-800"
+                        }`}
+                      >
+                        {option.localName || option.name || option.code}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* {form.dietaryTypes.map((selectedItem) => {
+                  const option = dietaryOptions.find(
+                    (item) => item.code === selectedItem.dietaryTypeCode,
                   );
 
-                  const isSelected = Boolean(selectedItem);
+                  if (!option) return null;
 
                   return (
                     <div
-                      key={option.code}
-                      className={`rounded-2xl border p-4 ${
-                        isSelected
-                          ? "border-emerald-300 bg-emerald-50/60"
-                          : "border-slate-200 bg-slate-50"
-                      }`}
+                      key={selectedItem.dietaryTypeCode}
+                      className="grid gap-4 rounded-2xl border border-primary-800/20 bg-primary-50/50 p-5 md:grid-cols-2"
                     >
-                      <label className="flex cursor-pointer items-start gap-4">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleDietaryType(option.code)}
-                          className="mt-1.5 h-5 w-5 shrink-0"
-                        />
-
-                        <span>
-                          <span className="block text-[18px] font-semibold text-slate-900">
+                      <div className="flex items-start justify-between gap-4 md:col-span-2">
+                        <div>
+                          <p className="text-[18px] font-semibold text-primary-800">
                             {option.localName || option.name || option.code}
-                          </span>
+                          </p>
 
                           {option.description && (
-                            <span className="mt-1 block text-[17px] leading-7 text-slate-500">
+                            <p className="mt-1 text-base leading-7 text-slate-500">
                               {option.description}
-                            </span>
+                            </p>
                           )}
-                        </span>
-                      </label>
-
-                      {selectedItem && (
-                        <div className="mt-5 grid gap-4 border-t border-emerald-200 pt-5 md:grid-cols-2">
-                          <div>
-                            <label className="mb-2 block text-[17px] font-semibold text-slate-700">
-                              កម្រិតតម្រូវការ
-                            </label>
-
-                            <select
-                              value={selectedItem.enforcementLevel}
-                              onChange={(event) =>
-                                updateDietaryType(option.code, {
-                                  enforcementLevel: event.target
-                                    .value as DietaryEnforcementLevel,
-                                })
-                              }
-                              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px]"
-                            >
-                              {Object.entries(enforcementLabels).map(
-                                ([value, label]) => (
-                                  <option key={value} value={value}>
-                                    {label}
-                                  </option>
-                                ),
-                              )}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="mb-2 block text-[17px] font-semibold text-slate-700">
-                              ចំណាំ
-                            </label>
-
-                            <input
-                              value={selectedItem.notes}
-                              onChange={(event) =>
-                                updateDietaryType(option.code, {
-                                  notes: event.target.value,
-                                })
-                              }
-                              placeholder="បញ្ចូលចំណាំ"
-                              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px]"
-                            />
-                          </div>
                         </div>
-                      )}
+
+                        <button
+                          type="button"
+                          onClick={() => toggleDietaryType(option.code)}
+                          className="shrink-0 text-sm font-medium text-red-500 transition hover:text-red-600"
+                        >
+                          លុប
+                        </button>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-lg font-semibold text-slate-700">
+                          កម្រិតតម្រូវការ
+                        </label>
+
+                        <select
+                          value={selectedItem.enforcementLevel}
+                          onChange={(event) =>
+                            updateDietaryType(option.code, {
+                              enforcementLevel: event.target
+                                .value as DietaryEnforcementLevel,
+                            })
+                          }
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                        >
+                          {Object.entries(enforcementLabels).map(
+                            ([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-lg font-semibold text-slate-700">
+                          ចំណាំ
+                        </label>
+
+                        <input
+                          value={selectedItem.notes}
+                          onChange={(event) =>
+                            updateDietaryType(option.code, {
+                              notes: event.target.value,
+                            })
+                          }
+                          placeholder="បញ្ចូលចំណាំ"
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                        />
+                      </div>
                     </div>
                   );
-                })}
+                })} */}
               </div>
             )}
           </PreferenceSection>
-
           {/* Medical */}
 
           <PreferenceSection
@@ -1315,93 +1389,110 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             icon={<HeartPulse className="h-6 w-6" />}
           >
             {medicalOptions.length === 0 ? (
-              <p className="rounded-xl bg-slate-50 p-4 text-[17px] text-slate-500">
+              <p className="rounded-xl bg-slate-50 p-4 text-lg text-slate-500">
                 មិនមានជម្រើសសុខភាព។
               </p>
             ) : (
-              <div className="space-y-3">
-                {medicalOptions.map((option) => {
-                  const selectedItem = form.medicalConditions.find(
-                    (item) => item.conditionCode === option.code,
+              <div className="space-y-5">
+                {/* Medical condition tags */}
+                <div className="flex flex-wrap gap-3">
+                  {medicalOptions.map((option) => {
+                    const isSelected = form.medicalConditions.some(
+                      (item) => item.conditionCode === option.code,
+                    );
+
+                    return (
+                      <button
+                        key={option.code}
+                        type="button"
+                        onClick={() => toggleMedicalCondition(option.code)}
+                        className={`rounded-full border px-5 py-2.5 text-[17px] font-medium transition-all duration-200 ${
+                          isSelected
+                            ? "border-primary-800 bg-primary-800 text-white shadow-sm"
+                            : "border-slate-300 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50 hover:text-primary-800"
+                        }`}
+                      >
+                        {option.localName || option.name || option.code}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Selected medical conditions */}
+                {form.medicalConditions.map((selectedItem) => {
+                  const option = medicalOptions.find(
+                    (item) => item.code === selectedItem.conditionCode,
                   );
 
-                  const isSelected = Boolean(selectedItem);
+                  if (!option) return null;
 
                   return (
                     <div
-                      key={option.code}
-                      className={`rounded-2xl border p-4 ${
-                        isSelected
-                          ? "border-emerald-300 bg-emerald-50/60"
-                          : "border-slate-200 bg-slate-50"
-                      }`}
+                      key={selectedItem.conditionCode}
+                      className="grid gap-4 rounded-2xl border border-primary-800/20 bg-primary-50/50 p-5 md:grid-cols-2"
                     >
-                      <label className="flex cursor-pointer items-start gap-4">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleMedicalCondition(option.code)}
-                          className="mt-1.5 h-5 w-5 shrink-0"
-                        />
-
-                        <span>
-                          <span className="block text-[18px] font-semibold text-slate-900">
+                      <div className="flex items-center justify-between md:col-span-2">
+                        <div>
+                          <p className="text-[18px] font-semibold text-primary-800">
                             {option.localName || option.name || option.code}
-                          </span>
+                          </p>
 
                           {option.description && (
-                            <span className="mt-1 block text-[17px] leading-7 text-slate-500">
+                            <p className="mt-1 text-base leading-7 text-slate-500">
                               {option.description}
-                            </span>
+                            </p>
                           )}
-                        </span>
-                      </label>
-
-                      {selectedItem && (
-                        <div className="mt-5 grid gap-4 border-t border-emerald-200 pt-5 md:grid-cols-2">
-                          <div>
-                            <label className="mb-2 block text-[17px] font-semibold text-slate-700">
-                              កម្រិតធ្ងន់ធ្ងរ
-                            </label>
-
-                            <select
-                              value={selectedItem.severity}
-                              onChange={(event) =>
-                                updateMedicalCondition(option.code, {
-                                  severity: event.target
-                                    .value as ProfileSeverity,
-                                })
-                              }
-                              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px]"
-                            >
-                              {Object.entries(severityLabels).map(
-                                ([value, label]) => (
-                                  <option key={value} value={value}>
-                                    {label}
-                                  </option>
-                                ),
-                              )}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="mb-2 block text-[17px] font-semibold text-slate-700">
-                              ចំណាំ
-                            </label>
-
-                            <input
-                              value={selectedItem.notes}
-                              onChange={(event) =>
-                                updateMedicalCondition(option.code, {
-                                  notes: event.target.value,
-                                })
-                              }
-                              placeholder="បញ្ចូលចំណាំ"
-                              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-[17px]"
-                            />
-                          </div>
                         </div>
-                      )}
+
+                        <button
+                          type="button"
+                          onClick={() => toggleMedicalCondition(option.code)}
+                          className="shrink-0 text-sm font-medium text-red-500 transition hover:text-red-600"
+                        >
+                          លុប
+                        </button>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-lg font-semibold text-slate-700">
+                          កម្រិតធ្ងន់ធ្ងរ
+                        </label>
+
+                        <select
+                          value={selectedItem.severity}
+                          onChange={(event) =>
+                            updateMedicalCondition(option.code, {
+                              severity: event.target.value as ProfileSeverity,
+                            })
+                          }
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                        >
+                          {Object.entries(severityLabels).map(
+                            ([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-lg font-semibold text-slate-700">
+                          ចំណាំ
+                        </label>
+
+                        <input
+                          value={selectedItem.notes}
+                          onChange={(event) =>
+                            updateMedicalCondition(option.code, {
+                              notes: event.target.value,
+                            })
+                          }
+                          placeholder="បញ្ចូលចំណាំ"
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                        />
+                      </div>
                     </div>
                   );
                 })}
@@ -1417,7 +1508,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         <div className="mt-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5">
           <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-red-600" />
 
-          <p className="text-[17px] leading-7 text-red-700">{errorMessage}</p>
+          <p className="text-lg leading-7 text-red-700">{errorMessage}</p>
         </div>
       )}
 
@@ -1426,7 +1517,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
       <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
         <Link
           href={`/dashboard/family-profile/${uuid}`}
-          className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-[17px] font-semibold text-slate-700 transition hover:bg-slate-50"
+          className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-lg font-semibold text-slate-700 transition hover:bg-slate-50"
         >
           បោះបង់
         </Link>
@@ -1435,7 +1526,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           type="button"
           onClick={() => void handleSave()}
           disabled={isSaving || isLoadingSafetyOptions || hasSafetyOptionError}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-[17px] font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving ? (
             <>

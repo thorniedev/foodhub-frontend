@@ -3,7 +3,21 @@
 import { useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 
-import { ArrowLeft, ArrowRight, Check, LoaderCircle, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  HeartPulse,
+  Languages,
+  LoaderCircle,
+  Salad,
+  ShieldAlert,
+  UserRound,
+  UsersRound,
+  X,
+} from "lucide-react";
 
 import {
   useCreateMemberProfileMutation,
@@ -65,6 +79,7 @@ interface CreateMemberProfileModalProps {
 interface PreferenceSectionProps {
   title: string;
   description: string;
+  icon: ReactNode;
   children: ReactNode;
 }
 
@@ -139,14 +154,20 @@ function getErrorMessage(error: unknown): string {
 function PreferenceSection({
   title,
   description,
+  icon,
   children,
 }: PreferenceSectionProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
-      <div className="mb-4">
-        <h3 className="font-semibold text-slate-900">{title}</h3>
+    <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+      <div className="mb-6 flex items-start gap-4 border-b border-slate-100 pb-5">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800">
+          {icon}
+        </div>
 
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
+        <div className="min-w-0">
+          <h3 className="text-2xl font-bold text-primary-800">{title}</h3>
+          <p className="mt-2 text-lg leading-7 text-slate-500">{description}</p>
+        </div>
       </div>
 
       {children}
@@ -562,349 +583,446 @@ export default function CreateMemberProfileModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           closeModal();
         }
       }}
     >
-      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-slate-50 shadow-2xl">
-        <header className="flex items-start justify-between border-b border-slate-200 bg-white px-6 py-5">
-          <div>
-            <h3 className="text-xl font-semibold text-slate-900">
-              បន្ថែមគណនីគ្រួសារ
-            </h3>
+      <div className="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-white/70 bg-slate-50 shadow-[0_30px_100px_rgba(15,23,42,0.25)]">
+        {/* Header */}
+        <header className="flex shrink-0 items-start justify-between gap-5 border-b border-slate-200/80 bg-white px-5 py-5 sm:px-7 sm:py-6">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="hidden h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-primary-800 text-white shadow-sm sm:flex">
+              <UserRound className="h-6 w-6" />
+            </div>
 
-            <p className="mt-1 text-sm text-slate-500">
-              {step === 1
-                ? "បញ្ចូលព័ត៌មានគណនីមូលដ្ឋាន។"
-                : "ជ្រើសរើសចំណូលចិត្ត និងព័ត៌មានសុខភាព។ ផ្នែកនេះមិនចាំបាច់បំពេញទេ។"}
-            </p>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-2xl font-bold text-primary-800 sm:text-[28px]">
+                  បន្ថែមគណនីគ្រួសារ
+                </h2>
+
+                <span className="rounded-full bg-primary-800/10 px-3 py-1 text-lg font-semibold text-primary-800">
+                  ជំហាន {step}/2
+                </span>
+              </div>
+
+              <p className="mt-2 text-lg leading-7 text-slate-500">
+                {step === 1
+                  ? "បញ្ចូលព័ត៌មានមូលដ្ឋានរបស់សមាជិក។"
+                  : "ជ្រើសរើសចំណូលចិត្តអាហារ និងព័ត៌មានសុខភាព។ ផ្នែកនេះអាចរំលងបាន។"}
+              </p>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={closeModal}
             disabled={isSubmitting}
-            className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
         </header>
 
-        <div className="border-b border-slate-200 bg-white px-6 py-4">
-          <div className="mx-auto flex max-w-xl items-center">
-            <div className="flex flex-1 items-center">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
-                {step === 2 ? <Check className="h-4 w-4" /> : "1"}
+        {/* Steps */}
+        <div className="shrink-0 border-b border-slate-200/80 bg-white px-5 py-4 sm:px-7">
+          <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-800 text-lg font-bold text-white shadow-sm">
+                {step === 2 ? <Check className="h-5 w-5" /> : "1"}
               </span>
 
-              <div className="ml-3">
-                <p className="text-sm font-semibold text-slate-800">
+              <div className="hidden min-w-0 sm:block">
+                <p className="truncate text-lg font-bold text-slate-800">
                   ព័ត៌មានគណនី
                 </p>
-
-                <p className="text-xs text-slate-400">តម្រូវឱ្យបំពេញ</p>
+                <p className="text-lg text-slate-400">តម្រូវឱ្យបំពេញ</p>
               </div>
             </div>
 
-            <div className="mx-4 h-px flex-1 bg-slate-200">
+            <div className="h-1 w-12 overflow-hidden rounded-full bg-slate-200 sm:w-28">
               <div
-                className={`h-full bg-emerald-500 transition-all ${
+                className={`h-full rounded-full bg-primary-800 transition-all duration-300 ${
                   step === 2 ? "w-full" : "w-0"
                 }`}
               />
             </div>
 
-            <div className="flex flex-1 items-center">
-              <span
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-                  step === 2
-                    ? "bg-emerald-600 text-white"
-                    : "bg-slate-100 text-slate-400"
-                }`}
-              >
-                2
-              </span>
-
-              <div className="ml-3">
+            <div className="flex min-w-0 items-center justify-end gap-3">
+              <div className="hidden min-w-0 text-right sm:block">
                 <p
-                  className={`text-sm font-semibold ${
+                  className={`truncate text-lg font-bold ${
                     step === 2 ? "text-slate-800" : "text-slate-400"
                   }`}
                 >
                   ចំណូលចិត្ត
                 </p>
-
-                <p className="text-xs text-slate-400">មិនចាំបាច់</p>
+                <p className="text-lg text-slate-400">មិនចាំបាច់</p>
               </div>
+
+              <span
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg font-bold transition ${
+                  step === 2
+                    ? "bg-primary-800 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-400"
+                }`}
+              >
+                2
+              </span>
             </div>
           </div>
         </div>
 
         {step === 1 ? (
-          <form onSubmit={handleStepOneSubmit} className="overflow-y-auto p-6">
-            <div className="mx-auto max-w-2xl space-y-5">
-              <div>
-                <label
-                  htmlFor="profileName"
-                  className="mb-2 block text-sm font-medium text-slate-700"
-                >
-                  ឈ្មោះគណនី
-                </label>
+          <form
+            onSubmit={handleStepOneSubmit}
+            className="overflow-y-auto px-4 py-6 sm:px-7 sm:py-7"
+          >
+            <div className="mx-auto max-w-3xl">
+              <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+                <div className="mb-7 flex items-start gap-4 border-b border-slate-100 pb-6">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800">
+                    <UserRound className="h-6 w-6" />
+                  </div>
 
-                <input
-                  id="profileName"
-                  type="text"
-                  value={form.profileName}
-                  onChange={(event) =>
-                    setForm((previous) => ({
-                      ...previous,
-                      profileName: event.target.value,
-                    }))
-                  }
-                  placeholder="ឧ. Leng Sokha"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  required
-                />
-              </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-primary-800">
+                      ព័ត៌មានគណនី
+                    </h3>
+                    <p className="mt-2 text-lg leading-7 text-slate-500">
+                      បញ្ចូលព័ត៌មានមូលដ្ឋានសម្រាប់សមាជិកគ្រួសារ។
+                    </p>
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="relationship"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    ទំនាក់ទំនង
-                  </label>
+                <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
+                  {/* Name */}
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="profileName"
+                      className="mb-2.5 block text-lg font-semibold text-slate-700"
+                    >
+                      ឈ្មោះគណនី
+                    </label>
 
-                  <select
-                    id="relationship"
-                    value={form.relationship}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        relationship: event.target.value as MemberRelationship,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  >
-                    {Object.entries(relationshipLabels).map(
-                      ([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
+                    <div className="relative">
+                      <UserRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+                      <input
+                        id="profileName"
+                        type="text"
+                        value={form.profileName}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            profileName: event.target.value,
+                          }))
+                        }
+                        placeholder="ឧ. Leng Sokha"
+                        className="min-h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-4 text-lg font-medium text-primary-800 outline-none transition-all duration-200 placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Relationship */}
+                  <div>
+                    <label
+                      htmlFor="relationship"
+                      className="mb-2.5 block text-lg font-semibold text-slate-700"
+                    >
+                      ទំនាក់ទំនង
+                    </label>
+
+                    <div className="relative">
+                      <UsersRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+                      <select
+                        id="relationship"
+                        value={form.relationship}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            relationship: event.target
+                              .value as MemberRelationship,
+                          }))
+                        }
+                        className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+                      >
+                        {Object.entries(relationshipLabels).map(
+                          ([value, label]) => (
+                            <option
+                              key={value}
+                              value={value}
+                              className="bg-white text-lg text-slate-700"
+                            >
+                              {label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                    </div>
+                  </div>
+
+                  {/* Gender */}
+                  <div>
+                    <label
+                      htmlFor="gender"
+                      className="mb-2.5 block text-lg font-semibold text-slate-700"
+                    >
+                      ភេទ
+                    </label>
+
+                    <div className="relative">
+                      <UserRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+                      <select
+                        id="gender"
+                        value={form.gender}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            gender: event.target.value as MemberGender,
+                          }))
+                        }
+                        className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+                      >
+                        {Object.entries(genderLabels).map(([value, label]) => (
+                          <option
+                            key={value}
+                            value={value}
+                            className="bg-white text-lg text-slate-700"
+                          >
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                    </div>
+                  </div>
+
+                  {/* DOB */}
+                  <div>
+                    <label
+                      htmlFor="dateOfBirth"
+                      className="mb-2.5 block text-lg font-semibold text-slate-700"
+                    >
+                      ថ្ងៃខែឆ្នាំកំណើត
+                    </label>
+
+                    <div className="relative">
+                      <CalendarDays className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+                      <input
+                        id="dateOfBirth"
+                        type="date"
+                        value={form.dateOfBirth}
+                        max={maxDate}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            dateOfBirth: event.target.value,
+                          }))
+                        }
+                        className="min-h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-4 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Language */}
+                  <div>
+                    <label
+                      htmlFor="preferredLanguage"
+                      className="mb-2.5 block text-lg font-semibold text-slate-700"
+                    >
+                      ភាសាដែលពេញចិត្ត
+                    </label>
+
+                    <div className="relative">
+                      <Languages className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
+
+                      <select
+                        id="preferredLanguage"
+                        value={form.preferredLanguage}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            preferredLanguage: event.target.value,
+                          }))
+                        }
+                        className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+                      >
+                        <option value="km" className="text-lg">
+                          ភាសាខ្មែរ
                         </option>
-                      ),
-                    )}
-                  </select>
-                </div>
+                        <option value="en" className="text-lg">
+                          English
+                        </option>
+                      </select>
 
-                <div>
-                  <label
-                    htmlFor="gender"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    ភេទ
+                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                    </div>
+                  </div>
+
+                  {/* Default profile */}
+                  <label className="flex cursor-pointer items-center justify-between gap-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-slate-300 hover:bg-white sm:col-span-2">
+                    <div>
+                      <p className="text-lg font-semibold text-slate-700">
+                        កំណត់ជាគណនីលំនាំដើម
+                      </p>
+                      <p className="mt-1 text-lg leading-7 text-slate-500">
+                        គណនីនេះនឹងត្រូវបានប្រើជាលំនាំដើមសម្រាប់ការណែនាំអាហារ។
+                      </p>
+                    </div>
+
+                    <div className="relative shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={form.isDefault}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            isDefault: event.target.checked,
+                          }))
+                        }
+                        className="peer sr-only"
+                      />
+                      <div className="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-primary-800 peer-focus-visible:ring-4 peer-focus-visible:ring-primary-800/20 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-[''] peer-checked:after:translate-x-5" />
+                    </div>
                   </label>
-
-                  <select
-                    id="gender"
-                    value={form.gender}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        gender: event.target.value as MemberGender,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  >
-                    {Object.entries(genderLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="dateOfBirth"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    ថ្ងៃខែឆ្នាំកំណើត
-                  </label>
-
-                  <input
-                    id="dateOfBirth"
-                    type="date"
-                    value={form.dateOfBirth}
-                    max={maxDate}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        dateOfBirth: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="preferredLanguage"
-                    className="mb-2 block text-sm font-medium text-slate-700"
-                  >
-                    ភាសាដែលពេញចិត្ត
-                  </label>
-
-                  <select
-                    id="preferredLanguage"
-                    value={form.preferredLanguage}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        preferredLanguage: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  >
-                    <option value="km">ភាសាខ្មែរ</option>
-
-                    <option value="en">English</option>
-                  </select>
-                </div>
-              </div>
-
-              <label className="flex cursor-pointer gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                <input
-                  type="checkbox"
-                  checked={form.isDefault}
-                  onChange={(event) =>
-                    setForm((previous) => ({
-                      ...previous,
-                      isDefault: event.target.checked,
-                    }))
-                  }
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-
-                <div>
-                  <p className="text-sm font-medium text-slate-700">
-                    កំណត់ជាគណនីលំនាំដើម
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-400">
-                    គណនីនេះនឹងត្រូវបានប្រើជាលំនាំដើម។
-                  </p>
-                </div>
-              </label>
+              </section>
 
               {errorMessage && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-lg leading-7 text-red-700">
                   {errorMessage}
                 </div>
               )}
 
-              <div className="flex justify-end pt-3">
+              <div className="mt-6 flex justify-end">
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-emerald-700"
+                  className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-primary-800 px-7 py-3 text-lg font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-900 hover:shadow-md"
                 >
                   បន្តទៅចំណូលចិត្ត
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-5 w-5" />
                 </button>
               </div>
             </div>
           </form>
         ) : (
-          <form onSubmit={handleStepTwoSubmit} className="overflow-y-auto p-6">
-            <div className="space-y-5">
+          <form
+            onSubmit={handleStepTwoSubmit}
+            className="overflow-y-auto px-4 py-6 sm:px-7 sm:py-7"
+          >
+            <div className="mx-auto max-w-4xl space-y-6">
               {isLoadingSafetyOptions ? (
-                <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white p-10 text-slate-500">
-                  <LoaderCircle className="h-5 w-5 animate-spin" />
+                <div className="flex min-h-52 items-center justify-center gap-3 rounded-[28px] border border-slate-200 bg-white p-10 text-lg text-slate-500 shadow-sm">
+                  <LoaderCircle className="h-6 w-6 animate-spin text-primary-800" />
                   កំពុងទាញយកជម្រើស...
                 </div>
               ) : hasSafetyOptionError ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-                  <p className="text-sm text-red-700">
+                <div className="rounded-[28px] border border-red-200 bg-red-50 p-6">
+                  <p className="text-lg font-semibold text-red-700">
                     មិនអាចទាញយកជម្រើសសុវត្ថិភាពបានទេ។
                   </p>
 
                   <button
                     type="button"
                     onClick={retrySafetyOptions}
-                    className="mt-4 rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+                    className="mt-4 rounded-full border border-red-300 bg-white px-5 py-3 text-lg font-semibold text-red-700 transition hover:bg-red-100"
                   >
                     ព្យាយាមម្តងទៀត
                   </button>
                 </div>
               ) : (
                 <>
+                  {/* Allergies */}
                   <PreferenceSection
                     title="ប្រតិកម្មអាឡែហ្ស៊ី"
                     description="ជ្រើសរើសអាហារ ឬសារធាតុដែលបង្កអាឡែហ្ស៊ី។ អ្នកអាចជ្រើសរើសច្រើន។"
+                    icon={<ShieldAlert className="h-6 w-6" />}
                   >
                     {allergenOptions.length === 0 ? (
-                      <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                      <p className="rounded-2xl bg-slate-50 px-4 py-4 text-lg text-slate-500">
                         មិនមានជម្រើសអាឡែហ្ស៊ី។
                       </p>
                     ) : (
-                      <div className="space-y-3">
-                        {allergenOptions.map((option) => {
-                          const selectedItem = form.allergies.find(
-                            (item) => item.allergenCode === option.code,
+                      <div className="space-y-5">
+                        <div className="flex flex-wrap gap-3">
+                          {allergenOptions.map((option) => {
+                            const isSelected = form.allergies.some(
+                              (item) => item.allergenCode === option.code,
+                            );
+
+                            return (
+                              <button
+                                key={option.code}
+                                type="button"
+                                aria-pressed={isSelected}
+                                onClick={() => toggleAllergy(option.code)}
+                                className={`rounded-full border px-5 py-2.5 text-lg font-semibold transition-all duration-200 ${
+                                  isSelected
+                                    ? "border-primary-800 bg-primary-800 text-white shadow-sm"
+                                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-primary-800 hover:bg-primary-800/5 hover:text-primary-800"
+                                }`}
+                              >
+                                {option.localName || option.name || option.code}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {form.allergies.map((selectedItem) => {
+                          const option = allergenOptions.find(
+                            (item) => item.code === selectedItem.allergenCode,
                           );
 
-                          const isSelected = Boolean(selectedItem);
+                          if (!option) return null;
 
                           return (
                             <div
-                              key={option.code}
-                              className={`rounded-xl border p-4 transition ${
-                                isSelected
-                                  ? "border-emerald-300 bg-emerald-50/60"
-                                  : "border-slate-200 bg-slate-50"
-                              }`}
+                              key={selectedItem.allergenCode}
+                              className="rounded-2xl border border-primary-800/15 bg-primary-800/[0.03] p-5"
                             >
-                              <label className="flex cursor-pointer items-start gap-3">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => toggleAllergy(option.code)}
-                                  className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                />
-
-                                <span className="min-w-0">
-                                  <span className="block font-medium text-slate-800">
+                              <div className="mb-5 flex items-start justify-between gap-4 border-b border-primary-800/10 pb-4">
+                                <div>
+                                  <p className="text-lg font-bold text-primary-800">
                                     {option.localName ||
                                       option.name ||
                                       option.code}
-                                  </span>
-
+                                  </p>
                                   {option.description && (
-                                    <span className="mt-1 block text-sm text-slate-500">
+                                    <p className="mt-1 text-lg leading-7 text-slate-500">
                                       {option.description}
-                                    </span>
+                                    </p>
                                   )}
+                                </div>
 
-                                  <span className="mt-1 block text-xs text-slate-400">
-                                    Code: {option.code}
-                                  </span>
-                                </span>
-                              </label>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAllergy(option.code)}
+                                  className="shrink-0 rounded-full px-3 py-1.5 text-lg font-semibold text-red-500 transition hover:bg-red-50 hover:text-red-600"
+                                >
+                                  លុប
+                                </button>
+                              </div>
 
-                              {selectedItem && (
-                                <div className="mt-4 space-y-3 border-t border-emerald-200 pt-4">
-                                  <div>
-                                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                                      កម្រិតធ្ងន់ធ្ងរ
-                                    </label>
+                              <div className="grid gap-5 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-2.5 block text-lg font-semibold text-slate-700">
+                                    កម្រិតធ្ងន់ធ្ងរ
+                                  </label>
 
+                                  <div className="relative">
                                     <select
                                       value={selectedItem.severity}
                                       onChange={(event) =>
@@ -913,71 +1031,73 @@ export default function CreateMemberProfileModal({
                                             .value as ProfileSeverity,
                                         })
                                       }
-                                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500"
+                                      className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
                                     >
                                       {Object.entries(severityLabels).map(
                                         ([value, label]) => (
-                                          <option key={value} value={value}>
+                                          <option
+                                            key={value}
+                                            value={value}
+                                            className="text-lg"
+                                          >
                                             {label}
                                           </option>
                                         ),
                                       )}
                                     </select>
-                                  </div>
 
-                                  <div>
-                                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                                      ចំណាំអំពីប្រតិកម្ម
-                                    </label>
-
-                                    <input
-                                      type="text"
-                                      value={selectedItem.reactionNotes}
-                                      onChange={(event) =>
-                                        updateAllergy(option.code, {
-                                          reactionNotes: event.target.value,
-                                        })
-                                      }
-                                      placeholder="ឧ. ជៀសវាងសណ្តែកដីទាំងស្រុង"
-                                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500"
-                                    />
-                                  </div>
-
-                                  <div className="flex flex-wrap gap-4">
-                                    <label className="flex items-center gap-2 text-sm text-slate-600">
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedItem.avoidCrossContact}
-                                        onChange={(event) =>
-                                          updateAllergy(option.code, {
-                                            avoidCrossContact:
-                                              event.target.checked,
-                                          })
-                                        }
-                                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                      />
-                                      ជៀសវាងការប៉ះពាល់ឆ្លង
-                                    </label>
-
-                                    <label className="flex items-center gap-2 text-sm text-slate-600">
-                                      <input
-                                        type="checkbox"
-                                        checked={
-                                          selectedItem.medicallyDiagnosed
-                                        }
-                                        onChange={(event) =>
-                                          updateAllergy(option.code, {
-                                            medicallyDiagnosed:
-                                              event.target.checked,
-                                          })
-                                        }
-                                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                      />
-                                      បានវិនិច្ឆ័យដោយវេជ្ជបណ្ឌិត
-                                    </label>
+                                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                                   </div>
                                 </div>
-                              )}
+
+                                <div>
+                                  <label className="mb-2.5 block text-lg font-semibold text-slate-700">
+                                    ចំណាំអំពីប្រតិកម្ម
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={selectedItem.reactionNotes}
+                                    onChange={(event) =>
+                                      updateAllergy(option.code, {
+                                        reactionNotes: event.target.value,
+                                      })
+                                    }
+                                    placeholder="ឧ. ជៀសវាងសណ្តែកដីទាំងស្រុង"
+                                    className="min-h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-lg text-primary-800 outline-none transition focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="mt-5 flex flex-wrap gap-3">
+                                <label className="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-lg text-slate-700 transition hover:border-slate-300">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedItem.avoidCrossContact}
+                                    onChange={(event) =>
+                                      updateAllergy(option.code, {
+                                        avoidCrossContact: event.target.checked,
+                                      })
+                                    }
+                                    className="h-5 w-5 rounded border-slate-300 text-primary-800 focus:ring-primary-800"
+                                  />
+                                  ជៀសវាងការប៉ះពាល់ឆ្លង
+                                </label>
+
+                                <label className="flex cursor-pointer items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-lg text-slate-700 transition hover:border-slate-300">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedItem.medicallyDiagnosed}
+                                    onChange={(event) =>
+                                      updateAllergy(option.code, {
+                                        medicallyDiagnosed:
+                                          event.target.checked,
+                                      })
+                                    }
+                                    className="h-5 w-5 rounded border-slate-300 text-primary-800 focus:ring-primary-800"
+                                  />
+                                  បានវិនិច្ឆ័យដោយវេជ្ជបណ្ឌិត
+                                </label>
+                              </div>
                             </div>
                           );
                         })}
@@ -985,68 +1105,85 @@ export default function CreateMemberProfileModal({
                     )}
                   </PreferenceSection>
 
+                  {/* Dietary */}
                   <PreferenceSection
                     title="ប្រភេទរបបអាហារ"
                     description="ជ្រើសរើសរបបអាហារដែលសមាជិកត្រូវការ។ អ្នកអាចជ្រើសរើសច្រើន។"
+                    icon={<Salad className="h-6 w-6" />}
                   >
                     {dietaryTypeOptions.length === 0 ? (
-                      <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                      <p className="rounded-2xl bg-slate-50 px-4 py-4 text-lg text-slate-500">
                         មិនមានជម្រើសរបបអាហារ។
                       </p>
                     ) : (
-                      <div className="space-y-3">
-                        {dietaryTypeOptions.map((option) => {
-                          const selectedItem = form.dietaryTypes.find(
-                            (item) => item.dietaryTypeCode === option.code,
+                      <div className="space-y-5">
+                        <div className="flex flex-wrap gap-3">
+                          {dietaryTypeOptions.map((option) => {
+                            const isSelected = form.dietaryTypes.some(
+                              (item) => item.dietaryTypeCode === option.code,
+                            );
+
+                            return (
+                              <button
+                                key={option.code}
+                                type="button"
+                                aria-pressed={isSelected}
+                                onClick={() => toggleDietaryType(option.code)}
+                                className={`rounded-full border px-5 py-2.5 text-lg font-semibold transition-all duration-200 ${
+                                  isSelected
+                                    ? "border-primary-800 bg-primary-800 text-white shadow-sm"
+                                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-primary-800 hover:bg-primary-800/5 hover:text-primary-800"
+                                }`}
+                              >
+                                {option.localName || option.name || option.code}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {form.dietaryTypes.map((selectedItem) => {
+                          const option = dietaryTypeOptions.find(
+                            (item) =>
+                              item.code === selectedItem.dietaryTypeCode,
                           );
 
-                          const isSelected = Boolean(selectedItem);
+                          if (!option) return null;
 
                           return (
                             <div
-                              key={option.code}
-                              className={`rounded-xl border p-4 transition ${
-                                isSelected
-                                  ? "border-emerald-300 bg-emerald-50/60"
-                                  : "border-slate-200 bg-slate-50"
-                              }`}
+                              key={selectedItem.dietaryTypeCode}
+                              className="rounded-2xl border border-primary-800/15 bg-primary-800/[0.03] p-5"
                             >
-                              <label className="flex cursor-pointer items-start gap-3">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() =>
-                                    toggleDietaryType(option.code)
-                                  }
-                                  className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                />
-
-                                <span className="min-w-0">
-                                  <span className="block font-medium text-slate-800">
+                              <div className="mb-5 flex items-start justify-between gap-4 border-b border-primary-800/10 pb-4">
+                                <div>
+                                  <p className="text-lg font-bold text-primary-800">
                                     {option.localName ||
                                       option.name ||
                                       option.code}
-                                  </span>
-
+                                  </p>
                                   {option.description && (
-                                    <span className="mt-1 block text-sm text-slate-500">
+                                    <p className="mt-1 text-lg leading-7 text-slate-500">
                                       {option.description}
-                                    </span>
+                                    </p>
                                   )}
+                                </div>
 
-                                  <span className="mt-1 block text-xs text-slate-400">
-                                    Code: {option.code}
-                                  </span>
-                                </span>
-                              </label>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleDietaryType(option.code)}
+                                  className="shrink-0 rounded-full px-3 py-1.5 text-lg font-semibold text-red-500 transition hover:bg-red-50 hover:text-red-600"
+                                >
+                                  លុប
+                                </button>
+                              </div>
 
-                              {selectedItem && (
-                                <div className="mt-4 grid gap-3 border-t border-emerald-200 pt-4 sm:grid-cols-2">
-                                  <div>
-                                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                                      កម្រិតតម្រូវការ
-                                    </label>
+                              <div className="grid gap-5 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-2.5 block text-lg font-semibold text-slate-700">
+                                    កម្រិតតម្រូវការ
+                                  </label>
 
+                                  <div className="relative">
                                     <select
                                       value={selectedItem.enforcementLevel}
                                       onChange={(event) =>
@@ -1055,37 +1192,42 @@ export default function CreateMemberProfileModal({
                                             .value as DietaryEnforcementLevel,
                                         })
                                       }
-                                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500"
+                                      className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
                                     >
                                       {Object.entries(enforcementLabels).map(
                                         ([value, label]) => (
-                                          <option key={value} value={value}>
+                                          <option
+                                            key={value}
+                                            value={value}
+                                            className="text-lg"
+                                          >
                                             {label}
                                           </option>
                                         ),
                                       )}
                                     </select>
-                                  </div>
 
-                                  <div>
-                                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                                      ចំណាំ
-                                    </label>
-
-                                    <input
-                                      type="text"
-                                      value={selectedItem.notes}
-                                      onChange={(event) =>
-                                        updateDietaryType(option.code, {
-                                          notes: event.target.value,
-                                        })
-                                      }
-                                      placeholder="ឧ. ត្រូវតែជាអាហារហាឡាល់"
-                                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500"
-                                    />
+                                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                                   </div>
                                 </div>
-                              )}
+
+                                <div>
+                                  <label className="mb-2.5 block text-lg font-semibold text-slate-700">
+                                    ចំណាំ
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={selectedItem.notes}
+                                    onChange={(event) =>
+                                      updateDietaryType(option.code, {
+                                        notes: event.target.value,
+                                      })
+                                    }
+                                    placeholder="ឧ. ត្រូវតែជាអាហារហាឡាល់"
+                                    className="min-h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-lg text-primary-800 outline-none transition focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
+                                  />
+                                </div>
+                              </div>
                             </div>
                           );
                         })}
@@ -1093,68 +1235,88 @@ export default function CreateMemberProfileModal({
                     )}
                   </PreferenceSection>
 
+                  {/* Medical */}
                   <PreferenceSection
                     title="ស្ថានភាពសុខភាព"
                     description="ជ្រើសរើសស្ថានភាពសុខភាពដែលមានឥទ្ធិពលលើការជ្រើសរើសអាហារ។"
+                    icon={<HeartPulse className="h-6 w-6" />}
                   >
                     {medicalConditionOptions.length === 0 ? (
-                      <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                      <p className="rounded-2xl bg-slate-50 px-4 py-4 text-lg text-slate-500">
                         មិនមានជម្រើសស្ថានភាពសុខភាព។
                       </p>
                     ) : (
-                      <div className="space-y-3">
-                        {medicalConditionOptions.map((option) => {
-                          const selectedItem = form.medicalConditions.find(
-                            (item) => item.conditionCode === option.code,
+                      <div className="space-y-5">
+                        <div className="flex flex-wrap gap-3">
+                          {medicalConditionOptions.map((option) => {
+                            const isSelected = form.medicalConditions.some(
+                              (item) => item.conditionCode === option.code,
+                            );
+
+                            return (
+                              <button
+                                key={option.code}
+                                type="button"
+                                aria-pressed={isSelected}
+                                onClick={() =>
+                                  toggleMedicalCondition(option.code)
+                                }
+                                className={`rounded-full border px-5 py-2.5 text-lg font-semibold transition-all duration-200 ${
+                                  isSelected
+                                    ? "border-primary-800 bg-primary-800 text-white shadow-sm"
+                                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-primary-800 hover:bg-primary-800/5 hover:text-primary-800"
+                                }`}
+                              >
+                                {option.localName || option.name || option.code}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {form.medicalConditions.map((selectedItem) => {
+                          const option = medicalConditionOptions.find(
+                            (item) => item.code === selectedItem.conditionCode,
                           );
 
-                          const isSelected = Boolean(selectedItem);
+                          if (!option) return null;
 
                           return (
                             <div
-                              key={option.code}
-                              className={`rounded-xl border p-4 transition ${
-                                isSelected
-                                  ? "border-emerald-300 bg-emerald-50/60"
-                                  : "border-slate-200 bg-slate-50"
-                              }`}
+                              key={selectedItem.conditionCode}
+                              className="rounded-2xl border border-primary-800/15 bg-primary-800/[0.03] p-5"
                             >
-                              <label className="flex cursor-pointer items-start gap-3">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() =>
-                                    toggleMedicalCondition(option.code)
-                                  }
-                                  className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                />
-
-                                <span className="min-w-0">
-                                  <span className="block font-medium text-slate-800">
+                              <div className="mb-5 flex items-start justify-between gap-4 border-b border-primary-800/10 pb-4">
+                                <div>
+                                  <p className="text-lg font-bold text-primary-800">
                                     {option.localName ||
                                       option.name ||
                                       option.code}
-                                  </span>
-
+                                  </p>
                                   {option.description && (
-                                    <span className="mt-1 block text-sm text-slate-500">
+                                    <p className="mt-1 text-lg leading-7 text-slate-500">
                                       {option.description}
-                                    </span>
+                                    </p>
                                   )}
+                                </div>
 
-                                  <span className="mt-1 block text-xs text-slate-400">
-                                    Code: {option.code}
-                                  </span>
-                                </span>
-                              </label>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    toggleMedicalCondition(option.code)
+                                  }
+                                  className="shrink-0 rounded-full px-3 py-1.5 text-lg font-semibold text-red-500 transition hover:bg-red-50 hover:text-red-600"
+                                >
+                                  លុប
+                                </button>
+                              </div>
 
-                              {selectedItem && (
-                                <div className="mt-4 grid gap-3 border-t border-emerald-200 pt-4 sm:grid-cols-2">
-                                  <div>
-                                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                                      កម្រិតធ្ងន់ធ្ងរ
-                                    </label>
+                              <div className="grid gap-5 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-2.5 block text-lg font-semibold text-slate-700">
+                                    កម្រិតធ្ងន់ធ្ងរ
+                                  </label>
 
+                                  <div className="relative">
                                     <select
                                       value={selectedItem.severity}
                                       onChange={(event) =>
@@ -1163,37 +1325,42 @@ export default function CreateMemberProfileModal({
                                             .value as ProfileSeverity,
                                         })
                                       }
-                                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500"
+                                      className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
                                     >
                                       {Object.entries(severityLabels).map(
                                         ([value, label]) => (
-                                          <option key={value} value={value}>
+                                          <option
+                                            key={value}
+                                            value={value}
+                                            className="text-lg"
+                                          >
                                             {label}
                                           </option>
                                         ),
                                       )}
                                     </select>
-                                  </div>
 
-                                  <div>
-                                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                                      ចំណាំ
-                                    </label>
-
-                                    <input
-                                      type="text"
-                                      value={selectedItem.notes}
-                                      onChange={(event) =>
-                                        updateMedicalCondition(option.code, {
-                                          notes: event.target.value,
-                                        })
-                                      }
-                                      placeholder="ឧ. ចូលចិត្តអាហារមានជាតិស្ករទាប"
-                                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500"
-                                    />
+                                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                                   </div>
                                 </div>
-                              )}
+
+                                <div>
+                                  <label className="mb-2.5 block text-lg font-semibold text-slate-700">
+                                    ចំណាំ
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={selectedItem.notes}
+                                    onChange={(event) =>
+                                      updateMedicalCondition(option.code, {
+                                        notes: event.target.value,
+                                      })
+                                    }
+                                    placeholder="ឧ. ចូលចិត្តអាហារមានជាតិស្ករទាប"
+                                    className="min-h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-lg text-primary-800 outline-none transition focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
+                                  />
+                                </div>
+                              </div>
                             </div>
                           );
                         })}
@@ -1204,19 +1371,19 @@ export default function CreateMemberProfileModal({
               )}
 
               {createdProfileUuid && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-lg leading-7 text-amber-700">
                   គណនីមូលដ្ឋានត្រូវបានបង្កើតរួច។
                   សូមព្យាយាមរក្សាទុកព័ត៌មានសុវត្ថិភាពម្តងទៀត។
                 </div>
               )}
 
               {errorMessage && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-lg leading-7 text-red-700">
                   {errorMessage}
                 </div>
               )}
 
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="sticky bottom-0 -mx-1 flex flex-col-reverse gap-3 rounded-[24px] border border-slate-200/80 bg-white/95 p-3 shadow-lg backdrop-blur sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
                   onClick={() => {
@@ -1229,9 +1396,9 @@ export default function CreateMemberProfileModal({
                       ? "គណនីត្រូវបានបង្កើតរួច ហើយមិនអាចកែព័ត៌មានមូលដ្ឋានក្នុងជំហាននេះបានទេ។"
                       : undefined
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-lg font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                   ត្រឡប់ក្រោយ
                 </button>
 
@@ -1240,7 +1407,7 @@ export default function CreateMemberProfileModal({
                     type="button"
                     onClick={() => void submitProfile(false)}
                     disabled={isSubmitting}
-                    className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="min-h-12 rounded-full border border-slate-200 bg-white px-5 py-3 text-lg font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     រំលង និងបង្កើត
                   </button>
@@ -1252,16 +1419,16 @@ export default function CreateMemberProfileModal({
                       isLoadingSafetyOptions ||
                       hasSafetyOptionError
                     }
-                    className="inline-flex min-w-40 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex min-h-12 min-w-44 items-center justify-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-lg font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-900 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                   >
                     {isSubmitting ? (
                       <>
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                        <LoaderCircle className="h-5 w-5 animate-spin" />
                         កំពុងរក្សាទុក...
                       </>
                     ) : (
                       <>
-                        <Check className="h-4 w-4" />
+                        <Check className="h-5 w-5" />
                         បង្កើតគណនី
                       </>
                     )}

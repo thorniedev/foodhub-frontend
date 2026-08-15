@@ -165,7 +165,7 @@ export default function GroupWinnerResult({
                   bg-primary-50
                   px-3 py-1.5
                   text-[17px] font-semibold
-                  text-primary-800
+                  text-primary-800 dark:text-primary-dark
                 "
               >
                 {winnerVoteCount}/{memberCount} សំឡេង
@@ -212,7 +212,7 @@ export default function GroupWinnerResult({
                   bg-primary-50
                   px-3 py-1.5
                   text-[17px] font-semibold
-                  text-primary-800
+                  text-primary-800 dark:text-primary-dark
                 "
               >
                 {winner.distanceKm.toFixed(1)} km
@@ -285,7 +285,7 @@ export default function GroupWinnerResult({
             bg-white
             px-5
             text-[17px] font-semibold
-            text-primary-800
+            text-primary-800 dark:text-primary-dark
             transition
             hover:bg-primary-50
           "

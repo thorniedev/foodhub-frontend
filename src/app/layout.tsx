@@ -7,7 +7,8 @@ import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import Providers from "@/app/store/Providers";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
-
+import Preloader from "@/components/ui/Preloader";
+import PWARegister from "@/components/providers/PWARegister";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -36,10 +37,12 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-full dark:bg-[#202128]   overflow-x-hidden flex flex-col"
+        className="min-h-full dark:bg-slate-950   overflow-x-hidden flex flex-col"
       >
+        <PWARegister />
         {/* <AOSInit /> */}
         {/* <Navbar /> */}
+        <Preloader />
         <Providers>{children}</Providers>
         {/* <footer>
           <DrawCircleText />

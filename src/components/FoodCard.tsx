@@ -27,7 +27,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
       <div className="relative flex-1 min-h-0">
         {food.thumbnail && (
           <MediaImage
-            mediaPath={food.thumbnail}
+            thumbnail={food.thumbnail}
             alt={food.localName || food.name}
           />
         )}
@@ -51,7 +51,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
         <div className="flex items-center gap-2 text-secondary-400">
           <FaStore />
 
-          <p className="text-sm">{food.store?.localName}</p>
+          <p className="text-shadow-lg">{food.store?.localName}</p>
         </div>
 
         {/* Name + Price */}
@@ -71,7 +71,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
             className="
           text-[22px]
           font-medium
-          text-primary-800
+          text-primary-800 dark:text-primary-dark
           "
           >
             {food.price}
@@ -132,7 +132,7 @@ export default function FoodCard({ food }: { food: MenuItem }) {
               px-3
               py-1
               rounded-full
-              text-sm
+              text-lg
               "
             >
               {diet.name}

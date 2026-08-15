@@ -5,8 +5,13 @@ import Image from "next/image";
 
 export type CarouselItem = {
   id: string | number;
+
   image: string;
   alt: string;
+
+  name: string;
+  description: string;
+  origin: string;
 };
 
 type CarouselProps = {
@@ -482,18 +487,152 @@ export default function Carousel({
           {displayItems.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="snap-start shrink-0 basis-[88%] sm:basis-[70%] lg:basis-[calc(50%-12px)]"
+              className="
+      snap-start
+      shrink-0
+      basis-[88%]
+      sm:basis-[70%]
+      lg:basis-[calc(50%-12px)]
+    "
             >
-              <div className="relative  w-full overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100 aspect-[16/9] sm:aspect-[2/1] lg:aspect-auto lg:h-75">
+              <div
+                className="
+        group
+        relative
+        w-full
+        overflow-hidden
+        rounded-xl
+        bg-gray-100
+        aspect-[16/9]
+        sm:aspect-[2/1]
+        sm:rounded-2xl
+        lg:aspect-auto
+        lg:h-75
+      "
+              >
+                {/* IMAGE */}
                 <Image
                   src={item.image}
                   alt={item.alt}
                   fill
                   draggable={false}
-                  className="object-cover pointer-events-none"
-                  sizes="(max-width: 640px) 88vw, (max-width: 1024px) 70vw, 50vw"
+                  className="
+          pointer-events-none
+          object-cover
+          transition-transform
+          duration-700
+          ease-out
+          group-hover:scale-[1.06]
+        "
+                  sizes="
+          (max-width: 640px) 88vw,
+          (max-width: 1024px) 70vw,
+          50vw
+        "
                   priority={false}
                 />
+
+                {/* DARK GRADIENT */}
+                <div
+                  className="
+          pointer-events-none
+          absolute
+          inset-0
+          bg-gradient-to-t
+          from-black/85
+          via-black/30
+          to-transparent
+          opacity-0
+          transition-opacity
+          duration-500
+          group-hover:opacity-100
+        "
+                />
+
+                {/* FOOD INFORMATION */}
+                <div
+                  className="
+          pointer-events-none
+          absolute
+          inset-x-0
+          bottom-0
+          z-10
+          translate-y-6
+          p-5
+          opacity-0
+          transition-all
+          duration-500
+          ease-out
+          group-hover:translate-y-0
+          group-hover:opacity-100
+          sm:p-6
+          lg:p-7
+        "
+                >
+                  {/* ORIGIN */}
+                  <div className="mb-3">
+                    <span
+                      className="
+              inline-flex
+              items-center
+              gap-1.5
+              rounded-full
+              border
+              border-white/20
+              bg-white/15
+              px-3
+              py-1.5
+              text-sm
+              font-medium
+              text-white
+              backdrop-blur-md
+            "
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+                        <circle cx="12" cy="10" r="2.5" />
+                      </svg>
+
+                      {item.origin}
+                    </span>
+                  </div>
+
+                  {/* FOOD NAME */}
+                  <h3
+                    className="
+            text-xl
+            font-semibold
+            text-white
+            sm:text-2xl
+            lg:text-[28px]
+          "
+                  >
+                    {item.name}
+                  </h3>
+
+                  {/* DESCRIPTION */}
+                  <p
+                    className="
+            mt-2
+            line-clamp-2
+            max-w-xl
+            text-[17px]
+            leading-6
+            text-white/80
+            sm:text-base
+            sm:leading-7
+          "
+                  >
+                    {item.description}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
@@ -504,7 +643,7 @@ export default function Carousel({
           aria-label="Next slide"
           onClick={() => scrollByCard(1)}
           disabled={!canNext}
-          className={`${arrowBase} right-2 min-[1360px]:-right-5`}
+          className={`${arrowBase} right-2  min-[1360px]:-right-5`}
         >
           <ChevronIcon direction="right" />
         </button>
@@ -534,20 +673,22 @@ export default function Carousel({
 
 function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={direction === "left" ? "" : "rotate-180"}
-      aria-hidden="true"
-    >
-      <polyline points="15 18 9 12 15 6" />
-    </svg>
+    <div className="dark:text-black">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={direction === "left" ? "" : "rotate-180"}
+        aria-hidden="true"
+      >
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+    </div>
   );
 }
 
@@ -556,22 +697,82 @@ export const slides: CarouselItem[] = [
     id: 1,
     image: "/Image/carousel/food1.jpeg",
     alt: "Grilled chicken combo with dipping sauces",
+    name: "អាម៉ុកត្រី",
+    description:
+      "ត្រីស្រស់ចម្អិនជាមួយគ្រឿងអាម៉ុក និងខ្ទិះដូង ឈ្ងុយឆ្ងាញ់បែបខ្មែរ",
+    origin: "សៀមរាប",
   },
   {
     id: 2,
     image: "/Image/carousel/food2.jpg",
     alt: "Fried chicken special combo with fries and coke",
+    name: "ក្តាមឆាម្រេចកំពត",
+    description: "ក្តាមស្រស់ឆាជាមួយម្រេចកំពត ក្លិនឈ្ងុយ និងរសជាតិហឹរឆ្ងាញ់",
+    origin: "កំពត",
   },
-  { id: 3, image: "/Image/carousel/food3.avif", alt: "Chicken burger combo" },
-  { id: 4, image: "/Image/carousel/food4.jpg", alt: "Family sharing platter" },
-  { id: 5, image: "/Image/carousel/food5.jpg", alt: "Family sharing platter" },
-  { id: 6, image: "/Image/carousel/food6.jpg", alt: "Family sharing platter" },
-  { id: 7, image: "/Image/carousel/food7.png", alt: "Family sharing platter" },
-  { id: 8, image: "/Image/carousel/food11.jpg", alt: "Family sharing platter" },
-  { id: 9, image: "/Image/carousel/food9.webp", alt: "Family sharing platter" },
+  {
+    id: 3,
+    image: "/Image/carousel/food3.avif",
+    alt: "Chicken burger combo",
+    name: "គុយទាវ",
+    description: "គុយទាវទឹកស៊ុបក្តៅឈ្ងុយ ជាមួយសាច់ និងបន្លែស្រស់",
+    origin: "ភ្នំពញ",
+  },
+  {
+    id: 4,
+    image: "/Image/carousel/food4.jpg",
+    alt: "Family sharing platter",
+    name: "បាញ់ឆែវ",
+    description: "បាញ់ឆែវស្រួយ ស្នូលសាច់ និងសណ្ដែកបណ្ដុះ ញ៉ាំជាមួយបន្លែស្រស់",
+    origin: "ព្រែវែង",
+  },
+  {
+    id: 5,
+    image: "/Image/carousel/food5.jpg",
+    alt: "Family sharing platter",
+    name: "បង្កងប៉ាក",
+    description: "បង្កងប៉ាកស្រស់ចម្អិនជាមួយគ្រឿងរសជាតិខ្មែរ ឈ្ងុយ និងផ្អែមសាច់",
+    origin: "ក្រុងព្រះសីហនុ",
+  },
+  {
+    id: 6,
+    image: "/Image/carousel/food6.jpg",
+    alt: "Family sharing platter",
+    name: "ត្រីដុត",
+    description: "ត្រីស្រស់ដុតឈ្ងុយ សាច់ទន់ផ្អែម ញ៉ាំជាមួយទឹកជ្រលក់ខ្មែរ",
+    origin: "ក្រចេះ",
+  },
+  {
+    id: 7,
+    image: "/Image/carousel/food7.png",
+    alt: "Family sharing platter",
+    name: "សម្លរប្រូង",
+    description:
+      "សម្លរបែបប្រពៃណីខ្មែរ មានរសជាតិឈ្ងុយឆ្ងាញ់ និងគ្រឿងផ្សំធម្មជាតិ",
+    origin: "មណ្ឌលគិរី",
+  },
+  {
+    id: 8,
+    image: "/Image/carousel/food11.jpg",
+    alt: "Family sharing platter",
+    name: "មាន់អាំងខ្ទឹមស",
+    description: "មាន់អាំងខ្ទឹមសក្លិនឈ្ងុយ សាច់ទន់ និងរសជាតិចូលគ្រឿង",
+    origin: "បាត់ដំបង",
+  },
+  {
+    id: 9,
+    image: "/Image/carousel/food9.webp",
+    alt: "Family sharing platter",
+    name: " ប្រហុកខ្ទិះ",
+    description: "ប្រហុកខ្ទិះខ្មែរ រសជាតិខាប់ឈ្ងុយ ញ៉ាំជាមួយបន្លែស្រស់",
+    origin: "កំពង់ធំ",
+  },
   {
     id: 10,
     image: "/Image/carousel/food10.jpg",
     alt: "Family sharing platter",
+    name: "នំអាកោត្នោត",
+    description: "នំអាកោត្នោតទន់ផ្អែម មានក្លិនត្នោតឈ្ងុយបែបបង្អែមខ្មែរ",
+    origin: "សៀមរាប",
   },
 ];

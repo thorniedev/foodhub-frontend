@@ -119,7 +119,7 @@ export default function RecommandSection({
   return (
     <div className="my-15 flex flex-col gap-12.5">
       <section className="flex flex-col items-center lg:pt-0 md:pt-4 justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
-        <p className="lg:text-5xl md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800">
+        <p className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
           បទពិសោធន៍ថ្មីក្នុង
           {/* <span className="text-secondary-500">ការស្វែងរកអាហារ</span> */}
           <TypingAnimation

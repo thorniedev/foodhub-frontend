@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -28,8 +27,7 @@ import {
   IoRestaurantOutline,
 } from "react-icons/io5";
 
-import { MdDeliveryDining, MdOutlinePayments } from "react-icons/md";
-
+import { MdDeliveryDining, MdOutlineInventory2 } from "react-icons/md";
 import { TbFlame } from "react-icons/tb";
 
 import {
@@ -37,7 +35,12 @@ import {
   useGetMenuItemsQuery,
 } from "@/app/store/menuApi";
 
-import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
+
+import type {
+  CatalogMenuItem,
+  CatalogRecommendationScoreBreakdown,
+} from "@/types/catalog-menu-item";
 
 import FoodCard from "../dynamic-card/FoodCard";
 
@@ -49,6 +52,16 @@ type ScoreBarProps = {
   label: string;
   value: number;
 };
+
+type ApiImageProps = {
+  src: string | null | undefined;
+  alt: string;
+  className?: string;
+};
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
 
 function formatPrice(value: number, currencyCode: string) {
   try {
@@ -62,11 +75,15 @@ function formatPrice(value: number, currencyCode: string) {
   }
 }
 
-function getSpiceLabel(spiceLevel: number | null | undefined) {
-  if (spiceLevel === null || spiceLevel === undefined) {
-    return "មិនមានទិន្នន័យ";
+function formatDistance(value: number | null) {
+  if (!isFiniteNumber(value)) {
+    return "N/A";
   }
 
+  return `${value.toFixed(1)} km`;
+}
+
+function getSpiceLabel(spiceLevel: number) {
   if (spiceLevel <= 0) {
     return "មិនហឹរ";
   }
@@ -82,44 +99,74 @@ function getSpiceLabel(spiceLevel: number | null | undefined) {
   return "ហឹរខ្លាំង";
 }
 
-function getMediaUrl(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  if (value.startsWith("http://") || value.startsWith("https://")) {
+function getUnknownLabel(value: unknown, index: number) {
+  if (typeof value === "string") {
     return value;
   }
 
-  // Backend: /api/v1/media/{uuid}
-  // Frontend proxy: /api/media/{uuid}
-  if (value.startsWith("/api/v1/")) {
-    return `/api/${value.slice("/api/v1/".length)}`;
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
   }
 
-  if (value.startsWith("/")) {
-    return value;
+  if (typeof value === "object" && value !== null) {
+    const record = value as Record<string, unknown>;
+
+    const possibleLabel =
+      record.name ??
+      record.localName ??
+      record.code ??
+      record.label ??
+      record.title;
+
+    if (
+      typeof possibleLabel === "string" ||
+      typeof possibleLabel === "number"
+    ) {
+      return String(possibleLabel);
+    }
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return `Item ${index + 1}`;
+    }
   }
 
-  return `/${value}`;
+  return `Item ${index + 1}`;
 }
 
-function getNutritionValue(
-  nutrition: Record<string, unknown> | null | undefined,
-  key: string,
-  unit: string,
-): string {
-  const value = nutrition?.[key];
+function getStoreAddress(food: CatalogMenuItem) {
+  return [food.store.addressLine, food.store.district, food.store.city]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .join(", ");
+}
 
-  if (typeof value === "number" || typeof value === "string") {
-    return `${value} ${unit}`;
-  }
+function ApiImage({ src, alt, className }: ApiImageProps) {
+  const normalizedSrc = useMemo(() => toFrontendApiAssetUrl(src), [src]);
 
-  return "—";
+  const [currentSrc, setCurrentSrc] = useState(normalizedSrc);
+
+  useEffect(() => {
+    setCurrentSrc(normalizedSrc);
+  }, [normalizedSrc]);
+
+  return (
+    <img
+      src={currentSrc}
+      alt={alt}
+      draggable={false}
+      onError={() => {
+        if (currentSrc !== DEFAULT_FOOD_IMAGE) {
+          setCurrentSrc(DEFAULT_FOOD_IMAGE);
+        }
+      }}
+      className={className}
+    />
+  );
 }
 
 function ScoreBar({ label, value }: ScoreBarProps) {
-  const percentage = Math.round(Math.max(0, Math.min(1, value)) * 100);
+  const percentage = Math.min(100, Math.max(0, Math.round(value * 100)));
 
   return (
     <div className="grid gap-2 sm:grid-cols-[150px_1fr_52px] sm:items-center">
@@ -127,15 +174,9 @@ function ScoreBar({ label, value }: ScoreBarProps) {
 
       <div className="h-2.5 overflow-hidden rounded-full bg-primary-50">
         <motion.div
-          initial={{
-            width: 0,
-          }}
-          whileInView={{
-            width: `${percentage}%`,
-          }}
-          viewport={{
-            once: true,
-          }}
+          initial={{ width: 0 }}
+          whileInView={{ width: `${percentage}%` }}
+          viewport={{ once: true }}
           transition={{
             duration: 0.8,
             ease: "easeOut",
@@ -144,14 +185,14 @@ function ScoreBar({ label, value }: ScoreBarProps) {
         />
       </div>
 
-      <p className="text-base font-semibold text-primary-800 dark:text-[#22a447] sm:text-right">
+      <p className="text-base font-semibold text-primary-800 sm:text-right">
         {percentage}%
       </p>
     </div>
   );
 }
 
-function InfoPill({ children }: { children: React.ReactNode }) {
+function InfoPill({ children }: { children: ReactNode }) {
   return (
     <span className="inline-flex items-center rounded-full border border-primary-100 bg-primary-50 px-3 py-1.5 text-base font-medium text-primary-800">
       {children}
@@ -165,9 +206,7 @@ function LoadingPage() {
       <div className="mx-auto flex min-h-[600px] max-w-7xl flex-col items-center justify-center gap-5 px-4">
         <motion.div
           className="h-12 w-12 rounded-full border-4 border-primary-100 border-t-primary-800"
-          animate={{
-            rotate: 360,
-          }}
+          animate={{ rotate: 360 }}
           transition={{
             duration: 0.9,
             repeat: Infinity,
@@ -216,18 +255,62 @@ function RelatedFoodCard({ food }: { food: CatalogMenuItem }) {
   return (
     <motion.article
       layout
-      whileHover={{
-        y: -5,
-      }}
+      whileHover={{ y: -5 }}
       transition={{
         type: "spring",
         stiffness: 300,
         damping: 22,
       }}
     >
-      {/* FoodCard already owns its /food/{uuid} link. */}
+      {/*
+        FoodCard already contains its own /food/{uuid} Link.
+        Do not wrap FoodCard with a second Link.
+      */}
       <FoodCard food={food} />
     </motion.article>
+  );
+}
+
+function RecommendationScoreList({
+  scoreBreakdown,
+}: {
+  scoreBreakdown: CatalogRecommendationScoreBreakdown;
+}) {
+  const scores = [
+    {
+      label: "Meal Match",
+      value: scoreBreakdown.mealMatch,
+    },
+    {
+      label: "Cuisine Match",
+      value: scoreBreakdown.cuisineMatch,
+    },
+    {
+      label: "Budget Match",
+      value: scoreBreakdown.budgetMatch,
+    },
+    {
+      label: "Distance Match",
+      value: scoreBreakdown.distanceMatch,
+    },
+    {
+      label: "Popularity",
+      value: scoreBreakdown.popularity,
+    },
+  ].filter((item): item is { label: string; value: number } =>
+    isFiniteNumber(item.value),
+  );
+
+  if (scores.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-6 space-y-4">
+      {scores.map((score) => (
+        <ScoreBar key={score.label} label={score.label} value={score.value} />
+      ))}
+    </div>
   );
 }
 
@@ -235,7 +318,6 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   const router = useRouter();
 
   const [activeImage, setActiveImage] = useState(0);
-
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const {
@@ -244,72 +326,48 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     isFetching,
     isError,
     refetch,
-  } = useGetMenuItemByUuidQuery(uuid, {
-    skip: !uuid,
-  });
+  } = useGetMenuItemByUuidQuery(uuid);
 
   const { data: allMenuItems = [] } = useGetMenuItemsQuery();
 
-  /*
-   * IMPORTANT:
-   *
-   * allMenuItems = CatalogMenuItem[]
-   *   category -> item.filterData.category
-   *   cuisine  -> item.filterData.cuisine
-   *
-   * food = CatalogMenuItemDetail
-   *   category -> food.food.category
-   *   cuisine  -> food.food.cuisine
-   */
   const relatedFoods = useMemo(() => {
     if (!food) {
       return [];
     }
 
-    const detailCategoryCode = food.food?.category?.code;
-
-    const detailCuisineCode = food.food?.cuisine?.code;
-
-    return allMenuItems
+    return [...allMenuItems]
       .filter((item) => item.uuid !== food.uuid)
       .filter((item) => item.availabilityStatus === "AVAILABLE")
       .sort((first, second) => {
         let firstScore = 0;
         let secondScore = 0;
 
-        if (
-          detailCategoryCode &&
-          first.filterData?.category?.code === detailCategoryCode
-        ) {
+        if (first.food.category.code === food.food.category.code) {
           firstScore += 3;
         }
 
-        if (
-          detailCategoryCode &&
-          second.filterData?.category?.code === detailCategoryCode
-        ) {
+        if (second.food.category.code === food.food.category.code) {
           secondScore += 3;
         }
 
-        if (
-          detailCuisineCode &&
-          first.filterData?.cuisine?.code === detailCuisineCode
-        ) {
+        if (first.food.cuisine.code === food.food.cuisine.code) {
           firstScore += 2;
         }
 
-        if (
-          detailCuisineCode &&
-          second.filterData?.cuisine?.code === detailCuisineCode
-        ) {
+        if (second.food.cuisine.code === food.food.cuisine.code) {
           secondScore += 2;
         }
 
-        // The new LIST response has no recommendation.finalScore.
-        // Use the real list rating only as a small tie-breaker.
-        firstScore += Number(first.store?.averageRating ?? 0) / 10;
+        if (first.isFeatured) {
+          firstScore += 0.5;
+        }
 
-        secondScore += Number(second.store?.averageRating ?? 0) / 10;
+        if (second.isFeatured) {
+          secondScore += 0.5;
+        }
+
+        firstScore += Math.max(0, first.store.averageRating) / 10;
+        secondScore += Math.max(0, second.store.averageRating) / 10;
 
         return secondScore - firstScore;
       })
@@ -318,37 +376,28 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   const gallery = useMemo(() => {
     if (!food) {
-      return ["/Image/default-food.png"];
+      return [DEFAULT_FOOD_IMAGE];
     }
 
-    const rawImages = [
-      food.thumbnail,
-      ...(Array.isArray(food.gallery) ? food.gallery : []),
-    ];
+    const images = [food.thumbnail, ...food.gallery]
+      .filter((image): image is string => Boolean(image?.trim()))
+      .map((image) => toFrontendApiAssetUrl(image));
 
-    const images = rawImages
-      .map(getMediaUrl)
-      .filter((image): image is string => Boolean(image));
+    const uniqueImages = Array.from(new Set(images));
 
-    if (images.length === 0) {
-      return ["/Image/default-food.png"];
-    }
-
-    return Array.from(new Set(images));
+    return uniqueImages.length > 0 ? uniqueImages : [DEFAULT_FOOD_IMAGE];
   }, [food]);
 
-  if (isLoading || (!food && isFetching)) {
+  useEffect(() => {
+    setActiveImage(0);
+  }, [uuid]);
+
+  if (isLoading || isFetching) {
     return <LoadingPage />;
   }
 
   if (isError) {
-    return (
-      <ErrorPage
-        onRetry={() => {
-          void refetch();
-        }}
-      />
-    );
+    return <ErrorPage onRetry={refetch} />;
   }
 
   if (!food) {
@@ -374,70 +423,25 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     );
   }
 
-  const recommendation = food.recommendation ?? null;
+  const displayName =
+    food.localName?.trim() || food.name?.trim() || "Unnamed food";
 
-  const scoreBreakdown = recommendation?.scoreBreakdown ?? null;
+  const storeDisplayName =
+    food.store.localName?.trim() || food.store.name?.trim() || "Unknown store";
+
+  const storeAddress = getStoreAddress(food);
+
+  const recommendation = food.recommendation;
 
   const matchPercentage =
-    recommendation?.finalScore !== null &&
-    recommendation?.finalScore !== undefined
+    recommendation && isFiniteNumber(recommendation.finalScore)
       ? Math.round(recommendation.finalScore * 100)
       : null;
 
-  const category = food.food?.category ?? null;
+  const locationUrl = `https://www.google.com/maps?q=${food.store.latitude},${food.store.longitude}`;
 
-  const cuisine = food.food?.cuisine ?? null;
-
-  const ageGroups = Array.isArray(food.food?.ageGroups)
-    ? food.food.ageGroups
-    : [];
-
-  const mealTypes = Array.isArray(food.mealTypes) ? food.mealTypes : [];
-
-  const dietaryTypes = Array.isArray(food.dietaryTypes)
-    ? food.dietaryTypes
-    : [];
-
-  const ingredients = Array.isArray(food.ingredients) ? food.ingredients : [];
-
-  const beveragePairings = Array.isArray(food.beveragePairings)
-    ? food.beveragePairings
-    : [];
-
-  const allergens = Array.isArray(food.allergenDeclarations)
-    ? food.allergenDeclarations
-    : [];
-
-  const storeName =
-    food.store?.localName?.trim() || food.store?.name || "Unknown store";
-
-  const storeRating = Number(food.store?.averageRating ?? 0);
-
-  const storeAddress = [
-    food.store?.addressLine,
-    food.store?.district,
-    food.store?.city,
-  ]
-    .filter(
-      (value): value is string =>
-        typeof value === "string" && value.trim().length > 0,
-    )
-    .join(", ");
-
-  const hasStoreLocation =
-    typeof food.store?.latitude === "number" &&
-    typeof food.store?.longitude === "number";
-
-  const locationUrl = hasStoreLocation
-    ? `https://www.google.com/maps?q=${food.store.latitude},${food.store.longitude}`
-    : null;
-
-  const mainImage =
-    gallery[activeImage] ?? gallery[0] ?? "/Image/default-food.png";
-
-  const storeLogo = getMediaUrl(food.store?.logoUrl);
-
-  const popularityScore = scoreBreakdown?.popularity ?? null;
+  const pairingLabels = (food.beveragePairings ?? []).map(getUnknownLabel);
+  const allergenLabels = (food.allergenDeclarations ?? []).map(getUnknownLabel);
 
   return (
     <main className="min-h-screen bg-[#f7f9f7] pt-15">
@@ -446,7 +450,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="mb-8 flex items-center gap-2 text-base font-semibold text-primary-800 transition hover:text-primary-600 dark:text-[#22a447]"
+          className="mb-8 flex items-center gap-2 text-base font-semibold text-primary-800 transition hover:text-primary-600"
         >
           <FaArrowLeft />
           ត្រឡប់ក្រោយ
@@ -458,7 +462,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
           <div className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div
-                key={mainImage}
+                key={gallery[activeImage]}
                 initial={{
                   opacity: 0,
                   scale: 0.98,
@@ -476,13 +480,10 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 }}
                 className="relative aspect-[16/10] overflow-hidden rounded-[26px] bg-gray-100 shadow-sm"
               >
-                <Image
-                  fill
-                  priority
-                  src={mainImage}
-                  alt={food.localName || food.name}
-                  sizes="(max-width: 1024px) 100vw, 650px"
-                  className="object-cover"
+                <ApiImage
+                  src={gallery[activeImage]}
+                  alt={displayName}
+                  className="h-full w-full object-cover"
                 />
 
                 <div className="absolute left-4 top-4 flex flex-wrap gap-2">
@@ -501,207 +502,28 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </motion.div>
             </AnimatePresence>
 
-            <div className="grid grid-cols-3 gap-4">
-              {gallery.slice(0, 3).map((image, index) => (
-                <button
-                  key={image}
-                  type="button"
-                  onClick={() => setActiveImage(index)}
-                  className={`relative aspect-[4/3] overflow-hidden rounded-[20px] border-2 transition ${
-                    activeImage === index
-                      ? "border-primary-700 ring-1 ring-primary-600"
-                      : "border-transparent hover:border-primary-300"
-                  }`}
-                >
-                  <Image
-                    fill
-                    src={image}
-                    alt={`${food.localName || food.name} image ${index + 1}`}
-                    sizes="220px"
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Food overview */}
-          <div className="flex flex-col">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="flex flex-wrap gap-2">
-                  {category && <InfoPill>{category.name}</InfoPill>}
-
-                  {cuisine && <InfoPill>{cuisine.name}</InfoPill>}
-
-                  <InfoPill>
-                    {food.availabilityStatus === "AVAILABLE"
-                      ? "មានលក់"
-                      : "អស់ពីស្តុក"}
-                  </InfoPill>
-                </div>
-
-                <h3 className="mt-5 text-3xl font-bold leading-tight text-primary-950 sm:text-4xl">
-                  {food.localName || food.name}
-                </h3>
-
-                {food.localName && food.localName !== food.name && (
-                  <p className="mt-2 text-lg text-gray-500">{food.name}</p>
-                )}
-              </div>
-
-              <p className="text-3xl font-bold text-primary-800">
-                {formatPrice(food.price, food.currencyCode)}
-              </p>
-            </div>
-
-            {food.localDescription && (
-              <p className="mt-6 text-base leading-8 text-gray-600">
-                {food.localDescription}
-              </p>
-            )}
-
-            {food.description && (
-              <p className="mt-3 text-base leading-8 text-gray-500">
-                {food.description}
-              </p>
-            )}
-
-            {/* Store */}
-            <div className="mt-6 rounded-[22px] border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-primary-50">
-                  {storeLogo ? (
-                    <Image
-                      fill
-                      src={storeLogo}
-                      alt={storeName}
-                      sizes="56px"
-                      className="object-cover"
+            {gallery.length > 1 && (
+              <div className="grid grid-cols-3 gap-4">
+                {gallery.slice(0, 3).map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setActiveImage(index)}
+                    className={`relative aspect-[4/3] overflow-hidden rounded-[20px] border-2 transition ${
+                      activeImage === index
+                        ? "border-primary-700 ring-1 ring-primary-600"
+                        : "border-transparent hover:border-primary-300"
+                    }`}
+                  >
+                    <ApiImage
+                      src={image}
+                      alt={`${displayName} image ${index + 1}`}
+                      className="h-full w-full object-cover"
                     />
-                  ) : (
-                    <FaStore className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl text-primary-700" />
-                  )}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-lg font-semibold text-primary-900">
-                    {storeName}
-                  </p>
-
-                  {food.store?.localName &&
-                    food.store.localName !== food.store.name && (
-                      <p className="truncate text-base text-gray-500">
-                        {food.store.name}
-                      </p>
-                    )}
-                </div>
-
-                <span
-                  className={`rounded-full px-3 py-1.5 text-base font-semibold ${
-                    food.store?.operatingStatus === "OPEN"
-                      ? "bg-green-50 text-green-700"
-                      : "bg-red-50 text-red-600"
-                  }`}
-                >
-                  {food.store?.operatingStatus === "OPEN" ? "បើក" : "បិទ"}
-                </span>
+                  </button>
+                ))}
               </div>
-
-              <div className="mt-4 grid gap-3 border-t border-gray-100 pt-4 sm:grid-cols-2">
-                <div className="flex items-start gap-2 text-base text-gray-600">
-                  <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700" />
-
-                  <span>{storeAddress || "មិនមានអាសយដ្ឋាន"}</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-base text-gray-600">
-                  <FaStar className="text-yellow-500" />
-
-                  <span>
-                    {storeRating.toFixed(1)} ({food.store?.totalReviews ?? 0}{" "}
-                    ការវាយតម្លៃ)
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Main stats */}
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
-                <IoMdTime className="mx-auto text-2xl text-primary-700" />
-
-                <p className="mt-2 text-lg font-semibold text-primary-900">
-                  {food.preparationTimeMinutes !== null
-                    ? `${food.preparationTimeMinutes} min`
-                    : "—"}
-                </p>
-
-                <p className="mt-1 text-base text-gray-500">ពេលរៀបចំ</p>
-              </div>
-
-              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
-                <MdDeliveryDining className="mx-auto text-2xl text-primary-700" />
-
-                <p className="mt-2 text-lg font-semibold text-primary-900">
-                  {food.distanceKm !== null
-                    ? `${food.distanceKm.toFixed(1)} km`
-                    : "—"}
-                </p>
-
-                <p className="mt-1 text-base text-gray-500">ចម្ងាយ</p>
-              </div>
-
-              {/* The new detail DTO has NO deliveryFee.
-                  Keep the same 4-card UI but show the real price instead. */}
-              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
-                <MdOutlinePayments className="mx-auto text-2xl text-primary-700" />
-
-                <p className="mt-2 text-lg font-semibold text-primary-900">
-                  {formatPrice(food.price, food.currencyCode)}
-                </p>
-
-                <p className="mt-1 text-base text-gray-500">តម្លៃ</p>
-              </div>
-
-              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
-                <TbFlame className="mx-auto text-2xl text-secondary-500" />
-
-                <p className="mt-2 text-lg font-semibold text-primary-900">
-                  {getSpiceLabel(food.food?.spiceLevel)}
-                </p>
-
-                <p className="mt-1 text-base text-gray-500">កម្រិតហឹរ</p>
-              </div>
-            </div>
-
-            {/* Dietary tags */}
-            <div className="mt-6">
-              <p className="text-lg font-semibold text-primary-900">របបអាហារ</p>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {dietaryTypes.length > 0 ? (
-                  dietaryTypes.map((dietaryType) => (
-                    <span
-                      key={dietaryType.code}
-                      className="flex items-center gap-2 rounded-full bg-primary-800 px-4 py-2 text-base text-white"
-                    >
-                      {dietaryType.verificationStatus === "VERIFIED" && (
-                        <FaCheckCircle className="text-green-300" />
-                      )}
-
-                      {dietaryType.name}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-base text-gray-400">
-                    មិនទាន់មានទិន្នន័យរបបអាហារ
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
+            )}
             <div className="mt-auto grid gap-3 pt-7 sm:grid-cols-2">
               <button
                 type="button"
@@ -717,32 +539,430 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 {isBookmarked ? "បានរក្សាទុក" : "រក្សាទុកមុខម្ហូប"}
               </button>
 
-              {locationUrl ? (
-                <a
-                  href={locationUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-full bg-secondary-500 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-secondary-400 active:scale-95"
-                >
-                  <FaMapMarkerAlt />
-                  មើលទីតាំង
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="flex cursor-not-allowed items-center justify-center gap-2 rounded-full bg-gray-300 px-6 py-3.5 text-base font-semibold text-gray-500"
-                >
-                  <FaMapMarkerAlt />
-                  ទីតាំងមិនមាន
-                </button>
-              )}
+              <a
+                href={locationUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 rounded-full bg-secondary-500 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-secondary-400 active:scale-95"
+              >
+                <FaMapMarkerAlt />
+                មើលទីតាំង
+              </a>
             </div>
           </div>
-        </section>
 
-        {/* Score and detailed information */}
-        <section className="mt-14 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          {/* Food overview */}
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between">
+              <p className="text-3xl text-primary-800 font-bold leading-tight  sm:text-4xl">
+                {displayName}
+              </p>
+              <div className=" flex justify-center">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const shareData = {
+                      title: displayName,
+                      text:
+                        food.localDescription ??
+                        food.description ??
+                        displayName,
+                      url: window.location.href,
+                    };
+
+                    if (navigator.share) {
+                      await navigator.share(shareData);
+                      return;
+                    }
+
+                    await navigator.clipboard.writeText(window.location.href);
+                  }}
+                  className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 active:scale-95"
+                >
+                  <FaShareAlt />
+                  ចែករំលែកមុខម្ហូប
+                </button>
+              </div>
+            </div>
+            {food.localDescription && (
+              <p className="mt-6 text-base leading-8 text-gray-600">
+                {food.localDescription}
+              </p>
+            )}
+
+            {food.description && (
+              <p className="mt-3 text-base leading-8 text-gray-500">
+                {food.description}
+              </p>
+            )}
+
+            {/* =====================================================
+                STORE PROFILE
+            ===================================================== */}
+
+            <Link
+              href={`/store/${food.store.uuid}`}
+              aria-label={`View ${storeDisplayName} store profile`}
+              className="
+                group
+                mt-6
+                block
+                overflow-hidden
+                rounded-[24px]
+                border
+                border-gray-200
+                bg-white
+                shadow-sm
+                transition
+                duration-200
+                hover:-translate-y-0.5
+                hover:border-primary-200
+                hover:shadow-md
+              "
+            >
+              {/* COVER */}
+
+              <div className="relative h-28 overflow-hidden bg-gradient-to-r from-primary-800 to-primary-600 sm:h-32">
+                {food.store.coverImageUrl ? (
+                  <ApiImage
+                    src={food.store.coverImageUrl}
+                    alt={`${storeDisplayName} cover`}
+                    className="
+                      h-full
+                      w-full
+                      object-cover
+                      transition-transform
+                      duration-300
+                      group-hover:scale-[1.02]
+                    "
+                  />
+                ) : (
+                  <div
+                    className="
+                      flex
+                      h-full
+                      w-full
+                      items-center
+                      justify-center
+                      bg-gradient-to-r
+                      from-primary-800
+                      via-primary-700
+                      to-secondary-500
+                    "
+                  >
+                    <FaStore className="text-5xl text-white/30" />
+                  </div>
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+
+                {/* STATUS */}
+
+                <span
+                  className={`absolute right-3 top-3 rounded-full px-3 py-1.5 text-[14px] font-semibold shadow-sm ${
+                    food.store.operatingStatus === "OPEN"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {food.store.operatingStatus === "OPEN"
+                    ? "បើក"
+                    : "បិទ"}
+                </span>
+              </div>
+
+              {/* STORE PROFILE CONTENT */}
+
+              <div className="relative px-4 pb-4 sm:px-5 sm:pb-5">
+                {/* LOGO / PROFILE IMAGE */}
+
+                <div
+                  className="
+                    -mt-9
+                    flex
+                    items-end
+                    justify-between
+                    gap-3
+                  "
+                >
+                  <div
+                    className="
+                      relative
+                      flex
+                      h-[76px]
+                      w-[76px]
+                      shrink-0
+                      items-center
+                      justify-center
+                      overflow-hidden
+                      rounded-full
+                      border-4
+                      border-white
+                      bg-primary-50
+                      shadow-md
+                    "
+                  >
+                    {food.store.logoUrl ? (
+                      <ApiImage
+                        src={food.store.logoUrl}
+                        alt={`${storeDisplayName} logo`}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <FaStore className="text-[30px] text-primary-700" />
+                    )}
+                  </div>
+
+                  <div
+                    className="
+                      mb-1
+                      flex
+                      items-center
+                      gap-1
+                      text-[15px]
+                      font-semibold
+                      text-primary-700
+                      transition
+                      group-hover:translate-x-1
+                    "
+                  >
+                    <span>មើលហាង</span>
+                    <IoChevronForward className="text-[18px]" />
+                  </div>
+                </div>
+
+                {/* NAME */}
+
+                <div className="mt-3">
+                  <p
+                    className="
+                      line-clamp-1
+                      text-[22px]
+                      font-bold
+                      text-primary-900
+                      transition
+                      group-hover:text-primary-700
+                    "
+                  >
+                    {storeDisplayName}
+                  </p>
+
+                  {food.store.localName &&
+                    food.store.name &&
+                    food.store.localName.trim() !==
+                      food.store.name.trim() && (
+                      <p className="mt-0.5 line-clamp-1 text-[16px] text-gray-500">
+                        {food.store.name}
+                      </p>
+                    )}
+                </div>
+
+                {/* ADDRESS */}
+
+                <div className="mt-3 flex items-start gap-2 text-[16px] leading-6 text-gray-600">
+                  <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700" />
+
+                  <span className="line-clamp-2">
+                    {storeAddress ||
+                      "មិនមានអាសយដ្ឋាន"}
+                  </span>
+                </div>
+
+                {/* STORE STATS */}
+
+                <div
+                  className="
+                    mt-4
+                    grid
+                    grid-cols-2
+                    gap-3
+                    border-t
+                    border-gray-100
+                    pt-4
+                  "
+                >
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      rounded-2xl
+                      bg-amber-50
+                      px-3
+                      py-3
+                    "
+                  >
+                    <div
+                      className="
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-white
+                        text-amber-500
+                        shadow-sm
+                      "
+                    >
+                      <FaStar />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[18px] font-bold text-gray-900">
+                        {Number(
+                          food.store.averageRating ?? 0,
+                        ).toFixed(1)}
+                      </p>
+
+                      <p className="text-[13px] text-gray-500">
+                        ការវាយតម្លៃ
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      rounded-2xl
+                      bg-primary-50
+                      px-3
+                      py-3
+                    "
+                  >
+                    <div
+                      className="
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-white
+                        text-primary-700
+                        shadow-sm
+                      "
+                    >
+                      <FaStore />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[18px] font-bold text-gray-900">
+                        {food.store.totalReviews ?? 0}
+                      </p>
+
+                      <p className="text-[13px] text-gray-500">
+                        មតិវាយតម្លៃ
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            <div className="flex mt-6 flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="flex flex-wrap gap-2">
+                  {/* <InfoPill>{food.food.category.name}</InfoPill>
+                  <InfoPill>{food.food.cuisine.name}</InfoPill> */}
+
+                  <InfoPill>
+                    {food.availabilityStatus === "AVAILABLE"
+                      ? "មានលក់"
+                      : "មិនមានលក់"}
+                  </InfoPill>
+                </div>
+
+                {/* {food.localName && food.name && (
+                  <p className="mt-2 text-lg text-gray-500">{food.name}</p>
+                )} */}
+              </div>
+
+              <p className="text-3xl font-bold text-primary-800">
+                {formatPrice(food.price, food.currencyCode)}
+              </p>
+            </div>
+            {/* Main stats */}
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
+                <IoMdTime className="mx-auto text-2xl text-primary-700" />
+
+                <p className="mt-2 text-lg font-semibold text-primary-900">
+                  {food.preparationTimeMinutes !== null
+                    ? `${food.preparationTimeMinutes} min`
+                    : "N/A"}
+                </p>
+
+                <p className="mt-1 text-base text-gray-500">ពេលរៀបចំ</p>
+              </div>
+
+              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
+                <MdDeliveryDining className="mx-auto text-2xl text-primary-700" />
+
+                <p className="mt-2 text-lg font-semibold text-primary-900">
+                  {formatDistance(food.distanceKm)}
+                </p>
+
+                <p className="mt-1 text-base text-gray-500">ចម្ងាយ</p>
+              </div>
+
+              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
+                <MdOutlineInventory2 className="mx-auto text-2xl text-primary-700" />
+
+                <p className="mt-2 text-lg font-semibold text-primary-900">
+                  {food.availabilityStatus === "AVAILABLE"
+                    ? "មានលក់"
+                    : "មិនមានលក់"}
+                </p>
+
+                <p className="mt-1 text-base text-gray-500">ស្ថានភាព</p>
+              </div>
+
+              <div className="rounded-[18px] border border-gray-200 bg-white p-4 text-center">
+                <TbFlame className="mx-auto text-2xl text-secondary-500" />
+
+                <p className="mt-2 text-lg font-semibold text-primary-900">
+                  {getSpiceLabel(food.food.spiceLevel)}
+                </p>
+
+                <p className="mt-1 text-base text-gray-500">កម្រិតហឹរ</p>
+              </div>
+            </div>
+
+            {/* Dietary tags */}
+            <div className="mt-6">
+              <p className="text-lg font-semibold text-primary-900">របបអាហារ</p>
+
+              {food.food.dietaryTypes.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {food.food.dietaryTypes.map((dietaryType) => (
+                    <span
+                      key={dietaryType.code}
+                      className="flex items-center gap-2 rounded-full bg-primary-800 px-4 py-2 text-base text-white"
+                    >
+                      {dietaryType.verificationStatus === "VERIFIED" && (
+                        <FaCheckCircle className="text-green-300" />
+                      )}
+
+                      {dietaryType.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-base text-gray-500">
+                  មិនមានទិន្នន័យរបបអាហារ។
+                </p>
+              )}
+            </div>
+            {/* Actions */}
+          </div>
+        </section>
+        <section></section>
+        {/* Recommendation and rating */}
+        <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           {/* AI recommendation */}
           <article className="rounded-[26px] border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-100 pb-5">
@@ -756,81 +976,53 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </p>
               </div>
 
-              <div className="text-right">
-                <p className="text-4xl font-bold text-primary-800">
-                  {matchPercentage !== null ? `${matchPercentage}%` : "—"}
-                </p>
+              {matchPercentage !== null && (
+                <div className="text-right">
+                  <p className="text-4xl font-bold text-primary-800">
+                    {matchPercentage}%
+                  </p>
 
-                <p className="mt-1 text-base text-gray-500">Match Score</p>
-              </div>
+                  <p className="mt-1 text-base text-gray-500">Match Score</p>
+                </div>
+              )}
             </div>
 
             {recommendation ? (
               <>
-                <p className="mt-5 text-base leading-8 text-gray-600">
-                  {recommendation.reasonText || "មិនទាន់មានពន្យល់ពីការណែនាំ។"}
-                </p>
-
-                {scoreBreakdown ? (
-                  <div className="mt-6 space-y-4">
-                    {scoreBreakdown.mealMatch !== null && (
-                      <ScoreBar
-                        label="Meal Match"
-                        value={scoreBreakdown.mealMatch}
-                      />
-                    )}
-
-                    {scoreBreakdown.cuisineMatch !== null && (
-                      <ScoreBar
-                        label="Cuisine Match"
-                        value={scoreBreakdown.cuisineMatch}
-                      />
-                    )}
-
-                    {scoreBreakdown.budgetMatch !== null && (
-                      <ScoreBar
-                        label="Budget Match"
-                        value={scoreBreakdown.budgetMatch}
-                      />
-                    )}
-
-                    {scoreBreakdown.distanceMatch !== null && (
-                      <ScoreBar
-                        label="Distance Match"
-                        value={scoreBreakdown.distanceMatch}
-                      />
-                    )}
-
-                    {scoreBreakdown.popularity !== null && (
-                      <ScoreBar
-                        label="Popularity"
-                        value={scoreBreakdown.popularity}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <p className="mt-5 text-base text-gray-400">
-                    មិនទាន់មានទិន្នន័យ Score Breakdown
+                {recommendation.reasonText && (
+                  <p className="mt-5 text-base leading-8 text-gray-600">
+                    {recommendation.reasonText}
                   </p>
                 )}
 
-                {recommendation.reasonCodes.length > 0 && (
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {recommendation.reasonCodes.map((reasonCode) => (
-                      <span
-                        key={reasonCode}
-                        className="rounded-full border border-primary-100 bg-primary-50 px-3 py-1.5 text-base font-medium text-primary-700"
-                      >
-                        {reasonCode.replaceAll("_", " ")}
-                      </span>
-                    ))}
-                  </div>
+                {recommendation.scoreBreakdown && (
+                  <RecommendationScoreList
+                    scoreBreakdown={recommendation.scoreBreakdown}
+                  />
                 )}
+
+                {recommendation.reasonCodes &&
+                  recommendation.reasonCodes.length > 0 && (
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {recommendation.reasonCodes.map((reasonCode) => (
+                        <span
+                          key={reasonCode}
+                          className="rounded-full border border-primary-100 bg-primary-50 px-3 py-1.5 text-base font-medium text-primary-700"
+                        >
+                          {reasonCode.replaceAll("_", " ")}
+                        </span>
+                      ))}
+                    </div>
+                  )}
               </>
             ) : (
-              <p className="mt-5 text-base leading-8 text-gray-500">
-                មិនទាន់មានទិន្នន័យណែនាំសម្រាប់មុខម្ហូបនេះ។
-              </p>
+              <div className="mt-5 rounded-[18px] bg-primary-50 p-4">
+                <p className="text-base leading-7 text-gray-600">
+                  មិនទាន់មានទិន្នន័យ recommendation សម្រាប់ request នេះទេ។ API
+                  response បច្ចុប្បន្នផ្ញើ
+                  <span className="font-semibold"> recommendation: null</span>។
+                </p>
+              </div>
             )}
           </article>
 
@@ -843,19 +1035,17 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             <div className="mt-6 flex items-center gap-6">
               <div>
                 <p className="text-5xl font-bold text-primary-950">
-                  {storeRating.toFixed(1)}
+                  {food.store.averageRating.toFixed(1)}
                 </p>
 
                 <div className="mt-2 flex gap-1 text-yellow-400">
-                  {Array.from({
-                    length: 5,
-                  }).map((_, index) => (
+                  {Array.from({ length: 5 }).map((_, index) => (
                     <FaStar key={index} />
                   ))}
                 </div>
 
                 <p className="mt-2 text-base text-gray-500">
-                  {food.store?.totalReviews ?? 0} ការវាយតម្លៃ
+                  {food.store.totalReviews} ការវាយតម្លៃ
                 </p>
               </div>
 
@@ -864,9 +1054,16 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               <div className="flex-1 space-y-3">
                 <div>
                   <div className="flex justify-between text-base text-gray-500">
-                    <span>គុណភាពម្ហូប</span>
-
-                    <span>{Math.round(storeRating * 20)}%</span>
+                    <span>Rating</span>
+                    <span>
+                      {Math.round(
+                        Math.min(
+                          100,
+                          Math.max(0, food.store.averageRating * 20),
+                        ),
+                      )}
+                      %
+                    </span>
                   </div>
 
                   <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-gray-100">
@@ -874,7 +1071,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                       style={{
                         width: `${Math.min(
                           100,
-                          Math.max(0, storeRating * 20),
+                          Math.max(0, food.store.averageRating * 20),
                         )}%`,
                       }}
                       className="h-full rounded-full bg-primary-700"
@@ -882,31 +1079,12 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex justify-between text-base text-gray-500">
-                    <span>ប្រជាប្រិយភាព</span>
+                <div className="rounded-[16px] bg-gray-50 p-3">
+                  <p className="text-base text-gray-500">ស្ថានភាពហាង</p>
 
-                    <span>
-                      {popularityScore !== null
-                        ? `${Math.round(popularityScore * 100)}%`
-                        : "—"}
-                    </span>
-                  </div>
-
-                  <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-gray-100">
-                    <div
-                      style={{
-                        width:
-                          popularityScore !== null
-                            ? `${Math.min(
-                                100,
-                                Math.max(0, popularityScore * 100),
-                              )}%`
-                            : "0%",
-                      }}
-                      className="h-full rounded-full bg-secondary-500"
-                    />
-                  </div>
+                  <p className="mt-1 text-lg font-semibold text-primary-900">
+                    {food.store.operatingStatus === "OPEN" ? "បើក" : "បិទ"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -927,32 +1105,32 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </p>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {ingredients.length > 0 ? (
-                ingredients.map((ingredient, index) => (
+            {food.ingredients.length > 0 ? (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {food.ingredients.map((ingredient, index) => (
                   <span
                     key={`${ingredient}-${index}`}
                     className="rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-base text-gray-600"
                   >
                     {ingredient}
                   </span>
-                ))
-              ) : (
-                <p className="text-base text-gray-400">
-                  មិនទាន់មានទិន្នន័យគ្រឿងផ្សំ
-                </p>
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-5 text-base text-gray-500">
+                មិនមានទិន្នន័យគ្រឿងផ្សំ។
+              </p>
+            )}
 
-            {beveragePairings.length > 0 && (
+            {pairingLabels.length > 0 && (
               <div className="mt-6 border-t border-gray-100 pt-5">
                 <p className="text-base font-semibold text-primary-900">
                   ភេសជ្ជៈដែលសម
                 </p>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {beveragePairings.map((beverage) => (
-                    <InfoPill key={beverage}>{beverage}</InfoPill>
+                  {pairingLabels.map((beverage, index) => (
+                    <InfoPill key={`${beverage}-${index}`}>{beverage}</InfoPill>
                   ))}
                 </div>
               </div>
@@ -975,27 +1153,19 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               {[
                 {
                   label: "Calories",
-                  value: getNutritionValue(food.nutrition, "calories", "kcal"),
+                  value: `${food.nutrition.calories} kcal`,
                 },
                 {
                   label: "Protein",
-                  value: getNutritionValue(food.nutrition, "protein", "g"),
+                  value: `${food.nutrition.proteinGrams} g`,
                 },
                 {
                   label: "Carbohydrate",
-                  value: getNutritionValue(food.nutrition, "carbohydrate", "g"),
+                  value: `${food.nutrition.carbsGrams} g`,
                 },
                 {
                   label: "Fat",
-                  value: getNutritionValue(food.nutrition, "fat", "g"),
-                },
-                {
-                  label: "Fiber",
-                  value: getNutritionValue(food.nutrition, "fiber", "g"),
-                },
-                {
-                  label: "Sodium",
-                  value: getNutritionValue(food.nutrition, "sodium", "mg"),
+                  value: `${food.nutrition.fatGrams} g`,
                 },
               ].map((nutrition) => (
                 <div
@@ -1024,7 +1194,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </p>
             </div>
 
-            {allergens.length === 0 ? (
+            {allergenLabels.length === 0 ? (
               <div className="mt-5 flex items-start gap-3 rounded-[18px] bg-green-50 p-4">
                 <FaCheckCircle className="mt-1 shrink-0 text-xl text-green-600" />
 
@@ -1034,23 +1204,13 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </div>
             ) : (
               <div className="mt-5 space-y-3">
-                {allergens.map((allergen) => (
+                {allergenLabels.map((allergen, index) => (
                   <div
-                    key={allergen.code}
+                    key={`${allergen}-${index}`}
                     className="rounded-[18px] border border-orange-100 bg-orange-50 p-4"
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-base font-semibold text-orange-800">
-                        {allergen.name}
-                      </p>
-
-                      <span className="rounded-full bg-orange-100 px-3 py-1 text-base font-medium text-orange-700">
-                        {allergen.riskLevel}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-base text-orange-700">
-                      {allergen.declarationType} · {allergen.verificationStatus}
+                    <p className="break-words text-base font-semibold text-orange-800">
+                      {allergen}
                     </p>
                   </div>
                 ))}
@@ -1062,54 +1222,149 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 អាយុសមស្រប
               </p>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                {ageGroups.length > 0 ? (
-                  ageGroups.map((ageGroup) => (
+              {food.food.ageGroups.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {food.food.ageGroups.map((ageGroup) => (
                     <InfoPill key={ageGroup.code}>{ageGroup.name}</InfoPill>
-                  ))
-                ) : (
-                  <p className="text-base text-gray-400">
-                    មិនទាន់មានទិន្នន័យក្រុមអាយុ
-                  </p>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-base text-gray-500">
+                  មិនមានទិន្នន័យក្រុមអាយុ។
+                </p>
+              )}
             </div>
           </article>
         </section>
 
-        {/* Meal types */}
+        {/* Context information */}
         <section className="mt-8 rounded-[26px] border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-4">
             <div>
               <p className="text-base text-gray-500">ពេលអាហារ</p>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                {mealTypes.length > 0 ? (
-                  mealTypes.map((mealType) => (
+              {food.food.mealTypes.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {food.food.mealTypes.map((mealType) => (
                     <InfoPill key={mealType.code}>{mealType.name}</InfoPill>
-                  ))
-                ) : (
-                  <p className="text-base text-gray-400">មិនទាន់មានទិន្នន័យ</p>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-base text-gray-500">មិនមានទិន្នន័យ</p>
+              )}
             </div>
 
             <div>
               <p className="text-base text-gray-500">ប្រភេទម្ហូប</p>
 
               <p className="mt-3 text-lg font-semibold text-primary-900">
-                {category?.name || "មិនមានទិន្នន័យ"}
+                {food.food.category.name}
               </p>
             </div>
 
             <div>
-              <p className="text-base text-gray-500">ប្រភពទិន្នន័យ</p>
+              <p className="text-base text-gray-500">Cuisine</p>
 
               <p className="mt-3 text-lg font-semibold text-primary-900">
-                {food.source || "មិនមានទិន្នន័យ"}
+                {food.food.cuisine.name}
               </p>
             </div>
+
+            <div>
+              <p className="text-base text-gray-500">ប្រភពដើម</p>
+
+              <p className="mt-3 text-lg font-semibold text-primary-900">
+                {food.origin.countryName}
+              </p>
+
+              {food.origin.isTraditional && (
+                <span className="mt-2 inline-flex rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-800">
+                  Traditional
+                </span>
+              )}
+            </div>
           </div>
+
+          {(food.food.seasons.length > 0 ||
+            food.food.events.length > 0 ||
+            food.food.suitableWeather.length > 0) && (
+            <div className="mt-6 grid gap-6 border-t border-gray-100 pt-6 lg:grid-cols-3">
+              <div>
+                <p className="text-base font-semibold text-primary-900">
+                  រដូវសមស្រប
+                </p>
+
+                <div className="mt-3 space-y-3">
+                  {food.food.seasons.map((season) => (
+                    <div
+                      key={season.code}
+                      className="rounded-[16px] bg-primary-50 p-3"
+                    >
+                      <p className="font-semibold text-primary-900">
+                        {season.localName || season.name}
+                      </p>
+
+                      {season.reasonText && (
+                        <p className="mt-1 text-sm leading-6 text-gray-600">
+                          {season.reasonText}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-base font-semibold text-primary-900">
+                  ព្រឹត្តិការណ៍
+                </p>
+
+                <div className="mt-3 space-y-3">
+                  {food.food.events.map((eventItem) => (
+                    <div
+                      key={eventItem.code}
+                      className="rounded-[16px] bg-primary-50 p-3"
+                    >
+                      <p className="font-semibold text-primary-900">
+                        {eventItem.localName || eventItem.name}
+                      </p>
+
+                      {eventItem.reasonText && (
+                        <p className="mt-1 text-sm leading-6 text-gray-600">
+                          {eventItem.reasonText}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-base font-semibold text-primary-900">
+                  អាកាសធាតុសមស្រប
+                </p>
+
+                <div className="mt-3 space-y-3">
+                  {food.food.suitableWeather.map((weather) => (
+                    <div
+                      key={weather.code}
+                      className="rounded-[16px] bg-primary-50 p-3"
+                    >
+                      <p className="font-semibold text-primary-900">
+                        {weather.localName || weather.name}
+                      </p>
+
+                      {weather.reasonText && (
+                        <p className="mt-1 text-sm leading-6 text-gray-600">
+                          {weather.reasonText}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Related items */}
@@ -1128,7 +1383,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               <Link
                 href="/food"
-                className="flex items-center gap-2 text-base font-semibold text-primary-800 dark:text-[#22a447]"
+                className="flex items-center gap-2 text-base font-semibold text-primary-800"
               >
                 មើលទាំងអស់
                 <IoChevronForward />
@@ -1144,32 +1399,6 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         )}
 
         {/* Share button */}
-        <div className="mt-10 flex justify-center">
-          <button
-            type="button"
-            onClick={async () => {
-              const shareData = {
-                title: food.localName || food.name,
-
-                text: food.localDescription || food.description || "",
-
-                url: window.location.href,
-              };
-
-              if (navigator.share) {
-                await navigator.share(shareData);
-
-                return;
-              }
-
-              await navigator.clipboard.writeText(window.location.href);
-            }}
-            className="flex items-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-base font-semibold text-primary-800 shadow-sm transition hover:bg-primary-50 active:scale-95 dark:text-[#22a447]"
-          >
-            <FaShareAlt />
-            ចែករំលែកមុខម្ហូប
-          </button>
-        </div>
       </div>
     </main>
   );

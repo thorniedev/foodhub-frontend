@@ -143,25 +143,19 @@ type DisplayCodeName = {
 };
 
 function getDietaryTypes(food: CatalogMenuItem): DisplayCodeName[] {
-  if (!Array.isArray(food.dietaryTypes)) {
+  if (!Array.isArray(food.food?.dietaryTypes)) {
     return [];
   }
 
-  return food.dietaryTypes.flatMap((item) => {
-    if (typeof item !== "object" || item === null) {
-      return [];
-    }
-
-    const value = item as Record<string, unknown>;
-
-    if (typeof value.code !== "string" || typeof value.name !== "string") {
+  return food.food.dietaryTypes.flatMap((item) => {
+    if (!item.code || !item.name) {
       return [];
     }
 
     return [
       {
-        code: value.code,
-        name: value.name,
+        code: item.code,
+        name: item.name,
       },
     ];
   });
@@ -264,7 +258,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
 
   const badgeText = food.isFeatured
     ? "Featured"
-    : food.filterData?.category?.name || "Available";
+    : food.food?.category?.name || "Available";
 
   return (
     <motion.div
@@ -377,7 +371,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
             type="button"
             aria-label="បិទ"
             onClick={onClose}
-            className="absolute right-3 top-3 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-primary-800 shadow-md backdrop-blur transition hover:bg-white active:scale-90"
+            className="absolute right-3 top-3 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-primary-800 dark:text-primary-dark shadow-md backdrop-blur transition hover:bg-white active:scale-90"
           >
             <IoClose className="text-lg" />
           </button>
@@ -435,7 +429,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
                   {food.localName || food.name}
                 </p>
 
-                <p className="shrink-0 dark:text-[#22a447] font-semibold text-primary-800">
+                <p className="shrink-0 dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
                   {formatPrice(food)}
                 </p>
               </div>
@@ -454,15 +448,15 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
                   ))
                 ) : (
                   <>
-                    {food.filterData?.category && (
+                    {food.food?.category && (
                       <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white">
-                        {food.filterData.category.name}
+                        {food.food.category.name}
                       </span>
                     )}
 
-                    {food.filterData?.cuisine && (
+                    {food.food?.cuisine && (
                       <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 p-1 text-base text-white">
-                        {food.filterData.cuisine.name}
+                        {food.food.cuisine.name}
                       </span>
                     )}
                   </>
@@ -549,7 +543,7 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
             type="button"
             aria-label="បិទ"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-primary-800 transition hover:bg-gray-200 active:scale-90"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-primary-800 dark:text-primary-dark transition hover:bg-gray-200 active:scale-90"
           >
             <IoClose />
           </button>
@@ -614,7 +608,7 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
                       {food.store.averageRating}
                     </span>
 
-                    <span className="text-base font-medium text-primary-800">
+                    <span className="text-base font-medium text-primary-800 dark:text-primary-dark">
                       {formatPrice(food)}
                     </span>
                   </div>

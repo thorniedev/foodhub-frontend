@@ -6,42 +6,18 @@ import type {
 
 export const DEFAULT_STORE_FILTERS: StorePageFilters = {
   cities: [],
-  districts: [],
   provinces: [],
   operatingStatuses: [],
-  priceLevels: [],
-
   openNowOnly: false,
-  approvedOnly: false,
-  activeOnly: false,
-
   minimumRating: null,
   sortBy: "default",
 };
 
-export function normalizeStoreText(value?: string | number | null): string {
+export function normalizeStoreText(value?: unknown): string {
   return String(value ?? "")
     .trim()
     .toLowerCase()
     .normalize("NFKC");
-}
-
-export function normalizeStoreImageUrl(value?: string | null): string | null {
-  const trimmed = value?.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  if (
-    trimmed.startsWith("http://") ||
-    trimmed.startsWith("https://") ||
-    trimmed.startsWith("/")
-  ) {
-    return trimmed;
-  }
-
-  return `/${trimmed}`;
 }
 
 export function toggleStoreFilterValue(
@@ -53,9 +29,27 @@ export function toggleStoreFilterValue(
     : [...values, value];
 }
 
+export function formatOperatingStatusLabel(value: string): string {
+  switch (value.trim().toUpperCase()) {
+    case "OPEN":
+      return "បើក";
+    case "CLOSED":
+      return "បានបិទ";
+    case "TEMPORARILY_CLOSED":
+      return "បិទជាបណ្ដោះអាសន្ន";
+    case "PERMANENTLY_CLOSED":
+      return "បិទជាអចិន្ត្រៃយ៍";
+    case "UNKNOWN":
+      return "មិនទាន់ដឹង";
+    default:
+      return value;
+  }
+}
+
 export function getStoreFilterOptions(
   stores: FoodStore[],
   getValue: (store: FoodStore) => string | number | null | undefined,
+  getLabel?: (value: string, store: FoodStore) => string,
 ): StorePageOption[] {
   const optionMap = new Map<string, StorePageOption>();
 
@@ -70,7 +64,7 @@ export function getStoreFilterOptions(
       return;
     }
 
-    const code = String(rawValue);
+    const code = String(rawValue).trim();
     const existing = optionMap.get(code);
 
     if (existing) {
@@ -80,7 +74,7 @@ export function getStoreFilterOptions(
 
     optionMap.set(code, {
       code,
-      name: code,
+      name: getLabel?.(code, store) ?? code,
       count: 1,
     });
   });
@@ -97,29 +91,28 @@ function matchesStoreSearch(store: FoodStore, searchQuery: string): boolean {
     return true;
   }
 
-  const searchableValues = [
+  const searchableText = [
+    store.uuid,
     store.storeName,
-    store.description,
     store.addressLine,
-    store.commune,
-    store.district,
     store.city,
     store.province,
-    store.countryCode,
-    store.postalCode,
-    store.phoneNumber,
-    store.email,
-    store.reviewStatus,
-    store.operatingStatus,
-    store.accountStatus,
-    store.priceLevel,
-    store.hygieneRating,
+    store.latitude,
+    store.longitude,
+    store.distanceMeters,
     store.averageRating,
-  ];
+    store.totalReviews,
+    store.operatingStatus,
+    store.isOpenNow,
+  ]
+    .map(normalizeStoreText)
+    .join(" ");
 
-  return searchableValues.some((value) =>
-    normalizeStoreText(value).includes(query),
-  );
+  return query
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .every((token) => searchableText.includes(token));
 }
 
 export function applyStoreFilters(
@@ -132,28 +125,14 @@ export function applyStoreFilters(
       return false;
     }
 
+    // Use isOpenNow for the real current-open state.
     if (filters.openNowOnly && store.isOpenNow !== true) {
-      return false;
-    }
-
-    if (filters.approvedOnly && store.reviewStatus !== "APPROVED") {
-      return false;
-    }
-
-    if (filters.activeOnly && store.accountStatus !== "ACTIVE") {
       return false;
     }
 
     if (
       filters.cities.length > 0 &&
       (!store.city || !filters.cities.includes(store.city))
-    ) {
-      return false;
-    }
-
-    if (
-      filters.districts.length > 0 &&
-      (!store.district || !filters.districts.includes(store.district))
     ) {
       return false;
     }
@@ -173,16 +152,8 @@ export function applyStoreFilters(
     }
 
     if (
-      filters.priceLevels.length > 0 &&
-      (store.priceLevel === null ||
-        !filters.priceLevels.includes(String(store.priceLevel)))
-    ) {
-      return false;
-    }
-
-    if (
       filters.minimumRating !== null &&
-      store.averageRating < filters.minimumRating
+      Number(store.averageRating ?? 0) < filters.minimumRating
     ) {
       return false;
     }
@@ -194,13 +165,14 @@ export function applyStoreFilters(
     switch (filters.sortBy) {
       case "name-asc":
         return first.storeName.localeCompare(second.storeName);
-
       case "rating":
-        return second.averageRating - first.averageRating;
-
+        return (
+          Number(second.averageRating ?? 0) - Number(first.averageRating ?? 0)
+        );
       case "reviews":
-        return second.totalReviews - first.totalReviews;
-
+        return (
+          Number(second.totalReviews ?? 0) - Number(first.totalReviews ?? 0)
+        );
       case "default":
       default:
         return 0;
@@ -211,58 +183,181 @@ export function applyStoreFilters(
 export function countActiveStoreFilters(filters: StorePageFilters): number {
   return (
     filters.cities.length +
-    filters.districts.length +
     filters.provinces.length +
     filters.operatingStatuses.length +
-    filters.priceLevels.length +
     (filters.openNowOnly ? 1 : 0) +
-    (filters.approvedOnly ? 1 : 0) +
-    (filters.activeOnly ? 1 : 0) +
     (filters.minimumRating !== null ? 1 : 0) +
     (filters.sortBy !== "default" ? 1 : 0)
   );
 }
 
-export function getStoreStatusLabel(store: FoodStore): string {
-  if (store.isOpenNow === true) {
-    return "បើកឥឡូវនេះ";
-  }
-
-  if (store.isOpenNow === false) {
-    return "បានបិទ";
-  }
-
-  switch (store.operatingStatus) {
-    case "OPEN":
-      return "បើក";
-    case "CLOSED":
-      return "បានបិទ";
-    case "TEMPORARILY_CLOSED":
-      return "បិទជាបណ្ដោះអាសន្ន";
-    case "UNKNOWN":
-    default:
-      return "មិនទាន់ដឹងស្ថានភាព";
-  }
+/** Current-open label. This is separate from operatingStatus. */
+export function getStoreOpenNowLabel(store: FoodStore): string {
+  return store.isOpenNow ? "បើកឥឡូវនេះ" : "បានបិទឥឡូវនេះ";
 }
 
-export function isStoreOpen(store: FoodStore): boolean {
-  return store.isOpenNow === true || store.operatingStatus === "OPEN";
+export function formatStoreDistance(distanceKm?: number | null): string {
+  if (
+    distanceKm === null ||
+    distanceKm === undefined ||
+    !Number.isFinite(distanceKm)
+  ) {
+    return "មិនទាន់មានចម្ងាយ";
+  }
+
+  if (distanceKm < 1) {
+    return `${Math.max(1, Math.round(distanceKm * 1000))} m`;
+  }
+
+  if (distanceKm < 10) {
+    return `${distanceKm.toFixed(1)} km`;
+  }
+
+  return `${Math.round(distanceKm)} km`;
 }
 
-export function formatStorePriceLevel(
-  value: FoodStore["priceLevel"],
-): string | null {
-  if (value === null || value === undefined || String(value).trim() === "") {
+export function getBackendDistanceKm(store: FoodStore): number | null {
+  if (store.distanceMeters === null || store.distanceMeters === undefined) {
     return null;
   }
 
-  if (typeof value === "number") {
-    if (value <= 0) {
+  const meters = Number(store.distanceMeters);
+
+  if (!Number.isFinite(meters) || meters < 0) {
+    return null;
+  }
+
+  return meters / 1000;
+}
+
+function readUrlCandidate(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const url = value.trim();
+
+  return url.startsWith("http://") || url.startsWith("https://") ? url : null;
+}
+
+/**
+ * Resolve logoMediaUuid / coverMediaUuid into the temporary signed storage URL.
+ *
+ * Frontend:
+ *   GET /api/media/{uuid}/access-url
+ *
+ * Proxy forwards to:
+ *   GET /api/v1/media/{uuid}/access-url
+ *
+ * The signed URL has X-Amz-Expires=300, so resolve it when the card loads.
+ */
+export async function resolveStoreMediaUrl(
+  mediaUuid?: string | null,
+): Promise<string | null> {
+  const uuid = mediaUuid?.trim();
+
+  if (!uuid) {
+    return null;
+  }
+
+  const endpoint = `/api/media/${encodeURIComponent(uuid)}/access-url`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+      },
+      cache: "no-store",
+    });
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      console.warn("[STORE MEDIA] access-url request failed", {
+        endpoint,
+        status: response.status,
+        statusText: response.statusText,
+        response: responseText,
+      });
+
       return null;
     }
 
-    return "$".repeat(Math.min(Math.round(value), 4));
-  }
+    const trimmed = responseText.trim();
 
-  return String(value);
+    if (!trimmed) {
+      return null;
+    }
+
+    // Plain URL response.
+    const directUrl = readUrlCandidate(trimmed);
+    if (directUrl) {
+      return directUrl;
+    }
+
+    try {
+      const parsed: unknown = JSON.parse(trimmed);
+
+      // JSON string: "https://storage..."
+      const stringUrl = readUrlCandidate(parsed);
+      if (stringUrl) {
+        return stringUrl;
+      }
+
+      if (typeof parsed !== "object" || parsed === null) {
+        return null;
+      }
+
+      const record = parsed as Record<string, unknown>;
+      const payload =
+        typeof record.payload === "object" && record.payload !== null
+          ? (record.payload as Record<string, unknown>)
+          : null;
+      const data =
+        typeof record.data === "object" && record.data !== null
+          ? (record.data as Record<string, unknown>)
+          : null;
+
+      const candidates: unknown[] = [
+        record.url,
+        record.accessUrl,
+        record.signedUrl,
+        record.presignedUrl,
+        typeof record.payload === "string" ? record.payload : null,
+        payload?.url,
+        payload?.accessUrl,
+        payload?.signedUrl,
+        payload?.presignedUrl,
+        typeof record.data === "string" ? record.data : null,
+        data?.url,
+        data?.accessUrl,
+        data?.signedUrl,
+        data?.presignedUrl,
+      ];
+
+      for (const candidate of candidates) {
+        const resolved = readUrlCandidate(candidate);
+        if (resolved) {
+          return resolved;
+        }
+      }
+    } catch {
+      console.warn("[STORE MEDIA] Unsupported access-url response", {
+        endpoint,
+        response: trimmed,
+      });
+    }
+
+    return null;
+  } catch (error) {
+    console.warn("[STORE MEDIA] Could not resolve store media", {
+      uuid,
+      endpoint,
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    return null;
+  }
 }

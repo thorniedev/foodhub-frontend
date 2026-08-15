@@ -1,101 +1,143 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-interface KeycloakUser {
-  sub: string;
-  name?: string;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+interface KeycloakClaims {
+  sub?: string;
+
   preferred_username?: string;
+
   email?: string;
   email_verified?: boolean;
+
   given_name?: string;
   family_name?: string;
+
+  exp?: number;
 }
 
-function clearAuthCookies(response: NextResponse) {
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    path: "/",
-    maxAge: 0,
-  };
+function decodeJwt(token: string): KeycloakClaims | null {
+  try {
+    const parts = token.split(".");
 
-  response.cookies.set("access_token", "", options);
-  response.cookies.set("refresh_token", "", options);
-  response.cookies.set("id_token", "", options);
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const payload = Buffer.from(parts[1], "base64url").toString("utf8");
+
+    return JSON.parse(payload) as KeycloakClaims;
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
-  const keycloakUrl =
-    process.env.KEYCLOAK_URL ?? process.env.NEXT_PUBLIC_KEYCLOAK_URL;
+  const idToken = request.cookies.get("foodhub_id_token")?.value;
 
-  const realm =
-    process.env.KEYCLOAK_REALM ?? process.env.NEXT_PUBLIC_KEYCLOAK_REALM;
+  const accessToken = request.cookies.get("foodhub_access_token")?.value;
 
-  if (!keycloakUrl || !realm) {
+  const token = idToken ?? accessToken;
+
+  /*
+   * IMPORTANT:
+   * Logged out is a valid session state.
+   *
+   * Return 200, not 401.
+   */
+  if (!token) {
     return NextResponse.json(
       {
         authenticated: false,
         user: null,
-        message: "Keycloak configuration is missing",
       },
-      { status: 500 },
+      {
+        status: 200,
+
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
     );
   }
 
-  const accessToken = request.cookies.get("access_token")?.value;
+  const claims = decodeJwt(token);
 
-  if (!accessToken) {
-    return NextResponse.json({
-      authenticated: false,
-      user: null,
-    });
+  if (!claims) {
+    return NextResponse.json(
+      {
+        authenticated: false,
+        user: null,
+      },
+      {
+        status: 200,
+
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
   }
 
-  const userInfoUrl = new URL(
-    `/realms/${realm}/protocol/openid-connect/userinfo`,
-    keycloakUrl,
-  );
-
-  try {
-    const userResponse = await fetch(userInfoUrl, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+  /*
+   * Expired session
+   */
+  if (claims.exp && claims.exp * 1000 <= Date.now()) {
+    return NextResponse.json(
+      {
+        authenticated: false,
+        expired: true,
+        user: null,
       },
-      cache: "no-store",
-    });
+      {
+        status: 200,
 
-    if (!userResponse.ok) {
-      const response = NextResponse.json(
-        {
-          authenticated: false,
-          user: null,
+        headers: {
+          "Cache-Control": "no-store",
         },
-        { status: 401 },
-      );
+      },
+    );
+  }
 
-      clearAuthCookies(response);
+  /*
+   * Logged-in Keycloak user
+   */
+  const user = {
+    uuid: claims.sub ?? "",
 
-      return response;
-    }
+    username: claims.preferred_username ?? "",
 
-    const user = (await userResponse.json()) as KeycloakUser;
+    primaryEmail: claims.email ?? "",
 
-    return NextResponse.json({
+    firstName: claims.given_name ?? null,
+
+    lastName: claims.family_name ?? null,
+
+    emailVerified: claims.email_verified ?? false,
+
+    status: "ACTIVE",
+
+    lastLoginAt: null,
+
+    createdAt: null,
+
+    updatedAt: null,
+
+    avatarUrl: null,
+  };
+
+  return NextResponse.json(
+    {
       authenticated: true,
       user,
-    });
-  } catch (error) {
-    console.error("Failed to check authentication:", error);
+    },
+    {
+      status: 200,
 
-    return NextResponse.json(
-      {
-        authenticated: false,
-        user: null,
-        message: "Unable to connect to Keycloak",
+      headers: {
+        "Cache-Control": "no-store",
       },
-      { status: 500 },
-    );
-  }
+    },
+  );
 }

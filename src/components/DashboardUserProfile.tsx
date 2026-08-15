@@ -104,7 +104,7 @@ export default function DashboardUserProfile({
     isError,
     refetch,
   } = useGetCurrentUserQuery();
-
+  console.log("current user data ,", user);
   const [updateCurrentUser, { isLoading: isUpdating }] =
     useUpdateCurrentUserMutation();
 
@@ -249,7 +249,7 @@ export default function DashboardUserProfile({
           type="button"
           aria-label="Open user menu"
           aria-expanded={isMenuOpen}
-          className="group flex max-w-64 items-center gap-2 rounded-xl px-2 py-1.5 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#136C34]/30 dark:hover:bg-slate-800"
+          className="group flex max-w-64 items-center gap-1 rounded-xl px-2 py-1.5 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#136C34]/30 dark:hover:bg-slate-800"
         >
           <div className="relative shrink-0">
             {avatarUrl ? (
@@ -274,9 +274,9 @@ export default function DashboardUserProfile({
               alwaysShowText ? "block" : "hidden sm:block"
             }`}
           >
-            <p className="truncate text-base font-semibold text-slate-700 group-hover:text-[#136C34] dark:text-slate-200">
+            {/* <p className="truncate text-base font-semibold text-slate-700 group-hover:text-[#136C34] dark:text-slate-200">
               {userName}
-            </p>
+            </p> */}
 
             {showEmail && (
               <p className="truncate text-base text-slate-500">
@@ -331,14 +331,14 @@ export default function DashboardUserProfile({
             >
               <UserRound className="h-5 w-5" />
 
-              <span className="flex-1">View profile details</span>
+              <span className="flex-1"> គណនី</span>
             </button>
             <Link
               href="/dashboard"
               className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-base font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-[#136C34] dark:text-slate-200 dark:hover:bg-emerald-950/40"
             >
               <LuLayoutDashboard />
-              <span className="flex-1">Dashboard</span>
+              <span className="flex-1">ផ្ទាំងគ្រប់គ្រង</span>
             </Link>
             <button
               type="button"
@@ -347,7 +347,7 @@ export default function DashboardUserProfile({
             >
               <LogOut className="h-5 w-5" />
 
-              <span className="flex-1">Logout</span>
+              <span className="flex-1">ចាកចេញ</span>
             </button>
           </div>
         </PopoverContent>

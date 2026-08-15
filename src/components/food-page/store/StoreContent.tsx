@@ -12,8 +12,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 
 import { calculateDistanceKm } from "@/lib/location/geo";
 
-import type { MenuItem } from "@/types/manu";
-
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import type { FoodStore, StorePageFilters } from "@/types/store-page";
 
 import StoreFilters from "./StoreFilters";
@@ -23,6 +22,8 @@ import {
   DEFAULT_STORE_FILTERS,
   applyStoreFilters,
   countActiveStoreFilters,
+  formatOperatingStatusLabel,
+  getBackendDistanceKm,
   getStoreFilterOptions,
 } from "./store-page-utils";
 
@@ -31,13 +32,13 @@ type StoreContentProps = {
    * Kept for compatibility with the current parent Food page.
    * Store data itself comes from the real /stores endpoint.
    */
-  menuItems?: MenuItem[];
+  menuItems?: CatalogMenuItem[];
 
   searchQuery?: string;
   onClearSearch?: () => void;
 };
 
-export default function   StoreContent({
+export default function StoreContent({
   searchQuery = "",
   onClearSearch,
 }: StoreContentProps) {
@@ -66,23 +67,23 @@ export default function   StoreContent({
     [storeData],
   );
 
-  const districtOptions = useMemo(
-    () => getStoreFilterOptions(storeData, (store) => store.district),
-    [storeData],
-  );
-
   const provinceOptions = useMemo(
     () => getStoreFilterOptions(storeData, (store) => store.province),
     [storeData],
   );
 
   const operatingStatusOptions = useMemo(
-    () => getStoreFilterOptions(storeData, (store) => store.operatingStatus),
+    () =>
+      getStoreFilterOptions(
+        storeData,
+        (store) => store.operatingStatus,
+        (value) => formatOperatingStatusLabel(value),
+      ),
     [storeData],
   );
 
-  const priceLevelOptions = useMemo(
-    () => getStoreFilterOptions(storeData, (store) => store.priceLevel),
+  const hasAverageRatingData = useMemo(
+    () => storeData.some((store) => Number(store.averageRating ?? 0) > 0),
     [storeData],
   );
 
@@ -98,24 +99,40 @@ export default function   StoreContent({
    * We compute it once here instead of recalculating inside every card.
    */
   const distanceByStoreUuid = useMemo<Record<string, number>>(() => {
-    if (!coordinates) {
-      return {};
-    }
-
-    const userLatitude = Number(coordinates.latitude);
-
-    const userLongitude = Number(coordinates.longitude);
-
-    if (!Number.isFinite(userLatitude) || !Number.isFinite(userLongitude)) {
-      return {};
-    }
-
     return storeData.reduce<Record<string, number>>((result, store) => {
+      /**
+       * Prefer distanceMeters from the list API when present.
+       */
+      const backendDistanceKm = getBackendDistanceKm(store);
+
+      if (backendDistanceKm !== null) {
+        result[store.uuid] = backendDistanceKm;
+
+        return result;
+      }
+
+      /**
+       * Current response returns distanceMeters: null,
+       * so fall back to calculating from the user's position.
+       */
+      if (!coordinates) {
+        return result;
+      }
+
+      const userLatitude = Number(coordinates.latitude);
+
+      const userLongitude = Number(coordinates.longitude);
+
       const storeLatitude = Number(store.latitude);
 
       const storeLongitude = Number(store.longitude);
 
-      if (!Number.isFinite(storeLatitude) || !Number.isFinite(storeLongitude)) {
+      if (
+        !Number.isFinite(userLatitude) ||
+        !Number.isFinite(userLongitude) ||
+        !Number.isFinite(storeLatitude) ||
+        !Number.isFinite(storeLongitude)
+      ) {
         return result;
       }
 
@@ -174,10 +191,9 @@ export default function   StoreContent({
     filters,
     onChange: setFilters,
     cityOptions,
-    districtOptions,
     provinceOptions,
     operatingStatusOptions,
-    priceLevelOptions,
+    hasAverageRatingData,
   };
 
   if (isLoading || isFetching) {
@@ -245,7 +261,7 @@ export default function   StoreContent({
           className="
             mx-auto mt-2
             max-w-lg
-            text-[17px]
+            text-[18px]
             leading-7
             text-gray-500
           "
@@ -264,7 +280,7 @@ export default function   StoreContent({
             rounded-full
             bg-primary-800
             px-6
-            text-[17px]
+            text-[18px]
             font-semibold
             text-white
             transition
@@ -350,7 +366,7 @@ export default function   StoreContent({
             <p
               className="
                 truncate
-                text-[17px]
+                text-[18px]
                 font-medium
                 text-gray-500
               "
@@ -369,7 +385,7 @@ export default function   StoreContent({
                 rounded-full
                 bg-primary-800
                 px-4
-                text-[17px]
+                text-[18px]
                 font-semibold
                 text-white
                 transition
@@ -387,7 +403,7 @@ export default function   StoreContent({
                     rounded-full
                     bg-secondary-500
                     px-1.5
-                    text-[17px]
+                    text-[18px]
                     font-bold
                     text-white
                   "

@@ -61,24 +61,24 @@ function matchesQuery(food: CatalogMenuItem, query?: string): boolean {
   const searchableValues = [
     food.name,
     food.localName,
-    food.foodName,
+    food.food?.canonicalName,
     food.description,
 
     food.store.name,
 
-    food.filterData.category.name,
-    food.filterData.category.code,
+    food.food?.category?.name,
+    food.food?.category?.code,
 
-    food.filterData.cuisine.name,
-    food.filterData.cuisine.code,
+    food.food?.cuisine?.name,
+    food.food?.cuisine?.code,
 
-    ...food.filterData.mealTypes.map((item) => item.name),
+    ...(food.food?.mealTypes ?? []).map((item) => item.name),
 
-    ...food.filterData.mealTypes.map((item) => item.code),
+    ...(food.food?.mealTypes ?? []).map((item) => item.code),
 
-    ...food.filterData.ageGroups.map((item) => item.name),
+    ...(food.food?.ageGroups ?? []).map((item) => item.name),
 
-    ...food.filterData.ageGroups.map((item) => item.code),
+    ...(food.food?.ageGroups ?? []).map((item) => item.code),
   ];
 
   return searchableValues.some((value) =>
@@ -165,31 +165,31 @@ export default function MealTimeRecommandSection({
       // ==========================================
       // MEAL TIME
       // New API:
-      // food.filterData.mealTypes
+      // food.food.mealTypes
       // ==========================================
       const mealMatch =
         activeTab === "all" ||
-        food.filterData.mealTypes.some(
+        (food.food?.mealTypes ?? []).some(
           (meal) => normalizeText(meal.code) === normalizeText(activeTab),
         );
 
       // ==========================================
       // CATEGORY
       // New API:
-      // food.filterData.category
+      // food.food.category
       // ==========================================
       const categoryMatch = matchesGroup(
-        [food.filterData.category.name, food.filterData.category.code],
+        [food.food?.category?.name ?? "", food.food?.category?.code ?? ""],
         filters.food,
       );
 
       // ==========================================
       // AGE GROUP
       // New API:
-      // food.filterData.ageGroups
+      // food.food.ageGroups
       // ==========================================
       const ageMatch = matchesGroup(
-        food.filterData.ageGroups.flatMap((item) => [item.name, item.code]),
+        (food.food?.ageGroups ?? []).flatMap((item) => [item.name, item.code]),
         filters.age,
       );
 
@@ -222,7 +222,7 @@ export default function MealTimeRecommandSection({
     addToHistory({
       uuid: food.uuid,
 
-      name: food.name || food.foodName || "",
+      name: food.name || food.food?.canonicalName || "",
 
       localName: food.localName ?? food.name,
 
@@ -239,7 +239,7 @@ export default function MealTimeRecommandSection({
       <div className="container mx-auto mb-10 max-w-7xl px-4">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-primary-900 md:text-4xl">
-            បទពិសោធន៍ថ្មីក្នុង{" "}
+            បទពិសោធន៍ថ្មីក្នុង
             <TypingAnimation
               words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
               blinkCursor
@@ -274,11 +274,10 @@ export default function MealTimeRecommandSection({
 
                   setActiveTab(tab.id);
                 }}
-                className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
-                  isActive
+                className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${isActive
                     ? "text-primary-700"
                     : "text-gray-400 hover:text-gray-600"
-                }`}
+                  }`}
               >
                 {tab.label}
 

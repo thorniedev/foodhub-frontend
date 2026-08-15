@@ -328,7 +328,7 @@ function FluidTabsTab({
         "transition-colors duration-200",
         "motion-reduce:transition-none",
         isSelected
-          ? "text-primary-800 dark:text-white"
+          ? "text-primary-800 dark:text-primary-dark dark:text-white"
           : "text-primary-700 hover:text-primary-900 dark:text-gray-300 dark:hover:text-white",
         className,
       )}

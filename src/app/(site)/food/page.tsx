@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   IoChevronBack,
   IoChevronDown,
+  IoFilterOutline,
   IoNutritionOutline,
   IoPricetagOutline,
   IoRefresh,
@@ -27,11 +28,20 @@ import LocationContent from "@/components/food-page/location/LocationContent";
 import StoreContent from "@/components/food-page/store/StoreContent";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import {
+  useGetMemberProfileByIdQuery,
+  useGetMemberProfilesQuery,
+} from "@/app/store/memberProfileApi";
+import {
+  getProfileFoodScore,
+  sortFoodsForProfile,
+} from "@/lib/recommendation/profileFoodPreferences";
 
 import type {
   CatalogCodeName,
   CatalogMenuItem,
 } from "@/types/catalog-menu-item";
+import type { MemberProfile } from "@/types/member-profile/member-profile";
 
 /* =========================================================
    TYPES
@@ -57,6 +67,11 @@ type FilterState = {
   dietaryTypeCodes: string[];
   ageGroupCodes: string[];
 
+  seasonCodes: string[];
+  eventCodes: string[];
+  weatherCodes: string[];
+  originCountryCodes: string[];
+
   excludedAllergenCodes: string[];
   storeIds: string[];
   ingredientNames: string[];
@@ -64,6 +79,7 @@ type FilterState = {
 
   availabilityOnly: boolean;
   featuredOnly: boolean;
+  traditionalOnly: boolean;
 
   priceTier: PriceTier;
 
@@ -110,15 +126,15 @@ const SPICE_OPTIONS: NumericOption[] = [
 const PREPARATION_OPTIONS: NumericOption[] = [
   {
     value: 10,
-    label: "ក្រោម 10 នាទី",
-  },
-  {
-    value: 15,
-    label: "ក្រោម 15 នាទី",
+    label: "10 នាទី ឬតិច",
   },
   {
     value: 20,
-    label: "ក្រោម 20 នាទី",
+    label: "20 នាទី ឬតិច",
+  },
+  {
+    value: 30,
+    label: "30 នាទី ឬតិច",
   },
 ];
 
@@ -147,6 +163,11 @@ const DEFAULT_FILTERS: FilterState = {
   dietaryTypeCodes: [],
   ageGroupCodes: [],
 
+  seasonCodes: [],
+  eventCodes: [],
+  weatherCodes: [],
+  originCountryCodes: [],
+
   excludedAllergenCodes: [],
   storeIds: [],
   ingredientNames: [],
@@ -154,6 +175,7 @@ const DEFAULT_FILTERS: FilterState = {
 
   availabilityOnly: true,
   featuredOnly: false,
+  traditionalOnly: false,
 
   priceTier: null,
 
@@ -195,31 +217,68 @@ function matchesPriceTier(price: number, tier: PriceTier): boolean {
 }
 
 function getMealTypes(food: CatalogMenuItem): CatalogCodeName[] {
-  return Array.isArray(food.filterData?.mealTypes)
-    ? food.filterData.mealTypes
-    : [];
+  return Array.isArray(food.food?.mealTypes) ? food.food.mealTypes : [];
 }
 
 function getAgeGroups(food: CatalogMenuItem): CatalogCodeName[] {
-  return Array.isArray(food.filterData?.ageGroups)
-    ? food.filterData.ageGroups
+  return Array.isArray(food.food?.ageGroups) ? food.food.ageGroups : [];
+}
+
+function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.dietaryTypes)
+    ? food.food.dietaryTypes.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
+    : [];
+}
+
+function getSeasons(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.seasons)
+    ? food.food.seasons.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
+    : [];
+}
+
+function getEvents(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.events)
+    ? food.food.events.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
+    : [];
+}
+
+function getSuitableWeather(food: CatalogMenuItem): CatalogCodeName[] {
+  return Array.isArray(food.food?.suitableWeather)
+    ? food.food.suitableWeather.map((item) => ({
+        code: item.code,
+        name: item.name,
+      }))
     : [];
 }
 
 /**
- * Current list type intentionally has unknown[] for these arrays,
- * because the API sample did not prove their inner shape.
+ * The current response now proves allergen objects such as:
  *
- * We only use entries that really contain string code + name.
+ * {
+ *   code: "ត្រី",
+ *   name: "ត្រី",
+ *   declarationType: "CONTAINS",
+ *   riskLevel: "HIGH",
+ *   verificationStatus: "VERIFIED"
+ * }
+ *
+ * CatalogMenuItem still safely allows unknown[] here, so we narrow at runtime.
  */
-function getCodeNameUnknownArray(
-  values: unknown[] | null | undefined,
-): CatalogCodeName[] {
-  if (!Array.isArray(values)) {
+function getAllergens(food: CatalogMenuItem): CatalogCodeName[] {
+  if (!Array.isArray(food.allergenDeclarations)) {
     return [];
   }
 
-  return values.flatMap((value) => {
+  return food.allergenDeclarations.flatMap((value) => {
     if (typeof value !== "object" || value === null) {
       return [];
     }
@@ -239,36 +298,28 @@ function getCodeNameUnknownArray(
   });
 }
 
-function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
-  return getCodeNameUnknownArray(food.dietaryTypes);
-}
-
-function getAllergens(food: CatalogMenuItem): CatalogCodeName[] {
-  return getCodeNameUnknownArray(food.allergenDeclarations);
-}
-
 function getIngredientNames(food: CatalogMenuItem): string[] {
   if (!Array.isArray(food.ingredients)) {
     return [];
   }
 
-  return food.ingredients.flatMap((value) => {
-    if (typeof value === "string") {
-      return [value];
-    }
+  return food.ingredients.filter(
+    (value): value is string =>
+      typeof value === "string" && value.trim().length > 0,
+  );
+}
 
-    if (typeof value === "object" && value !== null) {
-      const record = value as Record<string, unknown>;
+function getOriginCountry(food: CatalogMenuItem): CatalogCodeName | null {
+  const origin = food.origin;
 
-      const candidate = record.name ?? record.ingredientName;
+  if (!origin?.countryCode || !origin?.countryName) {
+    return null;
+  }
 
-      if (typeof candidate === "string") {
-        return [candidate];
-      }
-    }
-
-    return [];
-  });
+  return {
+    code: origin.countryCode,
+    name: origin.countryLocalName?.trim() || origin.countryName,
+  };
 }
 
 /* =========================================================
@@ -282,56 +333,20 @@ function matchesSearch(food: CatalogMenuItem, query: string): boolean {
     return true;
   }
 
-  const mealTypes = getMealTypes(food);
+  /**
+   * Search the same complete CatalogMenuItem object that is passed to FoodCard.
+   * This includes current nested category, cuisine, dietary, age group,
+   * meal type, seasons, events, weather, ingredients, allergens,
+   * nutrition, store, origin, price, preparation time, etc.
+   */
+  const searchableText = normalizeText(JSON.stringify(food));
 
-  const ageGroups = getAgeGroups(food);
+  const tokens = normalizedQuery
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
 
-  const dietaryTypes = getDietaryTypes(food);
-
-  const allergens = getAllergens(food);
-
-  const ingredients = getIngredientNames(food);
-
-  const searchableValues: unknown[] = [
-    food.name,
-    food.localName,
-    food.foodName,
-    food.description,
-    food.source,
-
-    food.price,
-    food.currencyCode,
-
-    food.preparationTimeMinutes,
-    food.availabilityStatus,
-    food.ingredientDataStatus,
-
-    food.store?.name,
-    food.store?.operatingStatus,
-    food.store?.averageRating,
-
-    food.filterData?.category?.code,
-    food.filterData?.category?.name,
-
-    food.filterData?.cuisine?.code,
-    food.filterData?.cuisine?.name,
-
-    food.filterData?.spiceLevel,
-
-    ...mealTypes.flatMap((item) => [item.code, item.name]),
-
-    ...ageGroups.flatMap((item) => [item.code, item.name]),
-
-    ...dietaryTypes.flatMap((item) => [item.code, item.name]),
-
-    ...allergens.flatMap((item) => [item.code, item.name]),
-
-    ...ingredients,
-  ];
-
-  return searchableValues.some((value) =>
-    normalizeText(value).includes(normalizedQuery),
-  );
+  return tokens.every((token) => searchableText.includes(token));
 }
 
 /* =========================================================
@@ -377,6 +392,7 @@ function getUniqueOptions(
 function applyFilters(
   foods: CatalogMenuItem[],
   filters: FilterState,
+  profile?: MemberProfile | null,
 ): CatalogMenuItem[] {
   const filteredFoods = foods.filter((food) => {
     if (filters.availabilityOnly && food.availabilityStatus !== "AVAILABLE") {
@@ -391,7 +407,7 @@ function applyFilters(
       return false;
     }
 
-    const category = food.filterData?.category;
+    const category = food.food?.category;
 
     if (
       filters.categoryCodes.length > 0 &&
@@ -400,7 +416,7 @@ function applyFilters(
       return false;
     }
 
-    const cuisine = food.filterData?.cuisine;
+    const cuisine = food.food?.cuisine;
 
     if (
       filters.cuisineCodes.length > 0 &&
@@ -433,6 +449,47 @@ function applyFilters(
       filters.ageGroupCodes.length > 0 &&
       !ageGroups.some((item) => filters.ageGroupCodes.includes(item.code))
     ) {
+      return false;
+    }
+
+    const seasons = getSeasons(food);
+
+    if (
+      filters.seasonCodes.length > 0 &&
+      !seasons.some((item) => filters.seasonCodes.includes(item.code))
+    ) {
+      return false;
+    }
+
+    const events = getEvents(food);
+
+    if (
+      filters.eventCodes.length > 0 &&
+      !events.some((item) => filters.eventCodes.includes(item.code))
+    ) {
+      return false;
+    }
+
+    const suitableWeather = getSuitableWeather(food);
+
+    if (
+      filters.weatherCodes.length > 0 &&
+      !suitableWeather.some((item) => filters.weatherCodes.includes(item.code))
+    ) {
+      return false;
+    }
+
+    const originCountry = getOriginCountry(food);
+
+    if (
+      filters.originCountryCodes.length > 0 &&
+      (!originCountry ||
+        !filters.originCountryCodes.includes(originCountry.code))
+    ) {
+      return false;
+    }
+
+    if (filters.traditionalOnly && !food.origin?.isTraditional) {
       return false;
     }
 
@@ -469,7 +526,7 @@ function applyFilters(
 
     if (
       filters.spiceLevels.length > 0 &&
-      !filters.spiceLevels.includes(food.filterData?.spiceLevel ?? -1)
+      !filters.spiceLevels.includes(food.food?.spiceLevel ?? -1)
     ) {
       return false;
     }
@@ -496,7 +553,9 @@ function applyFilters(
     return true;
   });
 
-  return [...filteredFoods].sort((first, second) => {
+  const profileSortedFoods = sortFoodsForProfile(filteredFoods, profile);
+
+  return [...profileSortedFoods].sort((first, second) => {
     switch (filters.sortBy) {
       case "rating":
         return (
@@ -527,6 +586,14 @@ function applyFilters(
 
       case "featured":
       default: {
+        const profileScoreDifference =
+          getProfileFoodScore(second, profile) -
+          getProfileFoodScore(first, profile);
+
+        if (profileScoreDifference !== 0) {
+          return profileScoreDifference;
+        }
+
         if (first.isFeatured !== second.isFeatured) {
           return first.isFeatured ? -1 : 1;
         }
@@ -551,6 +618,10 @@ function countActiveFilters(filters: FilterState): number {
     filters.mealTypeCodes.length +
     filters.dietaryTypeCodes.length +
     filters.ageGroupCodes.length +
+    filters.seasonCodes.length +
+    filters.eventCodes.length +
+    filters.weatherCodes.length +
+    filters.originCountryCodes.length +
     filters.excludedAllergenCodes.length +
     filters.storeIds.length +
     filters.ingredientNames.length +
@@ -558,7 +629,8 @@ function countActiveFilters(filters: FilterState): number {
     (filters.priceTier ? 1 : 0) +
     (filters.maximumPreparationMinutes !== null ? 1 : 0) +
     (filters.minimumRating !== null ? 1 : 0) +
-    (filters.featuredOnly ? 1 : 0)
+    (filters.featuredOnly ? 1 : 0) +
+    (filters.traditionalOnly ? 1 : 0)
   );
 }
 
@@ -588,7 +660,7 @@ function FilterSection({
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between text-left"
       >
-        <span className="flex items-center gap-2 text-[16px] font-semibold text-primary-900">
+        <span className="flex items-center gap-2 text-[18px] font-semibold text-primary-900">
           <span className="text-[20px] text-primary-700">{icon}</span>
 
           {title}
@@ -659,11 +731,11 @@ function CheckboxOption({
           className="h-4 w-4 shrink-0 accent-primary-800"
         />
 
-        <span className="truncate text-[16px] text-gray-600">{label}</span>
+        <span className="truncate text-[18px] text-gray-600">{label}</span>
       </span>
 
       {typeof count === "number" && (
-        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[16px] text-gray-500">
+        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[18px] text-gray-500">
           {count}
         </span>
       )}
@@ -697,7 +769,7 @@ function SingleChoice<T extends string | number>({
             key={String(option.value)}
             type="button"
             onClick={() => onChange(isSelected ? null : option.value)}
-            className={`rounded-full border px-3 py-2 text-[16px] transition ${
+            className={`rounded-full border px-3 py-2 text-[18px] transition ${
               isSelected
                 ? "border-primary-800 bg-primary-800 text-white"
                 : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50"
@@ -726,9 +798,26 @@ type FilterSidebarProps = {
   dietaryTypeOptions: FilterOption[];
   ageGroupOptions: FilterOption[];
 
+  seasonOptions: FilterOption[];
+  eventOptions: FilterOption[];
+  weatherOptions: FilterOption[];
+  originCountryOptions: FilterOption[];
+
   allergenOptions: FilterOption[];
   storeOptions: StoreFilterOption[];
   ingredientOptions: FilterOption[];
+  hasPositiveRatingData: boolean;
+
+  /**
+   * Desktop:
+   * - sticky collapsible sidebar
+   *
+   * Mobile/tablet:
+   * - full-height content inside drawer
+   */
+  mobile?: boolean;
+
+  onClose?: () => void;
 };
 
 function FilterSidebar({
@@ -739,9 +828,16 @@ function FilterSidebar({
   mealTypeOptions,
   dietaryTypeOptions,
   ageGroupOptions,
+  seasonOptions,
+  eventOptions,
+  weatherOptions,
+  originCountryOptions,
   allergenOptions,
   storeOptions,
   ingredientOptions,
+  hasPositiveRatingData,
+  mobile = false,
+  onClose,
 }: FilterSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -755,6 +851,11 @@ function FilterSidebar({
     dietaryType: false,
     ageGroup: false,
 
+    seasons: false,
+    events: false,
+    weather: false,
+    origin: false,
+
     allergens: false,
     spice: false,
     preparation: false,
@@ -767,6 +868,13 @@ function FilterSidebar({
   });
 
   const activeFilterCount = countActiveFilters(filters);
+
+  /**
+   * Mobile filter drawer should always show
+   * the complete filter UI. Collapse mode is
+   * desktop-only.
+   */
+  const isCollapsed = mobile ? false : collapsed;
 
   const toggleSection = (key: string) => {
     setOpenSections((previous) => ({
@@ -782,30 +890,38 @@ function FilterSidebar({
   return (
     <motion.aside
       animate={{
-        width: collapsed ? 78 : 300,
+        width: mobile ? "100%" : isCollapsed ? 78 : 300,
       }}
       transition={{
         type: "spring",
         stiffness: 320,
         damping: 34,
       }}
-      className="sticky top-28 hidden h-[calc(100vh-8rem)] shrink-0 self-start lg:block"
+      className={
+        mobile
+          ? "h-full w-full"
+          : "sticky top-28 hidden h-[calc(100vh-8rem)] shrink-0 self-start lg:block"
+      }
     >
-      <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm">
+      <div
+        className={`flex h-full flex-col overflow-hidden bg-white ${
+          mobile ? "" : "rounded-[24px] border border-gray-100 shadow-sm"
+        }`}
+      >
         {/* Header */}
 
         <div
           className={`shrink-0 border-b border-gray-100 bg-white ${
-            collapsed ? "p-3" : "p-5"
+            isCollapsed ? "p-3" : "p-5"
           }`}
         >
           <div
             className={`flex items-center ${
-              collapsed ? "justify-center" : "justify-between"
+              isCollapsed ? "justify-center" : "justify-between"
             }`}
           >
             <AnimatePresence mode="wait" initial={false}>
-              {!collapsed && (
+              {!isCollapsed && (
                 <motion.div
                   key="filter-heading"
                   initial={{
@@ -840,29 +956,40 @@ function FilterSidebar({
               )}
             </AnimatePresence>
 
-            <motion.button
-              type="button"
-              onClick={() => setCollapsed((previous) => !previous)}
-              whileHover={{
-                scale: 1.06,
-              }}
-              whileTap={{
-                scale: 0.9,
-              }}
-              aria-label={collapsed ? "Expand filters" : "Collapse filters"}
-              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
-            >
-              <motion.span
-                animate={{
-                  rotate: collapsed ? 180 : 0,
-                }}
+            {mobile ? (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close food filters"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-[26px] leading-none text-gray-500 transition hover:bg-gray-100"
               >
-                <IoChevronBack className="text-[21px]" />
-              </motion.span>
-            </motion.button>
+                ×
+              </button>
+            ) : (
+              <motion.button
+                type="button"
+                onClick={() => setCollapsed((previous) => !previous)}
+                whileHover={{
+                  scale: 1.06,
+                }}
+                whileTap={{
+                  scale: 0.9,
+                }}
+                aria-label={isCollapsed ? "Expand filters" : "Collapse filters"}
+                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+              >
+                <motion.span
+                  animate={{
+                    rotate: isCollapsed ? 180 : 0,
+                  }}
+                >
+                  <IoChevronBack className="text-[21px]" />
+                </motion.span>
+              </motion.button>
+            )}
           </div>
 
-          {!collapsed && (
+          {!isCollapsed && (
             <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2.5">
               <p className="text-[16px] text-gray-500">
                 {activeFilterCount} តម្រងបានជ្រើស
@@ -880,7 +1007,7 @@ function FilterSidebar({
           )}
         </div>
 
-        {collapsed ? (
+        {isCollapsed ? (
           <div className="flex flex-1 flex-col items-center gap-3 overflow-y-auto px-3 py-4">
             {[
               {
@@ -946,10 +1073,10 @@ function FilterSidebar({
             >
               <div className="flex flex-col gap-2">
                 {[
-                  {
-                    label: "មុខម្ហូបពិសេស",
-                    value: "featured",
-                  },
+                  // {
+                  //   label: "មុខម្ហូបពិសេស",
+                  //   value: "featured",
+                  // },
                   {
                     label: "ចំណាត់ថ្នាក់ខ្ពស់",
                     value: "rating",
@@ -978,7 +1105,7 @@ function FilterSidebar({
                       key={option.value}
                       className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
                         isSelected
-                          ? "border-primary-200 bg-primary-50 text-primary-800"
+                          ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
                           : "border-transparent text-gray-600 hover:bg-gray-50"
                       }`}
                     >
@@ -995,7 +1122,7 @@ function FilterSidebar({
                         className="h-4 w-4 shrink-0 accent-primary-800"
                       />
 
-                      <span className="text-[16px]">{option.label}</span>
+                      <span className="text-[18px]">{option.label}</span>
                     </label>
                   );
                 })}
@@ -1017,7 +1144,7 @@ function FilterSidebar({
                   value={categoryQuery}
                   onChange={(event) => setCategoryQuery(event.target.value)}
                   placeholder="ស្វែងរកប្រភេទម្ហូប"
-                  className="w-full bg-transparent text-[16px] text-gray-600 outline-none placeholder:text-gray-400"
+                  className="w-full bg-transparent text-[18px] text-gray-600 outline-none placeholder:text-gray-400"
                 />
               </div>
 
@@ -1171,6 +1298,141 @@ function FilterSidebar({
               </FilterSection>
             )}
 
+            {/* SEASONS */}
+
+            {seasonOptions.length > 0 && (
+              <FilterSection
+                title="រដូវកាល"
+                icon={<IoTimeOutline />}
+                isOpen={openSections.seasons}
+                onToggle={() => toggleSection("seasons")}
+              >
+                <div className="space-y-1">
+                  {seasonOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.seasonCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          seasonCodes: toggleInList(
+                            filters.seasonCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* EVENTS */}
+
+            {eventOptions.length > 0 && (
+              <FilterSection
+                title="ឱកាស និងព្រឹត្តិការណ៍"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.events}
+                onToggle={() => toggleSection("events")}
+              >
+                <div className="space-y-1">
+                  {eventOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.eventCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          eventCodes: toggleInList(
+                            filters.eventCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* SUITABLE WEATHER */}
+
+            {weatherOptions.length > 0 && (
+              <FilterSection
+                title="អាកាសធាតុសមស្រប"
+                icon={<FaFire />}
+                isOpen={openSections.weather}
+                onToggle={() => toggleSection("weather")}
+              >
+                <div className="space-y-1">
+                  {weatherOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.weatherCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          weatherCodes: toggleInList(
+                            filters.weatherCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* ORIGIN */}
+
+            {originCountryOptions.length > 0 && (
+              <FilterSection
+                title="ប្រភពដើម"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.origin}
+                onToggle={() => toggleSection("origin")}
+              >
+                <div className="space-y-1">
+                  {originCountryOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.originCountryCodes.includes(option.code)}
+                      onChange={() =>
+                        onChange({
+                          ...filters,
+                          originCountryCodes: toggleInList(
+                            filters.originCountryCodes,
+                            option.code,
+                          ),
+                        })
+                      }
+                    />
+                  ))}
+
+                  <CheckboxOption
+                    label="ម្ហូបប្រពៃណី"
+                    checked={filters.traditionalOnly}
+                    onChange={() =>
+                      onChange({
+                        ...filters,
+                        traditionalOnly: !filters.traditionalOnly,
+                      })
+                    }
+                  />
+                </div>
+              </FilterSection>
+            )}
+
             {/* ALLERGENS */}
 
             {allergenOptions.length > 0 && (
@@ -1180,7 +1442,7 @@ function FilterSidebar({
                 isOpen={openSections.allergens}
                 onToggle={() => toggleSection("allergens")}
               >
-                <p className="mb-3 text-[16px] leading-7 text-orange-600">
+                <p className="mb-3 text-[18px] leading-7 text-orange-600">
                   មុខម្ហូបដែលមានអាឡែស៊ីដែលបានជ្រើសនឹងត្រូវដកចេញ។
                 </p>
 
@@ -1262,23 +1524,25 @@ function FilterSidebar({
 
             {/* RATING */}
 
-            <FilterSection
-              title="ការវាយតម្លៃ"
-              icon={<FaStar />}
-              isOpen={openSections.rating}
-              onToggle={() => toggleSection("rating")}
-            >
-              <SingleChoice
-                options={RATING_OPTIONS}
-                selected={filters.minimumRating}
-                onChange={(value) =>
-                  onChange({
-                    ...filters,
-                    minimumRating: value,
-                  })
-                }
-              />
-            </FilterSection>
+            {hasPositiveRatingData && (
+              <FilterSection
+                title="ការវាយតម្លៃ"
+                icon={<FaStar />}
+                isOpen={openSections.rating}
+                onToggle={() => toggleSection("rating")}
+              >
+                <SingleChoice
+                  options={RATING_OPTIONS}
+                  selected={filters.minimumRating}
+                  onChange={(value) =>
+                    onChange({
+                      ...filters,
+                      minimumRating: value,
+                    })
+                  }
+                />
+              </FilterSection>
+            )}
 
             {/* STORES */}
 
@@ -1525,7 +1789,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid max-w-4xl grid-cols-1 gap-x-10 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
+      className="grid place-items-center grid-cols-1  max-w-4xl gap-10 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -1595,6 +1859,8 @@ export default function FoodPage() {
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
   const {
     data: menuItems = [],
     isLoading,
@@ -1603,6 +1869,22 @@ export default function FoodPage() {
     error,
     refetch,
   } = useGetMenuItemsQuery();
+
+  const { data: profileResponse } = useGetMemberProfilesQuery({
+    page: 0,
+    size: 100,
+  });
+
+  const defaultProfile = useMemo(
+    () =>
+      profileResponse?.contents.find((profile) => profile.isDefault) ?? null,
+    [profileResponse],
+  );
+
+  const { data: memberProfile } = useGetMemberProfileByIdQuery(
+    defaultProfile?.uuid ?? "",
+    { skip: !defaultProfile?.uuid },
+  );
 
   /* =======================================================
      SEARCH DEBOUNCE
@@ -1622,14 +1904,14 @@ export default function FoodPage() {
   }, [searchInput]);
 
   /* =======================================================
-     OPTIONS FROM NEW filterData
+     OPTIONS FROM CURRENT API RESPONSE
   ======================================================= */
 
   const categoryOptions = useMemo(
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) => {
-          const category = item.filterData?.category;
+          const category = item.food?.category;
 
           return category
             ? [
@@ -1648,7 +1930,7 @@ export default function FoodPage() {
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) => {
-          const cuisine = item.filterData?.cuisine;
+          const cuisine = item.food?.cuisine;
 
           return cuisine
             ? [
@@ -1675,6 +1957,34 @@ export default function FoodPage() {
 
   const ageGroupOptions = useMemo(
     () => getUniqueOptions(menuItems.flatMap((item) => getAgeGroups(item))),
+    [menuItems],
+  );
+
+  const seasonOptions = useMemo(
+    () => getUniqueOptions(menuItems.flatMap((item) => getSeasons(item))),
+    [menuItems],
+  );
+
+  const eventOptions = useMemo(
+    () => getUniqueOptions(menuItems.flatMap((item) => getEvents(item))),
+    [menuItems],
+  );
+
+  const weatherOptions = useMemo(
+    () =>
+      getUniqueOptions(menuItems.flatMap((item) => getSuitableWeather(item))),
+    [menuItems],
+  );
+
+  const originCountryOptions = useMemo(
+    () =>
+      getUniqueOptions(
+        menuItems.flatMap((item) => {
+          const origin = getOriginCountry(item);
+
+          return origin ? [origin] : [];
+        }),
+      ),
     [menuItems],
   );
 
@@ -1722,13 +2032,18 @@ export default function FoodPage() {
     [menuItems],
   );
 
+  const hasPositiveRatingData = useMemo(
+    () => menuItems.some((item) => Number(item.store?.averageRating ?? 0) > 0),
+    [menuItems],
+  );
+
   /* =======================================================
      FILTERED FOOD
   ======================================================= */
 
   const filteredFoods = useMemo(
-    () => applyFilters(menuItems, filters),
-    [menuItems, filters],
+    () => applyFilters(menuItems, filters, memberProfile),
+    [menuItems, filters, memberProfile],
   );
 
   /**
@@ -1741,6 +2056,44 @@ export default function FoodPage() {
   );
 
   const activeFilterCount = countActiveFilters(filters);
+
+  /* =======================================================
+     MOBILE FILTER DRAWER
+  ======================================================= */
+
+  useEffect(() => {
+    if (!mobileFiltersOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileFiltersOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [mobileFiltersOpen]);
+
+  /**
+   * Do not leave the Food filter drawer
+   * open when switching to Location/Store.
+   */
+  useEffect(() => {
+    if (activePageTab !== "food") {
+      setMobileFiltersOpen(false);
+    }
+  }, [activePageTab]);
 
   /* =======================================================
      SHARED SEARCH
@@ -1852,14 +2205,51 @@ export default function FoodPage() {
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     {renderSearch()}
 
+                    {/* Mobile / tablet Food filter button */}
+                    <button
+                      type="button"
+                      onClick={() => setMobileFiltersOpen(true)}
+                      className="
+                        relative
+                        flex
+                        min-h-[56px]
+                        shrink-0
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-full
+                        bg-primary-800
+                        px-5
+                        text-[16px]
+                        font-semibold
+                        text-white
+                        shadow-sm
+                        transition
+                        hover:bg-primary-700
+                        active:scale-[0.98]
+                        lg:hidden
+                      "
+                      aria-label="Open food filters"
+                    >
+                      <IoFilterOutline className="text-[21px]" />
+
+                      <span>តម្រង</span>
+
+                      {activeFilterCount > 0 && (
+                        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary-500 px-1.5 text-[14px] font-bold text-white">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </button>
+
                     <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
                       <FaStar className="text-[20px] text-yellow-500" />
 
-                      <p className="text-[16px] text-primary-800">
-                        រកឃើញ{" "}
+                      <p className="text-[16px] text-primary-800 dark:text-primary-dark">
+                        រកឃើញ
                         <span className="font-semibold">
                           {filteredFoods.length}
-                        </span>{" "}
+                        </span>
                         មុខម្ហូប
                       </p>
                     </div>
@@ -1889,9 +2279,14 @@ export default function FoodPage() {
                     mealTypeOptions={mealTypeOptions}
                     dietaryTypeOptions={dietaryTypeOptions}
                     ageGroupOptions={ageGroupOptions}
+                    seasonOptions={seasonOptions}
+                    eventOptions={eventOptions}
+                    weatherOptions={weatherOptions}
+                    originCountryOptions={originCountryOptions}
                     allergenOptions={allergenOptions}
                     storeOptions={storeOptions}
                     ingredientOptions={ingredientOptions}
+                    hasPositiveRatingData={hasPositiveRatingData}
                   />
 
                   <main className="min-w-0 flex-1">
@@ -1908,7 +2303,7 @@ export default function FoodPage() {
 
                     {/* FEATURED */}
 
-                    {featuredFoods.length > 0 && (
+                    {/* {featuredFoods.length > 0 && (
                       <section className="mt-8">
                         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                           <div>
@@ -1928,16 +2323,16 @@ export default function FoodPage() {
 
                         <FoodGrid foods={featuredFoods} />
                       </section>
-                    )}
+                    )} */}
 
                     {/* ALL FOODS */}
 
-                    <section className="mt-12">
+                    <section className="mt-6">
                       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                         <div>
-                          <p className="text-[16px] font-semibold text-secondary-500">
+                          {/* <p className="text-[16px] font-semibold text-secondary-500">
                             មុខម្ហូបទាំងអស់
-                          </p>
+                          </p> */}
 
                           <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
                             ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
@@ -1945,7 +2340,7 @@ export default function FoodPage() {
                         </div>
 
                         <p className="text-[16px] text-gray-500 dark:text-gray-50">
-                          បង្ហាញ {filteredFoods.length} ក្នុងចំណោម{" "}
+                          បង្ហាញ {filteredFoods.length} ក្នុងចំណោម
                           {menuItems.length}
                         </p>
                       </div>
@@ -1953,12 +2348,12 @@ export default function FoodPage() {
                       <FoodGrid foods={filteredFoods} />
                     </section>
 
-                    <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-500 px-6 py-12 text-center text-white">
+                    <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
                       <p className="text-[28px] font-semibold md:text-[36px]">
                         បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
                       </p>
 
-                      <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-8 text-white/80">
+                      <p className="mx-auto mt-3 max-w-2xl text-[16px]  lg:text-xl leading-8 text-white/80">
                         ស្វែងរកមុខម្ហូបដែលសមនឹងចំណូលចិត្ត តម្លៃ ពេលរៀបចំ
                         ប្រភេទម្ហូប និងហាងដែលអ្នកចូលចិត្ត។
                       </p>
@@ -1967,6 +2362,109 @@ export default function FoodPage() {
                 </div>
               </motion.div>
             )}
+
+            {/* =================================================
+                MOBILE / TABLET FOOD FILTER DRAWER
+            ================================================= */}
+
+            <AnimatePresence>
+              {activePageTab === "food" && mobileFiltersOpen && (
+                <motion.div
+                  key="food-mobile-filter-drawer"
+                  initial={{
+                    opacity: 0,
+                  }}
+                  animate={{
+                    opacity: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                  }}
+                  className="fixed inset-0 z-[120] lg:hidden"
+                >
+                  {/* Overlay */}
+
+                  <motion.button
+                    type="button"
+                    aria-label="Close food filters"
+                    initial={{
+                      opacity: 0,
+                    }}
+                    animate={{
+                      opacity: 1,
+                    }}
+                    exit={{
+                      opacity: 0,
+                    }}
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="absolute inset-0 cursor-default bg-black/45 backdrop-blur-[2px]"
+                  />
+
+                  {/* Drawer */}
+
+                  <motion.div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Food filters"
+                    initial={{
+                      y: "100%",
+                    }}
+                    animate={{
+                      y: 0,
+                    }}
+                    exit={{
+                      y: "100%",
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 320,
+                      damping: 32,
+                    }}
+                    className="
+                        absolute
+                        inset-x-0
+                        bottom-0
+                        h-[90dvh]
+                        overflow-hidden
+                        rounded-t-[30px]
+                        bg-white
+                        shadow-2xl
+
+                        sm:left-auto
+                        sm:right-0
+                        sm:top-0
+                        sm:h-full
+                        sm:w-[390px]
+                        sm:rounded-none
+                        sm:rounded-l-[30px]
+                      "
+                  >
+                    <FilterSidebar
+                      mobile
+                      filters={filters}
+                      onChange={setFilters}
+                      categoryOptions={categoryOptions}
+                      cuisineOptions={cuisineOptions}
+                      mealTypeOptions={mealTypeOptions}
+                      dietaryTypeOptions={dietaryTypeOptions}
+                      ageGroupOptions={ageGroupOptions}
+                      seasonOptions={seasonOptions}
+                      eventOptions={eventOptions}
+                      weatherOptions={weatherOptions}
+                      originCountryOptions={originCountryOptions}
+                      allergenOptions={allergenOptions}
+                      storeOptions={storeOptions}
+                      ingredientOptions={ingredientOptions}
+                      hasPositiveRatingData={hasPositiveRatingData}
+                      onClose={() => setMobileFiltersOpen(false)}
+                    />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* =================================================
                 LOCATION TAB
@@ -2004,7 +2502,10 @@ export default function FoodPage() {
                   {renderSearch()}
                 </section>
 
-                <LocationContent menuItems={[]} searchQuery={searchInput} />
+                <LocationContent
+                  menuItems={menuItems}
+                  searchQuery={searchInput}
+                />
               </motion.div>
             )}
 

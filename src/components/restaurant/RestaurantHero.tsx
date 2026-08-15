@@ -95,7 +95,7 @@
 //             <span
 //               className={`rounded-full px-3 py-1 text-xs font-semibold ${
 //                 restaurant.isOpen
-//                   ? "bg-white text-primary-800"
+//                   ? "bg-white text-primary-800 dark:text-primary-dark"
 //                   : "bg-black/25 text-white"
 //               }`}
 //             >
@@ -206,7 +206,7 @@ export default function RestaurantHero({ restaurant }: Props) {
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold ${
             restaurant.isOpen
-              ? "bg-white text-primary-800"
+              ? "bg-white text-primary-800 dark:text-primary-dark"
               : "bg-black/25 text-white"
           }`}
         >
