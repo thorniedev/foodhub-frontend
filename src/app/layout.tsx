@@ -8,7 +8,7 @@ import Providers from "@/app/store/Providers";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import Preloader from "@/components/ui/Preloader";
-
+import PWARegister from "@/components/providers/PWARegister";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -39,6 +39,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-full dark:bg-slate-950   overflow-x-hidden flex flex-col"
       >
+        <PWARegister />
         {/* <AOSInit /> */}
         {/* <Navbar /> */}
         <Preloader />

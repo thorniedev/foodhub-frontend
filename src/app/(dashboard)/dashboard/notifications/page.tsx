@@ -7,6 +7,7 @@ import NotificationSummaryCards from "@/components/dashboard/notifications/Notif
 import NotificationFilters from "@/components/dashboard/notifications/NotificationFilters";
 import NotificationGroup from "@/components/dashboard/notifications/NotificationGroup";
 import NotificationsEmptyState from "@/components/dashboard/notifications/NotificationsEmptyState";
+import PushNotificationManager from "@/components/dashboard/notifications/PushNotificationManager";
 import {
   notifications as initialNotifications,
   summaryCards,
@@ -70,6 +71,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
+      <PushNotificationManager />
       <NotificationsHeader
         unreadCount={unreadCount}
         onMarkAllRead={handleMarkAllRead}
