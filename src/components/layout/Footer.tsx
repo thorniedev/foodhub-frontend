@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FaFacebookF, FaTwitter, FaYoutube } from "react-icons/fa";
+import MarqueeSection from "../about/MarqueeSection";
 
 const quickLinks = [
   { label: "ទំព័រដើម", href: "/" },
@@ -30,6 +31,7 @@ export default function Footer() {
   return (
     <footer className=" w-full">
       {/* Main footer */}
+      
       <div className="">
         <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
           <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1fr_0.7fr_2fr] xl:gap-16">

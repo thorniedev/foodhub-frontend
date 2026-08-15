@@ -115,9 +115,9 @@ function toLocationMenuItem(item: CatalogMenuItem): MenuItem {
 
   const ingredients = Array.isArray(item.ingredients)
     ? item.ingredients.filter(
-        (value): value is string =>
-          typeof value === "string" && value.trim().length > 0,
-      )
+      (value): value is string =>
+        typeof value === "string" && value.trim().length > 0,
+    )
     : [];
 
   const recommendationScore = Number(item.recommendation?.finalScore ?? 0);
@@ -226,10 +226,10 @@ function toLocationMenuItem(item: CatalogMenuItem): MenuItem {
      */
     origin: item.origin
       ? {
-          provinceCode: item.origin.provinceCode,
-          provinceName: item.origin.provinceName,
-          provinceLocalName: item.origin.provinceLocalName,
-        }
+        provinceCode: item.origin.provinceCode,
+        provinceName: item.origin.provinceName,
+        provinceLocalName: item.origin.provinceLocalName,
+      }
       : undefined,
 
     recommendationContext: {

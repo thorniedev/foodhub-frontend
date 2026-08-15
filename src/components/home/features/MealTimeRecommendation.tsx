@@ -274,11 +274,10 @@ export default function MealTimeRecommandSection({
 
                   setActiveTab(tab.id);
                 }}
-                className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
-                  isActive
+                className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${isActive
                     ? "text-primary-700"
                     : "text-gray-400 hover:text-gray-600"
-                }`}
+                  }`}
               >
                 {tab.label}
 

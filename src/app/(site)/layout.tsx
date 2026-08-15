@@ -1,3 +1,4 @@
+import MarqueeSection from "@/components/about/MarqueeSection";
 import Model from "@/components/home/features/Model";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
@@ -13,6 +14,7 @@ export default function SiteLayout({
       <Navbar />
       {children}
       <footer>
+        <MarqueeSection />
         <DrawCircleText />
         <Footer />
       </footer>

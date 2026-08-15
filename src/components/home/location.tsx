@@ -42,7 +42,7 @@ export const CircularBadge = () => (
 );
 export default function LocationSection() {
   return (
-    <section className="container md:pb-30 max-md:pb-60 flex  max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center mx-auto max-w-7xl">
+    <section className="container md:pb-30 max-md:pb-60 flex  max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center lg:pt-6 mx-auto max-w-7xl">
       <div className="flex  relative  flex-col gap-12.5">
         <p className="lg:text-7xl md:text-[38px] max-md:text-[30px] font-bold  text-primary-800 dark:text-primary-dark">
           ស្វែងរកមុខម្ហូបនៅ

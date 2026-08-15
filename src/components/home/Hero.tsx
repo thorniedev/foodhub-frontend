@@ -1857,6 +1857,7 @@
 //     </section>
 //   );
 // }
+
 "use client";
 
 import Image from "next/image";
@@ -2210,8 +2211,8 @@ export default function Hero() {
   }, [heroImageLoaded, reduceMotion]);
 
   return (
-    <section className="relative overflow-hidden">
-      <section className="relative overflow-hidden">
+    <section className="relative overflow-visible">
+      <section className="relative overflow-visible container max-w-7xl mx-auto">
         <div
           className="
           container relative mx-auto
@@ -2225,7 +2226,7 @@ export default function Hero() {
 
           md:mt-10
           md:py-20
-
+          overflow-visible
           max-md:py-55
         "
         >
@@ -2253,7 +2254,7 @@ export default function Hero() {
               rotate: 0,
             }}
             transition={enter(REVEAL.decorate)}
-            className="absolute left-10 top-25 z-10 w-20"
+            className="absolute md:left-6 top-3 lg:left-10 lg:top-25 z-10 w-20"
           >
             <motion.div
               {...(reduceMotion
@@ -2305,7 +2306,7 @@ export default function Hero() {
               scale: 1,
             }}
             transition={enter(REVEAL.heroImage)}
-            className="z-1"
+            className="z-1 relative"
           >
             <motion.div
               {...(reduceMotion
@@ -2339,125 +2340,129 @@ export default function Hero() {
                 }}
               />
             </motion.div>
-          </motion.div>
-
-          {/* =====================================================
+            {/* =====================================================
             LEFT VECTOR
         ====================================================== */}
 
-          <motion.div
-            initial={
-              reduceMotion
-                ? false
-                : {
-                    opacity: 0,
-                    x: -30,
-                    y: 15,
-                    scale: 0.85,
-                  }
-            }
-            animate={{
-              opacity: 1,
-              x: 0,
-              y: 0,
-              scale: 1,
-            }}
-            transition={enter(REVEAL.leftVector)}
-            className="
+            <motion.div
+              initial={
+                reduceMotion
+                  ? false
+                  : {
+                      opacity: 0,
+                      x: -30,
+                      y: 15,
+                      scale: 0.85,
+                    }
+              }
+              animate={{
+                opacity: 1,
+                x: 0,
+                y: 0,
+                scale: 1,
+              }}
+              transition={enter(REVEAL.leftVector)}
+              className="
             absolute
 
-            lg:bottom-3
-            lg:left-0
+            lg:mt-30
+            lg:-ml-40
+     min-md:-ml-25
+     min-md:-mt-25
 
-            md:bottom-15
-            md:left-0
-
+            z-20
             max-md:right-0
             max-md:mt-15
           "
-          >
-            <motion.div
-              {...(reduceMotion
-                ? {}
-                : float({
-                    y: 10,
-                    yDuration: 2.5,
-                    rotate: [0, 10, 0, -10, 0],
-                    rotateDuration: 5,
-                    start: endOf(REVEAL.leftVector),
-                  }))}
-              style={{
-                willChange: "transform",
-              }}
             >
-              <Image
-                className="
-                max-md:w-10
+              <motion.div
+                {...(reduceMotion
+                  ? {}
+                  : float({
+                      y: 10,
+                      yDuration: 2.5,
+                      rotate: [0, 10, 0, -10, 0],
+                      rotateDuration: 5,
+                      start: endOf(REVEAL.leftVector),
+                    }))}
+                style={{
+                  willChange: "transform",
+                }}
+              >
+                <Image
+                  className="
+                max-md:w-8
                 max-md:-rotate-90
+              
               "
-                src="/Image/left-vector.png"
-                alt=""
-                width={103}
-                height={97}
-              />
+                  src="/Image/left-vector.png"
+                  alt=""
+                  width={103}
+                  height={97}
+                />
+              </motion.div>
             </motion.div>
-          </motion.div>
 
-          {/* =====================================================
+            {/* =====================================================
             RIGHT VECTOR
         ====================================================== */}
 
-          <motion.div
-            initial={
-              reduceMotion
-                ? false
-                : {
-                    opacity: 0,
-                    x: 30,
-                    y: 15,
-                    scale: 0.85,
-                  }
-            }
-            animate={{
-              opacity: 1,
-              x: 0,
-              y: 0,
-              scale: 1,
-            }}
-            transition={enter(REVEAL.rightVector)}
-            className="
+            <motion.div
+              initial={
+                reduceMotion
+                  ? false
+                  : {
+                      opacity: 0,
+                      x: 30,
+                      y: 15,
+                      scale: 0.85,
+                    }
+              }
+              animate={{
+                opacity: 1,
+                x: 0,
+                y: 0,
+                scale: 1,
+              }}
+              transition={enter(REVEAL.rightVector)}
+              className="
             absolute
             top-12
-
-            md:right-0
-
+            md:right-3
+            lg:-mt-35
+            lg:-mr-40
+            min-md:-mt-35
+            min-md:-mr-35
             max-md:left-0
           "
-          >
-            <motion.div
-              {...(reduceMotion
-                ? {}
-                : float({
-                    y: 10,
-                    yDuration: 2.75,
-                    rotate: [0, -10, 0, 10, 0],
-                    rotateDuration: 5.5,
-                    start: endOf(REVEAL.rightVector),
-                  }))}
-              style={{
-                willChange: "transform",
-              }}
             >
-              <Image
-                className="
+              <motion.div
+                {...(reduceMotion
+                  ? {}
+                  : float({
+                      y: 10,
+                      yDuration: 2.75,
+                      rotate: [0, -10, 0, 10, 0],
+                      rotateDuration: 5.5,
+                      start: endOf(REVEAL.rightVector),
+                    }))}
+                style={{
+                  willChange: "transform",
+                }}
+              >
+                <Image
+                  className="
                 max-md:w-10
                 max-md:-rotate-30
+            
+                max-w-[110px]
               "
-                src="/Image/right-vector.png"
-                alt=""
-                width={131}
-                height={114}
-              />
+                  src="/Image/right-vector.png"
+                  alt=""
+                  width={131}
+                  height={114}
+                />
+              </motion.div>
             </motion.div>
           </motion.div>
 
@@ -3041,11 +3046,10 @@ export default function Hero() {
         relative
         mx-auto
         grid
-        max-w-7xl
+        lg:max-w-7xl
         grid-cols-1
         gap-6
-
-        md:grid-cols-3
+        lg:grid-cols-3
         md:gap-8
       "
           >
@@ -3208,8 +3212,8 @@ export default function Hero() {
                   variants={labelIn}
                   className="
               absolute
-              right-2 top-1/2 z-20
-              -translate-y-1/2
+              lg:right-2 top-1/2 z-20
+              -translate-y-1/2 md:right-44
               rounded-xl
               bg-secondary-400
               px-3 py-2
@@ -3231,9 +3235,12 @@ export default function Hero() {
                 variants={arrowIn}
                 className="
             absolute
-            -right-12 bottom-8 z-30
-            hidden h-16 w-16
+            lg:-right-12 bottom-8 z-40
+            hidden h-16 w-16 lg:bottom-20
             md:block
+            md:-bottom-15
+            lg:rotate-0
+            md:rotate-120
           "
               >
                 <motion.img
@@ -3395,9 +3402,10 @@ export default function Hero() {
                 variants={arrowIn}
                 className="
             absolute
-            -right-12 bottom-8 z-30
+            md:-bottom-13 lg:-right-12 bottom-8 z-40
             hidden h-16 w-16
-            md:block
+            md:block lg:bottom-20
+            md:rotate-120 lg:rotate-0
           "
               >
                 <motion.img

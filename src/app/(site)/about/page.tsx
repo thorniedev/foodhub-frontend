@@ -22,7 +22,7 @@ export default function AboutPage() {
         <StatsSection />
         <TechnologiesSection />
         {/* <WhyChooseUsSection /> */}
-        <MarqueeSection />
+       
         <GoalsSection />
         <HowToUseSection />
         {/* <MarqueeSection /> */}

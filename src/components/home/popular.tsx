@@ -180,7 +180,7 @@ export default function PopularSection() {
       >
         <motion.p
           variants={riseReveal}
-          className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark"
+          className="lg:text-6xl  py-6 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark"
         >
           បទពិសោធន៍ថ្មីក្នុង
           <span className="text-secondary-500">ការស្វែងរកអាហារ</span>

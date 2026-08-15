@@ -23,8 +23,7 @@ export default function SeasonSection() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section>
-      
+    <section className="lg:pt-8">
       <motion.div
         initial={reduceMotion ? false : "hidden"}
         whileInView="show"

@@ -61,7 +61,7 @@ export default function MealsByAgeSection() {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
               whileHover={{ y: -4 }}
-              className="group flex flex-col items-center text-center rounded-3xl border border-slate-200/80
+              className="group flex flex-col items-center text-center rounded-[2rem] border border-slate-200/80
                          bg-white px-6 py-10 sm:py-12 shadow-sm hover:shadow-lg
                          transition-shadow duration-300 cursor-pointer
                          sm:[&:last-child]:col-span-2 lg:[&:last-child]:col-span-1"
