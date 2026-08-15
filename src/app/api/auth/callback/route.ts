@@ -23,7 +23,6 @@ function createLoginErrorResponse(
   const loginUrl = new URL("/login", request.url);
 
   loginUrl.searchParams.set("error", error);
-
   loginUrl.searchParams.set("error_description", description);
 
   const response = NextResponse.redirect(loginUrl);
@@ -36,17 +35,10 @@ function createLoginErrorResponse(
 export async function GET(request: NextRequest) {
   try {
     const config = getAuthConfig();
-
     const endpoints = getKeycloakEndpoints();
-
     const searchParams = request.nextUrl.searchParams;
 
-    // ============================================
-    // KEYCLOAK ERROR
-    // ============================================
-
     const keycloakError = searchParams.get("error");
-
     const keycloakErrorDescription = searchParams.get("error_description");
 
     if (keycloakError) {
@@ -57,16 +49,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ============================================
-    // CALLBACK VALUES
-    // ============================================
-
     const code = searchParams.get("code");
-
     const receivedState = searchParams.get("state");
 
     const expectedState = request.cookies.get(AUTH_COOKIES.oauthState)?.value;
-
     const codeVerifier = request.cookies.get(AUTH_COOKIES.codeVerifier)?.value;
 
     const returnTo = safeReturnTo(
@@ -76,23 +62,14 @@ export async function GET(request: NextRequest) {
 
     console.log("[KEYCLOAK CALLBACK]", {
       hasCode: Boolean(code),
-
       hasReceivedState: Boolean(receivedState),
-
       hasExpectedState: Boolean(expectedState),
-
       stateMatches: Boolean(
         receivedState && expectedState && receivedState === expectedState,
       ),
-
       hasCodeVerifier: Boolean(codeVerifier),
-
       returnTo,
     });
-
-    // ============================================
-    // VALIDATION
-    // ============================================
 
     if (!code) {
       return createLoginErrorResponse(
@@ -118,24 +95,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ============================================
-    // EXCHANGE CODE FOR TOKENS
-    // ============================================
-
     const redirectUri = `${config.appUrl}/api/auth/callback`;
 
     const tokenBody = new URLSearchParams();
 
     tokenBody.set("grant_type", "authorization_code");
-
     tokenBody.set("client_id", config.clientId);
-
     tokenBody.set("client_secret", config.clientSecret);
-
     tokenBody.set("code", code);
-
     tokenBody.set("redirect_uri", redirectUri);
-
     tokenBody.set("code_verifier", codeVerifier);
 
     let tokenResponse: Response;
@@ -143,15 +111,11 @@ export async function GET(request: NextRequest) {
     try {
       tokenResponse = await fetch(endpoints.token, {
         method: "POST",
-
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-
           Accept: "application/json",
         },
-
         body: tokenBody,
-
         cache: "no-store",
       });
     } catch (error) {
@@ -169,9 +133,7 @@ export async function GET(request: NextRequest) {
 
       console.error("[KEYCLOAK TOKEN ERROR]", {
         status: tokenResponse.status,
-
         statusText: tokenResponse.statusText,
-
         response: errorBody,
       });
 
@@ -192,55 +154,117 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ============================================
-    // LOGIN SUCCESS
-    // ============================================
+    const syncUrl = `${config.backendApiUrl}/users/me/sync`;
+
+    console.log("[USER SYNC REQUEST]", {
+      url: syncUrl,
+    });
+
+    let syncResponse: Response;
+
+    try {
+      syncResponse = await fetch(syncUrl, {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+        cache: "no-store",
+      });
+    } catch (error) {
+      console.error("[USER SYNC CONNECTION ERROR]", {
+        error,
+        url: syncUrl,
+      });
+
+      return createLoginErrorResponse(
+        request,
+        "user_sync_connection_failed",
+        "Login succeeded, but FoodHub could not create your local user account.",
+      );
+    }
+
+    const syncText = await syncResponse.text();
+
+    // Synchronization must succeed before the user enters the dashboard.
+    if (!syncResponse.ok) {
+      console.error("[USER SYNC ERROR]", {
+        status: syncResponse.status,
+        statusText: syncResponse.statusText,
+        response: syncText,
+        url: syncUrl,
+      });
+
+      return createLoginErrorResponse(
+        request,
+        "user_sync_failed",
+        `Login succeeded, but FoodHub user synchronization failed with status ${syncResponse.status}.`,
+      );
+    }
+
+    console.log("[USER SYNC SUCCESS]", {
+      status: syncResponse.status,
+      hasResponseBody: Boolean(syncText),
+    });
+
+    // Verify immediately that the local FoodHub user can be resolved.
+    const currentUserUrl = `${config.backendApiUrl}/users/me`;
+
+    let currentUserResponse: Response;
+
+    try {
+      currentUserResponse = await fetch(currentUserUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+        cache: "no-store",
+      });
+    } catch (error) {
+      console.error("[CURRENT USER VERIFY CONNECTION ERROR]", {
+        error,
+        url: currentUserUrl,
+      });
+
+      return createLoginErrorResponse(
+        request,
+        "user_verification_failed",
+        "FoodHub synchronized your login but could not verify your local account.",
+      );
+    }
+
+    if (!currentUserResponse.ok) {
+      const currentUserText = await currentUserResponse.text();
+
+      console.error("[CURRENT USER VERIFY ERROR]", {
+        status: currentUserResponse.status,
+        statusText: currentUserResponse.statusText,
+        response: currentUserText,
+        url: currentUserUrl,
+      });
+
+      return createLoginErrorResponse(
+        request,
+        "user_verification_failed",
+        `FoodHub could not verify your synchronized user account. Status ${currentUserResponse.status}.`,
+      );
+    }
+
+    console.log("[CURRENT USER VERIFY SUCCESS]", {
+      status: currentUserResponse.status,
+    });
 
     const destination = new URL(returnTo, config.appUrl);
-
     const response = NextResponse.redirect(destination);
 
-    // Remove any old session
     clearAuthCookies(response);
-
-    // Save new Keycloak session
     setAuthCookies(response, tokens);
-
-    // Remove temporary OAuth cookies
     clearLoginCookies(response);
-
-    // Sync user with FoodHub backend database
-    try {
-      const configuredBackendUrl = process.env.BACKEND_API_URL?.trim().replace(/\/+$/, "");
-      if (configuredBackendUrl) {
-        const syncUrl = /\/api\/v1$/i.test(configuredBackendUrl)
-          ? `${configuredBackendUrl}/users/me/sync`
-          : `${configuredBackendUrl}/api/v1/users/me/sync`;
-
-        fetch(syncUrl, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${tokens.access_token}`,
-          },
-          cache: "no-store",
-        })
-          .then((res) => {
-            console.log("[USER SYNC STATUS ON LOGIN]", res.status);
-          })
-          .catch((err) => {
-            console.warn("[USER SYNC FETCH ERROR ON LOGIN]", err);
-          });
-      }
-    } catch (syncError) {
-      console.warn("[USER SYNC WARNING ON LOGIN]", syncError);
-    }
 
     console.log("[KEYCLOAK LOGIN SUCCESS]", {
       returnTo,
-
       tokenType: tokens.token_type,
-
       expiresIn: tokens.expires_in,
     });
 

@@ -13,17 +13,11 @@ export const AUTH_COOKIES = {
 
 export interface KeycloakTokenResponse {
   access_token: string;
-
   refresh_token?: string;
-
   id_token?: string;
-
   expires_in?: number;
-
   refresh_expires_in?: number;
-
   token_type?: string;
-
   scope?: string;
 }
 
@@ -43,15 +37,10 @@ function trimTrailingSlash(value: string) {
 
 export function getAuthConfig() {
   const appUrl = trimTrailingSlash(requiredEnv("APP_URL"));
-
   const backendApiUrl = trimTrailingSlash(requiredEnv("BACKEND_API_URL"));
-
   const keycloakUrl = trimTrailingSlash(requiredEnv("KEYCLOAK_URL"));
-
   const realm = requiredEnv("KEYCLOAK_REALM");
-
   const clientId = requiredEnv("KEYCLOAK_CLIENT_ID");
-
   const clientSecret = requiredEnv("KEYCLOAK_CLIENT_SECRET");
 
   return {
@@ -73,9 +62,7 @@ export function getKeycloakEndpoints() {
 
   return {
     authorization: `${realmUrl}/protocol/openid-connect/auth`,
-
     token: `${realmUrl}/protocol/openid-connect/token`,
-
     logout: `${realmUrl}/protocol/openid-connect/logout`,
   };
 }
@@ -114,11 +101,8 @@ export function safeReturnTo(
 export function getAuthCookieOptions() {
   return {
     httpOnly: true,
-
     secure: process.env.NODE_ENV === "production",
-
     sameSite: "lax" as const,
-
     path: "/",
   };
 }
@@ -131,14 +115,12 @@ export function setAuthCookies(
 
   response.cookies.set(AUTH_COOKIES.accessToken, tokens.access_token, {
     ...options,
-
     maxAge: tokens.expires_in ?? 300,
   });
 
   if (tokens.refresh_token) {
     response.cookies.set(AUTH_COOKIES.refreshToken, tokens.refresh_token, {
       ...options,
-
       maxAge: tokens.refresh_expires_in ?? 86_400,
     });
   }
@@ -146,7 +128,6 @@ export function setAuthCookies(
   if (tokens.id_token) {
     response.cookies.set(AUTH_COOKIES.idToken, tokens.id_token, {
       ...options,
-
       maxAge: tokens.refresh_expires_in ?? 86_400,
     });
   }
@@ -184,6 +165,5 @@ export function clearAuthCookies(response: NextResponse) {
 
 export function clearAllAuthCookies(response: NextResponse) {
   clearAuthCookies(response);
-
   clearLoginCookies(response);
 }
