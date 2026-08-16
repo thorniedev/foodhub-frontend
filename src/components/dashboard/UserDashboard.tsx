@@ -7,7 +7,14 @@ import { IoCameraOutline } from "react-icons/io5";
 import { FaRegStar, FaRegUser, FaUtensils } from "react-icons/fa";
 import { RiShieldCheckLine } from "react-icons/ri";
 import { FiAlertTriangle } from "react-icons/fi";
-import { LoaderCircle } from "lucide-react";
+import {
+  LoaderCircle,
+  Plus,
+  UserRound,
+  Pencil,
+  Crown,
+  Users,
+} from "lucide-react";
 
 import {
   useGetAllergenOptionsQuery,
@@ -22,9 +29,12 @@ import {
 
 import type {
   MemberGender,
+  MemberProfile,
   MemberRelationship,
   SafetyOption,
 } from "@/types/member-profile/member-profile";
+
+import CreateMemberProfileModal from "@/app/(dashboard)/dashboard/CreateMemberProfileModal";
 
 /* -------------------------------------------------------------------------- */
 /*                                   LABELS                                   */
@@ -189,6 +199,9 @@ function buildOptionLabelMap(
 /* -------------------------------------------------------------------------- */
 
 export default function UserDashboard() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createAsDefault, setCreateAsDefault] = useState(false);
+
   /*
    * STEP 1:
    * Fetch the profile list only to find the DEFAULT profile.
@@ -209,6 +222,14 @@ export default function UserDashboard() {
       profilesResponse?.contents.find(
         (memberProfile) => memberProfile.isDefault === true,
       ) ?? null,
+    [profilesResponse],
+  );
+
+  const otherProfiles = useMemo(
+    () =>
+      profilesResponse?.contents.filter(
+        (memberProfile) => memberProfile.isDefault !== true,
+      ) ?? [],
     [profilesResponse],
   );
 
@@ -263,6 +284,11 @@ export default function UserDashboard() {
 
   const isError = isProfilesError || (!!defaultProfileSummary && isDetailError);
 
+  const openCreateModal = (asDefault: boolean) => {
+    setCreateAsDefault(asDefault);
+    setIsCreateModalOpen(true);
+  };
+
   if (isLoading) {
     return <DashboardLoading />;
   }
@@ -290,19 +316,103 @@ export default function UserDashboard() {
     );
   }
 
+  /* ------------------------------------------------------------------ */
+  /* No default profile → show premium CTA to create one                */
+  /* ------------------------------------------------------------------ */
+
   if (!defaultProfileSummary) {
     return (
-      <DashboardState
-        title="មិនទាន់មានប្រវត្តិរូបលំនាំដើម"
-        description="ទំព័រនេះបង្ហាញតែ profile ដែលមាន isDefault = true ប៉ុណ្ណោះ។"
-      >
-        <Link
-          href="/dashboard/family-profile"
-          className="mt-4 inline-flex rounded-lg bg-emerald-600 px-5 py-2.5 text-[17px] font-medium text-white transition hover:bg-emerald-700"
-        >
-          គ្រប់គ្រងប្រវត្តិរូប
-        </Link>
-      </DashboardState>
+      <>
+        <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+          {/* Hero CTA card */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#136C34] via-[#1a8b42] to-[#0d5429] p-8 shadow-xl sm:p-12">
+            {/* Decorative blobs */}
+            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5" />
+            <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-white/5" />
+
+            <div className="relative z-10 flex flex-col items-center gap-6 text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm ring-4 ring-white/20">
+                <UserRound className="h-10 w-10 text-white" />
+              </div>
+
+              <div>
+                <h2 className="text-[28px] font-bold text-white sm:text-[36px]">
+                  សូមស្វាគមន៍មកកាន់ FoodHub!
+                </h2>
+                <p className="mx-auto mt-3 max-w-md text-[17px] leading-7 text-emerald-100">
+                  ចាប់ផ្តើមដំណើររបស់អ្នកដោយបង្កើតគណនីមូលដ្ឋានរបស់អ្នក។
+                  FoodHub នឹងប្រើព័ត៌មាននេះដើម្បីណែនាំអាហារដែលស័ក្តិសមបំផុត
+                  សម្រាប់អ្នក។
+                </p>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-4 text-[15px] text-emerald-200">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                  ការណែនាំអាហារផ្ទាល់ខ្លួន
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                  ការគ្រប់គ្រងស្ថានភាពអាឡែស៊ី
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                  ប្រវត្តិការបញ្ជាទិញ
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => openCreateModal(true)}
+                className="inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-[18px] font-bold text-[#136C34] shadow-lg transition hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
+              >
+                <Plus className="h-6 w-6" />
+                បង្កើតគណនីរបស់ខ្ញុំ
+              </button>
+            </div>
+          </div>
+
+          {/* Features grid */}
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: "🍜",
+                title: "ណែនាំអាហារ",
+                desc: "ទទួលការណែនាំអាហារដែលត្រូវនឹងតម្រូវការសុខភាពរបស់អ្នក",
+              },
+              {
+                icon: "👨‍👩‍👧",
+                title: "ប្រវត្តិរូបគ្រួសារ",
+                desc: "បង្កើតប្រវត្តិរូបសម្រាប់សមាជិកគ្រួសារទាំងអស់",
+              },
+              {
+                icon: "🛡️",
+                title: "ការប្រុងប្រយ័ត្នសុខភាព",
+                desc: "ចុះឈ្មោះអាឡែស៊ី និងស្ថានភាពវេជ្ជសាស្ត្ររបស់អ្នក",
+              },
+            ].map((feature) => (
+              <div
+                key={feature.title}
+                className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm"
+              >
+                <div className="mb-3 text-[32px]">{feature.icon}</div>
+                <p className="text-[17px] font-bold text-slate-800">
+                  {feature.title}
+                </p>
+                <p className="mt-1 text-[15px] leading-6 text-slate-500">
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <CreateMemberProfileModal
+          open={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          forceDefault={createAsDefault}
+        />
+      </>
     );
   }
 
@@ -330,270 +440,336 @@ export default function UserDashboard() {
     ingredientAvoids.length;
 
   return (
-    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
-      {/* ------------------------------------------------------------------ */}
-      {/* Profile banner - keep UserDashboard layout                         */}
-      {/* ------------------------------------------------------------------ */}
+    <>
+      <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+        {/* ------------------------------------------------------------------ */}
+        {/* Profile banner                                                      */}
+        {/* ------------------------------------------------------------------ */}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="relative h-20 bg-gradient-to-r from-primary-100 to-primary-200 sm:h-32" />
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="relative h-20 bg-gradient-to-r from-primary-100 to-primary-200 sm:h-32" />
 
-        <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
-          <div className="-mt-8 flex flex-col gap-4 sm:-mt-10 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
-            <div className="flex min-w-0 items-end gap-3 sm:gap-4">
-              {/* ---- Avatar with upload overlay ---- */}
-              <AvatarUpload
-                profileUuid={profile.uuid}
-                avatarMediaUuid={profile.avatarMediaUuid}
-                profileName={profile.profileName}
-                onRefresh={() => void refetchDetail()}
-              />
+          <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
+            <div className="-mt-8 flex flex-col gap-4 sm:-mt-10 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+              <div className="flex min-w-0 items-end gap-3 sm:gap-4">
+                {/* ---- Avatar with upload overlay ---- */}
+                <AvatarUpload
+                  profileUuid={profile.uuid}
+                  avatarMediaUuid={profile.avatarMediaUuid}
+                  profileName={profile.profileName}
+                  onRefresh={() => void refetchDetail()}
+                />
 
-              <div className="min-w-0 pb-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate text-[22px] font-bold text-slate-800 sm:text-[34px]">
-                    {profile.profileName}
+                <div className="min-w-0 pb-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-[22px] font-bold text-slate-800 sm:text-[34px]">
+                      {profile.profileName}
+                    </p>
+
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-[15px] font-semibold text-emerald-700">
+                      <Crown className="h-3.5 w-3.5" />
+                      លំនាំដើម
+                    </span>
+                  </div>
+
+                  <p className="mt-1 truncate text-[17px] text-slate-500">
+                    {relationshipLabels[profile.relationship]}
+                    {" • "}
+                    {getLanguageLabel(profile.preferredLanguage)}
                   </p>
-
-                  <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1.5 text-[17px] font-semibold text-emerald-700">
-                    លំនាំដើម
-                  </span>
                 </div>
-
-                <p className="mt-1 truncate text-[17px] text-slate-500">
-                  {relationshipLabels[profile.relationship]}
-                  {" • "}
-                  {getLanguageLabel(profile.preferredLanguage)}
-                </p>
               </div>
+
+              <Link
+                href={`/dashboard/family-profile/${profile.uuid}?mode=edit`}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-[17px] font-medium text-slate-600 transition hover:bg-slate-50 sm:mt-2 sm:w-auto"
+              >
+                <Pencil className="text-[17px]" />
+                កែប្រែព័ត៌មាន
+              </Link>
             </div>
 
-            <Link
-              href={`/dashboard/family-profile/${profile.uuid}?mode=edit`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-[17px] font-medium text-slate-600 transition hover:bg-slate-50 sm:mt-2 sm:w-auto"
-            >
-              <IoCameraOutline className="text-[19px]" />
-              កែប្រែព័ត៌មាន
-            </Link>
+            <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
+              <StatCard
+                label="សមាជិក"
+                value={memberSinceDays}
+                sublabel="ថ្ងៃជាសមាជិក"
+              />
+
+              <StatCard
+                label="អាយុ"
+                value={age}
+                sublabel="ឆ្នាំ"
+                accent="text-emerald-600"
+              />
+
+              <StatCard
+                label="ការកំណត់"
+                value={preferenceCount}
+                sublabel="សុខភាព និងអាហារ"
+              />
+            </div>
+
+            {isFetching && (
+              <p className="mt-3 text-right text-[17px] text-slate-400">
+                កំពុងធ្វើបច្ចុប្បន្នភាព...
+              </p>
+            )}
           </div>
-
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
-            <StatCard
-              label="សមាជិក"
-              value={memberSinceDays}
-              sublabel="ថ្ងៃជាសមាជិក"
-            />
-
-            <StatCard
-              label="អាយុ"
-              value={age}
-              sublabel="ឆ្នាំ"
-              accent="text-emerald-600"
-            />
-
-            <StatCard
-              label="ការកំណត់"
-              value={preferenceCount}
-              sublabel="សុខភាព និងអាហារ"
-            />
-          </div>
-
-          {isFetching && (
-            <p className="mt-3 text-right text-[17px] text-slate-400">
-              កំពុងធ្វើបច្ចុប្បន្នភាព...
-            </p>
-          )}
         </div>
-      </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Personal info                                                      */}
-      {/* ------------------------------------------------------------------ */}
+        {/* ------------------------------------------------------------------ */}
+        {/* Personal info                                                      */}
+        {/* ------------------------------------------------------------------ */}
 
-      <SectionCard
-        icon={<FaRegUser />}
-        title="ព័ត៌មានផ្ទាល់ខ្លួន"
-        className="mt-4 sm:mt-5"
-      >
-        <div className="flex flex-wrap gap-3">
-          <ProfileInfoTag
-            label="ទំនាក់ទំនង"
-            value={relationshipLabels[profile.relationship]}
-          />
-
-          <ProfileInfoTag label="ភេទ" value={genderLabels[profile.gender]} />
-
-          <ProfileInfoTag
-            label="ថ្ងៃខែឆ្នាំកំណើត"
-            value={formatDate(profile.dateOfBirth)}
-          />
-
-          <ProfileInfoTag
-            label="ក្រុមអាយុ"
-            value={profile.ageGroup?.name ?? "មិនបានបញ្ជាក់"}
-          />
-
-          <ProfileInfoTag
-            label="ភាសា"
-            value={getLanguageLabel(profile.preferredLanguage)}
-          />
-
-          <ProfileInfoTag
-            label="បានកែប្រែ"
-            value={formatDate(profile.updatedAt)}
-          />
-        </div>
-      </SectionCard>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Medical conditions - full detail in rounded tags                   */}
-      {/* ------------------------------------------------------------------ */}
-
-      <SectionCard
-        icon={<RiShieldCheckLine />}
-        title="ស្ថានភាពសុខភាព"
-        className="mt-4 sm:mt-5"
-      >
-        {medicalConditions.length > 0 ? (
+        <SectionCard
+          icon={<FaRegUser />}
+          title="ព័ត៌មានផ្ទាល់ខ្លួន"
+          className="mt-4 sm:mt-5"
+        >
           <div className="flex flex-wrap gap-3">
-            {medicalConditions.map((condition, index) => {
-              const name =
-                getString(condition, "conditionName", "name") ??
-                medicalLabelMap.get(condition.conditionCode) ??
-                condition.conditionCode;
+            <ProfileInfoTag
+              label="ទំនាក់ទំនង"
+              value={relationshipLabels[profile.relationship]}
+            />
 
-              return (
-                <DetailedSafetyTag
-                  key={`${condition.conditionCode}-${index}`}
-                  name={name}
-                  variant="blue"
-                  details={[
-                    severityLabels[condition.severity],
-                    condition.notes,
-                  ]}
-                />
-              );
-            })}
+            <ProfileInfoTag label="ភេទ" value={genderLabels[profile.gender]} />
+
+            <ProfileInfoTag
+              label="ថ្ងៃខែឆ្នាំកំណើត"
+              value={formatDate(profile.dateOfBirth)}
+            />
+
+            <ProfileInfoTag
+              label="ក្រុមអាយុ"
+              value={profile.ageGroup?.name ?? "មិនបានបញ្ជាក់"}
+            />
+
+            <ProfileInfoTag
+              label="ភាសា"
+              value={getLanguageLabel(profile.preferredLanguage)}
+            />
+
+            <ProfileInfoTag
+              label="បានកែប្រែ"
+              value={formatDate(profile.updatedAt)}
+            />
           </div>
-        ) : (
-          <EmptyValue text="មិនមានព័ត៌មានសុខភាព។" />
-        )}
+        </SectionCard>
 
-        <div className="mt-4 flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-[17px] leading-7 text-emerald-700">
-          <RiShieldCheckLine className="mt-1 shrink-0 text-[19px]" />
-          FoodHub នឹងប្រើព័ត៌មានសុខភាពរបស់ profile លំនាំដើមនេះ
-          សម្រាប់ការណែនាំអាហារ។
-        </div>
-      </SectionCard>
+        {/* ------------------------------------------------------------------ */}
+        {/* Medical conditions                                                  */}
+        {/* ------------------------------------------------------------------ */}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Dietary + Allergies - keep old 2-column UserDashboard layout       */}
-      {/* ------------------------------------------------------------------ */}
-
-      <div className="mt-4 grid gap-4 sm:mt-5 sm:gap-5 md:grid-cols-2">
-        <SectionCard icon={<FaUtensils />} title="ចំណូលចិត្តផ្នែកអាហារ">
-          {dietaryTypes.length > 0 ? (
+        <SectionCard
+          icon={<RiShieldCheckLine />}
+          title="ស្ថានភាពសុខភាព"
+          className="mt-4 sm:mt-5"
+        >
+          {medicalConditions.length > 0 ? (
             <div className="flex flex-wrap gap-3">
-              {dietaryTypes.map((dietaryType, index) => {
+              {medicalConditions.map((condition, index) => {
                 const name =
-                  getString(dietaryType, "dietaryTypeName", "name") ??
-                  dietaryLabelMap.get(dietaryType.dietaryTypeCode) ??
-                  dietaryType.dietaryTypeCode;
+                  getString(condition, "conditionName", "name") ??
+                  medicalLabelMap.get(condition.conditionCode) ??
+                  condition.conditionCode;
 
                 return (
                   <DetailedSafetyTag
-                    key={`${dietaryType.dietaryTypeCode}-${index}`}
+                    key={`${condition.conditionCode}-${index}`}
                     name={name}
-                    variant="emerald"
+                    variant="blue"
                     details={[
-                      dietaryLevelLabels[dietaryType.enforcementLevel],
-                      `អាទិភាព ${dietaryType.priority}`,
-                      dietaryType.notes,
+                      severityLabels[condition.severity],
+                      condition.notes,
                     ]}
                   />
                 );
               })}
             </div>
           ) : (
-            <EmptyValue text="មិនមានរបបអាហារដែលបានកំណត់។" />
+            <EmptyValue text="មិនមានព័ត៌មានសុខភាព។" />
           )}
+
+          <div className="mt-4 flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-[17px] leading-7 text-emerald-700">
+            <RiShieldCheckLine className="mt-1 shrink-0 text-[19px]" />
+            FoodHub នឹងប្រើព័ត៌មានសុខភាពរបស់ profile លំនាំដើមនេះ
+            សម្រាប់ការណែនាំអាហារ។
+          </div>
         </SectionCard>
 
-        <SectionCard icon={<FiAlertTriangle />} title="អាឡែស៊ីនិងអាហារ">
-          {allergies.length > 0 ? (
-            <>
+        {/* ------------------------------------------------------------------ */}
+        {/* Dietary + Allergies                                                 */}
+        {/* ------------------------------------------------------------------ */}
+
+        <div className="mt-4 grid gap-4 sm:mt-5 sm:gap-5 md:grid-cols-2">
+          <SectionCard icon={<FaUtensils />} title="ចំណូលចិត្តផ្នែកអាហារ">
+            {dietaryTypes.length > 0 ? (
               <div className="flex flex-wrap gap-3">
-                {allergies.map((allergy, index) => {
+                {dietaryTypes.map((dietaryType, index) => {
                   const name =
-                    getString(allergy, "allergenName", "name") ??
-                    allergenLabelMap.get(allergy.allergenCode) ??
-                    allergy.allergenCode;
+                    getString(dietaryType, "dietaryTypeName", "name") ??
+                    dietaryLabelMap.get(dietaryType.dietaryTypeCode) ??
+                    dietaryType.dietaryTypeCode;
 
                   return (
                     <DetailedSafetyTag
-                      key={`${allergy.allergenCode}-${index}`}
+                      key={`${dietaryType.dietaryTypeCode}-${index}`}
                       name={name}
-                      variant="red"
+                      variant="emerald"
                       details={[
-                        severityLabels[allergy.severity],
-                        allergy.avoidCrossContact
-                          ? "ជៀសវាងការប៉ះពាល់ឆ្លង"
-                          : null,
-                        allergy.medicallyDiagnosed
-                          ? "វិនិច្ឆ័យដោយវេជ្ជបណ្ឌិត"
-                          : null,
-                        allergy.reactionNotes,
+                        dietaryLevelLabels[dietaryType.enforcementLevel],
+                        `អាទិភាព ${dietaryType.priority}`,
+                        dietaryType.notes,
                       ]}
                     />
                   );
                 })}
               </div>
+            ) : (
+              <EmptyValue text="មិនមានរបបអាហារដែលបានកំណត់។" />
+            )}
+          </SectionCard>
 
-              <p className="mt-4 flex items-start gap-2 text-[17px] leading-7 text-orange-600">
-                <FiAlertTriangle className="mt-1 shrink-0 text-[19px]" />
-                សារធាតុទាំងនេះនឹងត្រូវបានពិចារណាក្នុងការណែនាំអាហារ។
+          <SectionCard icon={<FiAlertTriangle />} title="អាឡែស៊ីនិងអាហារ">
+            {allergies.length > 0 ? (
+              <>
+                <div className="flex flex-wrap gap-3">
+                  {allergies.map((allergy, index) => {
+                    const name =
+                      getString(allergy, "allergenName", "name") ??
+                      allergenLabelMap.get(allergy.allergenCode) ??
+                      allergy.allergenCode;
+
+                    return (
+                      <DetailedSafetyTag
+                        key={`${allergy.allergenCode}-${index}`}
+                        name={name}
+                        variant="red"
+                        details={[
+                          severityLabels[allergy.severity],
+                          allergy.avoidCrossContact
+                            ? "ជៀសវាងការប៉ះពាល់ឆ្លង"
+                            : null,
+                          allergy.medicallyDiagnosed
+                            ? "វិនិច្ឆ័យដោយវេជ្ជបណ្ឌិត"
+                            : null,
+                          allergy.reactionNotes,
+                        ]}
+                      />
+                    );
+                  })}
+                </div>
+
+                <p className="mt-4 flex items-start gap-2 text-[17px] leading-7 text-orange-600">
+                  <FiAlertTriangle className="mt-1 shrink-0 text-[19px]" />
+                  សារធាតុទាំងនេះនឹងត្រូវបានពិចារណាក្នុងការណែនាំអាហារ។
+                </p>
+              </>
+            ) : (
+              <EmptyValue text="មិនមានព័ត៌មានអាឡែស៊ី។" />
+            )}
+          </SectionCard>
+        </div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* Multi-profile section                                               */}
+        {/* ------------------------------------------------------------------ */}
+
+        <section className="mt-4 sm:mt-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-[19px] text-emerald-600">
+                <Users className="h-5 w-5" />
+              </span>
+              <p className="text-[20px] font-semibold sm:text-[24px]">
+                ប្រវត្តិរូបគ្រួសារ
               </p>
-            </>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => openCreateModal(false)}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-[15px] font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              បន្ថែម
+            </button>
+          </div>
+
+          {otherProfiles.length > 0 ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {otherProfiles.map((memberProfile) => (
+                <ProfileCard
+                  key={memberProfile.uuid}
+                  profile={memberProfile}
+                  onRefetch={() => void refetchProfiles()}
+                />
+              ))}
+            </div>
           ) : (
-            <EmptyValue text="មិនមានព័ត៌មានអាឡែស៊ី។" />
+            <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+              <Users className="mx-auto h-10 w-10 text-slate-300" />
+              <p className="mt-3 text-[17px] font-medium text-slate-500">
+                មិនទាន់មានប្រវត្តិរូបគ្រួសារ
+              </p>
+              <p className="mt-1 text-[15px] text-slate-400">
+                ចុចប៊ូតុង "បន្ថែម" ដើម្បីបង្កើតប្រវត្តិរូបថ្មី
+              </p>
+            </div>
           )}
-        </SectionCard>
+        </section>
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Ingredient avoids - full detail tags                               */}
-      {/* ------------------------------------------------------------------ */}
+      {/* Create profile modal — works for both default and multi-profile */}
+      <CreateMemberProfileModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        forceDefault={createAsDefault}
+      />
+    </>
+  );
+}
 
-      {/* <SectionCard
-        icon={<FaRegStar />}
-        title="គ្រឿងផ្សំដែលត្រូវជៀសវាង"
-        className="mt-4 sm:mt-5"
-      >
-        {ingredientAvoids.length > 0 ? (
-          <div className="flex flex-wrap gap-3">
-            {ingredientAvoids.map((ingredient, index) => {
-              const name =
-                getString(ingredient, "ingredientName", "name") ??
-                ingredient.ingredientCode;
+/* -------------------------------------------------------------------------- */
+/*                              PROFILE CARD (non-default)                    */
+/* -------------------------------------------------------------------------- */
 
-              return (
-                <DetailedSafetyTag
-                  key={`${ingredient.ingredientCode}-${index}`}
-                  name={name}
-                  variant="orange"
-                  details={[
-                    ingredientAvoidLevelLabels[ingredient.avoidLevel],
-                    ingredient.reasonCode,
-                    ingredient.notes,
-                  ]}
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <EmptyValue text="មិនមានគ្រឿងផ្សំដែលត្រូវជៀសវាង។" />
-        )}
-      </SectionCard> */}
+interface ProfileCardProps {
+  profile: MemberProfile;
+  onRefetch: () => void;
+}
+
+function ProfileCard({ profile, onRefetch }: ProfileCardProps) {
+  return (
+    <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+      <div className="flex items-center gap-4">
+        {/* Avatar with upload */}
+        <AvatarUpload
+          profileUuid={profile.uuid}
+          avatarMediaUuid={profile.avatarMediaUuid}
+          profileName={profile.profileName}
+          onRefresh={onRefetch}
+          size="sm"
+        />
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[17px] font-bold text-slate-800">
+            {profile.profileName}
+          </p>
+          <p className="mt-0.5 text-[14px] text-slate-500">
+            {relationshipLabels[profile.relationship as MemberRelationship]}
+          </p>
+        </div>
+
+        <Link
+          href={`/dashboard/family-profile/${profile.uuid}?mode=edit`}
+          className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          title="កែប្រែ"
+        >
+          <Pencil className="h-4 w-4" />
+        </Link>
+      </div>
     </div>
   );
 }
@@ -607,6 +783,7 @@ interface AvatarUploadProps {
   avatarMediaUuid: string | null;
   profileName: string;
   onRefresh: () => void;
+  size?: "sm" | "md";
 }
 
 function AvatarUpload({
@@ -614,6 +791,7 @@ function AvatarUpload({
   avatarMediaUuid,
   profileName,
   onRefresh,
+  size = "md",
 }: AvatarUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -629,6 +807,13 @@ function AvatarUpload({
   );
 
   const isProcessing = isUploading || isUpdating;
+
+  const sizeClasses =
+    size === "sm"
+      ? "h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2"
+      : "h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border-4";
+
+  const textSizeClass = size === "sm" ? "text-[16px] sm:text-[18px]" : "text-[20px] sm:text-[26px]";
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -686,7 +871,7 @@ function AvatarUpload({
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
-        id="dashboard-avatar-input"
+        id={`avatar-input-${profileUuid}`}
         type="file"
         accept="image/*"
         className="sr-only"
@@ -701,7 +886,7 @@ function AvatarUpload({
         disabled={isProcessing}
         title="ផ្លាស់ប្ដូររូបតំណាង"
         aria-label="ផ្លាស់ប្ដូររូបតំណាង"
-        className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:h-20 sm:w-20 disabled:cursor-not-allowed disabled:opacity-70"
+        className={`group relative flex shrink-0 items-center justify-center overflow-hidden border-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70 ${sizeClasses}`}
       >
         {/* Photo or initials background */}
         {accessUrlData?.url ? (
@@ -710,10 +895,12 @@ function AvatarUpload({
             alt={profileName}
             fill
             className="object-cover"
-            sizes="80px"
+            sizes={size === "sm" ? "56px" : "80px"}
           />
         ) : (
-          <span className="flex h-full w-full items-center justify-center bg-[#136C34] text-[20px] font-bold text-white sm:text-[26px]">
+          <span
+            className={`flex h-full w-full items-center justify-center bg-[#136C34] font-bold text-white ${textSizeClass}`}
+          >
             {initials}
           </span>
         )}
@@ -729,9 +916,11 @@ function AvatarUpload({
         {!isProcessing && (
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
             <IoCameraOutline className="text-[22px] text-white" />
-            <span className="text-[10px] font-semibold text-white">
-              ផ្លាស់ប្ដូរ
-            </span>
+            {size === "md" && (
+              <span className="text-[10px] font-semibold text-white">
+                ផ្លាស់ប្ដូរ
+              </span>
+            )}
           </span>
         )}
       </button>
@@ -852,15 +1041,6 @@ function DetailedSafetyTag({
       className={`inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border px-4 py-2.5 ${styles[variant].wrapper}`}
     >
       <span className="text-[17px] font-semibold">{name}</span>
-
-      {/* {visibleDetails.map((detail, index) => (
-        <span
-          key={`${detail}-${index}`}
-          className={`rounded-full border px-3 py-1 text-[17px] font-medium ${styles[variant].detail}`}
-        >
-          {detail}
-        </span>
-      ))} */}
     </div>
   );
 }

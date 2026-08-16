@@ -22,7 +22,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   catalog: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   safety: new Set(["GET"]),
   stores: new Set(["GET", "POST", "PATCH", "DELETE"]),
-  media: new Set(["GET"]),
+  media: new Set(["GET", "POST", "DELETE"]),
   "menu-items": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   meetup: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 };
@@ -65,6 +65,11 @@ function requiresAuthentication(backendPath: string) {
   }
 
   if (backendPath === "profiles" || backendPath.startsWith("profiles/")) {
+    return true;
+  }
+
+  // Media upload / delete requires auth
+  if (backendPath === "media" || backendPath.startsWith("media/")) {
     return true;
   }
 

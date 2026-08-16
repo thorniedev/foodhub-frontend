@@ -3,17 +3,10 @@ import { NextResponse } from "next/server";
 
 import type { CreateMemberProfileRequest } from "@/types/member-profile/member-profile";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function normalizeBaseUrl(url: string): string {
-  const normalized = url.trim().replace(/\/+$/, "");
-
-  if (/\/api\/v1$/i.test(normalized)) {
-    return normalized;
-  }
-
-  return `${normalized}/api/v1`;
+  return url.trim().replace(/\/+$/, "");
 }
 
 async function parseBackendResponse(response: Response): Promise<unknown> {
@@ -72,7 +65,7 @@ function authenticationError() {
 }
 
 function createBackendResponse(data: unknown, status: number) {
-  if (data === null && (status === 204 || status === 205 || status === 304)) {
+  if (data === null && status === 204) {
     return new NextResponse(null, {
       status,
     });
@@ -131,9 +124,6 @@ export async function GET(request: NextRequest) {
         response: responseData,
         url: backendUrl.toString(),
       });
-
-      // Do not turn "User not found" into an empty profile list.
-      return createBackendResponse(responseData, backendResponse.status);
     }
 
     return createBackendResponse(responseData, backendResponse.status);
@@ -256,7 +246,6 @@ export async function POST(request: NextRequest) {
       url: backendUrl,
       profileName: payload.profileName,
       relationship: payload.relationship,
-      isDefault: payload.isDefault,
     });
 
     const backendResponse = await fetch(backendUrl, {

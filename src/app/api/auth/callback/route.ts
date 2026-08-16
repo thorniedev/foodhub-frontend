@@ -38,6 +38,10 @@ export async function GET(request: NextRequest) {
     const endpoints = getKeycloakEndpoints();
     const searchParams = request.nextUrl.searchParams;
 
+    // ============================================
+    // KEYCLOAK ERROR
+    // ============================================
+
     const keycloakError = searchParams.get("error");
     const keycloakErrorDescription = searchParams.get("error_description");
 
@@ -48,6 +52,10 @@ export async function GET(request: NextRequest) {
         keycloakErrorDescription ?? "Authentication failed.",
       );
     }
+
+    // ============================================
+    // CALLBACK VALUES
+    // ============================================
 
     const code = searchParams.get("code");
     const receivedState = searchParams.get("state");
@@ -70,6 +78,10 @@ export async function GET(request: NextRequest) {
       hasCodeVerifier: Boolean(codeVerifier),
       returnTo,
     });
+
+    // ============================================
+    // VALIDATION
+    // ============================================
 
     if (!code) {
       return createLoginErrorResponse(
@@ -94,6 +106,10 @@ export async function GET(request: NextRequest) {
         "PKCE code verifier is missing.",
       );
     }
+
+    // ============================================
+    // EXCHANGE CODE FOR TOKENS
+    // ============================================
 
     const redirectUri = `${config.appUrl}/api/auth/callback`;
 
@@ -154,6 +170,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // ============================================
+    // SYNC KEYCLOAK USER WITH FOODHUB BACKEND
+    // ============================================
+
     const syncUrl = `${config.backendApiUrl}/users/me/sync`;
 
     console.log("[USER SYNC REQUEST]", {
@@ -180,80 +200,49 @@ export async function GET(request: NextRequest) {
       return createLoginErrorResponse(
         request,
         "user_sync_connection_failed",
-        "Login succeeded, but FoodHub could not create your local user account.",
+        "Could not connect to the FoodHub backend.",
       );
     }
 
-    const syncText = await syncResponse.text();
-
-    // Synchronization must succeed before the user enters the dashboard.
     if (!syncResponse.ok) {
-      console.error("[USER SYNC ERROR]", {
-        status: syncResponse.status,
-        statusText: syncResponse.statusText,
-        response: syncText,
-        url: syncUrl,
-      });
+      const errorBody = await syncResponse.text();
 
-      return createLoginErrorResponse(
-        request,
-        "user_sync_failed",
-        `Login succeeded, but FoodHub user synchronization failed with status ${syncResponse.status}.`,
-      );
+      // 409 Conflict means the user already exists in the backend — this is
+      // expected for every returning user. Treat it as a successful (idempotent)
+      // sync and let login proceed normally.
+      if (syncResponse.status === 409) {
+        console.log("[USER SYNC CONFLICT - OK]", {
+          status: 409,
+          message:
+            "User already exists in backend (idempotent sync). Proceeding with login.",
+          url: syncUrl,
+        });
+      } else {
+        console.error("[USER SYNC ERROR]", {
+          status: syncResponse.status,
+          statusText: syncResponse.statusText,
+          response: errorBody,
+          url: syncUrl,
+        });
+
+        return createLoginErrorResponse(
+          request,
+          "user_sync_failed",
+          `User synchronization failed with status ${syncResponse.status}.`,
+        );
+      }
     }
+
+    const syncText = syncResponse.ok ? await syncResponse.text() : "";
 
     console.log("[USER SYNC SUCCESS]", {
       status: syncResponse.status,
       hasResponseBody: Boolean(syncText),
     });
 
-    // Verify immediately that the local FoodHub user can be resolved.
-    const currentUserUrl = `${config.backendApiUrl}/users/me`;
-
-    let currentUserResponse: Response;
-
-    try {
-      currentUserResponse = await fetch(currentUserUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${tokens.access_token}`,
-        },
-        cache: "no-store",
-      });
-    } catch (error) {
-      console.error("[CURRENT USER VERIFY CONNECTION ERROR]", {
-        error,
-        url: currentUserUrl,
-      });
-
-      return createLoginErrorResponse(
-        request,
-        "user_verification_failed",
-        "FoodHub synchronized your login but could not verify your local account.",
-      );
-    }
-
-    if (!currentUserResponse.ok) {
-      const currentUserText = await currentUserResponse.text();
-
-      console.error("[CURRENT USER VERIFY ERROR]", {
-        status: currentUserResponse.status,
-        statusText: currentUserResponse.statusText,
-        response: currentUserText,
-        url: currentUserUrl,
-      });
-
-      return createLoginErrorResponse(
-        request,
-        "user_verification_failed",
-        `FoodHub could not verify your synchronized user account. Status ${currentUserResponse.status}.`,
-      );
-    }
-
-    console.log("[CURRENT USER VERIFY SUCCESS]", {
-      status: currentUserResponse.status,
-    });
+    // ============================================
+    // LOGIN SUCCESS
+    // ============================================
 
     const destination = new URL(returnTo, config.appUrl);
     const response = NextResponse.redirect(destination);
