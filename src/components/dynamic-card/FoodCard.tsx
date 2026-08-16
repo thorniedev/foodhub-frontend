@@ -167,7 +167,7 @@ export default function FoodCard({ food }: FoodCardProps) {
           border
           border-gray-200
           bg-white
-          p-2.5
+          p-3.5
           shadow-sm
           transition
           duration-200
@@ -200,7 +200,8 @@ export default function FoodCard({ food }: FoodCardProps) {
             className="
               h-[190px]
               w-full
-              rounded-[14px]
+              rounded-[10px]
+              border border-gray-100  
               object-cover
               pointer-events-none
             "
@@ -410,7 +411,7 @@ export default function FoodCard({ food }: FoodCardProps) {
               bg-primary-800
               p-2
               text-4xl
-              text-red-400
+              text-accent-400
               shadow
             "
           />

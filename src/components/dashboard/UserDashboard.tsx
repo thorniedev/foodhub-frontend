@@ -323,7 +323,7 @@ export default function UserDashboard() {
   if (!defaultProfileSummary) {
     return (
       <>
-        <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+        <div className="mx-auto container max-w-7xl">
           {/* Hero CTA card */}
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#136C34] via-[#1a8b42] to-[#0d5429] p-8 shadow-xl sm:p-12">
             {/* Decorative blobs */}
@@ -340,9 +340,8 @@ export default function UserDashboard() {
                   សូមស្វាគមន៍មកកាន់ FoodHub!
                 </h2>
                 <p className="mx-auto mt-3 max-w-md text-[17px] leading-7 text-emerald-100">
-                  ចាប់ផ្តើមដំណើររបស់អ្នកដោយបង្កើតគណនីមូលដ្ឋានរបស់អ្នក។
-                  FoodHub នឹងប្រើព័ត៌មាននេះដើម្បីណែនាំអាហារដែលស័ក្តិសមបំផុត
-                  សម្រាប់អ្នក។
+                  ចាប់ផ្តើមដំណើររបស់អ្នកដោយបង្កើតគណនីមូលដ្ឋានរបស់អ្នក។ FoodHub
+                  នឹងប្រើព័ត៌មាននេះដើម្បីណែនាំអាហារដែលស័ក្តិសមបំផុត សម្រាប់អ្នក។
                 </p>
               </div>
 
@@ -441,7 +440,7 @@ export default function UserDashboard() {
 
   return (
     <>
-      <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+      <div className="mx-auto max-w-7xl p-4">
         {/* ------------------------------------------------------------------ */}
         {/* Profile banner                                                      */}
         {/* ------------------------------------------------------------------ */}
@@ -813,7 +812,8 @@ function AvatarUpload({
       ? "h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2"
       : "h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border-4";
 
-  const textSizeClass = size === "sm" ? "text-[16px] sm:text-[18px]" : "text-[20px] sm:text-[26px]";
+  const textSizeClass =
+    size === "sm" ? "text-[16px] sm:text-[18px]" : "text-[20px] sm:text-[26px]";
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -855,7 +855,9 @@ function AvatarUpload({
     } catch (err: unknown) {
       if (typeof err === "object" && err !== null && "data" in err) {
         const data = (err as { data?: { message?: string } }).data;
-        setUploadError(data?.message ?? "មិនអាចផ្ទុករូបភាពបានទេ។ សូមព្យាយាមមើលទៀត។");
+        setUploadError(
+          data?.message ?? "មិនអាចផ្ទុករូបភាពបានទេ។ សូមព្យាយាមមើលទៀត។",
+        );
       } else if (err instanceof Error) {
         setUploadError(err.message);
       } else {
@@ -1055,7 +1057,7 @@ function EmptyValue({ text }: { text: string }) {
 
 function DashboardLoading() {
   return (
-    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+    <div className="mx-auto max-w-6xl px-4 ">
       <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="h-20 bg-slate-100 sm:h-32" />
 
@@ -1097,7 +1099,7 @@ function DashboardState({
   children?: ReactNode;
 }) {
   return (
-    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+    <div className="mx-auto max-w-6xl  py-4 ">
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-[20px] text-emerald-600">
           <FaRegUser />

@@ -52,7 +52,7 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+    <div className="mx-auto max-w-6xl ">
       {/* Title */}
       <h4 className="text-[28px] font-bold text-slate-900">
         ចំណីអាហារចំណូលចិត្ត
