@@ -28,20 +28,20 @@ const TABS: {
   {
     id: "location",
     label: "ទីតាំង",
-    href: "/food/location",
+    href: "/food-page/location",
     icon: <IoLocationOutline className="text-[23px]" />,
   },
   {
     id: "store",
     label: "ហាងអាហារ",
-    href: "/food/store",
+    href: "/food-page/store",
     icon: <IoStorefrontOutline className="text-[23px]" />,
   },
 ];
 
 function getActiveTab(pathname: string): FoodPageTab {
-  if (pathname.startsWith("/food/location")) return "location";
-  if (pathname.startsWith("/food/store")) return "store";
+  if (pathname.startsWith("/food-page/location")) return "location";
+  if (pathname.startsWith("/food-page/store")) return "store";
   return "food";
 }
 
@@ -60,7 +60,9 @@ export default function FoodNavTabs() {
               key={tab.id}
               href={tab.href}
               className={`relative flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full px-5 py-1.5 text-[16px] font-semibold transition-colors ${
-                isActive ? "text-white" : "text-primary-800 dark:text-primary-dark hover:bg-primary-50"
+                isActive
+                  ? "text-white"
+                  : "text-primary-800 dark:text-primary-dark hover:bg-primary-50"
               }`}
             >
               {isActive && (
