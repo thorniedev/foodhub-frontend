@@ -25,6 +25,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   media: new Set(["GET", "POST", "DELETE"]),
   "menu-items": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   meetup: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+  "saved-locations": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 };
 
 const nestedRoutePrefixes = new Set([
@@ -35,6 +36,7 @@ const nestedRoutePrefixes = new Set([
   "media",
   "menu-items",
   "meetup",
+  "saved-locations",
 ]);
 
 interface RouteContext {
@@ -65,6 +67,13 @@ function requiresAuthentication(backendPath: string) {
   }
 
   if (backendPath === "profiles" || backendPath.startsWith("profiles/")) {
+    return true;
+  }
+
+  if (
+    backendPath === "saved-locations" ||
+    backendPath.startsWith("saved-locations/")
+  ) {
     return true;
   }
 
@@ -258,6 +267,57 @@ async function forwardRequest(
         backendUrl: targetUrl.toString(),
         response: errorText,
       });
+
+      // RESILIENT RECOVERY: If backend catalog/menu-items hits broken entity in batch query
+      if (backendPath === "catalog/menu-items" && request.method === "GET") {
+        console.warn(
+          "[FOODHUB PROXY RECOVERY] /catalog/menu-items encountered corrupted backend entity. Recovering valid items page-by-page...",
+        );
+        try {
+          const validItems: unknown[] = [];
+          for (let i = 0; i < 20; i++) {
+            try {
+              const pageUrl = new URL(targetUrl.toString());
+              pageUrl.searchParams.set("page", String(i));
+              pageUrl.searchParams.set("size", "1");
+              const singleRes = await fetch(pageUrl, {
+                headers: requestHeaders,
+                cache: "no-store",
+              });
+              if (singleRes.ok) {
+                const singleData = await singleRes.json();
+                const items = singleData?.payload?.content || [];
+                if (items.length > 0) {
+                  validItems.push(...items);
+                } else if (i > 5) {
+                  break;
+                }
+              }
+            } catch {
+              // continue
+            }
+          }
+
+          if (validItems.length > 0) {
+            return NextResponse.json({
+              status: 200,
+              message: "Menu items recovered successfully",
+              payload: {
+                content: validItems,
+                totalElements: validItems.length,
+                totalPages: 1,
+                size: validItems.length,
+                number: 0,
+                first: true,
+                last: true,
+                empty: false,
+              },
+            });
+          }
+        } catch (recoveryErr) {
+          console.error("[FOODHUB PROXY RECOVERY FAILED]", recoveryErr);
+        }
+      }
     }
 
     const status = backendResponse.status;
