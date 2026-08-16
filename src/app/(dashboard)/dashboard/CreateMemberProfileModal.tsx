@@ -9,6 +9,7 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  Crown,
   HeartPulse,
   Languages,
   LoaderCircle,
@@ -74,6 +75,9 @@ interface CreateProfileForm {
 interface CreateMemberProfileModalProps {
   open: boolean;
   onClose: () => void;
+  /** When true, the profile is always created as the default profile.
+   *  The isDefault toggle is hidden and the value is locked to true. */
+  forceDefault?: boolean;
 }
 
 interface PreferenceSectionProps {
@@ -113,12 +117,12 @@ const enforcementLabels: Record<DietaryEnforcementLevel, string> = {
 
 const initialFormState: CreateProfileForm = {
   profileName: "",
-  relationship: "CHILD",
+  relationship: "SELF",
   gender: "MALE",
   dateOfBirth: "",
   preferredLanguage: "km",
   avatarMediaUuid: null,
-  isDefault: false,
+  isDefault: true,
   allergies: [],
   dietaryTypes: [],
   medicalConditions: [],
@@ -178,10 +182,14 @@ function PreferenceSection({
 export default function CreateMemberProfileModal({
   open,
   onClose,
+  forceDefault = false,
 }: CreateMemberProfileModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
 
-  const [form, setForm] = useState<CreateProfileForm>(initialFormState);
+  const [form, setForm] = useState<CreateProfileForm>({
+    ...initialFormState,
+    isDefault: forceDefault || initialFormState.isDefault,
+  });
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -273,7 +281,10 @@ export default function CreateMemberProfileModal({
 
   const resetModal = () => {
     setStep(1);
-    setForm(initialFormState);
+    setForm({
+      ...initialFormState,
+      isDefault: forceDefault || initialFormState.isDefault,
+    });
     setCreatedProfileUuid(null);
     setErrorMessage(null);
   };
@@ -329,7 +340,7 @@ export default function CreateMemberProfileModal({
     dateOfBirth: form.dateOfBirth,
     preferredLanguage: form.preferredLanguage,
     avatarMediaUuid: form.avatarMediaUuid,
-    isDefault: form.isDefault,
+    isDefault: form.relationship === "SELF" ? true : form.isDefault,
   });
 
   const toggleAllergy = (allergenCode: string) => {
@@ -872,32 +883,49 @@ export default function CreateMemberProfileModal({
                     </div>
                   </div>
 
-                  {/* Default profile */}
-                  <label className="flex cursor-pointer items-center justify-between gap-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-slate-300 hover:bg-white sm:col-span-2">
-                    <div>
-                      <p className="text-lg font-semibold text-slate-700">
-                        កំណត់ជាគណនីលំនាំដើម
-                      </p>
-                      <p className="mt-1 text-lg leading-7 text-slate-500">
-                        គណនីនេះនឹងត្រូវបានប្រើជាលំនាំដើមសម្រាប់ការណែនាំអាហារ។
-                      </p>
+                  {/* Default profile toggle — hidden when forceDefault is true */}
+                  {forceDefault ? (
+                    <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:col-span-2">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                        <Crown className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold text-emerald-800">
+                          គណនីលំនាំដើម
+                        </p>
+                        <p className="mt-0.5 text-[15px] leading-6 text-emerald-700">
+                          គណនីនេះនឹងត្រូវបានកំណត់ជា profile លំនាំដើមរបស់អ្នក
+                          សម្រាប់ការណែនាំអាហារ។
+                        </p>
+                      </div>
                     </div>
+                  ) : (
+                    <label className="flex cursor-pointer items-center justify-between gap-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-slate-300 hover:bg-white sm:col-span-2">
+                      <div>
+                        <p className="text-lg font-semibold text-slate-700">
+                          កំណត់ជាគណនីលំនាំដើម
+                        </p>
+                        <p className="mt-1 text-lg leading-7 text-slate-500">
+                          គណនីនេះនឹងត្រូវបានប្រើជាលំនាំដើមសម្រាប់ការណែនាំអាហារ។
+                        </p>
+                      </div>
 
-                    <div className="relative shrink-0">
-                      <input
-                        type="checkbox"
-                        checked={form.isDefault}
-                        onChange={(event) =>
-                          setForm((previous) => ({
-                            ...previous,
-                            isDefault: event.target.checked,
-                          }))
-                        }
-                        className="peer sr-only"
-                      />
-                      <div className="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-primary-800 peer-focus-visible:ring-4 peer-focus-visible:ring-primary-800/20 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-[''] peer-checked:after:translate-x-5" />
-                    </div>
-                  </label>
+                      <div className="relative shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={form.isDefault}
+                          onChange={(event) =>
+                            setForm((previous) => ({
+                              ...previous,
+                              isDefault: event.target.checked,
+                            }))
+                          }
+                          className="peer sr-only"
+                        />
+                        <div className="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-primary-800 peer-focus-visible:ring-4 peer-focus-visible:ring-primary-800/20 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-[''] peer-checked:after:translate-x-5" />
+                      </div>
+                    </label>
+                  )}
                 </div>
               </section>
 

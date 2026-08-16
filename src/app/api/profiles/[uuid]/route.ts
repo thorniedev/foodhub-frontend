@@ -74,6 +74,23 @@ async function parseBackendResponse(response: Response): Promise<unknown> {
   }
 }
 
+async function syncUser(backendApiUrl: string, accessToken: string): Promise<boolean> {
+  try {
+    const syncUrl = `${backendApiUrl}/users/me/sync`;
+    const res = await fetch(syncUrl, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                   ERRORS                                   */
 /* -------------------------------------------------------------------------- */
@@ -174,6 +191,25 @@ export async function GET(request: NextRequest, context: RouteContext) {
         status: backendResponse.status,
         response: responseData,
       });
+
+      if (backendResponse.status === 404) {
+        const synced = await syncUser(backendApiUrl, accessToken);
+        if (synced) {
+          const retryResponse = await fetch(backendUrl, {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            cache: "no-store",
+          });
+          const retryData = await parseBackendResponse(retryResponse);
+          return NextResponse.json(retryData, {
+            status: retryResponse.status,
+            headers: { "Cache-Control": "no-store" },
+          });
+        }
+      }
     }
 
     if (backendResponse.status === 204) {
