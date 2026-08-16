@@ -20,12 +20,6 @@ import { FaFire, FaStar } from "react-icons/fa";
 import { MdOutlineCategory } from "react-icons/md";
 
 import FoodCard from "@/components/dynamic-card/FoodCard";
-import FoodNavTabs, {
-  type FoodPageTab,
-} from "@/components/food-page/FoodNavTabs";
-
-import LocationContent from "@/components/food-page/location/LocationContent";
-import StoreContent from "@/components/food-page/store/StoreContent";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import {
@@ -1853,8 +1847,6 @@ function LoadingState() {
 ========================================================= */
 
 export default function FoodPage() {
-  const [activePageTab, setActivePageTab] = useState<FoodPageTab>("food");
-
   const [searchInput, setSearchInput] = useState("");
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
@@ -2046,15 +2038,6 @@ export default function FoodPage() {
     [menuItems, filters, memberProfile],
   );
 
-  /**
-   * The current list response has no recommendation object.
-   * The real supported highlight field is isFeatured.
-   */
-  const featuredFoods = useMemo(
-    () => filteredFoods.filter((food) => food.isFeatured).slice(0, 6),
-    [filteredFoods],
-  );
-
   const activeFilterCount = countActiveFilters(filters);
 
   /* =======================================================
@@ -2084,16 +2067,6 @@ export default function FoodPage() {
       window.removeEventListener("keydown", handleEscape);
     };
   }, [mobileFiltersOpen]);
-
-  /**
-   * Do not leave the Food filter drawer
-   * open when switching to Location/Store.
-   */
-  useEffect(() => {
-    if (activePageTab !== "food") {
-      setMobileFiltersOpen(false);
-    }
-  }, [activePageTab]);
 
   /* =======================================================
      SHARED SEARCH
@@ -2131,425 +2104,309 @@ export default function FoodPage() {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-[#fafaf8] dark:bg-black">
-      <div className="pt-15" />
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
-      {/* NAV TABS */}
+  if (isLoading || isFetching) {
+    return <LoadingState />;
+  }
 
-      <div className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md">
-        <FoodNavTabs activeTab={activePageTab} onTabChange={setActivePageTab} />
+  if (isError) {
+    return (
+      <div className="flex min-h-[500px] flex-col items-center justify-center gap-4 rounded-[24px] border border-red-100 bg-white px-5 text-center">
+        <p className="text-[20px] font-semibold text-red-500">
+          មិនអាចទាញយកទិន្នន័យបានទេ
+        </p>
+
+        <p className="text-[16px] leading-7 text-gray-500">
+          សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្តងទៀត។
+        </p>
+
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="flex items-center gap-2 rounded-full bg-primary-800 px-5 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
+        >
+          <IoRefresh className="text-[20px]" />
+          ព្យាយាមម្តងទៀត
+        </button>
+
+        <details className="max-w-full">
+          <summary className="cursor-pointer text-[16px] text-gray-400">
+            ព័ត៌មានបច្ចេកទេស
+          </summary>
+
+          <pre className="mt-3 max-w-full overflow-auto whitespace-pre-wrap rounded-xl bg-red-50 p-3 text-left text-[16px] text-red-400">
+            {JSON.stringify(error, null, 2)}
+          </pre>
+        </details>
       </div>
+    );
+  }
 
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6">
-        {isLoading || isFetching ? (
-          <LoadingState />
-        ) : isError ? (
-          <div className="flex min-h-[500px] flex-col items-center justify-center gap-4 rounded-[24px] border border-red-100 bg-white px-5 text-center">
-            <p className="text-[20px] font-semibold text-red-500">
-              មិនអាចទាញយកទិន្នន័យបានទេ
+  return (
+    <>
+      {/* SEARCH */}
+
+      <section className="rounded-full border border-gray-100 bg-white p-1 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          {renderSearch()}
+
+          {/* Mobile / tablet Food filter button */}
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen(true)}
+            className="
+              relative
+              flex
+              min-h-[56px]
+              shrink-0
+              items-center
+              justify-center
+              gap-2
+              rounded-full
+              bg-primary-800
+              px-5
+              text-[16px]
+              font-semibold
+              text-white
+              shadow-sm
+              transition
+              hover:bg-primary-700
+              active:scale-[0.98]
+              lg:hidden
+            "
+            aria-label="Open food filters"
+          >
+            <IoFilterOutline className="text-[21px]" />
+
+            <span>តម្រង</span>
+
+            {activeFilterCount > 0 && (
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary-500 px-1.5 text-[14px] font-bold text-white">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+
+          <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
+            <FaStar className="text-[20px] text-yellow-500" />
+
+            <p className="text-[16px] text-primary-800 dark:text-primary-dark">
+              រកឃើញ
+              <span className="font-semibold">{filteredFoods.length}</span>
+              មុខម្ហូប
             </p>
+          </div>
 
-            <p className="text-[16px] leading-7 text-gray-500">
-              សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្តងទៀត។
-            </p>
-
+          {activeFilterCount > 0 && (
             <button
               type="button"
-              onClick={() => refetch()}
-              className="flex items-center gap-2 rounded-full bg-primary-800 px-5 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
+              onClick={() => {
+                setSearchInput("");
+
+                setFilters(DEFAULT_FILTERS);
+              }}
+              className="rounded-full border border-secondary-200 px-5 py-3 text-[16px] font-semibold text-secondary-500 transition hover:bg-secondary-50"
             >
-              <IoRefresh className="text-[20px]" />
-              ព្យាយាមម្តងទៀត
+              សម្អាតតម្រង {activeFilterCount}
             </button>
+          )}
+        </div>
+      </section>
 
-            <details className="max-w-full">
-              <summary className="cursor-pointer text-[16px] text-gray-400">
-                ព័ត៌មានបច្ចេកទេស
-              </summary>
+      <div className="mt-6 flex gap-8">
+        <FilterSidebar
+          filters={filters}
+          onChange={setFilters}
+          categoryOptions={categoryOptions}
+          cuisineOptions={cuisineOptions}
+          mealTypeOptions={mealTypeOptions}
+          dietaryTypeOptions={dietaryTypeOptions}
+          ageGroupOptions={ageGroupOptions}
+          seasonOptions={seasonOptions}
+          eventOptions={eventOptions}
+          weatherOptions={weatherOptions}
+          originCountryOptions={originCountryOptions}
+          allergenOptions={allergenOptions}
+          storeOptions={storeOptions}
+          ingredientOptions={ingredientOptions}
+          hasPositiveRatingData={hasPositiveRatingData}
+        />
 
-              <pre className="mt-3 max-w-full overflow-auto whitespace-pre-wrap rounded-xl bg-red-50 p-3 text-left text-[16px] text-red-400">
-                {JSON.stringify(error, null, 2)}
-              </pre>
-            </details>
-          </div>
-        ) : (
-          <AnimatePresence mode="wait">
-            {/* =================================================
-                FOOD TAB
-            ================================================= */}
+        <main className="min-w-0 flex-1">
+          <CategoryTabs
+            options={categoryOptions}
+            selectedCodes={filters.categoryCodes}
+            onChange={(categoryCodes) =>
+              setFilters((current) => ({
+                ...current,
+                categoryCodes,
+              }))
+            }
+          />
 
-            {activePageTab === "food" && (
-              <motion.div
-                key="food-tab"
-                initial={{
-                  opacity: 0,
-                  x: -24,
-                }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  x: 24,
-                }}
-                transition={{
-                  duration: 0.25,
-                  ease: "easeOut",
-                }}
-              >
-                {/* SEARCH */}
+          {/* FEATURED */}
 
-                <section className="rounded-full border border-gray-100 bg-white p-1 shadow-sm">
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    {renderSearch()}
+          {/* {featuredFoods.length > 0 && (
+            <section className="mt-8">
+              <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-[16px] font-semibold text-secondary-500">
+                    FoodHub
+                  </p>
 
-                    {/* Mobile / tablet Food filter button */}
-                    <button
-                      type="button"
-                      onClick={() => setMobileFiltersOpen(true)}
-                      className="
-                        relative
-                        flex
-                        min-h-[56px]
-                        shrink-0
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-full
-                        bg-primary-800
-                        px-5
-                        text-[16px]
-                        font-semibold
-                        text-white
-                        shadow-sm
-                        transition
-                        hover:bg-primary-700
-                        active:scale-[0.98]
-                        lg:hidden
-                      "
-                      aria-label="Open food filters"
-                    >
-                      <IoFilterOutline className="text-[21px]" />
-
-                      <span>តម្រង</span>
-
-                      {activeFilterCount > 0 && (
-                        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary-500 px-1.5 text-[14px] font-bold text-white">
-                          {activeFilterCount}
-                        </span>
-                      )}
-                    </button>
-
-                    <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
-                      <FaStar className="text-[20px] text-yellow-500" />
-
-                      <p className="text-[16px] text-primary-800 dark:text-primary-dark">
-                        រកឃើញ
-                        <span className="font-semibold">
-                          {filteredFoods.length}
-                        </span>
-                        មុខម្ហូប
-                      </p>
-                    </div>
-
-                    {activeFilterCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchInput("");
-
-                          setFilters(DEFAULT_FILTERS);
-                        }}
-                        className="rounded-full border border-secondary-200 px-5 py-3 text-[16px] font-semibold text-secondary-500 transition hover:bg-secondary-50"
-                      >
-                        សម្អាតតម្រង {activeFilterCount}
-                      </button>
-                    )}
-                  </div>
-                </section>
-
-                <div className="mt-6 flex gap-8">
-                  <FilterSidebar
-                    filters={filters}
-                    onChange={setFilters}
-                    categoryOptions={categoryOptions}
-                    cuisineOptions={cuisineOptions}
-                    mealTypeOptions={mealTypeOptions}
-                    dietaryTypeOptions={dietaryTypeOptions}
-                    ageGroupOptions={ageGroupOptions}
-                    seasonOptions={seasonOptions}
-                    eventOptions={eventOptions}
-                    weatherOptions={weatherOptions}
-                    originCountryOptions={originCountryOptions}
-                    allergenOptions={allergenOptions}
-                    storeOptions={storeOptions}
-                    ingredientOptions={ingredientOptions}
-                    hasPositiveRatingData={hasPositiveRatingData}
-                  />
-
-                  <main className="min-w-0 flex-1">
-                    <CategoryTabs
-                      options={categoryOptions}
-                      selectedCodes={filters.categoryCodes}
-                      onChange={(categoryCodes) =>
-                        setFilters((current) => ({
-                          ...current,
-                          categoryCodes,
-                        }))
-                      }
-                    />
-
-                    {/* FEATURED */}
-
-                    {/* {featuredFoods.length > 0 && (
-                      <section className="mt-8">
-                        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                          <div>
-                            <p className="text-[16px] font-semibold text-secondary-500">
-                              FoodHub
-                            </p>
-
-                            <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
-                              មុខម្ហូបពិសេស
-                            </p>
-                          </div>
-
-                          <span className="rounded-full bg-primary-50 px-4 py-2 text-[16px] font-semibold text-primary-700">
-                            {featuredFoods.length} ជម្រើស
-                          </span>
-                        </div>
-
-                        <FoodGrid foods={featuredFoods} />
-                      </section>
-                    )} */}
-
-                    {/* ALL FOODS */}
-
-                    <section className="mt-6">
-                      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                        <div>
-                          {/* <p className="text-[16px] font-semibold text-secondary-500">
-                            មុខម្ហូបទាំងអស់
-                          </p> */}
-
-                          <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
-                            ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
-                          </p>
-                        </div>
-
-                        <p className="text-[16px] text-gray-500 dark:text-gray-50">
-                          បង្ហាញ {filteredFoods.length} ក្នុងចំណោម
-                          {menuItems.length}
-                        </p>
-                      </div>
-
-                      <FoodGrid foods={filteredFoods} />
-                    </section>
-
-                    <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
-                      <p className="text-[28px] font-semibold md:text-[36px]">
-                        បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
-                      </p>
-
-                      <p className="mx-auto mt-3 max-w-2xl text-[16px]  lg:text-xl leading-8 text-white/80">
-                        ស្វែងរកមុខម្ហូបដែលសមនឹងចំណូលចិត្ត តម្លៃ ពេលរៀបចំ
-                        ប្រភេទម្ហូប និងហាងដែលអ្នកចូលចិត្ត។
-                      </p>
-                    </section>
-                  </main>
+                  <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
+                    មុខម្ហូបពិសេស
+                  </p>
                 </div>
-              </motion.div>
-            )}
 
-            {/* =================================================
-                MOBILE / TABLET FOOD FILTER DRAWER
-            ================================================= */}
+                <span className="rounded-full bg-primary-50 px-4 py-2 text-[16px] font-semibold text-primary-700">
+                  {featuredFoods.length} ជម្រើស
+                </span>
+              </div>
 
-            <AnimatePresence>
-              {activePageTab === "food" && mobileFiltersOpen && (
-                <motion.div
-                  key="food-mobile-filter-drawer"
-                  initial={{
-                    opacity: 0,
-                  }}
-                  animate={{
-                    opacity: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                  }}
-                  transition={{
-                    duration: 0.2,
-                  }}
-                  className="fixed inset-0 z-[120] lg:hidden"
-                >
-                  {/* Overlay */}
+              <FoodGrid foods={featuredFoods} />
+            </section>
+          )} */}
 
-                  <motion.button
-                    type="button"
-                    aria-label="Close food filters"
-                    initial={{
-                      opacity: 0,
-                    }}
-                    animate={{
-                      opacity: 1,
-                    }}
-                    exit={{
-                      opacity: 0,
-                    }}
-                    onClick={() => setMobileFiltersOpen(false)}
-                    className="absolute inset-0 cursor-default bg-black/45 backdrop-blur-[2px]"
-                  />
+          {/* ALL FOODS */}
 
-                  {/* Drawer */}
+          <section className="mt-6">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                {/* <p className="text-[16px] font-semibold text-secondary-500">
+                  មុខម្ហូបទាំងអស់
+                </p> */}
 
-                  <motion.div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label="Food filters"
-                    initial={{
-                      y: "100%",
-                    }}
-                    animate={{
-                      y: 0,
-                    }}
-                    exit={{
-                      y: "100%",
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 320,
-                      damping: 32,
-                    }}
-                    className="
-                        absolute
-                        inset-x-0
-                        bottom-0
-                        h-[90dvh]
-                        overflow-hidden
-                        rounded-t-[30px]
-                        bg-white
-                        shadow-2xl
+                <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
+                  ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
+                </p>
+              </div>
 
-                        sm:left-auto
-                        sm:right-0
-                        sm:top-0
-                        sm:h-full
-                        sm:w-[390px]
-                        sm:rounded-none
-                        sm:rounded-l-[30px]
-                      "
-                  >
-                    <FilterSidebar
-                      mobile
-                      filters={filters}
-                      onChange={setFilters}
-                      categoryOptions={categoryOptions}
-                      cuisineOptions={cuisineOptions}
-                      mealTypeOptions={mealTypeOptions}
-                      dietaryTypeOptions={dietaryTypeOptions}
-                      ageGroupOptions={ageGroupOptions}
-                      seasonOptions={seasonOptions}
-                      eventOptions={eventOptions}
-                      weatherOptions={weatherOptions}
-                      originCountryOptions={originCountryOptions}
-                      allergenOptions={allergenOptions}
-                      storeOptions={storeOptions}
-                      ingredientOptions={ingredientOptions}
-                      hasPositiveRatingData={hasPositiveRatingData}
-                      onClose={() => setMobileFiltersOpen(false)}
-                    />
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <p className="text-[16px] text-gray-500 dark:text-gray-50">
+                បង្ហាញ {filteredFoods.length} ក្នុងចំណោម
+                {menuItems.length}
+              </p>
+            </div>
 
-            {/* =================================================
-                LOCATION TAB
+            <FoodGrid foods={filteredFoods} />
+          </section>
 
-                IMPORTANT:
-                Current LocationContent still expects the old
-                "@/types/manu" MenuItem[] contract.
+          <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
+            <p className="text-[28px] font-semibold md:text-[36px]">
+              បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
+            </p>
 
-                Do NOT cast CatalogMenuItem[] into the old model.
-                An empty compatibility array keeps this parent
-                safe until LocationContent is migrated.
-            ================================================= */}
-
-            {activePageTab === "location" && (
-              <motion.div
-                key="location-tab"
-                initial={{
-                  opacity: 0,
-                  x: 24,
-                }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  x: -24,
-                }}
-                transition={{
-                  duration: 0.25,
-                  ease: "easeOut",
-                }}
-              >
-                <section className="mb-4 rounded-full border border-gray-100 bg-white p-1 shadow-sm">
-                  {renderSearch()}
-                </section>
-
-                <LocationContent
-                  menuItems={menuItems}
-                  searchQuery={searchInput}
-                />
-              </motion.div>
-            )}
-
-            {/* =================================================
-                STORE TAB
-
-                Same reason as LocationContent: do not force-cast
-                the new CatalogMenuItem into the old MenuItem.
-            ================================================= */}
-
-            {activePageTab === "store" && (
-              <motion.div
-                key="store-tab"
-                initial={{
-                  opacity: 0,
-                  x: 24,
-                }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  x: -24,
-                }}
-                transition={{
-                  duration: 0.25,
-                  ease: "easeOut",
-                }}
-              >
-                <section className="mb-4 rounded-full border border-gray-100 bg-white p-1 shadow-sm">
-                  {renderSearch()}
-                </section>
-
-                <StoreContent
-                  menuItems={[]}
-                  searchQuery={searchInput}
-                  onClearSearch={() => setSearchInput("")}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
+            <p className="mx-auto mt-3 max-w-2xl text-[16px]  lg:text-xl leading-8 text-white/80">
+              ស្វែងរកមុខម្ហូបដែលសមនឹងចំណូលចិត្ត តម្លៃ ពេលរៀបចំ ប្រភេទម្ហូប
+              និងហាងដែលអ្នកចូលចិត្ត។
+            </p>
+          </section>
+        </main>
       </div>
-    </div>
+
+      {/* MOBILE / TABLET FOOD FILTER DRAWER */}
+
+      <AnimatePresence>
+        {mobileFiltersOpen && (
+          <motion.div
+            key="food-mobile-filter-drawer"
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            transition={{
+              duration: 0.2,
+            }}
+            className="fixed inset-0 z-[120] lg:hidden"
+          >
+            {/* Overlay */}
+
+            <motion.button
+              type="button"
+              aria-label="Close food filters"
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
+              exit={{
+                opacity: 0,
+              }}
+              onClick={() => setMobileFiltersOpen(false)}
+              className="absolute inset-0 cursor-default bg-black/45 backdrop-blur-[2px]"
+            />
+
+            {/* Drawer */}
+
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Food filters"
+              initial={{
+                y: "100%",
+              }}
+              animate={{
+                y: 0,
+              }}
+              exit={{
+                y: "100%",
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 320,
+                damping: 32,
+              }}
+              className="
+                  absolute
+                  inset-x-0
+                  bottom-0
+                  h-[90dvh]
+                  overflow-hidden
+                  rounded-t-[30px]
+                  bg-white
+                  shadow-2xl
+
+                  sm:left-auto
+                  sm:right-0
+                  sm:top-0
+                  sm:h-full
+                  sm:w-[390px]
+                  sm:rounded-none
+                  sm:rounded-l-[30px]
+                "
+            >
+              <FilterSidebar
+                mobile
+                filters={filters}
+                onChange={setFilters}
+                categoryOptions={categoryOptions}
+                cuisineOptions={cuisineOptions}
+                mealTypeOptions={mealTypeOptions}
+                dietaryTypeOptions={dietaryTypeOptions}
+                ageGroupOptions={ageGroupOptions}
+                seasonOptions={seasonOptions}
+                eventOptions={eventOptions}
+                weatherOptions={weatherOptions}
+                originCountryOptions={originCountryOptions}
+                allergenOptions={allergenOptions}
+                storeOptions={storeOptions}
+                ingredientOptions={ingredientOptions}
+                hasPositiveRatingData={hasPositiveRatingData}
+                onClose={() => setMobileFiltersOpen(false)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
