@@ -72,6 +72,25 @@ export interface SubmitMeetupVoteRequest {
   rankChoice?: number;
 }
 
+export interface JoinMeetupParticipantRequest {
+  shareToken: string;
+  nickname: string;
+  locationLat?: number | null;
+  locationLng?: number | null;
+  mapsLink?: string | null;
+}
+
+export interface MeetupVoteTallyEntry {
+  candidateUuid: string;
+  voteCount: number;
+}
+
+export interface MeetupVoteTallyResponse {
+  meetupUuid: string | null;
+  totalVotes: number;
+  tally: MeetupVoteTallyEntry[];
+}
+
 export interface MeetupParticipantResponse {
   id: number | null;
   uuid: string | null;

@@ -5,15 +5,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IoFilterOutline, IoRestaurantOutline } from "react-icons/io5";
 
 import {
-  useCancelMeetupMutation,
   useCreateMeetupMutation,
-  useCreateMockGroupSessionMutation,
-  useFinishMockGroupVotingMutation,
-  useGetMockGroupSessionQuery,
-  useSubmitMockGroupVoteMutation,
+  useDeleteMeetupGroupMutation,
+  useGetMeetupGroupQuery,
+  useGetMeetupVotesQuery,
+  useSubmitMeetupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
 
-import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+import { useGetBackendUserQuery } from "@/app/store/auth/currentUserApi";
 
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
@@ -26,8 +25,11 @@ import type {
   GroupLocationMember,
   GroupRecommendationStage,
 } from "@/types/group-location";
+
+// SharedGroupSession-shaped data assembled from real backend responses
+// so that GroupVotingPanel / GroupWinnerResult can render unchanged.
 import type {
-  GroupMember,
+  GroupVote,
   SharedGroupSession,
 } from "@/types/group-recommendation";
 
@@ -47,23 +49,20 @@ import GroupWinnerResult from "./GroupWinnerResult";
 
 const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
   ssr: false,
-
   loading: () => (
     <div className="h-[58dvh] min-h-[440px] animate-pulse rounded-[26px] bg-gray-100 md:h-[620px]" />
   ),
 });
 
 const CURRENT_MEMBER_UUID = "current-user";
-
 const MAX_VOTING_CANDIDATES = 8;
-
 const BACKEND_MEETUP_EXPIRY_HOURS = 24;
+// Poll the backend every 3 seconds while voting is open.
+const VOTE_POLL_INTERVAL_MS = 3_000;
 
 function getClientTimezone(): string {
   try {
-    return (
-      Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Phnom_Penh"
-    );
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Phnom_Penh";
   } catch {
     return "Asia/Phnom_Penh";
   }
@@ -119,18 +118,6 @@ function createInitialMembers(
   ];
 }
 
-function toSharedMember(member: GroupLocationMember): GroupMember {
-  return {
-    uuid: member.uuid,
-    name: member.name.trim() || "Friend",
-    coordinates: member.coordinates,
-    locationStatus: member.locationStatus,
-    requiredDietaryCodes: [...member.requiredDietaryCodes],
-    blockedAllergenCodes: [...member.blockedAllergenCodes],
-    hasVoted: false,
-  };
-}
-
 function getApiErrorMessage(error: unknown): string {
   if (error && typeof error === "object" && "data" in error) {
     const data = (
@@ -163,93 +150,57 @@ export default function GroupRecommendation({
   onResultCountChange,
 }: GroupRecommendationProps) {
   const [stage, setStage] = useState<GroupRecommendationStage>("setup");
-
   const [groupName, setGroupName] = useState("FoodHub Dinner Group");
-
   const [members, setMembers] = useState<GroupLocationMember[]>(() =>
     createInitialMembers(userLocation),
   );
-
   const [meetingPoint, setMeetingPoint] = useState<Coordinates | null>(null);
-
   const [view, setView] = useState<LocationViewMode>("list");
-
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
-
-  const [inviteCode, setInviteCode] = useState<string | null>(null);
-
-  const [ownerToken, setOwnerToken] = useState<string | null>(null);
-
-  const [participantToken, setParticipantToken] = useState<string | null>(null);
-
-  const [participantUuid, setParticipantUuid] = useState<string | null>(null);
-
-  const [createdSession, setCreatedSession] =
-    useState<SharedGroupSession | null>(null);
-
-  const [shareUrl, setShareUrl] = useState("");
-
   const [votingOpen, setVotingOpen] = useState(false);
-
   const [sessionError, setSessionError] = useState<string | null>(null);
 
-  const [backendMeetupUuid, setBackendMeetupUuid] = useState<string | null>(
-    null,
-  );
-
-  const [backendShareToken, setBackendShareToken] = useState<string | null>(
-    null,
-  );
-
-  const [backendSyncError, setBackendSyncError] = useState<string | null>(null);
+  // Real backend meetup state
+  const [backendMeetupUuid, setBackendMeetupUuid] = useState<string | null>(null);
+  const [backendShareToken, setBackendShareToken] = useState<string | null>(null);
+  // The participant UUID for the current user (host) so we can mark their vote
+  const [hostParticipantUuid, setHostParticipantUuid] = useState<string | null>(null);
 
   const autoCreateAttemptedRef = useRef(false);
 
-  const { data: currentUser } = useGetCurrentUserQuery();
-
-  const createdByUserId = isPositiveInteger(currentUser?.id)
-    ? currentUser.id
-    : null;
+  const { data: backendUser, isLoading: isLoadingUser } = useGetBackendUserQuery();
+  const createdByUserId = isPositiveInteger(backendUser?.id) ? backendUser.id : null;
+  const isAuthenticated = Boolean(createdByUserId);
 
   const [createMeetup] = useCreateMeetupMutation();
+  const [deleteMeetupGroup] = useDeleteMeetupGroupMutation();
+  const [submitMeetupVote, { isLoading: isSubmittingVote }] =
+    useSubmitMeetupVoteMutation();
 
-  const [cancelMeetup] = useCancelMeetupMutation();
+  // Poll group state while voting is open to detect when all members have voted
+  const { data: liveGroup } = useGetMeetupGroupQuery(
+    backendMeetupUuid ?? "",
+    {
+      skip: !backendMeetupUuid || stage !== "voting",
+      pollingInterval: VOTE_POLL_INTERVAL_MS,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
 
-  const [createSession, { isLoading: isCreatingSession }] =
-    useCreateMockGroupSessionMutation();
-
-  const [submitVote, { isLoading: isSubmittingVote }] =
-    useSubmitMockGroupVoteMutation();
-
-  const [finishVoting, { isLoading: isFinishingVoting }] =
-    useFinishMockGroupVotingMutation();
-
-  const { data: queriedSession, refetch: refetchSession } =
-    useGetMockGroupSessionQuery(inviteCode ?? "", {
-      skip: !inviteCode,
-      pollingInterval: 1_000,
+  // Poll votes list while voting is open
+  const { data: liveVotesResponse, refetch: refetchVotes } =
+    useGetMeetupVotesQuery(backendMeetupUuid ?? "", {
+      skip: !backendMeetupUuid || (stage !== "voting" && stage !== "completed"),
+      pollingInterval: VOTE_POLL_INTERVAL_MS,
       refetchOnFocus: true,
       refetchOnReconnect: true,
     });
 
-  const activeSession = queriedSession ?? createdSession;
-
-  useEffect(() => {
-    if (!userLocation) return;
-
-    setMembers((current) =>
-      current.map((member) =>
-        member.uuid === CURRENT_MEMBER_UUID
-          ? {
-              ...member,
-              coordinates: userLocation,
-              locationStatus: "ready",
-            }
-          : member,
-      ),
-    );
-  }, [userLocation]);
-
+  // ──────────────────────────────────────────────────────────
+  // Derived data: build a SharedGroupSession-shaped object so
+  // GroupVotingPanel / GroupWinnerResult can render unchanged.
+  // ──────────────────────────────────────────────────────────
   const recommendedStores = useMemo(
     () =>
       buildGroupRecommendedStores({
@@ -271,63 +222,144 @@ export default function GroupRecommendation({
     [recommendedStores, filters, searchQuery],
   );
 
-  const winner = useMemo(() => {
-    if (!activeSession?.winnerStoreUuid) {
-      return null;
-    }
+  // Map backend votes to the GroupVote shape expected by GroupVotingPanel
+  const mappedVotes = useMemo((): GroupVote[] => {
+    const votes = liveVotesResponse?.votes ?? [];
+    return votes.map((v) => ({
+      memberUuid: v.participantUuid ?? "",
+      storeUuid: v.candidateUuid ?? "",
+      createdAt: v.createdAt ?? new Date().toISOString(),
+    }));
+  }, [liveVotesResponse]);
 
-    return (
-      activeSession.stores.find(
-        (store) => store.uuid === activeSession.winnerStoreUuid,
-      ) ?? null
-    );
-  }, [activeSession]);
+  // Determine winner: the candidateUuid with the most votes
+  const winnerStoreUuid = useMemo((): string | null => {
+    if (mappedVotes.length === 0) return null;
+    const counts = new Map<string, number>();
+    for (const vote of mappedVotes) {
+      counts.set(vote.storeUuid, (counts.get(vote.storeUuid) ?? 0) + 1);
+    }
+    let max = 0;
+    let winner: string | null = null;
+    for (const [uuid, count] of counts) {
+      if (count > max) {
+        max = count;
+        winner = uuid;
+      }
+    }
+    return winner;
+  }, [mappedVotes]);
+
+  // Build pseudo-SharedGroupSession from real data for panel components
+  const activeSession = useMemo((): SharedGroupSession | null => {
+    if (!backendMeetupUuid || filteredStores.length === 0) return null;
+
+    const sessionMembers = members.map((m) => ({
+      uuid: m.backendParticipantUuid ?? m.uuid,
+      name: m.name,
+      coordinates: m.coordinates,
+      locationStatus: m.locationStatus,
+      requiredDietaryCodes: [...m.requiredDietaryCodes],
+      blockedAllergenCodes: [...m.blockedAllergenCodes],
+      hasVoted: mappedVotes.some(
+        (v) => v.memberUuid === (m.backendParticipantUuid ?? m.uuid),
+      ),
+    }));
+
+    return {
+      inviteCode: backendShareToken ?? backendMeetupUuid,
+      groupName: groupName.trim() || "FoodHub Group",
+      status: stage === "completed" ? "COMPLETED" : "VOTING",
+      members: sessionMembers,
+      stores: filteredStores.slice(0, MAX_VOTING_CANDIDATES),
+      votes: mappedVotes,
+      winnerStoreUuid: stage === "completed" ? winnerStoreUuid : null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }, [
+    backendMeetupUuid,
+    backendShareToken,
+    filteredStores,
+    groupName,
+    mappedVotes,
+    members,
+    stage,
+    winnerStoreUuid,
+  ]);
+
+  const shareUrl = backendShareToken
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/group-vote/${encodeURIComponent(backendShareToken)}`
+    : "";
+
+  const winner = useMemo(() => {
+    if (!winnerStoreUuid || stage !== "completed") return null;
+    return filteredStores.find((s) => s.uuid === winnerStoreUuid) ?? null;
+  }, [filteredStores, stage, winnerStoreUuid]);
 
   const winnerVoteCount = useMemo(() => {
-    if (!activeSession || !winner) {
-      return 0;
-    }
+    if (!winnerStoreUuid) return 0;
+    return mappedVotes.filter((v) => v.storeUuid === winnerStoreUuid).length;
+  }, [mappedVotes, winnerStoreUuid]);
 
-    return activeSession.votes.filter((vote) => vote.storeUuid === winner.uuid)
-      .length;
-  }, [activeSession, winner]);
+  // ──────────────────────────────────────────────────────────
+  // Effects
+  // ──────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!userLocation) return;
+    setMembers((current) =>
+      current.map((member) =>
+        member.uuid === CURRENT_MEMBER_UUID
+          ? { ...member, coordinates: userLocation, locationStatus: "ready" }
+          : member,
+      ),
+    );
+  }, [userLocation]);
 
   useEffect(() => {
     const showResults = stage === "recommendations" || stage === "voting";
-
     onResultCountChange(showResults ? filteredStores.length : 0);
   }, [filteredStores.length, onResultCountChange, stage]);
 
+  // Auto-advance to completed when liveGroup signals all members voted
+  // (backend doesn't auto-finish, so we rely on the host pressing Finish)
+  // This effect keeps the group state in sync.
   useEffect(() => {
-    if (activeSession?.status === "COMPLETED") {
-      setStage("completed");
-      setVotingOpen(true);
+    if (!liveGroup) return;
+    // Update backendShareToken if it changes
+    if (liveGroup.shareToken && liveGroup.shareToken !== backendShareToken) {
+      setBackendShareToken(liveGroup.shareToken);
     }
-  }, [activeSession?.status]);
+  }, [liveGroup, backendShareToken]);
 
-  const syncMeetupToBackend = useCallback(async () => {
-    /*
-     * The backend JOIN endpoint is not confirmed yet.
-     * For now we create the real meetup and immediately persist its one-time
-     * shareToken, while members/recommendations/store-voting continue using
-     * the current local/mock flow.
-     */
-    if (backendMeetupUuid) {
+  // ──────────────────────────────────────────────────────────
+  // Actions
+  // ──────────────────────────────────────────────────────────
+
+  /** Create real meetup on backend and transition to voting stage. */
+  const createMeetupAndStartVoting = useCallback(async () => {
+    const candidateStores = filteredStores.slice(0, MAX_VOTING_CANDIDATES);
+
+    if (candidateStores.length === 0) {
+      setSessionError("No candidate stores are available for voting.");
       return;
     }
 
     if (!createdByUserId) {
-      setBackendSyncError(
-        "Real meetup was not created because /users/me does not expose a numeric user id yet.",
+      setSessionError(
+        isLoadingUser
+          ? "Loading your account, please wait…"
+          : "Could not load your account. Please log in and try again.",
       );
       return;
     }
 
     try {
-      setBackendSyncError(null);
+      setSessionError(null);
 
       const created = await createMeetup({
-        createdByUserId,
+        createdByUserId: createdByUserId!,
         title: groupName.trim() || "FoodHub Group",
         votingMethod: "SINGLE_PICK",
         searchRadiusKm: filters.radiusKm,
@@ -335,258 +367,174 @@ export default function GroupRecommendation({
         expiresAt: buildMeetupExpiry(),
       }).unwrap();
 
-      const meetupUuid = created.uuid;
-
-      if (!meetupUuid) {
-        throw new Error(
-          "Meetup was created but the response did not include a meetup UUID.",
-        );
+      if (!created.uuid) {
+        throw new Error("Meetup created but no UUID was returned.");
       }
 
-      setBackendMeetupUuid(meetupUuid);
+      setBackendMeetupUuid(created.uuid);
 
       if (created.shareToken) {
         setBackendShareToken(created.shareToken);
-
         window.localStorage.setItem(
-          `foodhub-meetup-share-token-${meetupUuid}`,
+          `foodhub-meetup-share-${created.uuid}`,
           created.shareToken,
         );
       }
+
+      // Store the host's participant UUID (first participant is the creator)
+      const firstParticipant = created.participants?.[0];
+      if (firstParticipant?.uuid) {
+        setHostParticipantUuid(firstParticipant.uuid);
+        setMembers((current) =>
+          current.map((m) =>
+            m.uuid === CURRENT_MEMBER_UUID
+              ? { ...m, backendParticipantUuid: firstParticipant.uuid }
+              : m,
+          ),
+        );
+      }
+
+      setStage("voting");
+      setVotingOpen(false);
     } catch (error) {
-      setBackendSyncError(getApiErrorMessage(error));
+      setSessionError(getApiErrorMessage(error));
     }
   }, [
-    backendMeetupUuid,
     createMeetup,
     createdByUserId,
+    filteredStores,
     filters.radiusKm,
     groupName,
   ]);
 
+  /** Automatically create the voting session when recommendations are ready. */
+  useEffect(() => {
+    const shouldCreate =
+      stage === "recommendations" &&
+      filteredStores.length > 0 &&
+      !backendMeetupUuid &&
+      !autoCreateAttemptedRef.current;
+
+    if (!shouldCreate) return;
+
+    autoCreateAttemptedRef.current = true;
+    void createMeetupAndStartVoting();
+  }, [
+    createMeetupAndStartVoting,
+    backendMeetupUuid,
+    filteredStores.length,
+    stage,
+  ]);
+
   const calculateAndShowRecommendations = () => {
     const midpoint = calculateGroupMidpoint(members);
-
-    if (!midpoint) {
-      return;
-    }
+    if (!midpoint) return;
 
     setMeetingPoint(midpoint);
     setSelectedStoreId(null);
     setView("list");
-
     autoCreateAttemptedRef.current = false;
-
     setStage("recommendations");
-
     setSessionError(null);
-
-    void syncMeetupToBackend();
   };
 
-  const createVotingSession = useCallback(
-    async (openPanel = false) => {
-      const candidateStores = filteredStores.slice(0, MAX_VOTING_CANDIDATES);
-
-      if (candidateStores.length === 0) {
-        setSessionError("No candidate stores are available for voting.");
-
-        return;
-      }
-
-      try {
-        setSessionError(null);
-
-        const result = await createSession({
-          groupName: groupName.trim() || "FoodHub Group",
-
-          members: members.map(toSharedMember),
-
-          stores: candidateStores,
-        }).unwrap();
-
-        const url = `${window.location.origin}/group-vote/${encodeURIComponent(
-          result.session.inviteCode,
-        )}`;
-
-        setInviteCode(result.session.inviteCode);
-
-        setOwnerToken(result.ownerToken);
-
-        setParticipantToken(result.participantToken);
-
-        setParticipantUuid(result.participantUuid);
-
-        setCreatedSession(result.session);
-
-        setShareUrl(url);
-
-        setStage("voting");
-
-        setVotingOpen(openPanel);
-
-        window.localStorage.setItem(
-          `foodhub-vote-token-${result.session.inviteCode}`,
-          result.participantToken,
-        );
-
-        window.localStorage.setItem(
-          `foodhub-vote-member-${result.session.inviteCode}`,
-          result.participantUuid,
-        );
-      } catch (error) {
-        setSessionError(getApiErrorMessage(error));
-      }
-    },
-    [createSession, filteredStores, groupName, members],
-  );
-
-  useEffect(() => {
-    const shouldPrepareVoting =
-      stage === "recommendations" &&
-      filteredStores.length > 0 &&
-      !inviteCode &&
-      !isCreatingSession &&
-      !autoCreateAttemptedRef.current;
-
-    if (!shouldPrepareVoting) {
-      return;
-    }
-
-    autoCreateAttemptedRef.current = true;
-
-    void createVotingSession(false);
-  }, [
-    createVotingSession,
-    filteredStores.length,
-    inviteCode,
-    isCreatingSession,
-    stage,
-  ]);
-
+  /** Host votes for a store. */
   const voteAsHost = async (storeUuid: string) => {
-    if (!inviteCode || !participantToken) {
-      setSessionError("Voting access is not ready yet.");
+    if (!backendMeetupUuid) {
+      setSessionError("Voting session is not ready yet.");
+      return;
+    }
 
+    const participantUuid = hostParticipantUuid;
+
+    if (!participantUuid) {
+      setSessionError("Your participant record was not found.");
       return;
     }
 
     try {
       setSessionError(null);
-
-      const session = await submitVote({
-        inviteCode,
-        participantToken,
-        storeUuid,
+      await submitMeetupVote({
+        meetupUuid: backendMeetupUuid,
+        participantUuid,
+        candidateUuid: storeUuid,
+        rankChoice: 1,
       }).unwrap();
-
-      setCreatedSession(session);
-
-      void refetchSession();
+      void refetchVotes();
     } catch (error) {
       setSessionError(getApiErrorMessage(error));
     }
   };
 
-  const finishSharedVoting = async () => {
-    if (!inviteCode || !ownerToken) {
-      setSessionError("Owner access is not ready yet.");
-
-      return;
-    }
-
-    try {
-      setSessionError(null);
-
-      const session = await finishVoting({
-        inviteCode,
-        ownerToken,
-      }).unwrap();
-
-      setCreatedSession(session);
-
-      setStage("completed");
-
-      setVotingOpen(true);
-
-      void refetchSession();
-    } catch (error) {
-      setSessionError(getApiErrorMessage(error));
-    }
+  /** Host manually finishes voting and reveals the winner. */
+  const finishVoting = () => {
+    setStage("completed");
+    setVotingOpen(true);
+    void refetchVotes();
   };
 
+  /** Cancel and delete the backend meetup, then reset all local state. */
   const cancelBackendMeetupIfNeeded = () => {
     const meetupUuid = backendMeetupUuid;
 
     setBackendMeetupUuid(null);
     setBackendShareToken(null);
-    setBackendSyncError(null);
+    setHostParticipantUuid(null);
 
-    if (!meetupUuid) {
-      return;
-    }
+    if (!meetupUuid) return;
 
-    window.localStorage.removeItem(`foodhub-meetup-share-token-${meetupUuid}`);
+    window.localStorage.removeItem(`foodhub-meetup-share-${meetupUuid}`);
 
-    void cancelMeetup(meetupUuid)
+    void deleteMeetupGroup(meetupUuid)
       .unwrap()
       .catch(() => {
-        // Do not block the local UI reset if backend cancellation fails.
+        // Do not block the local UI reset if backend deletion fails.
       });
   };
 
-  const clearSharedSession = () => {
+  const clearVotingState = () => {
     autoCreateAttemptedRef.current = false;
-
-    setInviteCode(null);
-    setOwnerToken(null);
-    setParticipantToken(null);
-    setParticipantUuid(null);
-    setCreatedSession(null);
-    setShareUrl("");
     setVotingOpen(false);
     setSessionError(null);
   };
 
   const changeLocations = () => {
     cancelBackendMeetupIfNeeded();
-    clearSharedSession();
-
+    clearVotingState();
     setMeetingPoint(null);
     setSelectedStoreId(null);
     setView("list");
     setStage("setup");
-
     onResultCountChange(0);
   };
 
   const restart = () => {
     cancelBackendMeetupIfNeeded();
-    clearSharedSession();
-
+    clearVotingState();
     setGroupName("FoodHub Dinner Group");
-
     setMembers(createInitialMembers(userLocation));
-
     setMeetingPoint(null);
     setSelectedStoreId(null);
     setView("list");
     setStage("setup");
-
     onResultCountChange(0);
   };
+
+  // ──────────────────────────────────────────────────────────
+  // Render
+  // ──────────────────────────────────────────────────────────
 
   const votingPanel = (
     <GroupVotingPanel
       open={votingOpen}
       session={activeSession}
       shareUrl={shareUrl}
-      currentMemberUuid={participantUuid}
+      currentMemberUuid={hostParticipantUuid ?? CURRENT_MEMBER_UUID}
       isSubmittingVote={isSubmittingVote}
-      isFinishing={isFinishingVoting}
+      isFinishing={false}
       errorMessage={sessionError}
       onVote={(storeUuid) => void voteAsHost(storeUuid)}
-      onFinish={() => void finishSharedVoting()}
+      onFinish={finishVoting}
       onClose={() => setVotingOpen(false)}
       onRestart={restart}
     />
@@ -604,7 +552,6 @@ export default function GroupRecommendation({
           onMembersChange={setMembers}
           onCalculate={calculateAndShowRecommendations}
         />
-
         {votingPanel}
       </>
     );
@@ -620,7 +567,6 @@ export default function GroupRecommendation({
           shareUrl={shareUrl}
           onRestart={restart}
         />
-
         {votingPanel}
       </>
     );
@@ -699,14 +645,13 @@ export default function GroupRecommendation({
         groupName={groupName}
         resultCount={filteredStores.length}
         shareUrl={shareUrl}
-        hasVotingSession={Boolean(inviteCode)}
-        isCreatingSession={isCreatingSession}
+        hasVotingSession={Boolean(backendMeetupUuid)}
+        isCreatingSession={false}
         onOpenFilters={onOpenFilters}
         onChangeLocations={changeLocations}
         onCreateVotingSession={() => {
           autoCreateAttemptedRef.current = true;
-
-          void createVotingSession(false);
+          void createMeetupAndStartVoting();
         }}
         onOpenVoting={() => setVotingOpen(true)}
       />
@@ -714,19 +659,6 @@ export default function GroupRecommendation({
       {sessionError && !votingOpen && (
         <div className="mb-5 rounded-[18px] border border-red-100 bg-red-50 px-4 py-3 text-[17px] leading-7 text-red-600">
           {sessionError}
-        </div>
-      )}
-
-      {backendSyncError && !votingOpen && (
-        <div className="mb-5 rounded-[18px] border border-amber-100 bg-amber-50 px-4 py-3 text-[17px] leading-7 text-amber-700">
-          {backendSyncError}
-        </div>
-      )}
-
-      {backendMeetupUuid && !backendSyncError && !votingOpen && (
-        <div className="mb-5 rounded-[18px] border border-emerald-100 bg-emerald-50 px-4 py-3 text-[17px] leading-7 text-emerald-700">
-          Real meetup synced locally.
-          {backendShareToken ? " Backend share token saved." : ""}
         </div>
       )}
 
@@ -780,12 +712,8 @@ function EmptyResults({
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <DebugMetric label="" value={String(sourceStoreCount)} />
-
-        <DebugMetric
-          label="ហាងមុនតម្រង"
-          value={String(recommendedStoreCount)}
-        />
+        <DebugMetric label="ហាងទាំងអស់" value={String(sourceStoreCount)} />
+        <DebugMetric label="ហាងមុនតម្រង" value={String(recommendedStoreCount)} />
       </div>
 
       <button
@@ -804,7 +732,6 @@ function DebugMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-white p-4">
       <p className="text-[16px] text-gray-400">{label}</p>
-
       <p className="mt-1 text-[21px] font-bold text-primary-900">{value}</p>
     </div>
   );

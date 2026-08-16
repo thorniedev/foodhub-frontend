@@ -290,6 +290,29 @@ export const locationApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 60,
     }),
 
+    /**
+     * GET /api/v1/stores/nearby?latitude={latitude}&longitude={longitude}&page=0&size=100
+     */
+    getNearbyStores: builder.query<
+      FoodStore[],
+      { latitude: number; longitude: number; page?: number; size?: number }
+    >({
+      query: ({ latitude, longitude, page = 0, size = 100 }) => ({
+        url: "/stores/nearby",
+        method: "GET",
+        params: {
+          latitude,
+          longitude,
+          page,
+          size,
+        },
+      }),
+      transformResponse: (response: unknown): FoodStore[] =>
+        extractStorePage(response).contents,
+      providesTags: ["NearbyStore"],
+      keepUnusedDataFor: 60,
+    }),
+
     /** GET /api/v1/stores/{uuid} */
     getStoreByUuid: builder.query<FoodStoreDetail | null, string>({
       query: (storeUuid) => ({
@@ -310,4 +333,8 @@ export const locationApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useGetStoresQuery, useGetStoreByUuidQuery } = locationApi;
+export const {
+  useGetStoresQuery,
+  useGetNearbyStoresQuery,
+  useGetStoreByUuidQuery,
+} = locationApi;

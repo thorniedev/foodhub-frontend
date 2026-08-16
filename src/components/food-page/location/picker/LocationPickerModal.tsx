@@ -15,13 +15,30 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
+  IoBookmark,
+  IoBookmarkOutline,
+  IoBriefcaseOutline,
   IoCheckmarkOutline,
   IoCloseOutline,
+  IoHomeOutline,
   IoLocateOutline,
   IoLocationOutline,
+  IoMapOutline,
   IoSearchOutline,
+  IoTrashOutline,
 } from "react-icons/io5";
 
+import SavedLocationsManager from "./SavedLocationsManager";
+import {
+  useGetCurrentUserQuery,
+  useGetBackendUserQuery,
+} from "@/app/store/auth/currentUserApi";
+import {
+  useCreateSavedLocationMutation,
+  useDeleteSavedLocationMutation,
+  useListSavedLocationsQuery,
+} from "@/app/store/savedLocationApi";
+import type { SavedLocation } from "@/types/saved-location";
 import type { Coordinates } from "@/types/location";
 
 import type {
@@ -50,13 +67,10 @@ export interface PickedMapLocation extends Coordinates {
 
 interface LocationPickerModalProps {
   open: boolean;
-
+  initialTab?: "map" | "saved";
   initialLocation: Coordinates | null;
-
   detectedLocation: Coordinates | null;
-
   onClose: () => void;
-
   onConfirm: (location: PickedMapLocation) => void;
 }
 
@@ -67,23 +81,12 @@ const DEFAULT_LOCATION: Coordinates = {
 };
 
 function isValidCoordinates(
-  value: Coordinates | null | undefined,
-): value is Coordinates {
-  if (!value) {
-    return false;
-  }
-
-  const latitude = Number(value.latitude);
-
-  const longitude = Number(value.longitude);
-
-  return (
-    Number.isFinite(latitude) &&
-    Number.isFinite(longitude) &&
-    latitude >= -90 &&
-    latitude <= 90 &&
-    longitude >= -180 &&
-    longitude <= 180
+  coordinates: Coordinates | null,
+): coordinates is Coordinates {
+  return Boolean(
+    coordinates &&
+      Number.isFinite(coordinates.latitude) &&
+      Number.isFinite(coordinates.longitude),
   );
 }
 
@@ -133,10 +136,12 @@ export default function LocationPickerModal({
   open,
   initialLocation,
   detectedLocation,
+  initialTab = "map",
   onClose,
   onConfirm,
 }: LocationPickerModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<"map" | "saved">("map");
 
   const [draftLocation, setDraftLocation] =
     useState<Coordinates>(DEFAULT_LOCATION);
@@ -145,6 +150,47 @@ export default function LocationPickerModal({
     useState<LocationSearchResult | null>(null);
 
   const [draftLabel, setDraftLabel] = useState<string | null>(null);
+
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [saveLocationName, setSaveLocationName] = useState("");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const { data: authUser } = useGetCurrentUserQuery();
+  const { data: backendUser } = useGetBackendUserQuery();
+  const isLoggedIn = Boolean(authUser || backendUser?.id);
+
+  const { data: savedLocations = [], isLoading: isLoadingSaved } =
+    useListSavedLocationsQuery(undefined, { skip: !isLoggedIn });
+
+  const [createSavedLocation, { isLoading: isSavingDirect }] =
+    useCreateSavedLocationMutation();
+  const [deleteSavedLocation] = useDeleteSavedLocationMutation();
+
+  const handleOpenSaveDialog = () => {
+    setSaveLocationName(
+      selectedPlace?.name || draftLabel || "ទីតាំងរបស់ខ្ញុំ",
+    );
+    setSaveModalOpen(true);
+  };
+
+  const handleDirectSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!saveLocationName.trim()) return;
+    try {
+      await createSavedLocation({
+        label: saveLocationName.trim(),
+        addressLine: selectedPlace?.address || draftLabel || null,
+        latitude: draftLocation.latitude,
+        longitude: draftLocation.longitude,
+      }).unwrap();
+      setSaveModalOpen(false);
+      setToastMessage(`បានរក្សាទុក "${saveLocationName}" ដោយជោគជ័យ! ✅`);
+      setTimeout(() => setToastMessage(null), 3500);
+    } catch {
+      setToastMessage("មិនអាចរក្សាទុកទីតាំងបានទេ។ សូមសាកល្បងម្ដងទៀត។ ❌");
+      setTimeout(() => setToastMessage(null), 3500);
+    }
+  };
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -411,6 +457,7 @@ export default function LocationPickerModal({
    */
   useEffect(() => {
     if (open && !wasOpenRef.current) {
+      setActiveTab(initialTab || "map");
       const location = getInitialLocation(initialLocation, detectedLocation);
 
       setDraftLocation(location);
@@ -435,7 +482,7 @@ export default function LocationPickerModal({
     }
 
     wasOpenRef.current = open;
-  }, [detectedLocation, initialLocation, open, resolveLocation]);
+  }, [detectedLocation, initialLocation, initialTab, open, resolveLocation]);
 
   /*
    * ---------------------------------
@@ -689,21 +736,43 @@ export default function LocationPickerModal({
     setSearching(false);
   };
 
+  const handleSelectSavedLocation = (savedLoc: SavedLocation) => {
+    const nextLocation: Coordinates = {
+      latitude: savedLoc.latitude,
+      longitude: savedLoc.longitude,
+    };
+
+    if (!isValidCoordinates(nextLocation)) {
+      return;
+    }
+
+    setDraftLocation(nextLocation);
+    setSelectedPlace(null);
+    setDraftLabel(
+      savedLoc.label +
+        (savedLoc.addressLine ? ` (${savedLoc.addressLine})` : ""),
+    );
+    setSearchResults([]);
+    setSearchError(null);
+    setSearching(false);
+    void resolveLocation(nextLocation);
+  };
+
   const handleConfirm = () => {
     if (!isValidCoordinates(draftLocation)) {
       return;
     }
 
+    const resolvedLabel =
+      selectedPlace?.address ||
+      selectedPlace?.name ||
+      draftLabel ||
+      "ទីតាំងដែលបានជ្រើសលើផែនទី";
+
     onConfirm({
       latitude: draftLocation.latitude,
-
       longitude: draftLocation.longitude,
-
-      label:
-        selectedPlace?.address ||
-        selectedPlace?.name ||
-        draftLabel ||
-        "ទីតាំងដែលបានជ្រើសលើផែនទី",
+      label: resolvedLabel,
     });
   };
 
@@ -813,250 +882,359 @@ export default function LocationPickerModal({
               </div>
             </header>
 
-            {/* MAP */}
+            {/* TABS HEADER */}
+            <div className="flex border-b border-slate-100 bg-slate-50/70 px-4 sm:px-6">
+              <button
+                type="button"
+                onClick={() => setActiveTab("map")}
+                className={`flex items-center gap-2 border-b-2 px-4 py-3 text-[16px] font-bold transition ${
+                  activeTab === "map"
+                    ? "border-primary-700 text-primary-900"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <IoMapOutline className="text-[20px]" />
+                <span>ជ្រើសលើផែនទី (Map Picker)</span>
+              </button>
 
-            <div className="relative min-h-0 flex-1">
-              <LocationPickerMap
-                value={draftLocation}
-                selectedPlace={selectedPlace}
-                onChange={handleMapChange}
-              />
-
-              {/* SEARCH */}
-
-              <div className="absolute left-3 right-3 top-3 z-[650] sm:left-4 sm:right-auto sm:w-[590px]">
-                <form
-                  onSubmit={handleSearchSubmit}
-                  className="flex min-h-14 items-center gap-2 rounded-2xl border border-white/90 bg-white/[0.97] p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.22)] backdrop-blur-md"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center text-slate-500">
-                    <IoSearchOutline className="text-[24px]" />
+              <button
+                type="button"
+                onClick={() => setActiveTab("saved")}
+                className={`flex items-center gap-2 border-b-2 px-4 py-3 text-[16px] font-bold transition ${
+                  activeTab === "saved"
+                    ? "border-primary-700 text-primary-900"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <IoBookmarkOutline className="text-[20px]" />
+                <span>ទីតាំងបានរក្សាទុក (Saved Places)</span>
+                {savedLocations.length > 0 && (
+                  <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[12px] font-bold text-primary-800">
+                    {savedLocations.length}
                   </span>
+                )}
+              </button>
+            </div>
 
-                  <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(event) => {
-                      setSearchQuery(event.target.value);
-
-                      setSearchError(null);
-                    }}
-                    autoComplete="off"
-                    placeholder="ស្វែងរកនៅកម្ពុជា / Search in Cambodia..."
-                    aria-label="Search location"
-                    className="min-w-0 flex-1 bg-transparent px-1 text-[17px] text-slate-800 outline-none placeholder:text-slate-400"
+            {activeTab === "saved" ? (
+              <div className="min-h-0 flex-1 bg-slate-50/40">
+                <SavedLocationsManager
+                  currentCoordinates={draftLocation}
+                  currentAddress={
+                    selectedPlace?.address ||
+                    selectedPlace?.name ||
+                    draftLabel ||
+                    null
+                  }
+                  onSelectLocation={(loc) => {
+                    onConfirm({
+                      latitude: loc.latitude,
+                      longitude: loc.longitude,
+                      label: loc.label,
+                    });
+                  }}
+                  onSwitchToMap={() => setActiveTab("map")}
+                />
+              </div>
+            ) : (
+              <>
+                {/* MAP CONTAINER */}
+                <div className="relative min-h-0 flex-1 w-full overflow-hidden">
+                  <LocationPickerMap
+                    value={draftLocation}
+                    selectedPlace={selectedPlace}
+                    onChange={handleMapChange}
                   />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={handleClearSearch}
-                      aria-label="Clear location search"
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+
+                  {/* SEARCH BAR OVERLAY */}
+                  <div className="absolute left-3 right-3 top-3 z-[650] sm:left-4 sm:right-auto sm:w-[540px]">
+                    <form
+                      onSubmit={handleSearchSubmit}
+                      className="flex min-h-13 items-center gap-2 rounded-2xl border border-white/90 bg-white/[0.97] p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.22)] backdrop-blur-md"
                     >
-                      <IoCloseOutline className="text-[22px]" />
-                    </button>
-                  )}
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-500">
+                        <IoSearchOutline className="text-[22px]" />
+                      </span>
 
-                  <button
-                    type="submit"
-                    disabled={searching}
-                    className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-primary-800 px-4 text-[17px] font-bold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    ស្វែងរក
-                  </button>
-                </form>
+                      <input
+                        type="search"
+                        value={searchQuery}
+                        onChange={(event) => {
+                          setSearchQuery(event.target.value);
+                          setSearchError(null);
+                        }}
+                        autoComplete="off"
+                        placeholder="ស្វែងរកនៅកម្ពុជា / Search in Cambodia..."
+                        aria-label="Search location"
+                        className="min-w-0 flex-1 bg-transparent px-1 text-[16px] text-slate-800 outline-none placeholder:text-slate-400"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={handleClearSearch}
+                          aria-label="Clear location search"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                        >
+                          <IoCloseOutline className="text-[20px]" />
+                        </button>
+                      )}
 
-                {/* AUTOCOMPLETE DROPDOWN */}
+                      <button
+                        type="submit"
+                        disabled={searching}
+                        className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl bg-primary-800 px-4 text-[15px] font-bold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        ស្វែងរក
+                      </button>
+                    </form>
 
-                {showSearchDropdown && (
-                  <div
-                    className="
-                      mt-2
-                      max-h-[390px]
-                      overflow-y-auto
-                      rounded-2xl
-                      border
-                      border-slate-200
-                      bg-white/[0.98]
-                      p-2
-                      shadow-[0_16px_40px_rgba(15,23,42,0.24)]
-                      backdrop-blur-md
+                    {/* AUTOCOMPLETE DROPDOWN */}
+                    {showSearchDropdown && (
+                      <div
+                        className="
+                          mt-2
+                          max-h-[320px]
+                          overflow-y-auto
+                          rounded-2xl
+                          border
+                          border-slate-200
+                          bg-white/[0.98]
+                          p-2
+                          shadow-[0_16px_40px_rgba(15,23,42,0.24)]
+                          backdrop-blur-md
+                          [scrollbar-width:none]
+                          [&::-webkit-scrollbar]:hidden
+                        "
+                      >
+                        {searching && (
+                          <div className="flex items-center gap-3 px-4 py-3">
+                            <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-primary-100 border-t-primary-700" />
+                            <p className="text-[15px] text-slate-500">
+                              កំពុងស្វែងរកទីតាំង...
+                            </p>
+                          </div>
+                        )}
 
-                      [scrollbar-width:none]
-                      [&::-webkit-scrollbar]:hidden
-                    "
-                  >
-                    {searching && (
-                      <div className="flex items-center gap-3 px-4 py-4">
-                        <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-primary-100 border-t-primary-700" />
+                        {!searching &&
+                          searchResults.map((result, index) => {
+                            const area = [
+                              result.city,
+                              result.state,
+                              result.country,
+                            ]
+                              .filter(Boolean)
+                              .join(" • ");
 
-                        <p className="text-[17px] text-slate-500">
-                          កំពុងស្វែងរកទីតាំង...
-                        </p>
+                            return (
+                              <button
+                                key={`${result.id}-${result.latitude}-${result.longitude}-${index}`}
+                                type="button"
+                                onClick={() => handleSelectResult(result)}
+                                className="group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
+                              >
+                                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700 transition group-hover:bg-white">
+                                  <IoLocationOutline className="text-[20px]" />
+                                </span>
+
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-[15px] font-bold leading-6 text-slate-900">
+                                    {result.name}
+                                  </span>
+                                  <span className="mt-0.5 line-clamp-1 block text-[13px] leading-5 text-slate-500">
+                                    {result.address}
+                                  </span>
+                                  {area && (
+                                    <span className="mt-0.5 block truncate text-[13px] font-semibold text-primary-700">
+                                      {area}
+                                    </span>
+                                  )}
+                                </span>
+                              </button>
+                            );
+                          })}
+
+                        {!searching &&
+                          searchResults.length === 0 &&
+                          searchError && (
+                            <div className="px-4 py-3">
+                              <p className="text-[15px] leading-6 text-slate-500">
+                                {searchError}
+                              </p>
+                            </div>
+                          )}
                       </div>
                     )}
 
-                    {!searching &&
-                      searchResults.map((result, index) => {
-                        const area = [result.city, result.state, result.country]
-                          .filter(Boolean)
-                          .join(" • ");
-
-                        return (
-                          <button
-                            key={`${result.id}-${result.latitude}-${result.longitude}-${index}`}
-                            type="button"
-                            onClick={() => handleSelectResult(result)}
-                            className="group flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
-                          >
-                            <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700 transition group-hover:bg-white">
-                              <IoLocationOutline className="text-[23px]" />
-                            </span>
-
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[17px] font-bold leading-7 text-slate-900">
-                                {result.name}
-                              </span>
-
-                              <span className="mt-0.5 line-clamp-2 block text-[15px] leading-6 text-slate-500">
-                                {result.address}
-                              </span>
-
-                              {area && (
-                                <span className="mt-1 block truncate text-[14px] font-semibold text-primary-700">
-                                  {area}
-                                </span>
-                              )}
-                            </span>
-                          </button>
-                        );
-                      })}
-
-                    {!searching &&
-                      searchResults.length === 0 &&
-                      searchError && (
-                        <div className="px-4 py-4">
-                          <p className="text-[17px] leading-7 text-slate-500">
-                            {searchError}
-                          </p>
-                        </div>
-                      )}
-                  </div>
-                )}
-              </div>
-
-              {/* CURRENT GPS BUTTON */}
-
-              {isValidCoordinates(detectedLocation) && (
-                <button
-                  type="button"
-                  onClick={handleUseCurrentLocation}
-                  className="absolute bottom-5 left-4 z-[500] inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.95] px-4 text-[17px] font-bold text-primary-800 dark:text-primary-dark shadow-lg backdrop-blur-md transition hover:bg-primary-50"
-                >
-                  <IoLocateOutline className="text-[22px]" />
-                  ទៅទីតាំងបច្ចុប្បន្ន
-                </button>
-              )}
-            </div>
-
-            {/* FOOTER */}
-
-            <footer className="shrink-0 border-t border-slate-100 bg-white px-4 py-4 sm:px-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0 flex-1">
-                  {resolvingPlace ? (
-                    <div className="flex min-h-[92px] items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                      <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-primary-100 border-t-primary-700" />
-
-                      <p className="text-[17px] text-slate-500">
-                        កំពុងរកព័ត៌មានអាសយដ្ឋាន...
-                      </p>
-                    </div>
-                  ) : selectedPlace ? (
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                      <div className="flex items-start gap-3">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700">
-                          <IoLocationOutline className="text-[23px]" />
+                    {/* SAVED LOCATIONS QUICK BAR */}
+                    {savedLocations.length > 0 && !showSearchDropdown && (
+                      <div className="mt-2 flex items-center gap-2 overflow-x-auto rounded-2xl border border-white/90 bg-white/[0.97] p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <span className="flex shrink-0 items-center gap-1 px-1 text-[13px] font-bold text-primary-800">
+                          <IoBookmark className="text-[15px] text-primary-700" />
+                          ទីតាំងរក្សាទុក:
                         </span>
+                        {savedLocations.map((loc) => {
+                          const isHome = /home|ផ្ទះ/i.test(loc.label);
+                          const isWork = /work|office|ការិយាល័យ/i.test(loc.label);
+                          return (
+                            <button
+                              key={loc.uuid}
+                              type="button"
+                              onClick={() => handleSelectSavedLocation(loc)}
+                              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1 text-[13px] font-semibold text-slate-700 shadow-sm transition hover:border-primary-400 hover:bg-primary-50 hover:text-primary-800"
+                            >
+                              {isHome ? (
+                                <IoHomeOutline className="text-[14px] text-primary-700" />
+                              ) : isWork ? (
+                                <IoBriefcaseOutline className="text-[14px] text-primary-700" />
+                              ) : (
+                                <IoBookmarkOutline className="text-[14px] text-primary-700" />
+                              )}
+                              <span>{loc.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[15px] font-medium text-slate-500">
-                            ទីតាំងដែលបានជ្រើស
-                          </p>
+                  {/* CURRENT GPS BUTTON */}
+                  {isValidCoordinates(detectedLocation) && (
+                    <button
+                      type="button"
+                      onClick={handleUseCurrentLocation}
+                      className="absolute bottom-[200px] left-3 z-[500] sm:bottom-[170px] sm:left-4 inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.97] px-3.5 text-[15px] font-bold text-primary-800 shadow-lg backdrop-blur-md transition hover:bg-primary-50 active:scale-95"
+                    >
+                      <IoLocateOutline className="text-[20px] text-primary-700" />
+                      ទីតាំងបច្ចុប្បន្ន
+                    </button>
+                  )}
 
-                          <p
-                            role="heading"
-                            aria-level={3}
-                            className="mt-0.5 text-[18px] font-bold leading-7 text-slate-900"
-                          >
-                            {selectedPlace.name}
-                          </p>
+                  {/* FLOATING BOTTOM CONFIRMATION CARD (ALWAYS 100% VISIBLE) */}
+                  <div className="absolute bottom-3 left-3 right-3 z-[600] sm:bottom-4 sm:left-4 sm:right-4 max-h-[45vh] overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/[0.98] p-3.5 sm:p-4 shadow-[0_16px_48px_rgba(15,23,42,0.22)] backdrop-blur-md">
+                    {/* TOAST MESSAGE */}
+                    <AnimatePresence>
+                      {toastMessage && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          className="mb-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-[14px] font-bold text-emerald-800"
+                        >
+                          <span>{toastMessage}</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
-                          <p className="mt-0.5 line-clamp-2 text-[16px] leading-6 text-slate-600">
-                            {selectedPlace.address}
-                          </p>
+                    {/* QUICK SAVE INLINE DIALOG */}
+                    <AnimatePresence>
+                      {saveModalOpen && (
+                        <motion.form
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          onSubmit={handleDirectSave}
+                          className="mb-3.5 overflow-hidden rounded-xl border border-amber-200 bg-amber-50/70 p-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-1 text-[14px] font-bold text-amber-900">
+                              <IoBookmark className="text-[16px] text-amber-600" />
+                              រក្សាទុកទីតាំងទៅក្នុងបញ្ជីសំណព្វ (Save to My Places)
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setSaveModalOpen(false)}
+                              className="text-[18px] text-slate-400 hover:text-slate-700"
+                            >
+                              ✕
+                            </button>
+                          </div>
 
-                          {placeArea && (
-                            <p className="mt-1 text-[15px] font-semibold text-primary-700">
-                              {placeArea}
+                          <div className="mt-2 flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              required
+                              value={saveLocationName}
+                              onChange={(e) => setSaveLocationName(e.target.value)}
+                              placeholder="បញ្ចូលឈ្មោះទីតាំង (ឧ. ផ្ទះ, ការិយាល័យ, កន្លែងញ៉ាំបាយ...)"
+                              className="min-h-10 flex-1 rounded-xl border border-amber-300 bg-white px-3 text-[14px] font-semibold text-slate-800 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                            />
+                            <button
+                              type="submit"
+                              disabled={isSavingDirect}
+                              className="flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-amber-600 px-5 text-[14px] font-bold text-white shadow-sm transition hover:bg-amber-700 disabled:opacity-60"
+                            >
+                              <IoBookmarkOutline className="text-[16px]" />
+                              {isSavingDirect ? "កំពុងរក្សាទុក..." : "រក្សាទុក (Save)"}
+                            </button>
+                          </div>
+                        </motion.form>
+                      )}
+                    </AnimatePresence>
+
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                      {/* LOCATION DETAILS */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start gap-2.5">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+                            <IoLocationOutline className="text-[20px]" />
+                          </span>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[16px] font-bold text-slate-900">
+                              {resolvingPlace
+                                ? "កំពុងរកព័ត៌មានអាសយដ្ឋាន..."
+                                : selectedPlace?.name ||
+                                  draftLabel ||
+                                  "ទីតាំងដែលបានជ្រើស"}
                             </p>
-                          )}
 
-                          {selectedPlace.postcode && (
-                            <p className="mt-1 text-[15px] text-slate-500">
-                              លេខប្រៃសណីយ៍: {selectedPlace.postcode}
+                            {(selectedPlace?.address || draftLabel) && (
+                              <p className="mt-0.5 line-clamp-1 text-[13px] text-slate-600">
+                                {selectedPlace?.address || draftLabel}
+                              </p>
+                            )}
+
+                            <p className="mt-0.5 text-[12px] font-semibold text-slate-400">
+                              {draftLocation.latitude.toFixed(6)},{" "}
+                              {draftLocation.longitude.toFixed(6)}
                             </p>
-                          )}
-
-                          <p className="mt-1 break-all text-[15px] font-semibold text-slate-500">
-                            {draftLocation.latitude.toFixed(6)},
-                            {draftLocation.longitude.toFixed(6)}
-                          </p>
+                          </div>
                         </div>
                       </div>
+
+                      {/* ACTION BUTTONS: Save Button, Confirm Button, Cancel Button */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleOpenSaveDialog}
+                          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-4 text-[14px] font-bold text-amber-900 shadow-sm transition hover:bg-amber-100 active:scale-95"
+                        >
+                          <IoBookmarkOutline className="text-[18px] text-amber-700" />
+                          <span>រក្សាទុកទីតាំង(Save Location)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={onClose}
+                          className="min-h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-[14px] font-bold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          បោះបង់
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => void handleConfirm()}
+                          className="flex min-h-11 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl bg-primary-800 px-5 text-[14px] font-bold text-white shadow-md transition hover:bg-primary-700 active:scale-98"
+                        >
+                          <IoCheckmarkOutline className="text-[20px]" />
+                          <span>បញ្ជាក់ទីតាំង (Choose Place)</span>
+                        </button>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                      <p className="text-[17px] font-medium text-slate-500">
-                        ទីតាំងដែលបានជ្រើស
-                      </p>
-
-                      {draftLabel && (
-                        <p className="mt-1 line-clamp-2 text-[17px] font-semibold leading-7 text-slate-800">
-                          {draftLabel}
-                        </p>
-                      )}
-
-                      <p className="mt-1 break-all text-[17px] font-semibold text-slate-700">
-                        {draftLocation.latitude.toFixed(6)},
-                        {draftLocation.longitude.toFixed(6)}
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </div>
-
-                {/* ACTIONS */}
-
-                <div className="grid shrink-0 grid-cols-2 gap-3 lg:flex">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="min-h-12 rounded-2xl border border-slate-200 bg-white px-5 text-[17px] font-bold text-slate-700 transition hover:bg-slate-50"
-                  >
-                    បោះបង់
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleConfirm}
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary-800 px-5 text-[17px] font-bold text-white transition hover:bg-primary-700"
-                  >
-                    <IoCheckmarkOutline className="text-[22px]" />
-                    បញ្ជាក់ទីតាំង
-                  </button>
-                </div>
-              </div>
-            </footer>
+              </>
+            )}
           </motion.section>
         </motion.div>
       )}
