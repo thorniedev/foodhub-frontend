@@ -232,7 +232,7 @@ export const {
   useDeleteMeetupGroupMutation,
   // Participants
   useJoinMeetupParticipantMutation,
-  useUpdateMeetupParticipantLocationMutation,
+  useUpdateMeetupParticipantLocationMutation, 
   useLeaveMeetupParticipantMutation,
   // Votes
   useSubmitMeetupVoteMutation,
