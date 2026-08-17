@@ -275,12 +275,12 @@ async function forwardRequest(
         );
         try {
           const validItems: unknown[] = [];
-          for (let i = 0; i < 20; i++) {
+          for (let i = 0; i < 15; i++) {
             try {
-              const pageUrl = new URL(targetUrl.toString());
-              pageUrl.searchParams.set("page", String(i));
-              pageUrl.searchParams.set("size", "1");
-              const singleRes = await fetch(pageUrl, {
+              const singleUrl = new URL(`${backendApiUrl}/catalog/menu-items`);
+              singleUrl.searchParams.set("page", String(i));
+              singleUrl.searchParams.set("size", "1");
+              const singleRes = await fetch(singleUrl, {
                 headers: requestHeaders,
                 cache: "no-store",
               });
@@ -289,8 +289,6 @@ async function forwardRequest(
                 const items = singleData?.payload?.content || [];
                 if (items.length > 0) {
                   validItems.push(...items);
-                } else if (i > 5) {
-                  break;
                 }
               }
             } catch {
