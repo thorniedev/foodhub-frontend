@@ -48,7 +48,7 @@ export default function FavoritesPage() {
   };
 
   const handleViewMore = (id: string) => {
-    router.push(`/food/${id}`);
+    router.push(`/menu-items/${id}`);
   };
 
   return (

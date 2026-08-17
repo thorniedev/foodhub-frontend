@@ -13,7 +13,7 @@ export default function GroupVotePage() {
         </p>
 
         <Link
-          href="/food"
+          href="/food-page"
           className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-primary-800 px-6 text-[16px] font-bold text-white transition hover:bg-primary-700"
         >
           ត្រឡប់ទៅទំព័រអាហារ

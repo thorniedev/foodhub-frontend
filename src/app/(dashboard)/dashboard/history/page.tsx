@@ -64,7 +64,7 @@ export default function HistoryPage() {
 
 function HistoryFoodCard({ item }: { item: HistoryItem }) {
   return (
-    <Link href={`/food/${item.uuid}`} className="group block w-full">
+    <Link href={`/menu-items/${item.uuid}`} className="group block w-full">
       <div className="h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
         {/* Image */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
