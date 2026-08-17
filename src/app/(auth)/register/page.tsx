@@ -101,7 +101,7 @@ export default function RegisterPage() {
       }).unwrap();
 
       setSuccessMessage(
-        response.message ?? "Account created successfully! Please sign in with Keycloak."
+        response.message ?? "បង្កើតគណនីបានជោគជ័យ! សូមចូលប្រើប្រាស់គណនីរបស់អ្នក។"
       );
 
       setForm(initialFormState);
@@ -297,7 +297,7 @@ export default function RegisterPage() {
                     href="/api/auth/login"
                     className="inline-flex w-full items-center justify-center rounded-full bg-[#70B42C] px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:bg-[#60a024]"
                   >
-                    ចូលប្រើប្រាស់ជាមួយ Keycloak
+                    ចូលប្រើប្រាស់គណនី
                   </a>
                 </div>
               </div>

@@ -61,49 +61,8 @@ export default function MediaImage({
       return;
     }
 
-    let cancelled = false;
-
-    async function resolveMedia() {
-      try {
-        /*
-         * Frontend:
-         * /api/media/{uuid}/access-url
-         *
-         * Your catch-all proxy forwards this to:
-         * /api/v1/media/{uuid}/access-url
-         */
-        const response = await fetch(`/api/media/${mediaUuid}/access-url`, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Media request failed: ${response.status}`);
-        }
-
-        const data = (await response.json()) as MediaAccessResponse;
-
-        if (!cancelled) {
-          setImageUrl(data.url);
-        }
-      } catch (error) {
-        console.error("[MEDIA IMAGE ERROR]", error);
-
-        if (!cancelled) {
-          setImageUrl(null);
-          setHasError(true);
-        }
-      }
-    }
-
-    void resolveMedia();
-
-    return () => {
-      cancelled = true;
-    };
+    // Direct streaming endpoint /api/media/{uuid}/file avoids MinIO internal presigned URL issues
+    setImageUrl(`/api/media/${mediaUuid}/file`);
   }, [thumbnail]);
 
   if (!thumbnail || !imageUrl || hasError) {
