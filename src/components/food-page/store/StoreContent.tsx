@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IoFilterOutline, IoRefreshOutline } from "react-icons/io5";
 
 import { useGetStoresQuery } from "@/app/store/locationApi";
+import { usePublicSearchQuery } from "@/app/store/searchApi";
 
 import { useUserLocation } from "@/hooks/useUserLocation";
 
@@ -60,6 +61,11 @@ export default function StoreContent({
     refetch,
   } = useGetStoresQuery();
 
+  const { data: searchResults } = usePublicSearchQuery(
+    { q: deferredSearchQuery },
+    { skip: !deferredSearchQuery.trim() },
+  );
+
   const storeData = stores as FoodStore[];
 
   const cityOptions = useMemo(
@@ -87,10 +93,24 @@ export default function StoreContent({
     [storeData],
   );
 
-  const filteredStores = useMemo(
-    () => applyStoreFilters(storeData, deferredSearchQuery, filters),
-    [storeData, deferredSearchQuery, filters],
-  );
+  const filteredStores = useMemo(() => {
+    // If backend public search returned matching store hits, filter by hit IDs/names
+    if (deferredSearchQuery.trim() && searchResults?.stores?.items?.length) {
+      const hitUuids = new Set(
+        searchResults.stores.items.map((item) => item.uuid || item.id)
+      );
+      const matchedFromSearch = storeData.filter((store) =>
+        hitUuids.has(store.uuid)
+      );
+
+      // If backend matches exist, apply active UI filters to them
+      if (matchedFromSearch.length > 0) {
+        return applyStoreFilters(matchedFromSearch, "", filters);
+      }
+    }
+
+    return applyStoreFilters(storeData, deferredSearchQuery, filters);
+  }, [storeData, deferredSearchQuery, filters, searchResults]);
 
   /**
    * Distance is UI-derived from the user's current FoodHub location and

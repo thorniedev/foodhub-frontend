@@ -113,12 +113,12 @@ export default function RegisterPage() {
   const errorMessage = registerError ? getErrorMessage(registerError) : "";
 
   return (
-    <main className="relative flex min-h-screen w-full bg-[#FAF8F5] dark:bg-slate-950 overflow-hidden font-sans">
-      {/* LEFT SIDEBAR: DARK PANEL WITH FOOD ILLUSTRATIONS */}
-      <section className="relative hidden lg:flex lg:w-4/12 xl:w-3/12 bg-[#17181C] flex-col justify-between p-8 overflow-hidden">
+    <main className="relative flex min-h-screen w-full bg-[#FAF7F2] dark:bg-slate-950 overflow-hidden font-sans">
+      {/* 1. LEFT SIDEBAR: DARK PANEL WITH OVERLAPPING DISHES */}
+      <section className="relative hidden lg:flex lg:w-4/12 xl:w-3/12 min-h-screen bg-[#1B1C20] flex-col justify-between p-8 z-10 overflow-hidden">
         {/* Brand Header */}
-        <div className="z-10 flex items-center gap-3">
-          <div className="relative h-10 w-32">
+        <div className="z-20 flex items-center gap-3">
+          <div className="relative h-10 w-36">
             <Image
               src="/ISTAD-Logo.png"
               alt="FoodHub"
@@ -128,9 +128,9 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Stack of Circular Dishes */}
-        <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-6 py-6">
-          <div className="relative h-44 w-44 rounded-full border-4 border-white/10 shadow-2xl overflow-hidden transition-transform duration-500 hover:scale-105">
+        {/* Stack of Overlapping Circular Food Dishes */}
+        <div className="relative z-20 my-auto flex flex-col items-center justify-center space-y-[-2rem] py-4">
+          <div className="relative h-56 w-56 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden transition-transform duration-500 hover:scale-105">
             <Image
               src="/banner/food1.png"
               alt="Food Item 1"
@@ -139,7 +139,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div className="relative -mt-10 h-40 w-40 rounded-full border-4 border-white/10 shadow-xl overflow-hidden transition-transform duration-500 hover:scale-105">
+          <div className="relative h-48 w-48 rounded-full border-4 border-white/20 shadow-xl overflow-hidden transition-transform duration-500 hover:scale-105">
             <Image
               src="/banner/food2.png"
               alt="Food Item 2"
@@ -148,7 +148,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div className="relative -mt-10 h-36 w-36 rounded-full border-4 border-white/10 shadow-lg overflow-hidden transition-transform duration-500 hover:scale-105">
+          <div className="relative h-40 w-40 rounded-full border-4 border-white/20 shadow-lg overflow-hidden transition-transform duration-500 hover:scale-105">
             <Image
               src="/banner/food3.png"
               alt="Food Item 3"
@@ -158,44 +158,59 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Footer info inside sidebar */}
-        <div className="z-10 text-xs text-slate-400">
+        {/* Footer info */}
+        <div className="z-20 text-xs text-slate-400">
           © 2026 FoodHub Cambodia. All rights reserved.
         </div>
 
-        {/* Decorative background vectors */}
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px]" />
+        {/* Decorative background grid pattern */}
+        <div className="absolute inset-0 z-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
       </section>
 
-      {/* RIGHT COLUMN: WARM BANNER WITH FORM */}
-      <section className="relative flex min-h-screen flex-1 flex-col justify-center px-4 py-10 sm:px-8 lg:px-16">
-        {/* Decorative Warm Top Right Wedge */}
-        <div className="pointer-events-none absolute -top-24 right-0 z-0 h-96 w-full max-w-xl bg-gradient-to-bl from-[#FFA800] via-[#FF8A00] to-transparent opacity-90 [clip-path:polygon(100%_0,0_0,100%_100%)] dark:opacity-40" />
+      {/* 2. RIGHT SECTION: WARM BANNER WITH FORM */}
+      <section className="relative flex min-h-screen flex-1 flex-col justify-center items-center px-6 py-12 lg:px-16 z-10">
+        {/* TOP-RIGHT ORANGE DIAGONAL WEDGE */}
+        <div 
+          className="pointer-events-none absolute top-0 right-0 z-0 h-[380px] w-full sm:w-[650px] bg-[#F7A028] dark:opacity-30"
+          style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 25% 0)" }}
+        />
 
-        {/* Decorative Lightning Bolt Accents */}
-        <div className="pointer-events-none absolute top-12 left-10 text-3xl opacity-20 dark:opacity-40">
-          ⚡
+        {/* SCATTERED LIGHTNING BOLT ACCENTS */}
+        <div className="pointer-events-none absolute top-10 left-12 z-0">
+          <svg className="h-8 w-8 text-slate-800 dark:text-white opacity-80" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M13 2L3 14h7v8l10-12h-7z" />
+          </svg>
         </div>
-        <div className="pointer-events-none absolute top-1/3 right-12 text-3xl opacity-30">
-          ⚡
+        <div className="pointer-events-none absolute top-16 right-1/3 z-0">
+          <svg className="h-7 w-7 text-slate-800 dark:text-white opacity-80" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M13 2L3 14h7v8l10-12h-7z" />
+          </svg>
         </div>
-        <div className="pointer-events-none absolute bottom-12 right-1/4 text-2xl opacity-20">
-          ⚡
+        <div className="pointer-events-none absolute top-1/2 right-12 z-0">
+          <svg className="h-8 w-8 text-[#F7A028] opacity-90" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M13 2L3 14h7v8l10-12h-7z" />
+          </svg>
+        </div>
+        <div className="pointer-events-none absolute bottom-10 right-1/4 z-0">
+          <svg className="h-6 w-6 text-slate-800 dark:text-white opacity-70" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M13 2L3 14h7v8l10-12h-7z" />
+          </svg>
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-xl">
-          {/* Header */}
-          <div className="mb-8 text-center sm:text-left">
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+        {/* FORM CONTAINER */}
+        <div className="relative z-10 w-full max-w-lg space-y-6">
+          {/* Title Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1B1C20] dark:text-white">
               បង្កើតគណនី FoodHub
             </h1>
-            <p className="mt-2 text-base text-slate-500 dark:text-slate-400">
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium">
               សូមបញ្ចូលព័ត៌មានរបស់អ្នកដើម្បីចុះឈ្មោះប្រើប្រាស់ FoodHub។
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Registration Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <FormInput
                 label="ឈ្មោះដំបូង (First name)"
@@ -280,7 +295,7 @@ export default function RegisterPage() {
                 <div className="pt-2">
                   <a
                     href="/api/auth/login"
-                    className="inline-flex w-full items-center justify-center rounded-full bg-[#70B42C] px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:bg-[#5fa324]"
+                    className="inline-flex w-full items-center justify-center rounded-full bg-[#70B42C] px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:bg-[#60a024]"
                   >
                     ចូលប្រើប្រាស់ជាមួយ Keycloak
                   </a>
@@ -292,14 +307,14 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="mt-4 w-full rounded-full bg-[#70B42C] px-6 py-4 text-base font-bold text-white shadow-lg shadow-[#70B42C]/25 transition hover:bg-[#609d25] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-3 w-full rounded-full bg-[#70B42C] px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-[#70B42C]/25 transition-all hover:bg-[#60a024] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoading ? "កំពុងបង្កើតគណនី..." : "បង្កើតគណនី"}
               </button>
             ) : null}
 
             {/* Footer Link */}
-            <div className="pt-4 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
+            <div className="pt-3 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
               មានគណនីរួចហើយ?{" "}
               <Link
                 href="/api/auth/login"
@@ -336,7 +351,7 @@ function FormInput({
 }: FormInputProps) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={name} className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+      <label htmlFor={name} className="block text-xs font-bold text-slate-700 dark:text-slate-300">
         {label}
       </label>
 
@@ -349,7 +364,7 @@ function FormInput({
         placeholder={placeholder}
         autoComplete={autoComplete}
         required
-        className="w-full rounded-2xl border-0 bg-[#ECECEE] dark:bg-slate-800/80 px-4 py-3.5 text-base text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-[#70B42C] dark:focus:bg-slate-800"
+        className="w-full rounded-2xl border-0 bg-[#ECECEE] dark:bg-slate-800/80 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-[#70B42C] dark:focus:bg-slate-800"
       />
     </div>
   );

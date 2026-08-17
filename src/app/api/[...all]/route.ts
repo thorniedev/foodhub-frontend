@@ -26,6 +26,9 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   "menu-items": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   meetup: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   "saved-locations": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+  search: new Set(["GET"]),
+  discovery: new Set(["GET", "POST"]),
+  admin: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 };
 
 const nestedRoutePrefixes = new Set([
@@ -37,6 +40,8 @@ const nestedRoutePrefixes = new Set([
   "menu-items",
   "meetup",
   "saved-locations",
+  "discovery",
+  "admin",
 ]);
 
 interface RouteContext {
@@ -62,6 +67,10 @@ function resolveRouteRule(all: string[], backendPath: string) {
 }
 
 function requiresAuthentication(backendPath: string) {
+  if (backendPath === "admin" || backendPath.startsWith("admin/")) {
+    return true;
+  }
+
   if (backendPath === "users/me" || backendPath === "users/me/sync") {
     return true;
   }

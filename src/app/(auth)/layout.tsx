@@ -16,18 +16,8 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* <header className="border-b bg-background">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="text-2xl font-bold tracking-tight">
-            FoodHub
-          </Link>
-        </div>
-      </header> */}
-
-      <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-10 sm:px-6">
-        <div className="w-full max-w-2xl">{children}</div>
-      </main>
+    <div className="min-h-screen w-full bg-background">
+      {children}
     </div>
   );
 }
