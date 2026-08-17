@@ -227,7 +227,10 @@ function trimTrailingSlash(value: string) {
 
 export function getAuthConfig() {
   const appUrl = trimTrailingSlash(requiredEnv("APP_URL"));
-  const backendApiUrl = trimTrailingSlash(requiredEnv("BACKEND_API_URL"));
+  const rawBackendUrl = trimTrailingSlash(requiredEnv("BACKEND_API_URL"));
+  const backendApiUrl = /\/api\/v1$/i.test(rawBackendUrl)
+    ? rawBackendUrl
+    : `${rawBackendUrl}/api/v1`;
   const keycloakUrl = trimTrailingSlash(requiredEnv("KEYCLOAK_URL"));
   const realm = requiredEnv("KEYCLOAK_REALM");
   const clientId = requiredEnv("KEYCLOAK_CLIENT_ID");

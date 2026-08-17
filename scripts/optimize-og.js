@@ -12,8 +12,8 @@ try {
   console.log('sharp: available');
   
   const sharp = require('sharp');
-  const destJpg = path.join(__dirname, '..', 'public', 'og-image.jpg');
-  const destPng = path.join(__dirname, '..', 'public', 'og-image.png');
+  const destJpg = path.join(__dirname, '..', 'public', 'og-image.jpeg');
+  const destPng = path.join(__dirname, '..', 'public', 'og-image.jpeg');
   
   sharp(src)
     .resize(1200, 630, { fit: 'cover', position: 'center' })

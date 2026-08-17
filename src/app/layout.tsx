@@ -70,7 +70,7 @@ export const metadata: Metadata = {
       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpeg",
         width: 1200,
         height: 630,
         alt: "មូបអាហារ - FoodHub",
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
     title: "មូបអាហារ - FoodHub",
     description:
       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpeg"],
   },
 
   icons: {

@@ -206,18 +206,31 @@ export default function RegisterPage() {
           ) : null}
 
           {successMessage ? (
-            <p className="rounded-xl bg-green-50 px-4 py-3 text-base text-green-700 dark:bg-green-950/30 dark:text-green-300">
-              {successMessage}
-            </p>
+            <div className="space-y-4 rounded-2xl bg-green-50 p-6 text-green-900 dark:bg-green-950/40 dark:text-green-200">
+              <p className="text-lg font-semibold">Registration Successful!</p>
+              <p className="text-sm text-green-800 dark:text-green-300">
+                {successMessage}
+              </p>
+              <div className="pt-2">
+                <a
+                  href="/api/auth/login"
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-base font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
+                >
+                  Sign In with Keycloak
+                </a>
+              </div>
+            </div>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full rounded-xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isLoading ? "Creating account..." : "Create account"}
-          </button>
+          {!successMessage ? (
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full rounded-xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoading ? "Creating account..." : "Create account"}
+            </button>
+          ) : null}
         </form>
       </section>
     </main>

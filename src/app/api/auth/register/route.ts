@@ -5,9 +5,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const API_BASE_URL =
-  process.env.BACKEND_API_URL ??
-  "https://food.chanthorndev.site//api/v1";
+const rawBackendUrl = (process.env.BACKEND_API_URL || "").trim().replace(/\/+$/, "");
+const API_BASE_URL = /\/api\/v1$/i.test(rawBackendUrl)
+  ? rawBackendUrl
+  : `${rawBackendUrl}/api/v1`;
 
 function parseResponseBody(value: string): unknown {
   if (!value) {
