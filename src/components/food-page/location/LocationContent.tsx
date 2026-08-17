@@ -6,7 +6,10 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { IoRestaurantOutline, IoSearchOutline } from "react-icons/io5";
 
-import { useGetStoresQuery } from "@/app/store/locationApi";
+import {
+  useGetStoresQuery,
+  useGetNearbyStoresQuery,
+} from "@/app/store/locationApi";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm } from "@/lib/location/geo";
 import {
@@ -410,6 +413,7 @@ export default function LocationContent({
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [locationPickerTab, setLocationPickerTab] = useState<"map" | "saved">("map");
   const [resultCount, setResultCount] = useState(0);
 
   const {
@@ -424,11 +428,31 @@ export default function LocationContent({
     useCurrentLocation,
   } = useUserLocation();
 
+  const hasCoordinates = hasValidCoordinates(coordinates);
+
   const {
-    data: sourceStoreData = [],
-    isFetching: isStoresFetching,
-    refetch: refetchStores,
-  } = useGetStoresQuery();
+    data: allStoresData = [],
+    isFetching: isAllStoresFetching,
+    refetch: refetchAllStores,
+  } = useGetStoresQuery(undefined, { skip: hasCoordinates });
+
+  const {
+    data: nearbyStoresData = [],
+    isFetching: isNearbyStoresFetching,
+    refetch: refetchNearbyStores,
+  } = useGetNearbyStoresQuery(
+    {
+      latitude: coordinates?.latitude ?? 0,
+      longitude: coordinates?.longitude ?? 0,
+    },
+    { skip: !hasCoordinates },
+  );
+
+  const refetchStores = hasCoordinates ? refetchNearbyStores : refetchAllStores;
+  const sourceStoreData = hasCoordinates ? nearbyStoresData : allStoresData;
+  const isStoresFetching = hasCoordinates
+    ? isNearbyStoresFetching
+    : isAllStoresFetching;
 
   const sourceStores = useMemo<LocationStore[]>(
     () =>
@@ -703,7 +727,14 @@ export default function LocationContent({
               onRefresh={handleRefresh}
               onOpenFilters={() => setFiltersOpen(true)}
               onUseCurrentLocation={handleUseCurrentLocation}
-              onChooseLocation={() => setLocationPickerOpen(true)}
+              onChooseLocation={() => {
+                setLocationPickerTab("map");
+                setLocationPickerOpen(true);
+              }}
+              onOpenSavedLocations={() => {
+                setLocationPickerTab("saved");
+                setLocationPickerOpen(true);
+              }}
             />
 
             <div className="mt-6 pb-10">
@@ -714,7 +745,10 @@ export default function LocationContent({
                     title="សូមជ្រើសទីតាំងសម្រាប់ស្វែងរកហាង"
                     description="អ្នកអាចប្រើទីតាំងបច្ចុប្បន្នរបស់អ្នក ឬជ្រើសទីតាំងផ្សេងដោយផ្ទាល់លើផែនទី។"
                     actionLabel="ជ្រើសទីតាំងលើផែនទី"
-                    onAction={() => setLocationPickerOpen(true)}
+                    onAction={() => {
+                      setLocationPickerTab("map");
+                      setLocationPickerOpen(true);
+                    }}
                   />
                 ) : noMatchingFood ? (
                   <ReadableMessage
@@ -735,14 +769,13 @@ export default function LocationContent({
                 ) : noNearbyStore ? (
                   <ReadableMessage
                     icon={<IoRestaurantOutline />}
-                    title="មិនមានហាងដែលមានមុខម្ហូបទាំងនេះនៅក្បែរទីតាំងរបស់អ្នក"
-                    description={`សូមពង្រីកចម្ងាយស្វែងរកលើស ${singleRadiusKm} km ឬជ្រើសទីតាំងផ្សេងលើផែនទី។`}
-                    actionLabel="កែតម្រងមុខម្ហូប"
+                    title="មិនមានហាងក្នុងចម្ងាយដែលបានកំណត់"
+                    description="សូមសាកល្បងពង្រីកកាំស្វែងរក ជ្រើសទីតាំងផ្សេង ឬបិទតម្រងមួយចំនួន។"
+                    actionLabel="កែតម្រង"
                     onAction={() => setFiltersOpen(true)}
                   />
                 ) : (
                   <SingleRecommendation
-                    /* FOOD-first data only. */
                     menuItems={matchingFoods}
                     stores={foodStores}
                     userLocation={coordinates}
@@ -755,19 +788,11 @@ export default function LocationContent({
                 )
               ) : (
                 <GroupRecommendation
-                  /*
-                   * GROUP MODE IS STORE-FIRST.
-                   *
-                   * menuItems is still supplied so the recommendation
-                   * engine can calculate group dietary/allergen compatibility,
-                   * but food filters do NOT reduce the candidate stores.
-                   */
                   menuItems={menuItems}
                   stores={groupFilteredStores}
                   userLocation={coordinates}
                   filters={groupLocationFilters}
-                  /* Store search is already applied by applyStoreFilters(). */
-                  searchQuery=""
+                  searchQuery={searchQuery}
                   onOpenFilters={() => setFiltersOpen(true)}
                   onResultCountChange={setResultCount}
                 />
@@ -850,6 +875,7 @@ export default function LocationContent({
 
       <LocationPickerModal
         open={locationPickerOpen}
+        initialTab={locationPickerTab}
         initialLocation={coordinates}
         detectedLocation={detectedCoordinates}
         onClose={() => setLocationPickerOpen(false)}

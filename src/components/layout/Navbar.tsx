@@ -16,7 +16,7 @@ const NAV_LINKS = [
     label: "ទំព័រដើម",
   },
   {
-    href: "/food",
+    href: "/food-page",
     label: "ម្ហូបអាហារ",
   },
   {

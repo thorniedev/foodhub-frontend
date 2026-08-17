@@ -9,7 +9,7 @@ interface EditMemberProfileProps {
 
 export default function EditMemberProfile({ uuid }: EditMemberProfileProps) {
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl p-4 ">
       <Link
         href={`/dashboard/family-profile/${uuid}`}
         className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-[17px] font-medium text-slate-700 transition hover:bg-slate-50"

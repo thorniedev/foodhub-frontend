@@ -49,6 +49,7 @@ export default function Footer() {
                     className="object-contain object-left"
                     width={160}
                     height={80}
+                    style={{ width: "auto", height: "auto" }}
                   />
                 </div>
               </div>

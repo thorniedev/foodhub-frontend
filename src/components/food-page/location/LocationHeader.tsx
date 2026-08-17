@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 
 import {
   IoAlertCircleOutline,
+  IoBookmarkOutline,
   IoLocateOutline,
   IoLocationOutline,
   IoMapOutline,
@@ -52,6 +53,8 @@ type LocationHeaderProps = {
 
   onChooseLocation: () => void;
 
+  onOpenSavedLocations?: () => void;
+
   onOpenFilters?: () => void;
 };
 
@@ -68,6 +71,7 @@ export default function LocationHeader({
   onRefresh,
   onUseCurrentLocation,
   onChooseLocation,
+  onOpenSavedLocations,
   onOpenFilters,
 }: LocationHeaderProps) {
   const manualLocationActive =
@@ -203,7 +207,7 @@ export default function LocationHeader({
         )}
       </div>
 
-      <div className="mt-5 grid gap-3 rounded-[20px] border border-gray-100 bg-gray-50 p-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-3 rounded-[20px] border border-gray-100 bg-gray-50 p-3 sm:grid-cols-3">
         <motion.button
           type="button"
           whileTap={{
@@ -225,7 +229,7 @@ export default function LocationHeader({
               ប្រើទីតាំងបច្ចុប្បន្ន
             </span>
 
-            <span className="mt-1 block text-[17px] opacity-75">
+            <span className="mt-1 block text-[15px] opacity-75">
               ប្រើ GPS របស់ឧបករណ៍
             </span>
           </span>
@@ -256,8 +260,31 @@ export default function LocationHeader({
               ជ្រើសទីតាំងលើផែនទី
             </span>
 
-            <span className="mt-1 block text-[17px] opacity-75">
-              ស្វែងរក ចុច ឬអូសសញ្ញាសម្គាល់
+            <span className="mt-1 block text-[15px] opacity-75">
+              ស្វែងរក ឬចុចលើផែនទី
+            </span>
+          </span>
+        </motion.button>
+
+        <motion.button
+          type="button"
+          whileTap={{
+            scale: 0.98,
+          }}
+          onClick={onOpenSavedLocations || onChooseLocation}
+          className="flex min-h-14 items-center gap-3 rounded-2xl border border-amber-200 bg-white px-4 py-3 text-left text-slate-800 transition hover:border-amber-300 hover:bg-amber-50/60 shadow-sm"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700 shadow-sm">
+            <IoBookmarkOutline className="text-[22px]" />
+          </span>
+
+          <span className="min-w-0">
+            <span className="block text-[17px] font-semibold">
+              ទីតាំងបានរក្សាទុក
+            </span>
+
+            <span className="mt-1 block text-[15px] text-gray-500 opacity-80">
+              ផ្ទះ, ការិយាល័យ
             </span>
           </span>
         </motion.button>

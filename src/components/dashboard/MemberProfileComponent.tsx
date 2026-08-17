@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -25,6 +26,7 @@ import CreateMemberProfileModal from "@/app/(dashboard)/dashboard/CreateMemberPr
 import {
   useDeleteMemberProfileMutation,
   useGetMemberProfilesQuery,
+  useGetMediaAccessUrlQuery,
 } from "@/app/store/memberProfileApi";
 
 import type {
@@ -180,6 +182,12 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
   const dietaryCount = member.dietaryTypes?.length ?? 0;
   const medicalCount = member.medicalConditions?.length ?? 0;
 
+  /* Fetch CDN URL for the avatar */
+  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
+    member.avatarMediaUuid ?? "",
+    { skip: !member.avatarMediaUuid },
+  );
+
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-800/20 hover:shadow-[0_18px_50px_rgba(15,23,42,0.09)]">
       {member.isDefault && (
@@ -195,8 +203,20 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
           className="block rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-800/10"
         >
           <div className="flex items-center gap-4">
-            <div className="relative flex h-18 w-18 shrink-0 items-center justify-center rounded-[22px] bg-primary-800/10 text-[28px] font-bold text-primary-800 ring-1 ring-primary-800/10">
-              {firstLetter}
+            <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[22px] bg-primary-800/10 ring-1 ring-primary-800/10">
+              {avatarAccessUrlData?.url ? (
+                <Image
+                  src={avatarAccessUrlData.url}
+                  alt={member.profileName}
+                  fill
+                  className="object-cover"
+                  sizes="72px"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center text-[28px] font-bold text-primary-800">
+                  {firstLetter}
+                </span>
+              )}
 
               {member.isActive && (
                 <span
@@ -376,7 +396,7 @@ export default function FamilyProfiles() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 ">
         <div className="flex min-h-[320px] items-center justify-center rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
           <div className="text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-800/10">
@@ -423,7 +443,7 @@ export default function FamilyProfiles() {
 
   return (
     <>
-      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl p-4 ">
         <div className="mb-8 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm sm:p-7">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">

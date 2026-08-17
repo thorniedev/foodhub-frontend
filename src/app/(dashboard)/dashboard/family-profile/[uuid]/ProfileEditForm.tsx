@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -21,6 +22,7 @@ import {
   UserRound,
   UsersRound,
 } from "lucide-react";
+import { IoCameraOutline } from "react-icons/io5";
 
 import {
   useGetAllergenOptionsQuery,
@@ -31,6 +33,8 @@ import {
   useSaveMemberDietaryTypesMutation,
   useSaveMemberMedicalConditionsMutation,
   useUpdateMemberProfileMutation,
+  useUploadMediaMutation,
+  useGetMediaAccessUrlQuery,
 } from "@/app/store/memberProfileApi";
 
 import type {
@@ -352,6 +356,21 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  /* ---- Avatar upload state ---- */
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [pendingAvatarUuid, setPendingAvatarUuid] = useState<string | null>(
+    null,
+  );
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [uploadMedia, { isLoading: isUploadingAvatar }] =
+    useUploadMediaMutation();
+
+  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
+    pendingAvatarUuid ?? "",
+    { skip: !pendingAvatarUuid || Boolean(avatarPreviewUrl) },
+  );
+
   const {
     data: profile,
     isLoading: isLoadingProfile,
@@ -418,11 +437,10 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
     updateProfileState.isLoading ||
     saveAllergiesState.isLoading ||
     saveDietaryState.isLoading ||
-    saveMedicalState.isLoading;
+    saveMedicalState.isLoading ||
+    isUploadingAvatar;
 
-  /*
-   * Load existing profile into the edit form.
-   */
+
   useEffect(() => {
     if (!profile || initializedProfileUuid === profile.uuid) {
       return;
@@ -445,6 +463,10 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
 
       medicalConditions: normalizeMedicalConditions(profile.medicalConditions),
     });
+
+    if (profile.avatarMediaUuid) {
+      setPendingAvatarUuid(profile.avatarMediaUuid);
+    }
 
     setInitializedProfileUuid(profile.uuid);
   }, [profile, initializedProfileUuid]);
@@ -616,6 +638,46 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
     void refetchMedical();
   };
 
+  /* ---- Avatar file pick handler ---- */
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setAvatarError("សូមជ្រើសរើសរូបភាព JPG, PNG ឬ WebP");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("ទំហំឯកសារមិនត្រូវលើសពី 5 MB");
+      return;
+    }
+
+    setAvatarError(null);
+
+    /* Show an instant local preview while we upload */
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreviewUrl(objectUrl);
+
+    try {
+      const mediaResult = await uploadMedia({
+        file,
+        purpose: "PROFILE_AVATAR",
+      }).unwrap();
+
+      setPendingAvatarUuid(mediaResult.uuid);
+    } catch (err) {
+      /* Revert preview on failure */
+      URL.revokeObjectURL(objectUrl);
+      setAvatarPreviewUrl(null);
+      setAvatarError(getErrorMessage(err));
+    }
+  };
+
   const handleSave = async () => {
     if (!profile) {
       return;
@@ -633,40 +695,26 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
       return;
     }
 
-    /*
-     * Do not save while safety options failed to load.
-     *
-     * Otherwise an empty local array could accidentally
-     * clear the user's saved preferences.
-     */
+
     if (hasSafetyOptionError) {
       setErrorMessage("សូមទាញយកជម្រើសសុវត្ថិភាពឡើងវិញ មុនពេលរក្សាទុក។");
       return;
     }
 
     try {
-      /*
-       * ==================================================
-       * 1. PATCH BASIC PROFILE
-       * ==================================================
-       */
-
       const basicPatch: {
         profileName?: string;
         relationship?: MemberRelationship;
         gender?: MemberGender;
         dateOfBirth?: string;
         preferredLanguage?: string;
+        avatarMediaUuid?: string | null;
       } = {};
 
       if (form.profileName.trim() !== profile.profileName) {
         basicPatch.profileName = form.profileName.trim();
       }
 
-      /*
-       * SELF relationship should not be
-       * changed to another relationship.
-       */
       if (
         profile.relationship !== "SELF" &&
         form.relationship !== profile.relationship
@@ -686,18 +734,16 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         basicPatch.preferredLanguage = form.preferredLanguage;
       }
 
+      if (pendingAvatarUuid !== profile.avatarMediaUuid) {
+        basicPatch.avatarMediaUuid = pendingAvatarUuid;
+      }
+
       if (Object.keys(basicPatch).length > 0) {
         await updateMemberProfile({
           uuid,
           body: basicPatch,
         }).unwrap();
       }
-
-      /*
-       * ==================================================
-       * 2. ALLERGIES
-       * ==================================================
-       */
 
       const originalAllergyCount = profile.allergies?.length ?? 0;
 
@@ -771,10 +817,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         await clearSafetySection(uuid, "medical-conditions");
       }
 
-      /*
-       * Refresh the profile because the DELETE
-       * requests above do not pass through RTK Query.
-       */
+
       await refetchProfile();
 
       router.replace(`/dashboard/family-profile/${uuid}`);
@@ -898,6 +941,84 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 កែប្រែព័ត៌មានមូលដ្ឋានរបស់សមាជិក។
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* ---- Avatar upload ---- */}
+        <div className="mt-6 flex flex-col items-center gap-3 border-b border-slate-100 pb-6 sm:flex-row sm:gap-5">
+          {/* Hidden file input */}
+          <input
+            ref={avatarInputRef}
+            id="edit-avatar-input"
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(e) => void handleAvatarChange(e)}
+            disabled={isUploadingAvatar}
+          />
+
+          {/* Avatar preview */}
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={isUploadingAvatar}
+            title="ផ្លាស់ប្ដូររូបតំណាង"
+            aria-label="ផ្លាស់ប្ដូររូបតំណាង"
+            className="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[22px] ring-4 ring-primary-800/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {/* Photo, preview, or initials */}
+            {avatarPreviewUrl ? (
+              <Image
+                src={avatarPreviewUrl}
+                alt="Preview"
+                fill
+                className="object-cover"
+                sizes="96px"
+              />
+            ) : avatarAccessUrlData?.url ? (
+              <Image
+                src={avatarAccessUrlData.url}
+                alt={form.profileName}
+                fill
+                className="object-cover"
+                sizes="96px"
+              />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-[34px] font-bold text-primary-800">
+                {form.profileName.trim().charAt(0).toUpperCase() || "?"}
+              </span>
+            )}
+
+            {/* Spinner while uploading */}
+            {isUploadingAvatar && (
+              <span className="absolute inset-0 flex items-center justify-center bg-black/50">
+                <LoaderCircle className="h-7 w-7 animate-spin text-white" />
+              </span>
+            )}
+
+            {/* Camera hover overlay */}
+            {!isUploadingAvatar && (
+              <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                <IoCameraOutline className="text-[26px] text-white" />
+                <span className="text-[11px] font-semibold text-white">
+                  ផ្លាស់ប្ដូរ
+                </span>
+              </span>
+            )}
+          </button>
+
+          <div className="text-center sm:text-left">
+            <p className="text-lg font-semibold text-slate-700">
+              រូបតំណាង
+            </p>
+            <p className="mt-1 text-[15px] leading-6 text-slate-500">
+              ចុចលើរូបភាពដើម្បីផ្ទុករូបថ្មី។
+              <br />
+              JPG, PNG ឬ WebP · អតិបរមា 5 MB
+            </p>
+            {avatarError && (
+              <p className="mt-2 text-[15px] text-red-600">{avatarError}</p>
+            )}
           </div>
         </div>
 

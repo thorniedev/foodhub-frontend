@@ -1,6 +1,7 @@
 
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -20,7 +21,10 @@ import {
   UsersRound,
 } from "lucide-react";
 
-import { useGetMemberProfileByIdQuery } from "@/app/store/memberProfileApi";
+import {
+  useGetMemberProfileByIdQuery,
+  useGetMediaAccessUrlQuery,
+} from "@/app/store/memberProfileApi";
 
 import type {
   MemberGender,
@@ -190,6 +194,11 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
     refetch,
   } = useGetMemberProfileByIdQuery(uuid);
 
+  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
+    profile?.avatarMediaUuid ?? "",
+    { skip: !profile?.avatarMediaUuid },
+  );
+
   if (isLoading) {
     return (
       <div className="mx-auto flex min-h-[400px] w-full max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
@@ -235,7 +244,7 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
   const ingredientAvoids = profile.ingredientAvoids ?? [];
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl p-4 ">
       {/* Top navigation */}
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -270,8 +279,20 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50 px-5 py-7 sm:px-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-emerald-100 text-[34px] font-bold text-emerald-700 ring-4 ring-white shadow-sm">
-              {firstLetter}
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-3xl bg-emerald-100 ring-4 ring-white shadow-sm">
+              {avatarAccessUrlData?.url ? (
+                <Image
+                  src={avatarAccessUrlData.url}
+                  alt={profile.profileName}
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center text-[34px] font-bold text-emerald-700">
+                  {firstLetter}
+                </span>
+              )}
 
               {profile.isActive && (
                 <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-white bg-emerald-500" />

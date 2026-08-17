@@ -194,7 +194,7 @@ export default function Home() {
         <Hero />
         {/* <ZoomThroughSection /> */}
         {/* <BrushRevealSection /> */}
-        <BannerCarousel />
+        {/* <BannerCarousel /> */}
         <PopularSection />
         <FilterByMealTime />
         {/* <RegionFlightSection /> */}

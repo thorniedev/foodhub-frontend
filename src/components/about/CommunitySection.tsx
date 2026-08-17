@@ -653,7 +653,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/lyta.jpg",
+    avatar: "/about/lyta3.jpg",
 
     socials: {
       facebook: "https://www.facebook.com/share/1Gro8hQqpP/?mibextid=wwXIfr",
@@ -665,10 +665,10 @@ const members: MemberCardProps[] = [
   {
     id: "m2",
     name: "ហ័ង ម៉េងយៀក",
-    role: "Frontend",
+    role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/mingyeak.jpg",
+    avatar: "/about/yeak.jpg",
 
     socials: {
       facebook: "https://www.facebook.com/share/189oyqLh4v/",
@@ -680,10 +680,10 @@ const members: MemberCardProps[] = [
   {
     id: "m3",
     name: "សំ ករុណា",
-    role: "Backend",
+    role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/karona.jpg",
+    avatar: "/about/karona2.JPG",
 
     socials: {
       facebook: "https://www.facebook.com/share/1GWBpCBHgw/?mibextid=wwXIfr",
@@ -698,7 +698,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/thorn.jpg",
+    avatar: "/about/chanthorn.DNG",
 
     socials: {
       facebook: "https://www.facebook.com/USERNAME",
@@ -713,7 +713,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/saroth.png",
+    avatar: "/about/saroth2.jpg",
 
     socials: {
       facebook: "https://www.facebook.com/share/19BBhcnDnU/?mibextid=wwXIfr",
@@ -728,7 +728,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/dara.jpg",
+    avatar: "/about/dara2.jpg",
 
     socials: {
       facebook: "https://www.facebook.com/USERNAME",
@@ -743,7 +743,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/longfou.jpg",
+    avatar: "/about/fou1.1.JPG",
 
     socials: {
       facebook: "https://www.facebook.com/lim.longfou",
@@ -758,7 +758,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/chanthat.png",
+    avatar: "/about/chanthat2.jpg",
 
     socials: {
       facebook: "https://www.facebook.com/USERNAME",
