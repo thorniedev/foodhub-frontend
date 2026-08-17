@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
 import ThemeToggle from "../theme-toggle";
 import DashboardUserProfile from "../DashboardUserProfile";
+import GlobalSearchModal from "../search/GlobalSearchModal";
 import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 
 const NAV_LINKS = [
@@ -35,6 +36,7 @@ function checkActiveRoute(pathname: string, href: string): boolean {
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -55,6 +57,18 @@ export default function Navbar() {
   );
 
   const activeIndex = foundActiveIndex >= 0 ? foundActiveIndex : 0;
+
+  // Global Cmd+K or Ctrl+K shortcut listener
+  useEffect(() => {
+    const handleCmdK = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleCmdK);
+    return () => window.removeEventListener("keydown", handleCmdK);
+  }, []);
 
   useEffect(() => {
     setOpen(false);
@@ -154,6 +168,17 @@ export default function Navbar() {
 
         {/* Desktop actions */}
         <div className="hidden min-w-0 items-center justify-center gap-3 md:flex">
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen(true)}
+            aria-label="Search"
+            className="flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/70 px-3.5 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+          >
+            <Search className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span>ស្វែងរក...</span>
+            <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">⌘K</kbd>
+          </button>
+
           <ThemeToggle />
 
           {isLoadingUser ? (
@@ -328,12 +353,31 @@ export default function Navbar() {
                       បង្កើតគណនី
                     </Link>
                   </li>
+                  <li className="mt-1">
+                    <button
+                      type="button"
+                      tabIndex={open ? 0 : -1}
+                      onClick={() => {
+                        setOpen(false);
+                        setIsSearchOpen(true);
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 px-4 py-3 text-[16px] font-semibold text-slate-800 dark:text-white transition active:scale-[0.98]"
+                    >
+                      <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      ស្វែងរក (Search)
+                    </button>
+                  </li>
                 </>
               )}
             </ul>
           </div>
         </div>
       </div>
+
+      <GlobalSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </nav>
   );
 }

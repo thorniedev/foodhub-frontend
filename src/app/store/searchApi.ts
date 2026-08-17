@@ -2,12 +2,21 @@ import { baseApi } from "./baseApi";
 import type {
   PublicSearchParams,
   PublicSearchResponse,
-  DiscoverySearchRequest,
-  DiscoverySearchResponse,
+  DiscoveryFilterOptionsResponse,
+  CustomerSearchRequest,
+  MenuItemDiscoveryResponse,
+  DiscoveryPaginatedResponse,
   AdminSearchParams,
   AdminSearchResponse,
   ReindexResponse,
 } from "@/types/search";
+
+export interface DiscoverySearchQueryParams {
+  page?: number;
+  size?: number;
+  sort?: string;
+  request: CustomerSearchRequest;
+}
 
 export const searchApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -26,30 +35,56 @@ export const searchApi = baseApi.injectEndpoints({
           offset,
         },
       }),
+      transformResponse: (res: any) => {
+        return res?.payload ?? res;
+      },
       providesTags: ["MenuItem", "Food"],
     }),
 
     /**
-     * Discovery Search
-     * POST /api/v1/discovery/menu-items/search
-     * No authentication required. Evaluates profile safety rules (allergies, exclusions).
+     * Discovery Filter Options
+     * GET /api/v1/discovery/menu-items/filters
+     * Returns available metadata for discovery search filters.
+     */
+    getDiscoveryFilters: builder.query<DiscoveryFilterOptionsResponse, void>({
+      query: () => ({
+        url: "/discovery/menu-items/filters",
+        method: "GET",
+      }),
+      transformResponse: (res: any) => {
+        return res?.payload ?? res;
+      },
+    }),
+
+    /**
+     * Discovery Search Mutation
+     * POST /api/v1/discovery/menu-items/search?page=0&size=20&sort=FOODHUB_RATING_DESC
+     * Evaluates safety against profileUuid and searches items using filter request body.
      */
     discoverySearch: builder.mutation<
-      DiscoverySearchResponse,
-      DiscoverySearchRequest
+      DiscoveryPaginatedResponse | MenuItemDiscoveryResponse[],
+      DiscoverySearchQueryParams
     >({
-      query: (body) => ({
+      query: ({ page = 0, size = 20, sort = "FOODHUB_RATING_DESC", request }) => ({
         url: "/discovery/menu-items/search",
         method: "POST",
-        body,
+        params: {
+          page,
+          size,
+          sort,
+        },
+        body: request,
       }),
+      transformResponse: (res: any) => {
+        return res?.payload ?? res;
+      },
       invalidatesTags: ["MenuItem"],
     }),
 
     /**
      * Admin Search
      * GET /api/v1/admin/search?q=...&limit=...&offset=...
-     * Requires ADMIN role. Unfiltered access to pending, rejected, inactive, sold out, or soft-deleted records.
+     * Requires ADMIN role.
      */
     adminSearch: builder.query<AdminSearchResponse, AdminSearchParams>({
       query: ({ q, limit = 10, offset = 0 }) => ({
@@ -61,6 +96,9 @@ export const searchApi = baseApi.injectEndpoints({
           offset,
         },
       }),
+      transformResponse: (res: any) => {
+        return res?.payload ?? res;
+      },
     }),
 
     /**
@@ -73,15 +111,19 @@ export const searchApi = baseApi.injectEndpoints({
         url: "/admin/search/reindex",
         method: "POST",
       }),
+      transformResponse: (res: any) => {
+        return res?.payload ?? res;
+      },
     }),
   }),
 
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
   usePublicSearchQuery,
   useLazyPublicSearchQuery,
+  useGetDiscoveryFiltersQuery,
   useDiscoverySearchMutation,
   useAdminSearchQuery,
   useLazyAdminSearchQuery,

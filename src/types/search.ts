@@ -14,7 +14,7 @@ export interface MenuItemHit {
   imageUrl?: string;
   storeUuid?: string;
   storeName?: string;
-  availabilityStatus?: "AVAILABLE" | "UNAVAILABLE" | "SOLD_OUT";
+  availabilityStatus?: string;
   storeOperatingStatus?: string;
   deleted?: boolean;
 }
@@ -22,13 +22,16 @@ export interface MenuItemHit {
 export interface StoreHit {
   id: string;
   uuid?: string;
-  storeName: string;
+  storeName?: string;
   name?: string;
   description?: string;
   logoUrl?: string;
   bannerUrl?: string;
-  reviewStatus?: "APPROVED" | "PENDING" | "REJECTED";
-  accountStatus?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+  city?: string;
+  averageRating?: number;
+  priceLevel?: number;
+  reviewStatus?: string;
+  accountStatus?: string;
   deleted?: boolean;
 }
 
@@ -47,24 +50,95 @@ export interface PublicSearchResponse {
   stores: SearchHits<StoreHit>;
 }
 
-export interface DiscoverySearchRequest {
-  query?: string;
-  profileUuid?: string;
-  dietaryPreferences?: string[];
-  ingredientExclusions?: string[];
-  allergies?: string[];
-  limit?: number;
-  offset?: number;
+export interface FilterItemOption {
+  uuid: string;
+  code: string;
+  name: string;
+  localName?: string;
 }
 
-export interface DiscoverySearchResponse {
-  contents: MenuItemHit[];
+export interface DiscoveryFilterOptionsResponse {
+  categories: FilterItemOption[];
+  cuisines: FilterItemOption[];
+  mealTypes: FilterItemOption[];
+  dietaryTypes: FilterItemOption[];
+  allergens: FilterItemOption[];
+  availabilityStatuses: string[];
+  sortOptions: string[]; // ["DISTANCE_ASC", "PRICE_ASC", "PRICE_DESC", "FOODHUB_RATING_DESC", "NEWEST"]
+  storePriceLevels: number[];
+  provinces: string[];
+  cities: string[];
+  seasons: FilterItemOption[];
+  events: FilterItemOption[];
+  suitableWeather: FilterItemOption[];
+  ageGroups: FilterItemOption[];
+  spiceLevels: { min: number; max: number };
+  priceRanges: { currency: string; min: number; max: number };
+}
+
+export interface CustomerSearchRequest {
+  profileUuid?: string; // Optional user profile for safety evaluation
+  query?: string;
+  categoryUuids?: string[];
+  cuisineUuids?: string[];
+  mealTypeUuids?: string[];
+  seasonUuids?: string[];
+  eventUuids?: string[];
+  weatherConditionUuids?: string[];
+  ageGroupUuids?: string[];
+  minimumPrice?: number;
+  maximumPrice?: number;
+  minimumSpiceLevel?: number;
+  maximumSpiceLevel?: number;
+  dietaryTypeUuids?: string[];
+  excludeAllergenUuids?: string[];
+  includeIngredientUuids?: string[];
+  excludeIngredientUuids?: string[];
+  storePriceLevels?: number[];
+  provinces?: string[];
+  cities?: string[];
+  openNow?: boolean;
+  maxPreparationTimeMinutes?: number;
+  sort?: string;
+}
+
+export type SafetyStatusType = "SAFE" | "WARNING" | "BLOCKED" | "NOT_EVALUATED";
+
+export interface MenuItemDiscoveryResponse {
+  menuItemUuid: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  price: number;
+  currencyCode: string;
+  availabilityStatus: string;
+  safetyStatus: SafetyStatusType;
+  safetyReasonCodes?: string[];
+  distanceMeters?: number;
+  store: {
+    uuid: string;
+    name: string;
+    averageRating: number;
+    priceLevel: number;
+    operatingStatus: string;
+    openNow: boolean;
+  };
+  food?: {
+    canonicalName: string;
+    localName?: string;
+    defaultSpiceLevel?: number;
+  };
+}
+
+export interface DiscoveryPaginatedResponse {
+  content: MenuItemDiscoveryResponse[];
   pageNumber: number;
   pageSize: number;
-  hasNext: boolean;
-  totalElements?: number;
-  totalPages?: number;
-  safetyEvaluated: boolean;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  first: boolean;
+  empty: boolean;
 }
 
 export interface AdminSearchParams {

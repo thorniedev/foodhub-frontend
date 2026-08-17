@@ -20,8 +20,11 @@ import { FaFire, FaStar } from "react-icons/fa";
 import { MdOutlineCategory } from "react-icons/md";
 
 import FoodCard from "@/components/dynamic-card/FoodCard";
+import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useDiscoverySearchMutation } from "@/app/store/searchApi";
+import type { CustomerSearchRequest, MenuItemDiscoveryResponse, SafetyStatusType } from "@/types/search";
 import {
   useGetMemberProfileByIdQuery,
   useGetMemberProfilesQuery,
@@ -1848,10 +1851,37 @@ function LoadingState() {
 
 export default function FoodPage() {
   const [searchInput, setSearchInput] = useState("");
-
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
+
+  const [customerSearchRequest, setCustomerSearchRequest] = useState<CustomerSearchRequest>({
+    sort: "FOODHUB_RATING_DESC",
+  });
+
+  const [executeDiscoverySearch, { data: discoveryResult, isLoading: isDiscoveryLoading }] =
+    useDiscoverySearchMutation();
+
+  useEffect(() => {
+    executeDiscoverySearch({
+      page: 0,
+      size: 50,
+      sort: customerSearchRequest.sort || "FOODHUB_RATING_DESC",
+      request: {
+        ...customerSearchRequest,
+        query: searchInput.trim() || undefined,
+      },
+    });
+  }, [customerSearchRequest, searchInput, executeDiscoverySearch]);
+
+  const discoveryItems = useMemo(() => {
+    if (!discoveryResult) return [];
+    if (Array.isArray(discoveryResult)) return discoveryResult;
+    if ("content" in discoveryResult && Array.isArray((discoveryResult as any).content)) {
+      return (discoveryResult as any).content as MenuItemDiscoveryResponse[];
+    }
+    return [];
+  }, [discoveryResult]);
 
   const {
     data: menuItems = [],
@@ -2038,6 +2068,87 @@ export default function FoodPage() {
     [menuItems, filters, memberProfile],
   );
 
+  const apiCatalogFoods = useMemo(() => {
+    if (discoveryItems.length > 0) {
+      return discoveryItems.map((item) => {
+        const catalogItem: CatalogMenuItem & { safetyStatus?: SafetyStatusType; safetyReasonCodes?: string[] } = {
+          uuid: item.menuItemUuid,
+          legacyId: 0,
+          name: item.name,
+          localName: item.food?.localName || item.name,
+          description: item.description || null,
+          localDescription: null,
+          thumbnail: item.imageUrl || null,
+          gallery: item.imageUrl ? [item.imageUrl] : [],
+          price: item.price,
+          currencyCode: item.currencyCode || "USD",
+          preparationTimeMinutes: item.food?.defaultSpiceLevel || null,
+          availabilityStatus: (item.availabilityStatus as any) || "AVAILABLE",
+          isFeatured: false,
+          source: "DISCOVERY",
+          store: {
+            uuid: item.store?.uuid || "",
+            name: item.store?.name || "Store",
+            localName: item.store?.name || "Store",
+            logoUrl: null,
+            coverImageUrl: null,
+            social: [],
+            addressLine: null,
+            district: null,
+            city: null,
+            latitude: 0,
+            longitude: 0,
+            operatingStatus: (item.store?.operatingStatus as any) || "OPEN",
+            averageRating: item.store?.averageRating || 0,
+            totalReviews: 0,
+          },
+          distanceKm: item.distanceMeters ? item.distanceMeters / 1000 : null,
+          food: {
+            uuid: item.menuItemUuid,
+            canonicalName: item.food?.canonicalName || item.name,
+            category: { code: "", name: "" },
+            cuisine: { code: "", name: "" },
+            spiceLevel: item.food?.defaultSpiceLevel || 0,
+            ageGroups: [],
+            mealTypes: [],
+            seasons: [],
+            dietaryTypes: [],
+            events: [],
+            suitableWeather: [],
+          },
+          allergenDeclarations: [],
+          ingredients: [],
+          beveragePairings: [],
+          nutrition: { calories: 0, fatGrams: 0, carbsGrams: 0, proteinGrams: 0 },
+          recommendation: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          origin: {
+            countryCode: "KH",
+            countryName: "Cambodia",
+            countryLocalName: "កម្ពុជា",
+            provinceCode: null,
+            provinceName: null,
+            provinceLocalName: null,
+            isTraditional: false,
+          },
+          filterOption: {
+            seasons: [],
+            events: [],
+            provincePopularity: [],
+            suitableWeather: [],
+          },
+          safetyStatus: item.safetyStatus,
+          safetyReasonCodes: item.safetyReasonCodes,
+        };
+        return catalogItem;
+      });
+    }
+    return [];
+  }, [discoveryItems]);
+
+  const displayFoods = apiCatalogFoods.length > 0 ? apiCatalogFoods : filteredFoods;
+
   const activeFilterCount = countActiveFilters(filters);
 
   /* =======================================================
@@ -2156,7 +2267,7 @@ export default function FoodPage() {
           {/* Mobile / tablet Food filter button */}
           <button
             type="button"
-            onClick={() => setMobileFiltersOpen(true)}
+            onClick={() => setIsApiFilterSheetOpen(true)}
             className="
               relative
               flex
@@ -2175,19 +2286,12 @@ export default function FoodPage() {
               transition
               hover:bg-primary-700
               active:scale-[0.98]
-              lg:hidden
             "
             aria-label="Open food filters"
           >
             <IoFilterOutline className="text-[21px]" />
 
-            <span>តម្រង</span>
-
-            {activeFilterCount > 0 && (
-              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary-500 px-1.5 text-[14px] font-bold text-white">
-                {activeFilterCount}
-              </span>
-            )}
+            <span>តម្រងស្វែងរក (Advanced Filters)</span>
           </button>
 
           <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
@@ -2195,7 +2299,7 @@ export default function FoodPage() {
 
             <p className="text-[16px] text-primary-800 dark:text-primary-dark">
               រកឃើញ
-              <span className="font-semibold">{filteredFoods.length}</span>
+              <span className="font-semibold">{displayFoods.length}</span>
               មុខម្ហូប
             </p>
           </div>
@@ -2247,51 +2351,22 @@ export default function FoodPage() {
             }
           />
 
-          {/* FEATURED */}
-
-          {/* {featuredFoods.length > 0 && (
-            <section className="mt-8">
-              <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="text-[16px] font-semibold text-secondary-500">
-                    FoodHub
-                  </p>
-
-                  <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
-                    មុខម្ហូបពិសេស
-                  </p>
-                </div>
-
-                <span className="rounded-full bg-primary-50 px-4 py-2 text-[16px] font-semibold text-primary-700">
-                  {featuredFoods.length} ជម្រើស
-                </span>
-              </div>
-
-              <FoodGrid foods={featuredFoods} />
-            </section>
-          )} */}
-
           {/* ALL FOODS */}
 
           <section className="mt-6">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                {/* <p className="text-[16px] font-semibold text-secondary-500">
-                  មុខម្ហូបទាំងអស់
-                </p> */}
-
                 <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
                   ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
                 </p>
               </div>
 
               <p className="text-[16px] text-gray-500 dark:text-gray-50">
-                បង្ហាញ {filteredFoods.length} ក្នុងចំណោម
-                {menuItems.length}
+                បង្ហាញ {displayFoods.length} មុខម្ហូប
               </p>
             </div>
 
-            <FoodGrid foods={filteredFoods} />
+            <FoodGrid foods={displayFoods} />
           </section>
 
           <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
@@ -2306,6 +2381,14 @@ export default function FoodPage() {
           </section>
         </main>
       </div>
+
+      <DiscoveryFilterSheet
+        isOpen={isApiFilterSheetOpen}
+        onClose={() => setIsApiFilterSheetOpen(false)}
+        filters={customerSearchRequest}
+        onApplyFilters={(newFilters) => setCustomerSearchRequest(newFilters)}
+        onResetFilters={() => setCustomerSearchRequest({ sort: "FOODHUB_RATING_DESC" })}
+      />
 
       {/* MOBILE / TABLET FOOD FILTER DRAWER */}
 

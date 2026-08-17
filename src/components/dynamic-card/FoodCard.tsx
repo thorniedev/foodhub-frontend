@@ -10,14 +10,21 @@ import { IoMdTime } from "react-icons/io";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
+import SafetyStatusBadge from "@/components/discovery/SafetyStatusBadge";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import type { SafetyStatusType } from "@/types/search";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 type FoodCardProps = {
-  food: CatalogMenuItem;
+  food: CatalogMenuItem & {
+    safetyStatus?: SafetyStatusType;
+    safetyReasonCodes?: string[];
+  };
+  safetyStatus?: SafetyStatusType;
+  safetyReasonCodes?: string[];
 };
 
 /* =========================================================
@@ -58,7 +65,7 @@ function getStoredFavoriteIds(): string[] {
    COMPONENT
 ========================================================= */
 
-export default function FoodCard({ food }: FoodCardProps) {
+export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: FoodCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>(
@@ -187,16 +194,6 @@ export default function FoodCard({ food }: FoodCardProps) {
             alt={displayName}
             width={485}
             height={370}
-            // draggable={false}
-            // onError={(event) => {
-            //   const currentSrc = event.currentTarget.src;
-
-            //   if (currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
-            //     return;
-            //   }
-
-            //   setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-            // }}
             className="
               h-[190px]
               w-full
@@ -206,6 +203,14 @@ export default function FoodCard({ food }: FoodCardProps) {
               pointer-events-none
             "
           />
+          {(safetyStatus || food.safetyStatus) && (
+            <div className="absolute top-2 left-2 z-10">
+              <SafetyStatusBadge
+                status={safetyStatus || food.safetyStatus}
+                reasonCodes={safetyReasonCodes || food.safetyReasonCodes}
+              />
+            </div>
+          )}
         </div>
 
         {/* ========================================
