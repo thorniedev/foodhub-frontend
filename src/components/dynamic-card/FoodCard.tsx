@@ -164,7 +164,7 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
       ========================================== */}
 
       <Link
-        href={`/food/${food.uuid}`}
+        href={`/menu-items/${food.uuid}`}
         className="
           flex
           h-full

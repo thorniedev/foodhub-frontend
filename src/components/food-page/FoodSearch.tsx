@@ -531,7 +531,7 @@ export default function FoodSearch({
                 {suggestions.map(({ food, score }) => (
                   <Link
                     key={food.uuid}
-                    href={`/food/${food.uuid}`}
+                    href={`/menu-items/${food.uuid}`}
                     onClick={() => setIsFocused(false)}
                     className="flex items-center gap-3 rounded-[16px] p-3 transition hover:bg-primary-50"
                   >

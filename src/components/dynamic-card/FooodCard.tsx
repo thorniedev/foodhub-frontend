@@ -221,7 +221,7 @@ export default function FooodCard({
 
       <div className="relative overflow-hidden rounded-[14px]">
         <Link
-          href={`/food/${food.uuid}`}
+          href={`/menu-items/${food.uuid}`}
           className="block"
           aria-label={`View ${displayName}`}
         >
@@ -319,7 +319,7 @@ export default function FooodCard({
 
         {/* NAME + PRICE */}
 
-        <Link href={`/food/${food.uuid}`} className="group">
+        <Link href={`/menu-items/${food.uuid}`} className="group">
           <div className="flex items-center justify-between gap-2">
             <p
               className="
@@ -453,7 +453,7 @@ export default function FooodCard({
 
         <div className="mt-auto flex items-center gap-2 pt-3">
           {/* <Link
-            href={`/food/${food.uuid}`}
+            href={`/menu-items/${food.uuid}`}
             className="
               flex
               min-h-11

@@ -356,7 +356,7 @@ export default function MealTimeRecommandSection({
               }}
             >
               <Link
-                href={`/food/${food.uuid}`}
+                href={`/menu-items/${food.uuid}`}
                 onClick={() => handleViewFood(food)}
                 className="block h-full"
               >

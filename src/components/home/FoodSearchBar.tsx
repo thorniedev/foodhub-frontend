@@ -337,7 +337,7 @@ export default function FoodSearchBar() {
             </motion.p>
           )}
           {filteredFoods.map((food) => (
-            <Link key={food.id} href={`/food/${food.id}`}>
+            <Link key={food.id} href={`/menu-items/${food.id}`}>
               <FoodCardComponent food={food} />
             </Link>
           ))}
