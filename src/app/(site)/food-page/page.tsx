@@ -1939,7 +1939,10 @@ export default function FoodPage() {
             ? [
                 {
                   code: category.code,
-                  name: category.name,
+                  name:
+                    category.code === "FOOD" || category.name === "Food"
+                      ? "អាហារ"
+                      : category.name,
                 },
               ]
             : [];
