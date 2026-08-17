@@ -30,13 +30,20 @@ function getAccessToken(request: NextRequest): string | null {
 }
 
 function getBackendApiUrl(): string | null {
-  const backendApiUrl = process.env.BACKEND_API_URL;
+  const configuredBackendUrl =
+    process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  if (!backendApiUrl) {
+  if (!configuredBackendUrl) {
     return null;
   }
 
-  return normalizeBaseUrl(backendApiUrl);
+  const normalizedUrl = normalizeBaseUrl(configuredBackendUrl);
+
+  if (/\/api\/v1$/i.test(normalizedUrl)) {
+    return normalizedUrl;
+  }
+
+  return `${normalizedUrl}/api/v1`;
 }
 
 function configurationError() {
