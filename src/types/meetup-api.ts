@@ -189,3 +189,14 @@ export interface MeetupActionResponse {
 
   raw: unknown;
 }
+
+export interface RemoveMeetupParticipantArgs {
+  participantUuid: string;
+  meetupUuid?: string;
+}
+
+export interface RetractMeetupVoteArgs {
+  voteUuid: string;
+  meetupUuid?: string;
+}
+

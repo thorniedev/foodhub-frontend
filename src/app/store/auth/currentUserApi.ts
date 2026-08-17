@@ -81,8 +81,18 @@ export const currentUserApi =
             }
 
             const raw = response as Record<string, unknown>;
+            const target = (typeof raw.payload === "object" && raw.payload !== null
+              ? raw.payload
+              : typeof raw.data === "object" && raw.data !== null
+              ? raw.data
+              : raw) as Record<string, unknown>;
 
-            const id = typeof raw.id === "number" ? raw.id : null;
+            const id =
+              typeof target.id === "number"
+                ? target.id
+                : typeof target.id === "string" && Number.isFinite(Number(target.id))
+                ? Number(target.id)
+                : null;
 
             if (!id) {
               return null;
@@ -90,19 +100,19 @@ export const currentUserApi =
 
             return {
               id,
-              uuid: typeof raw.uuid === "string" ? raw.uuid : "",
-              username: typeof raw.username === "string" ? raw.username : "",
+              uuid: typeof target.uuid === "string" ? target.uuid : "",
+              username: typeof target.username === "string" ? target.username : "",
               primaryEmail:
-                typeof raw.primaryEmail === "string" ? raw.primaryEmail : null,
+                typeof target.primaryEmail === "string" ? target.primaryEmail : null,
               firstName:
-                typeof raw.firstName === "string" ? raw.firstName : null,
+                typeof target.firstName === "string" ? target.firstName : null,
               lastName:
-                typeof raw.lastName === "string" ? raw.lastName : null,
-              status: typeof raw.status === "string" ? raw.status : null,
+                typeof target.lastName === "string" ? target.lastName : null,
+              status: typeof target.status === "string" ? target.status : null,
               createdAt:
-                typeof raw.createdAt === "string" ? raw.createdAt : null,
+                typeof target.createdAt === "string" ? target.createdAt : null,
               updatedAt:
-                typeof raw.updatedAt === "string" ? raw.updatedAt : null,
+                typeof target.updatedAt === "string" ? target.updatedAt : null,
             };
           },
 
