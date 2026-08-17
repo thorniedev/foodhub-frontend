@@ -75,15 +75,37 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
   const hasResults = stores.length > 0 || menuItems.length > 0;
 
   const handleSelectStore = (store: StoreHit) => {
-    const storeId = store.uuid || store.id;
+    const storeId =
+      store.uuid ||
+      store.storeUuid ||
+      store.store_uuid ||
+      (store as any).id ||
+      (store as any).storeId;
+
+    if (!storeId || storeId === "undefined") {
+      console.warn("[SEARCH MODAL] Invalid store UUID:", store);
+      return;
+    }
+
     onClose();
-    router.push(`/stores/${storeId}`);
+    router.push(`/store/${storeId}`);
   };
 
   const handleSelectMenuItem = (item: MenuItemHit) => {
-    const itemUuid = item.uuid || item.id;
+    const itemUuid =
+      item.uuid ||
+      item.menuItemUuid ||
+      item.menu_item_uuid ||
+      (item as any).id ||
+      (item as any).menuItemId;
+
+    if (!itemUuid || itemUuid === "undefined") {
+      console.warn("[SEARCH MODAL] Invalid menu item UUID:", item);
+      return;
+    }
+
     onClose();
-    router.push(`/menu-items/${itemUuid}`);
+    router.push(`/food/details/${itemUuid}`);
   };
 
   const renderPriceLevel = (level?: number) => {

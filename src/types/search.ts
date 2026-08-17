@@ -7,6 +7,8 @@ export interface PublicSearchParams {
 export interface MenuItemHit {
   id: string;
   uuid?: string;
+  menuItemUuid?: string;
+  menu_item_uuid?: string;
   name: string;
   description?: string;
   price?: number;
@@ -22,6 +24,8 @@ export interface MenuItemHit {
 export interface StoreHit {
   id: string;
   uuid?: string;
+  storeUuid?: string;
+  store_uuid?: string;
   storeName?: string;
   name?: string;
   description?: string;
