@@ -177,12 +177,12 @@ export default function Navbar() {
                 ចូលគណនី
               </Link>
 
-              {/* <Link
+              <Link
                 href="/register"
                 className="rounded-full bg-primary-800 px-4 py-2 font-semibold text-white transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-primary"
               >
                 បង្កើតគណនី
-              </Link> */}
+              </Link>
             </>
           )}
         </div>
@@ -318,7 +318,7 @@ export default function Navbar() {
                     </Link>
                   </li>
 
-                  {/* <li>
+                  <li>
                     <Link
                       href="/register"
                       tabIndex={open ? 0 : -1}
@@ -327,7 +327,7 @@ export default function Navbar() {
                     >
                       បង្កើតគណនី
                     </Link>
-                  </li> */}
+                  </li>
                 </>
               )}
             </ul>

@@ -77,6 +77,16 @@ export default function LoginClient() {
         >
           Login with FoodHub
         </a>
+
+        <div className="mt-6 text-center text-sm text-slate-500">
+          Don&apos;t have an account?{" "}
+          <a
+            href="/register"
+            className="font-semibold text-[#136C34] hover:underline"
+          >
+            Create an account
+          </a>
+        </div>
       </div>
     </main>
   );
