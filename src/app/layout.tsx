@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://foodhub-khmer.vercel.app",
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.mhoubahar.store",
   ),
 
   title: {
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   ],
 
   authors: [{ name: "FoodHub Team" }],
-  creator: "FoodHub",
+  creator: "FoodHub Team",
   publisher: "FoodHub",
 
   applicationName: "FoodHub",
@@ -54,26 +54,17 @@ export const metadata: Metadata = {
 
   openGraph: {
     type: "website",
-    locale: "km_KH",
-    alternateLocale: "en_US",
+    url: "https://www.mhoubahar.store",
     siteName: "មូបអាហារ - FoodHub",
-    title: "មូបអាហារ - FoodHub | ដែនាំអាហារដែលត្រូវនឹងចំណូលចិត្តរបស់អ្នក!",
+    title: "មូបអាហារ - FoodHub",
     description:
       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "មូបអាហារ FoodHub - Personalized Food Recommendations",
-        type: "image/jpeg",
-      },
-      {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "មូបអាហារ FoodHub - Personalized Food Recommendations",
-        type: "image/png",
+        alt: "មូបអាហារ - FoodHub",
       },
     ],
   },
@@ -83,7 +74,7 @@ export const metadata: Metadata = {
     title: "មូបអាហារ - FoodHub",
     description:
       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
-    images: ["/og-image.jpg"],
+    images: ["/og-image.png"],
   },
 
   icons: {

@@ -231,7 +231,7 @@ export function getAuthConfig() {
   const keycloakUrl = trimTrailingSlash(requiredEnv("KEYCLOAK_URL"));
   const realm = requiredEnv("KEYCLOAK_REALM");
   const clientId = requiredEnv("KEYCLOAK_CLIENT_ID");
-  const clientSecret = requiredEnv("KEYCLOAK_CLIENT_SECRET");
+  const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET?.trim() || "";
 
   return {
     appUrl,

@@ -347,7 +347,9 @@ export async function GET(request: NextRequest) {
 
     tokenBody.set("grant_type", "authorization_code");
     tokenBody.set("client_id", config.clientId);
-    tokenBody.set("client_secret", config.clientSecret);
+    if (config.clientSecret) {
+      tokenBody.set("client_secret", config.clientSecret);
+    }
     tokenBody.set("code", code);
     tokenBody.set("redirect_uri", redirectUri);
     tokenBody.set("code_verifier", codeVerifier);
