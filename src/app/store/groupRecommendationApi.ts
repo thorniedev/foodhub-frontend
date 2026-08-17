@@ -215,7 +215,13 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "/meetup/votes",
         method: "POST",
-        body: { ...body, rankChoice: body.rankChoice ?? 1 },
+        body: {
+          meetupUuid: body.meetupUuid,
+          participantUuid: body.participantUuid,
+          foodUuid: body.foodUuid || body.candidateUuid,
+          candidateUuid: body.candidateUuid || body.foodUuid,
+          rankChoice: body.rankChoice ?? 1,
+        },
       }),
       transformResponse: (response: unknown) =>
         normalizeMeetupVoteResponse(response),

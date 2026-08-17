@@ -63,7 +63,7 @@ function StoreImagePlaceholder({ displayName }: { displayName: string }) {
   return (
     <div
       role="img"
-      aria-label={`${displayName} store image placeholder`}
+      aria-label={`${displayName} store image`}
       className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50"
     >
       <span className="flex h-14 w-14 items-center justify-center rounded-full border border-primary-100 bg-white shadow-sm">
@@ -88,6 +88,11 @@ export function StoreImage({ store }: { store: FoodStore }) {
     setIsResolving(Boolean(store.logoMediaUuid));
 
     async function loadLogo() {
+      if (!store.logoMediaUuid) {
+        setIsResolving(false);
+        return;
+      }
+
       const resolvedUrl = await resolveStoreMediaUrl(store.logoMediaUuid);
 
       if (cancelled) {
@@ -118,18 +123,12 @@ export function StoreImage({ store }: { store: FoodStore }) {
       src={imageUrl}
       alt={`${displayName} store logo`}
       draggable={false}
-      onError={() => {
-        console.warn("[STORE CARD IMAGE] Signed URL failed", {
-          storeUuid: store.uuid,
-          logoMediaUuid: store.logoMediaUuid,
-          imageUrl,
-        });
-        setImageFailed(true);
-      }}
+      onError={() => setImageFailed(true)}
       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
     />
   );
 }
+
 
 function FavoriteButton({ storeName }: { storeName: string }) {
   const [favorite, setFavorite] = useState(false);

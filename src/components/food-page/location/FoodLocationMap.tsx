@@ -2180,38 +2180,6 @@ export default function FoodLocationMap({
             </Marker>
           ))}
 
-        {mode === "group" && meetingPointPosition && (
-          <Marker
-            position={meetingPointPosition}
-            icon={meetingPointIcon}
-            zIndexOffset={1_300}
-          >
-            <Popup
-              className="foodhub-map-popup"
-              closeButton={false}
-              minWidth={230}
-            >
-              <div className="p-1">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
-                    <IoPeopleOutline className="text-[23px]" />
-                  </span>
-
-                  <div>
-                    <p className="text-[17px] font-bold text-slate-900">
-                      ចំណុចកណ្ដាលក្រុម
-                    </p>
-
-                    <p className="mt-0.5 text-[17px] text-slate-500">
-                      ទីតាំងសមរម្យសម្រាប់មនុស្សគ្រប់គ្នា
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
         {validStoreEntries.map(({ store, position }) => {
           const selected = selectedStoreId === store.uuid;
 
@@ -2344,17 +2312,10 @@ export default function FoodLocationMap({
         </span>
 
         {mode === "group" && (
-          <>
-            <span className="inline-flex items-center gap-2">
-              <span className="h-3 w-3 rounded-full border-2 border-white bg-violet-600 shadow" />
-              សមាជិក
-            </span>
-
-            <span className="inline-flex items-center gap-2">
-              <span className="h-3 w-3 rounded-full border-2 border-white bg-orange-500 shadow" />
-              ចំណុចកណ្ដាល
-            </span>
-          </>
+          <span className="inline-flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full border-2 border-white bg-violet-600 shadow" />
+            សមាជិក
+          </span>
         )}
 
         <span className="inline-flex items-center gap-2">

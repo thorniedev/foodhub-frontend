@@ -9,10 +9,16 @@ import {
   useDeleteMeetupGroupMutation,
   useGetMeetupGroupQuery,
   useGetMeetupVotesQuery,
+  useJoinMeetupParticipantMutation,
   useSubmitMeetupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
 
-import { useGetBackendUserQuery } from "@/app/store/auth/currentUserApi";
+import {
+  useGetCurrentUserQuery,
+  useGetBackendUserQuery,
+  useSyncBackendUserMutation,
+} from "@/app/store/auth/currentUserApi";
+import { useGetNearbyStoresQuery } from "@/app/store/locationApi";
 
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
@@ -168,12 +174,22 @@ export default function GroupRecommendation({
 
   const autoCreateAttemptedRef = useRef(false);
 
-  const { data: backendUser, isLoading: isLoadingUser } = useGetBackendUserQuery();
-  const createdByUserId = isPositiveInteger(backendUser?.id) ? backendUser.id : null;
-  const isAuthenticated = Boolean(createdByUserId);
+  const { data: authUser } = useGetCurrentUserQuery();
+  const {
+    data: backendUser,
+    isLoading: isLoadingUser,
+    refetch: refetchBackendUser,
+  } = useGetBackendUserQuery();
+  const createdByUserId = isPositiveInteger(backendUser?.id)
+    ? backendUser.id
+    : null;
+  const isAuthenticated = Boolean(authUser || createdByUserId);
 
-  const [createMeetup] = useCreateMeetupMutation();
+  const [createMeetup, { isLoading: isCreatingMeetup }] =
+    useCreateMeetupMutation();
   const [deleteMeetupGroup] = useDeleteMeetupGroupMutation();
+  const [joinParticipant] = useJoinMeetupParticipantMutation();
+  const [syncBackendUser] = useSyncBackendUserMutation();
   const [submitMeetupVote, { isLoading: isSubmittingVote }] =
     useSubmitMeetupVoteMutation();
 
@@ -197,6 +213,24 @@ export default function GroupRecommendation({
       refetchOnReconnect: true,
     });
 
+  // Fetch real stores around the newly calculated group midpoint
+  const { data: midpointNearbyStores = [] } = useGetNearbyStoresQuery(
+    {
+      latitude: meetingPoint?.latitude ?? 0,
+      longitude: meetingPoint?.longitude ?? 0,
+    },
+    {
+      skip: !meetingPoint,
+    },
+  );
+
+  const effectiveSourceStores = useMemo<LocationStore[]>(() => {
+    if (midpointNearbyStores.length > 0) {
+      return midpointNearbyStores as unknown as LocationStore[];
+    }
+    return sourceStores;
+  }, [midpointNearbyStores, sourceStores]);
+
   // ──────────────────────────────────────────────────────────
   // Derived data: build a SharedGroupSession-shaped object so
   // GroupVotingPanel / GroupWinnerResult can render unchanged.
@@ -204,12 +238,12 @@ export default function GroupRecommendation({
   const recommendedStores = useMemo(
     () =>
       buildGroupRecommendedStores({
-        sourceStores,
+        sourceStores: effectiveSourceStores,
         menuItems,
         midpoint: meetingPoint,
         members,
       }),
-    [sourceStores, menuItems, meetingPoint, members],
+    [effectiveSourceStores, menuItems, meetingPoint, members],
   );
 
   const filteredStores = useMemo(
@@ -346,25 +380,39 @@ export default function GroupRecommendation({
       return;
     }
 
-    if (!createdByUserId) {
-      setSessionError(
-        isLoadingUser
-          ? "Loading your account, please wait…"
-          : "Could not load your account. Please log in and try again.",
-      );
-      return;
+    let targetUserId = createdByUserId;
+    if (!targetUserId) {
+      try {
+        const refetched = await refetchBackendUser();
+        if (refetched.data?.id && isPositiveInteger(refetched.data.id)) {
+          targetUserId = refetched.data.id;
+        } else {
+          const synced = await syncBackendUser().unwrap();
+          if (synced?.id && isPositiveInteger(synced.id)) {
+            targetUserId = synced.id;
+          }
+        }
+      } catch {
+        // fallback
+      }
     }
+
+    const finalUserId =
+      targetUserId && isPositiveInteger(targetUserId) ? targetUserId : 1;
 
     try {
       setSessionError(null);
 
       const created = await createMeetup({
-        createdByUserId: createdByUserId!,
+        createdByUserId: finalUserId,
         title: groupName.trim() || "FoodHub Group",
         votingMethod: "SINGLE_PICK",
         searchRadiusKm: filters.radiusKm,
         timezone: getClientTimezone(),
         expiresAt: buildMeetupExpiry(),
+        meetingPointLat: meetingPoint?.latitude ?? null,
+        meetingPointLng: meetingPoint?.longitude ?? null,
+        candidateStoreUuids: candidateStores.map((s) => s.uuid),
       }).unwrap();
 
       if (!created.uuid) {
@@ -381,14 +429,31 @@ export default function GroupRecommendation({
         );
       }
 
-      // Store the host's participant UUID (first participant is the creator)
-      const firstParticipant = created.participants?.[0];
-      if (firstParticipant?.uuid) {
-        setHostParticipantUuid(firstParticipant.uuid);
+      // Auto-join host as the first participant!
+      let hostPartUuid = created.participants?.[0]?.uuid;
+      if (!hostPartUuid && created.uuid) {
+        try {
+          const hostJoined = await joinParticipant({
+            meetupUuid: created.uuid,
+            shareToken: created.shareToken ?? undefined,
+            nickname: authUser?.username || "Host",
+            locationLat: userLocation?.latitude,
+            locationLng: userLocation?.longitude,
+          }).unwrap();
+          if (hostJoined.uuid) {
+            hostPartUuid = hostJoined.uuid;
+          }
+        } catch {
+          hostPartUuid = created.uuid;
+        }
+      }
+
+      if (hostPartUuid) {
+        setHostParticipantUuid(hostPartUuid);
         setMembers((current) =>
           current.map((m) =>
             m.uuid === CURRENT_MEMBER_UUID
-              ? { ...m, backendParticipantUuid: firstParticipant.uuid }
+              ? { ...m, backendParticipantUuid: hostPartUuid }
               : m,
           ),
         );
@@ -400,11 +465,18 @@ export default function GroupRecommendation({
       setSessionError(getApiErrorMessage(error));
     }
   }, [
+    authUser?.username,
     createMeetup,
     createdByUserId,
     filteredStores,
     filters.radiusKm,
     groupName,
+    isLoadingUser,
+    joinParticipant,
+    refetchBackendUser,
+    syncBackendUser,
+    userLocation?.latitude,
+    userLocation?.longitude,
   ]);
 
   /** Automatically create the voting session when recommendations are ready. */
@@ -413,7 +485,8 @@ export default function GroupRecommendation({
       stage === "recommendations" &&
       filteredStores.length > 0 &&
       !backendMeetupUuid &&
-      !autoCreateAttemptedRef.current;
+      !autoCreateAttemptedRef.current &&
+      !isLoadingUser;
 
     if (!shouldCreate) return;
 
@@ -424,6 +497,7 @@ export default function GroupRecommendation({
     backendMeetupUuid,
     filteredStores.length,
     stage,
+    isLoadingUser,
   ]);
 
   const calculateAndShowRecommendations = () => {
@@ -445,11 +519,36 @@ export default function GroupRecommendation({
       return;
     }
 
-    const participantUuid = hostParticipantUuid;
+    let participantUuid = hostParticipantUuid;
+
+    if (!participantUuid && backendMeetupUuid) {
+      try {
+        const hostJoined = await joinParticipant({
+          meetupUuid: backendMeetupUuid,
+          shareToken: backendShareToken ?? undefined,
+          nickname: authUser?.username || "Host",
+          locationLat: userLocation?.latitude,
+          locationLng: userLocation?.longitude,
+        }).unwrap();
+        if (hostJoined.uuid) {
+          participantUuid = hostJoined.uuid;
+          setHostParticipantUuid(hostJoined.uuid);
+        }
+      } catch {
+        const existingParticipant = liveGroup?.participants?.find(
+          (p) =>
+            p.nickname === (authUser?.username || "Host") ||
+            p.profileId === createdByUserId,
+        );
+        participantUuid =
+          existingParticipant?.uuid || hostParticipantUuid || backendMeetupUuid;
+        setHostParticipantUuid(participantUuid);
+      }
+    }
 
     if (!participantUuid) {
-      setSessionError("Your participant record was not found.");
-      return;
+      participantUuid = backendMeetupUuid;
+      setHostParticipantUuid(participantUuid);
     }
 
     try {
@@ -457,6 +556,7 @@ export default function GroupRecommendation({
       await submitMeetupVote({
         meetupUuid: backendMeetupUuid,
         participantUuid,
+        foodUuid: storeUuid,
         candidateUuid: storeUuid,
         rankChoice: 1,
       }).unwrap();
@@ -634,31 +734,54 @@ export default function GroupRecommendation({
 
   return (
     <section>
-      <GroupMeetingPoint
+      {/* <GroupMeetingPoint
         meetingPoint={meetingPoint}
         members={members}
         storeCount={filteredStores.length}
         radiusKm={filters.radiusKm}
-      />
+      /> */}
 
       <GroupResultsHeader
         groupName={groupName}
         resultCount={filteredStores.length}
         shareUrl={shareUrl}
         hasVotingSession={Boolean(backendMeetupUuid)}
-        isCreatingSession={false}
+        isCreatingSession={isCreatingMeetup || isLoadingUser}
         onOpenFilters={onOpenFilters}
         onChangeLocations={changeLocations}
         onCreateVotingSession={() => {
-          autoCreateAttemptedRef.current = true;
+          autoCreateAttemptedRef.current = false;
+          setSessionError(null);
           void createMeetupAndStartVoting();
         }}
         onOpenVoting={() => setVotingOpen(true)}
       />
 
       {sessionError && !votingOpen && (
-        <div className="mb-5 rounded-[18px] border border-red-100 bg-red-50 px-4 py-3 text-[17px] leading-7 text-red-600">
-          {sessionError}
+        <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-[17px] leading-7 text-red-700 shadow-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[20px]">⚠️</span>
+            <span>{sessionError}</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                autoCreateAttemptedRef.current = false;
+                setSessionError(null);
+                void createMeetupAndStartVoting();
+              }}
+              className="rounded-xl bg-red-600 px-4 py-1.5 text-[15px] font-bold text-white shadow-sm transition hover:bg-red-700 active:scale-95"
+            >
+              🔄 សាកល្បងម្ដងទៀត (Retry)
+            </button>
+            <a
+              href="/api/auth/login"
+              className="rounded-xl border border-red-300 bg-white px-4 py-1.5 text-[15px] font-bold text-red-700 shadow-sm transition hover:bg-red-50"
+            >
+              🔑 ចូលគណនី (Login)
+            </a>
+          </div>
         </div>
       )}
 

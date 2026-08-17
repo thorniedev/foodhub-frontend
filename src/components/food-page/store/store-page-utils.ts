@@ -275,12 +275,13 @@ export async function resolveStoreMediaUrl(
     const responseText = await response.text();
 
     if (!response.ok) {
-      console.warn("[STORE MEDIA] access-url request failed", {
-        endpoint,
-        status: response.status,
-        statusText: response.statusText,
-        response: responseText,
-      });
+      if (response.status !== 401 && response.status !== 403) {
+        console.warn("[STORE MEDIA] access-url request failed", {
+          endpoint,
+          status: response.status,
+          statusText: response.statusText,
+        });
+      }
 
       return null;
     }

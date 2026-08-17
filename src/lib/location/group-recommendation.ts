@@ -278,6 +278,8 @@ export function buildGroupRecommendedStores({
 
         logoUrl: normalizePublicImagePath(store.logoUrl),
         coverImageUrl: normalizePublicImagePath(store.coverImageUrl),
+        logoMediaUuid: (store as { logoMediaUuid?: string | null }).logoMediaUuid ?? null,
+        coverMediaUuid: (store as { coverMediaUuid?: string | null }).coverMediaUuid ?? null,
 
         averageRating: store.averageRating ?? 0,
         totalReviews: store.totalReviews ?? 0,

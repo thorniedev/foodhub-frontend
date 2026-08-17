@@ -15,7 +15,19 @@ import {
   useSubmitMeetupVoteMutation,
   useGetMeetupVotesQuery,
 } from "@/app/store/groupRecommendationApi";
+import {
+  useGetStoresQuery,
+  useGetNearbyStoresQuery,
+} from "@/app/store/locationApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import {
+  buildGroupRecommendedStores,
+  filterAndSortGroupStores,
+} from "@/lib/location/group-recommendation";
 
+import type { LocationStore } from "@/types/location-store";
+import type { MenuItem } from "@/types/manu";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import type { GroupMember, GroupVote, SharedGroupSession } from "@/types/group-recommendation";
 
 import VotingLeaderboard from "./VotingLeaderboard";
@@ -24,6 +36,120 @@ import VotingResult from "./VotingResult";
 interface SharedVotingPageProps {
   /** The share token from the URL — resolves to a meetup group via GET /meetup/groups/share/{token} */
   inviteCode: string;
+}
+
+function toLocationMenuItem(item: CatalogMenuItem): MenuItem {
+  const category = item.food?.category ?? {
+    code: "",
+    name: "",
+  };
+
+  const cuisine = item.food?.cuisine ?? {
+    code: "",
+    name: "",
+  };
+
+  const ageGroups = Array.isArray(item.food?.ageGroups)
+    ? item.food.ageGroups
+    : [];
+
+  const mealTypes = Array.isArray(item.food?.mealTypes)
+    ? item.food.mealTypes
+    : [];
+
+  const dietaryTypes = Array.isArray(item.food?.dietaryTypes)
+    ? item.food.dietaryTypes
+    : [];
+
+  const ingredients = Array.isArray(item.ingredients)
+    ? item.ingredients.filter(
+      (value): value is string =>
+        typeof value === "string" && value.trim().length > 0,
+    )
+    : [];
+
+  const recommendationScore = Number(item.recommendation?.finalScore ?? 0);
+  const scoreBreakdown = item.recommendation?.scoreBreakdown;
+
+  const converted = {
+    uuid: item.uuid,
+    legacyId: Number(item.legacyId ?? 0),
+    name: item.name,
+    localName: item.localName ?? item.name,
+    description: item.description ?? "",
+    localDescription: item.localDescription ?? item.description ?? "",
+    thumbnail: item.thumbnail ?? "",
+    gallery: Array.isArray(item.gallery) ? item.gallery : [],
+    price: Number(item.price ?? 0),
+    currencyCode: item.currencyCode,
+    preparationTimeMinutes: item.preparationTimeMinutes ?? 0,
+    availabilityStatus: item.availabilityStatus,
+    isFeatured: Boolean(item.isFeatured),
+    source: item.source,
+    store: {
+      uuid: item.store?.uuid ?? "",
+      name: item.store?.name ?? "",
+      localName: item.store?.localName ?? item.store?.name ?? "",
+      logoUrl: item.store?.logoUrl ?? "",
+      coverImageUrl: item.store?.coverImageUrl ?? "",
+      addressLine: item.store?.addressLine ?? "",
+      district: item.store?.district ?? "",
+      city: item.store?.city ?? "",
+      latitude: Number(item.store?.latitude) || 0,
+      longitude: Number(item.store?.longitude) || 0,
+      operatingStatus: item.store?.operatingStatus ?? "CLOSED",
+      averageRating: Number(item.store?.averageRating) || 0,
+      totalReviews: Number(item.store?.totalReviews) || 0,
+    },
+    food: {
+      uuid: item.food?.uuid ?? item.uuid,
+      canonicalName: item.food?.canonicalName ?? item.name,
+      category,
+      cuisine,
+      spiceLevel: Number(item.food?.spiceLevel ?? 0),
+      ageGroups,
+    },
+    mealTypes,
+    dietaryTypes,
+    allergenDeclarations: Array.isArray(item.allergenDeclarations) ? item.allergenDeclarations : [],
+    ingredients,
+    beveragePairings: [],
+    nutrition: {
+      calories: Number(item.nutrition?.calories ?? 0),
+      protein: Number(item.nutrition?.proteinGrams ?? 0),
+      carbohydrate: Number(item.nutrition?.carbsGrams ?? 0),
+      fat: Number(item.nutrition?.fatGrams ?? 0),
+      fiber: 0,
+      sodium: 0,
+    },
+    distanceKm:
+      item.distanceKm === null || item.distanceKm === undefined
+        ? 0
+        : Number(item.distanceKm),
+    deliveryFee: 0,
+    recommendation: {
+      isRecommended:
+        Number.isFinite(recommendationScore) && recommendationScore > 0,
+      rankPosition: 0,
+      finalScore: Number.isFinite(recommendationScore)
+        ? recommendationScore
+        : 0,
+      safetyStatus: "SAFE",
+      candidateSource: item.source,
+      reasonCodes: item.recommendation?.reasonCodes ?? [],
+      reasonText: item.recommendation?.reasonText ?? "",
+      isExploration: false,
+      scoreBreakdown: {
+        mealMatch: Number(scoreBreakdown?.mealMatch ?? 0),
+        cuisineMatch: Number(scoreBreakdown?.cuisineMatch ?? 0),
+        budgetMatch: Number(scoreBreakdown?.budgetMatch ?? 0),
+        distanceMatch: Number(scoreBreakdown?.distanceMatch ?? 0),
+        popularity: Number(scoreBreakdown?.popularity ?? 0),
+      },
+    },
+  };
+
+  return converted as unknown as MenuItem;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -85,7 +211,41 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
   // Use meetupUuid from the resolved group if we haven't stored it yet
   const resolvedMeetupUuid = meetupUuid ?? group?.uuid ?? null;
 
-  // 2. Poll votes for the meetup
+  // 2. Derive meeting point from meetup group / participants
+  const meetingPoint = useMemo(() => {
+    if (group?.meetingPointLat != null && group?.meetingPointLng != null) {
+      return { latitude: group.meetingPointLat, longitude: group.meetingPointLng };
+    }
+    const validCoords = (group?.participants ?? [])
+      .filter((p) => p.locationLat != null && p.locationLng != null)
+      .map((p) => ({ latitude: p.locationLat!, longitude: p.locationLng! }));
+    if (validCoords.length > 0) {
+      const avgLat = validCoords.reduce((sum, c) => sum + c.latitude, 0) / validCoords.length;
+      const avgLng = validCoords.reduce((sum, c) => sum + c.longitude, 0) / validCoords.length;
+      return { latitude: avgLat, longitude: avgLng };
+    }
+    return { latitude: 11.5564, longitude: 104.9282 }; // Phnom Penh default
+  }, [group]);
+
+  // 3. Fetch real stores & menu items from backend
+  const { data: nearbyStores = [] } = useGetNearbyStoresQuery(
+    {
+      latitude: meetingPoint.latitude,
+      longitude: meetingPoint.longitude,
+    },
+    {
+      skip: !meetingPoint,
+    },
+  );
+
+  const { data: allStores = [] } = useGetStoresQuery(undefined, {
+    skip: nearbyStores.length > 0,
+  });
+
+  const rawStores = nearbyStores.length > 0 ? nearbyStores : allStores;
+  const { data: menuItems = [] } = useGetMenuItemsQuery();
+
+  // 4. Poll votes for the meetup
   const { data: votesResponse, refetch: refetchVotes } = useGetMeetupVotesQuery(
     resolvedMeetupUuid ?? "",
     {
@@ -107,7 +267,8 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
   // so VotingLeaderboard / VotingResult render unchanged.
   // ──────────────────────────────────────────────────────────
   const mappedVotes = useMemo((): GroupVote[] => {
-    return (votesResponse?.votes ?? []).map((v) => ({
+    const votes = votesResponse?.votes ?? [];
+    return votes.map((v) => ({
       memberUuid: v.participantUuid ?? "",
       storeUuid: v.candidateUuid ?? "",
       createdAt: v.createdAt ?? new Date().toISOString(),
@@ -148,79 +309,96 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
     }));
   }, [group?.participants, mappedVotes]);
 
-  // We need a list of candidate stores. On the shared voting page we only
-  // know the stores that people have already voted for, plus the group data.
-  // The winning candidate is derived from the tally.
-  // NOTE: stores for display come from votes — show all voted-on stores.
-  const candidateStoreUuids = useMemo(() => {
-    const uuids = new Set<string>();
-    for (const vote of mappedVotes) {
-      if (vote.storeUuid) uuids.add(vote.storeUuid);
+  const adaptedStores = useMemo<LocationStore[]>(
+    () => (Array.isArray(rawStores) ? (rawStores as unknown as LocationStore[]) : []),
+    [rawStores],
+  );
+
+  const adaptedMenuItems = useMemo<MenuItem[]>(
+    () => (Array.isArray(menuItems) ? menuItems.map(toLocationMenuItem) : []),
+    [menuItems],
+  );
+
+  const recommendedCandidateStores = useMemo(() => {
+    if (adaptedStores.length === 0) return [];
+    const recommended = buildGroupRecommendedStores({
+      sourceStores: adaptedStores,
+      menuItems: adaptedMenuItems,
+      midpoint: meetingPoint,
+      members: groupMembers.map((m) => ({
+        uuid: m.uuid,
+        name: m.name,
+        coordinates: m.coordinates,
+        locationStatus: m.locationStatus === "ready" ? "ready" : "waiting",
+        requiredDietaryCodes: [],
+        blockedAllergenCodes: [],
+        customNotes: "",
+        hasVoted: m.hasVoted,
+      })),
+    });
+
+    // If host explicitly defined candidate store UUIDs (e.g. 2 filtered stores)
+    const candidateUuids = group?.candidateStoreUuids;
+    if (Array.isArray(candidateUuids) && candidateUuids.length > 0) {
+      const uuidSet = new Set(candidateUuids);
+      const matched = recommended.filter((store) => uuidSet.has(store.uuid));
+      if (matched.length > 0) {
+        return matched.sort(
+          (a, b) => candidateUuids.indexOf(a.uuid) - candidateUuids.indexOf(b.uuid),
+        );
+      }
     }
-    return [...uuids];
-  }, [mappedVotes]);
+
+    const searchRadiusKm = group?.searchRadiusKm ? Number(group.searchRadiusKm) : 10;
+
+    return filterAndSortGroupStores({
+      stores: recommended,
+      filters: {
+        radiusKm: searchRadiusKm > 0 ? searchRadiusKm : 10,
+        selectedProvince: "",
+        selectedCity: "",
+        selectedDistrict: "",
+        openNow: false,
+        deliveryAvailable: false,
+        pickupAvailable: false,
+        minimumRating: 0,
+        safeForAllMembers: false,
+        hasMealsForEveryone: false,
+        sortBy: "recommended",
+      },
+    });
+  }, [adaptedStores, adaptedMenuItems, meetingPoint, groupMembers, group?.candidateStoreUuids, group?.searchRadiusKm]);
+
+  const [showResults, setShowResults] = useState(false);
 
   const session = useMemo((): SharedGroupSession | null => {
     if (!group) return null;
 
-    // Build minimal store objects from voted-on UUIDs so the leaderboard can render.
-    // Without full store details (name, rating), we show UUIDs — this is a limitation
-    // until a store lookup endpoint is integrated.
-    const storeObjects = candidateStoreUuids.map((uuid) => ({
-      uuid,
-      name: uuid.slice(0, 8) + "…",
-      localName: null,
-      description: "",
-      addressLine: "",
-      commune: "",
-      district: "",
-      city: "",
-      province: "",
-      latitude: 0,
-      longitude: 0,
-      phoneNumber: null,
-      email: null,
-      logoUrl: null,
-      coverImageUrl: null,
-      priceLevel: null,
-      averageRating: 0,
-      totalReviews: 0,
-      operatingStatus: "OPEN" as const,
-      isOpenNow: false,
-      deliveryAvailable: false,
-      pickupAvailable: false,
-      menuItems: [],
-      menuCount: 0,
-      matchingMenuCount: 0,
-      distanceKm: 0,
-      recommendationScore: 0,
-      voteCount: mappedVotes.filter((v) => v.storeUuid === uuid).length,
-    }));
-
     return {
       inviteCode,
       groupName: group.title ?? "FoodHub Group",
-      status: winnerStoreUuid ? "COMPLETED" : "VOTING",
+      status: showResults ? "COMPLETED" : "VOTING",
       members: groupMembers,
-      stores: storeObjects,
+      stores: recommendedCandidateStores.slice(0, 10),
       votes: mappedVotes,
       winnerStoreUuid,
       createdAt: group.createdAt ?? new Date().toISOString(),
       updatedAt: group.updatedAt ?? new Date().toISOString(),
     };
   }, [
-    candidateStoreUuids,
     group,
     groupMembers,
     inviteCode,
     mappedVotes,
+    recommendedCandidateStores,
+    showResults,
     winnerStoreUuid,
   ]);
 
   const winner = useMemo(() => {
-    if (!session?.winnerStoreUuid || session.status !== "COMPLETED") return null;
-    return session.stores.find((s) => s.uuid === session.winnerStoreUuid) ?? null;
-  }, [session]);
+    if (!winnerStoreUuid || !session) return null;
+    return session.stores.find((s) => s.uuid === winnerStoreUuid) ?? null;
+  }, [session, winnerStoreUuid]);
 
   const winnerVoteCount = useMemo(() => {
     if (!winner) return 0;
@@ -243,6 +421,7 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
       setJoinError(null);
 
       const joined = await joinParticipant({
+        meetupUuid: group?.uuid ?? undefined,
         shareToken: inviteCode,
         nickname: cleanNickname,
       }).unwrap();
@@ -271,6 +450,7 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
       await submitMeetupVote({
         meetupUuid: resolvedMeetupUuid,
         participantUuid,
+        foodUuid: storeUuid,
         candidateUuid: storeUuid,
         rankChoice: 1,
       }).unwrap();
@@ -321,15 +501,25 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
     );
   }
 
-  if (session.status === "COMPLETED" && winner) {
+  if (showResults && winner) {
     return (
       <main className="px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl mb-4">
+          <button
+            type="button"
+            onClick={() => setShowResults(false)}
+            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2 text-[17px] font-semibold text-primary-900 shadow-sm transition hover:bg-gray-50 active:scale-95"
+          >
+            ← ត្រឡប់ទៅមើលការបោះឆ្នោត (Back to voting)
+          </button>
+        </div>
+
         <VotingResult
           winner={winner}
           winnerVoteCount={winnerVoteCount}
           memberCount={session.members.length}
           shareUrl={shareUrl}
-          onRestart={() => router.push("/food")}
+          onRestart={() => setShowResults(false)}
         />
       </main>
     );
@@ -418,7 +608,8 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
         votes={session.votes}
         currentMemberUuid={participantUuid}
         shareUrl={shareUrl}
-        canFinish={false}
+        canFinish={true}
+        onFinish={() => setShowResults(true)}
         isSubmittingVote={isSubmittingVote}
         onVote={(storeUuid) => void handleVote(storeUuid)}
         onClose={() => router.push("/food")}

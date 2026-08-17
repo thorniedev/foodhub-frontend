@@ -455,7 +455,7 @@ export default function SavedLocationsManager({
             onClick={onSwitchToMap}
             className="mt-4 flex min-h-11 items-center gap-2 rounded-full border border-primary-300 bg-primary-50 px-6 text-[17px] font-bold text-primary-800 transition hover:bg-primary-100"
           >
-            🗺️ ទៅកាន់ផែនទី
+           ទៅកាន់ផែនទី
           </button>
         </div>
       ) : (

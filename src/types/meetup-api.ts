@@ -22,6 +22,9 @@ export interface CreateMeetupRequest {
   searchRadiusKm: number;
   timezone: string;
   expiresAt: string;
+  meetingPointLat?: number | null;
+  meetingPointLng?: number | null;
+  candidateStoreUuids?: string[] | null;
   maximumBudgetPerPerson?: number;
   currencyCode?: string;
   minimumParticipants?: number;
@@ -68,12 +71,14 @@ export interface UpdateMeetupParticipantLocationArgs {
 export interface SubmitMeetupVoteRequest {
   meetupUuid: string;
   participantUuid: string;
-  candidateUuid: string;
+  foodUuid?: string;
+  candidateUuid?: string;
   rankChoice?: number;
 }
 
 export interface JoinMeetupParticipantRequest {
-  shareToken: string;
+  meetupUuid?: string;
+  shareToken?: string;
   nickname: string;
   locationLat?: number | null;
   locationLng?: number | null;
@@ -117,6 +122,7 @@ export interface MeetupGroupResponse {
   meetingPointLat: number | null;
   meetingPointLng: number | null;
   meetingPointMethod: string | null;
+  candidateStoreUuids?: string[] | null;
   participants: MeetupParticipantResponse[];
   winningCandidateId: number | null;
   expiresAt: string | null;

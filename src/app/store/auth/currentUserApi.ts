@@ -119,6 +119,55 @@ export const currentUserApi =
           providesTags: ["User"],
         }),
 
+      syncBackendUser: builder.mutation<BackendUser | null, void>({
+        query: () => ({
+          url: "/users/me/sync",
+          method: "PUT",
+        }),
+        transformResponse: (response: unknown): BackendUser | null => {
+          if (
+            typeof response !== "object" ||
+            response === null ||
+            Array.isArray(response)
+          ) {
+            return null;
+          }
+          const raw = response as Record<string, unknown>;
+          const target = (typeof raw.payload === "object" && raw.payload !== null
+            ? raw.payload
+            : typeof raw.data === "object" && raw.data !== null
+            ? raw.data
+            : raw) as Record<string, unknown>;
+
+          const id =
+            typeof target.id === "number"
+              ? target.id
+              : typeof target.id === "string" && Number.isFinite(Number(target.id))
+              ? Number(target.id)
+              : null;
+
+          if (!id) return null;
+
+          return {
+            id,
+            uuid: typeof target.uuid === "string" ? target.uuid : "",
+            username: typeof target.username === "string" ? target.username : "",
+            primaryEmail:
+              typeof target.primaryEmail === "string" ? target.primaryEmail : null,
+            firstName:
+              typeof target.firstName === "string" ? target.firstName : null,
+            lastName:
+              typeof target.lastName === "string" ? target.lastName : null,
+            status: typeof target.status === "string" ? target.status : null,
+            createdAt:
+              typeof target.createdAt === "string" ? target.createdAt : null,
+            updatedAt:
+              typeof target.updatedAt === "string" ? target.updatedAt : null,
+          };
+        },
+        invalidatesTags: ["User"],
+      }),
+
       updateCurrentUser:
         builder.mutation<
           CurrentUser,
@@ -136,11 +185,12 @@ export const currentUserApi =
         }),
     }),
 
-    overrideExisting: false,
+    overrideExisting: true,
   });
 
 export const {
   useGetCurrentUserQuery,
   useGetBackendUserQuery,
+  useSyncBackendUserMutation,
   useUpdateCurrentUserMutation,
 } = currentUserApi;
