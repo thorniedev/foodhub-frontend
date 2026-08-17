@@ -2147,7 +2147,7 @@ export default function FoodPage() {
     return [];
   }, [discoveryItems]);
 
-  const displayFoods = discoveryResult ? apiCatalogFoods : filteredFoods;
+  const displayFoods = apiCatalogFoods.length > 0 ? apiCatalogFoods : filteredFoods;
 
   const activeFilterCount = countActiveFilters(filters);
 
