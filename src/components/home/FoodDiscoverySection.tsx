@@ -4,6 +4,7 @@ import { useState } from "react";
 import FoodSearchBar from "./FoodSearchBar";
 
 import RecommandSection from "./recommand";
+import AiRecommendation from "./AiRecommendation";
 import { EMPTY_FILTERS, type FilterState } from "@/types/food";
 
 const FOOD_OPTIONS = [
@@ -43,6 +44,7 @@ export default function FoodDiscoverySection() {
         onToggleChip={toggleChip}
         onClearAll={() => setFilters(EMPTY_FILTERS)}
       /> */}
+      <AiRecommendation />
       <RecommandSection filters={filters} />
     </div>
   );
