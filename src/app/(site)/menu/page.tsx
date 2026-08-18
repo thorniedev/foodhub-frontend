@@ -2222,7 +2222,7 @@ export default function FoodPage() {
      RENDER
   ======================================================= */
 
-  if (isLoading || isFetching) {
+  if (isLoading && menuItems.length === 0) {
     return <LoadingState />;
   }
 
