@@ -80,10 +80,9 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
   const { data: catalogMenuItems = [] } = useGetMenuItemsQuery(undefined, {
     skip: !isOpen,
   });
-  const { data: catalogStoresData } = useGetStoresQuery(
-    { page: 0, size: 50 },
-    { skip: !isOpen },
-  );
+  const { data: catalogStoresData } = useGetStoresQuery(undefined, {
+    skip: !isOpen,
+  });
 
   const discoveryItems = useMemo(() => {
     if (!discoveryResult) return [];
@@ -126,7 +125,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
         const name = (item.name || "").toLowerCase();
         const localName = (item.localName || "").toLowerCase();
         const foodName = (item.food?.canonicalName || "").toLowerCase();
-        const foodLocalName = (item.food?.localName || "").toLowerCase();
+        const foodLocalName = String((item.food as any)?.localName || "").toLowerCase();
         const storeName = (item.store?.name || "").toLowerCase();
         return (
           name.includes(q) ||
@@ -148,16 +147,18 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
   const fallbackStores = useMemo(() => {
     if (!debouncedQuery) return [];
     const q = debouncedQuery.toLowerCase();
-    const storesList = catalogStoresData?.contents || [];
+    const storesList = Array.isArray(catalogStoresData)
+      ? catalogStoresData
+      : (catalogStoresData as any)?.contents || [];
     return storesList
-      .filter((store) => {
-        const name = (store.storeName || "").toLowerCase();
+      .filter((store: any) => {
+        const name = (store.storeName || store.name || "").toLowerCase();
         const city = (store.city || "").toLowerCase();
         return name.includes(q) || city.includes(q);
       })
-      .map((store) => ({
+      .map((store: any) => ({
         uuid: store.uuid,
-        storeName: store.storeName,
+        storeName: store.storeName || store.name,
         city: store.city || undefined,
         averageRating: store.averageRating,
         logoUrl: store.logoMediaUuid ? `/api/media/${encodeURIComponent(store.logoMediaUuid)}/file` : undefined,
