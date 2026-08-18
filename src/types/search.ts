@@ -59,6 +59,12 @@ export interface FilterItemOption {
   code: string;
   name: string;
   localName?: string;
+  minAge?: number | null;
+  maxAge?: number | null;
+  minimumAge?: number | null;
+  maximumAge?: number | null;
+  min_age?: number | null;
+  max_age?: number | null;
 }
 
 export interface DiscoveryFilterOptionsResponse {

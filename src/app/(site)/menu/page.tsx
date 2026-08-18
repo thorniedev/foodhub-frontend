@@ -227,9 +227,10 @@ function getAgeGroups(food: CatalogMenuItem): CatalogCodeName[] {
   return Array.isArray(food.food?.ageGroups) ? food.food.ageGroups : [];
 }
 
-function formatAgeGroupOptionLabel(a: FilterItemOption): string {
-  const min = a.minAge ?? a.minimumAge ?? a.min_age;
-  const max = a.maxAge ?? a.maximumAge ?? a.max_age;
+function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
+  const item = a as any;
+  const min = item?.minAge ?? item?.minimumAge ?? item?.min_age;
+  const max = item?.maxAge ?? item?.maximumAge ?? item?.max_age;
 
   if (min !== undefined && min !== null && max !== undefined && max !== null) {
     return `${a.name} (${min}-${max})`;
