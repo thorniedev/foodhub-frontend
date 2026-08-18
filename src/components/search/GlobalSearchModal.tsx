@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, Store as StoreIcon, Utensils, Star, DollarSign, ArrowRight, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLazyPublicSearchQuery } from "@/app/store/searchApi";
+import { useLazyPublicSearchQuery, useDiscoverySearchMutation } from "@/app/store/searchApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useGetStoresQuery } from "@/app/store/locationApi";
 import type { MenuItemHit, StoreHit } from "@/types/search";
 
 interface GlobalSearchModalProps {
@@ -27,7 +29,8 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const [triggerSearch, { data, isFetching, isError }] = useLazyPublicSearchQuery();
+  const [triggerPublicSearch, { data: publicSearchData, isFetching: isPublicSearchFetching }] = useLazyPublicSearchQuery();
+  const [executeDiscoverySearch, { data: discoveryResult, isLoading: isDiscoveryLoading }] = useDiscoverySearchMutation();
 
   // Debounce input (250ms delay)
   useEffect(() => {
@@ -38,12 +41,18 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     return () => clearTimeout(handler);
   }, [query]);
 
-  // Execute query when debouncedQuery changes
+  // Execute queries when debouncedQuery changes
   useEffect(() => {
     if (debouncedQuery) {
-      triggerSearch({ q: debouncedQuery, limit: 10, offset: 0 });
+      triggerPublicSearch({ q: debouncedQuery, limit: 10, offset: 0 });
+      executeDiscoverySearch({
+        page: 0,
+        size: 20,
+        sort: "FOODHUB_RATING_DESC",
+        request: { query: debouncedQuery },
+      });
     }
-  }, [debouncedQuery, triggerSearch]);
+  }, [debouncedQuery, triggerPublicSearch, executeDiscoverySearch]);
 
   // Focus input when opened
   useEffect(() => {
@@ -68,10 +77,106 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  const { data: catalogMenuItems = [] } = useGetMenuItemsQuery(undefined, {
+    skip: !isOpen,
+  });
+  const { data: catalogStoresData } = useGetStoresQuery(
+    { page: 0, size: 50 },
+    { skip: !isOpen },
+  );
+
+  const discoveryItems = useMemo(() => {
+    if (!discoveryResult) return [];
+    if (Array.isArray(discoveryResult)) return discoveryResult;
+    if ("contents" in discoveryResult && Array.isArray((discoveryResult as any).contents)) {
+      return (discoveryResult as any).contents;
+    }
+    if ("content" in discoveryResult && Array.isArray((discoveryResult as any).content)) {
+      return (discoveryResult as any).content;
+    }
+    return [];
+  }, [discoveryResult]);
+
+  const parsedDiscoveryMenuItems = useMemo(() => {
+    return discoveryItems.map((item: any) => {
+      let image = item.imageUrl || item.thumbnail;
+      if (image && typeof image === "string") {
+        if (image.startsWith("/api/v1/media/")) {
+          const mediaUuid = image.replace("/api/v1/media/", "");
+          image = `/api/media/${mediaUuid}/file`;
+        } else if (!image.startsWith("http") && !image.startsWith("/api/")) {
+          image = `/api/media/${encodeURIComponent(image)}/file`;
+        }
+      }
+      return {
+        uuid: item.menuItemUuid || item.uuid,
+        name: item.name || item.food?.localName || item.food?.canonicalName,
+        storeName: item.store?.name || "Store",
+        price: item.price,
+        imageUrl: image,
+      };
+    });
+  }, [discoveryItems]);
+
+  const fallbackMenuItems = useMemo(() => {
+    if (!debouncedQuery) return [];
+    const q = debouncedQuery.toLowerCase();
+    return catalogMenuItems
+      .filter((item) => {
+        const name = (item.name || "").toLowerCase();
+        const localName = (item.localName || "").toLowerCase();
+        const foodName = (item.food?.canonicalName || "").toLowerCase();
+        const foodLocalName = (item.food?.localName || "").toLowerCase();
+        const storeName = (item.store?.name || "").toLowerCase();
+        return (
+          name.includes(q) ||
+          localName.includes(q) ||
+          foodName.includes(q) ||
+          foodLocalName.includes(q) ||
+          storeName.includes(q)
+        );
+      })
+      .map((item) => ({
+        uuid: item.uuid,
+        name: item.localName || item.name || item.food?.canonicalName || "Menu Item",
+        storeName: item.store?.name || "Store",
+        price: item.price,
+        imageUrl: item.thumbnail ? `/api/media/${encodeURIComponent(item.thumbnail)}/file` : undefined,
+      }));
+  }, [debouncedQuery, catalogMenuItems]);
+
+  const fallbackStores = useMemo(() => {
+    if (!debouncedQuery) return [];
+    const q = debouncedQuery.toLowerCase();
+    const storesList = catalogStoresData?.contents || [];
+    return storesList
+      .filter((store) => {
+        const name = (store.storeName || "").toLowerCase();
+        const city = (store.city || "").toLowerCase();
+        return name.includes(q) || city.includes(q);
+      })
+      .map((store) => ({
+        uuid: store.uuid,
+        storeName: store.storeName,
+        city: store.city || undefined,
+        averageRating: store.averageRating,
+        logoUrl: store.logoMediaUuid ? `/api/media/${encodeURIComponent(store.logoMediaUuid)}/file` : undefined,
+      }));
+  }, [debouncedQuery, catalogStoresData]);
+
   if (!isOpen) return null;
 
-  const stores: StoreHit[] = data?.stores?.items ?? [];
-  const menuItems: MenuItemHit[] = data?.menuItems?.items ?? [];
+  const isFetching = isPublicSearchFetching || isDiscoveryLoading;
+  const apiStores: StoreHit[] = publicSearchData?.stores?.items ?? [];
+  const apiMenuItems: MenuItemHit[] = publicSearchData?.menuItems?.items ?? [];
+
+  const stores = apiStores.length > 0 ? (apiStores as any) : fallbackStores;
+  const menuItems =
+    parsedDiscoveryMenuItems.length > 0
+      ? parsedDiscoveryMenuItems
+      : apiMenuItems.length > 0
+        ? (apiMenuItems as any)
+        : fallbackMenuItems;
   const hasResults = stores.length > 0 || menuItems.length > 0;
 
   const handleSelectStore = (store: StoreHit) => {
@@ -134,7 +239,17 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
           className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl"
         >
           {/* Search Header Input */}
-          <div className="relative flex items-center border-b border-slate-200 dark:border-slate-800 px-5 py-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const trimmed = query.trim();
+              if (trimmed) {
+                onClose();
+                router.push(`/menu?query=${encodeURIComponent(trimmed)}`);
+              }
+            }}
+            className="relative flex items-center border-b border-slate-200 dark:border-slate-800 px-5 py-4"
+          >
             <Search className="h-5 w-5 text-slate-400 shrink-0 mr-3" />
             <input
               ref={inputRef}
@@ -156,7 +271,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                 <X className="h-5 w-5" />
               </button>
             )}
-          </div>
+          </form>
 
           {/* Body Content */}
           <div className="max-h-[65vh] overflow-y-auto p-5 space-y-6 custom-scrollbar">
