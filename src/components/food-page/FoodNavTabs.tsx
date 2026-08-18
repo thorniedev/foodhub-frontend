@@ -22,26 +22,26 @@ const TABS: {
   {
     id: "food",
     label: "ចំណីអាហារ",
-    href: "/food",
+    href: "/menu",
     icon: <IoFastFoodOutline className="text-[23px]" />,
   },
   {
     id: "location",
     label: "ទីតាំង",
-    href: "/food-page/location",
+    href: "/menu/location",
     icon: <IoLocationOutline className="text-[23px]" />,
   },
   {
     id: "store",
     label: "ហាងអាហារ",
-    href: "/food-page/store",
+    href: "/menu/store",
     icon: <IoStorefrontOutline className="text-[23px]" />,
   },
 ];
 
 function getActiveTab(pathname: string): FoodPageTab {
-  if (pathname.startsWith("/food-page/location")) return "location";
-  if (pathname.startsWith("/food-page/store")) return "store";
+  if (pathname.startsWith("/menu/location")) return "location";
+  if (pathname.startsWith("/menu/store")) return "store";
   return "food";
 }
 
