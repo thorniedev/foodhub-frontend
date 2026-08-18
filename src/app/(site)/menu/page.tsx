@@ -150,6 +150,12 @@ const RATING_OPTIONS: NumericOption[] = [
   },
 ];
 
+const AVAILABILITY_LABELS: Record<string, string> = {
+  AVAILABLE: "មាន (Available)",
+  UNAVAILABLE: "អស់ (Unavailable)",
+  SOLD_OUT: "អស់ស្តុក (Sold out)",
+};
+
 const DEFAULT_FILTERS: FilterState = {
   query: "",
   sortBy: "featured",
@@ -812,11 +818,21 @@ function FilterSidebar({
     sort: true,
     category: true,
     cuisine: false,
+    mealType: false,
     dietary: false,
     allergens: false,
     price: true,
+    storePrice: false,
+    rating: false,
     spice: false,
     preparation: false,
+    ageGroup: false,
+    season: false,
+    event: false,
+    weather: false,
+    availability: false,
+    province: false,
+    city: false,
   });
 
   const isCollapsed = mobile ? false : collapsed;
@@ -841,12 +857,35 @@ function FilterSidebar({
     });
   };
 
+  const toggleNumberItem = (key: keyof CustomerSearchRequest, value: number) => {
+    const currentArray = (customerSearchRequest[key] as number[]) || [];
+    const exists = currentArray.includes(value);
+    const updated = exists
+      ? currentArray.filter((v) => v !== value)
+      : [...currentArray, value];
+
+    onSearchRequestChange({
+      ...customerSearchRequest,
+      [key]: updated.length > 0 ? updated : undefined,
+    });
+  };
+
   const activeFilterCount =
     (customerSearchRequest.categoryUuids?.length || 0) +
     (customerSearchRequest.cuisineUuids?.length || 0) +
     (customerSearchRequest.mealTypeUuids?.length || 0) +
+    (customerSearchRequest.ageGroupUuids?.length || 0) +
+    (customerSearchRequest.seasonUuids?.length || 0) +
+    (customerSearchRequest.eventUuids?.length || 0) +
+    (customerSearchRequest.weatherConditionUuids?.length || 0) +
     (customerSearchRequest.dietaryTypeUuids?.length || 0) +
     (customerSearchRequest.excludeAllergenUuids?.length || 0) +
+    (customerSearchRequest.storePriceLevels?.length || 0) +
+    (customerSearchRequest.availabilityStatuses?.length || 0) +
+    (customerSearchRequest.provinces?.length || 0) +
+    (customerSearchRequest.cities?.length || 0) +
+    (customerSearchRequest.featuredOnly ? 1 : 0) +
+    (customerSearchRequest.minimumStoreRating !== undefined ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
     (customerSearchRequest.minimumPrice !== undefined || customerSearchRequest.maximumPrice !== undefined ? 1 : 0) +
     (customerSearchRequest.minimumSpiceLevel !== undefined || customerSearchRequest.maximumSpiceLevel !== undefined ? 1 : 0) +
@@ -1243,6 +1282,255 @@ function FilterSidebar({
                 ))}
               </div>
             </FilterSection>
+
+            {/* MEAL TYPES */}
+            {filterOptions?.mealTypes && filterOptions.mealTypes.length > 0 && (
+              <FilterSection
+                title="ពេលវេលាអាហារ (Meal Types)"
+                icon={<IoTimeOutline />}
+                isOpen={openSections.mealType}
+                onToggle={() => toggleSection("mealType")}
+              >
+                <div className="space-y-1">
+                  {filterOptions.mealTypes.map((m) => (
+                    <CheckboxOption
+                      key={m.uuid}
+                      label={m.name}
+                      checked={Boolean(customerSearchRequest.mealTypeUuids?.includes(m.uuid))}
+                      onChange={() => toggleArrayItem("mealTypeUuids", m.uuid)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* AGE GROUPS */}
+            {filterOptions?.ageGroups && filterOptions.ageGroups.length > 0 && (
+              <FilterSection
+                title="ក្រុមអាយុ (Age Groups)"
+                icon={<IoNutritionOutline />}
+                isOpen={openSections.ageGroup}
+                onToggle={() => toggleSection("ageGroup")}
+              >
+                <div className="space-y-1">
+                  {filterOptions.ageGroups.map((a) => (
+                    <CheckboxOption
+                      key={a.uuid}
+                      label={a.name}
+                      checked={Boolean(customerSearchRequest.ageGroupUuids?.includes(a.uuid))}
+                      onChange={() => toggleArrayItem("ageGroupUuids", a.uuid)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* SEASONS */}
+            {filterOptions?.seasons && filterOptions.seasons.length > 0 && (
+              <FilterSection
+                title="រដូវកាល (Seasons)"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.season}
+                onToggle={() => toggleSection("season")}
+              >
+                <div className="space-y-1">
+                  {filterOptions.seasons.map((s) => (
+                    <CheckboxOption
+                      key={s.uuid}
+                      label={s.name}
+                      checked={Boolean(customerSearchRequest.seasonUuids?.includes(s.uuid))}
+                      onChange={() => toggleArrayItem("seasonUuids", s.uuid)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* EVENTS */}
+            {filterOptions?.events && filterOptions.events.length > 0 && (
+              <FilterSection
+                title="ព្រឹត្តិការណ៍ (Events)"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.event}
+                onToggle={() => toggleSection("event")}
+              >
+                <div className="space-y-1">
+                  {filterOptions.events.map((ev) => (
+                    <CheckboxOption
+                      key={ev.uuid}
+                      label={ev.name}
+                      checked={Boolean(customerSearchRequest.eventUuids?.includes(ev.uuid))}
+                      onChange={() => toggleArrayItem("eventUuids", ev.uuid)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* SUITABLE WEATHER */}
+            {filterOptions?.suitableWeather && filterOptions.suitableWeather.length > 0 && (
+              <FilterSection
+                title="អាកាសធាតុសមស្រប (Weather)"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.weather}
+                onToggle={() => toggleSection("weather")}
+              >
+                <div className="space-y-1">
+                  {filterOptions.suitableWeather.map((w) => (
+                    <CheckboxOption
+                      key={w.uuid}
+                      label={w.name}
+                      checked={Boolean(customerSearchRequest.weatherConditionUuids?.includes(w.uuid))}
+                      onChange={() => toggleArrayItem("weatherConditionUuids", w.uuid)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* STORE PRICE LEVEL */}
+            {filterOptions?.storePriceLevels && filterOptions.storePriceLevels.length > 0 && (
+              <FilterSection
+                title="កម្រិតតម្លៃហាង (Store Price Level)"
+                icon={<IoPricetagOutline />}
+                isOpen={openSections.storePrice}
+                onToggle={() => toggleSection("storePrice")}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {filterOptions.storePriceLevels.map((level) => {
+                    const selected = customerSearchRequest.storePriceLevels?.includes(level);
+                    return (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => toggleNumberItem("storePriceLevels", level)}
+                        className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition ${
+                          selected
+                            ? "border-primary-800 bg-primary-800 text-white"
+                            : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {"$".repeat(level)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* MINIMUM STORE RATING */}
+            <FilterSection
+              title="ការវាយតម្លៃហាងអប្បបរមា (Min Rating)"
+              icon={<FaStar />}
+              isOpen={openSections.rating}
+              onToggle={() => toggleSection("rating")}
+            >
+              <div className="flex flex-wrap gap-2">
+                {[3, 4, 4.5].map((r) => {
+                  const selected = customerSearchRequest.minimumStoreRating === r;
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() =>
+                        onSearchRequestChange({
+                          ...customerSearchRequest,
+                          minimumStoreRating: selected ? undefined : r,
+                        })
+                      }
+                      className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition ${
+                        selected
+                          ? "border-amber-500 bg-amber-500 text-white"
+                          : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      ⭐ {r}+
+                    </button>
+                  );
+                })}
+              </div>
+            </FilterSection>
+
+            {/* AVAILABILITY */}
+            {filterOptions?.availabilityStatuses && filterOptions.availabilityStatuses.length > 0 && (
+              <FilterSection
+                title="ស្ថានភាពលក់ (Availability)"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.availability}
+                onToggle={() => toggleSection("availability")}
+              >
+                <div className="space-y-1">
+                  {filterOptions.availabilityStatuses.map((status) => (
+                    <CheckboxOption
+                      key={status}
+                      label={AVAILABILITY_LABELS[status] ?? status}
+                      checked={Boolean(customerSearchRequest.availabilityStatuses?.includes(status))}
+                      onChange={() => toggleArrayItem("availabilityStatuses", status)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* FEATURED ONLY */}
+            <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <span className="text-[16px] font-semibold text-gray-700">
+                ⭐ តែមុខម្ហូបពិសេស (Featured only)
+              </span>
+              <input
+                type="checkbox"
+                checked={Boolean(customerSearchRequest.featuredOnly)}
+                onChange={(e) =>
+                  onSearchRequestChange({
+                    ...customerSearchRequest,
+                    featuredOnly: e.target.checked || undefined,
+                  })
+                }
+                className="h-5 w-5 accent-primary-800 rounded cursor-pointer"
+              />
+            </div>
+
+            {/* PROVINCES */}
+            {filterOptions?.provinces && filterOptions.provinces.length > 0 && (
+              <FilterSection
+                title="ខេត្ត (Provinces)"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.province}
+                onToggle={() => toggleSection("province")}
+              >
+                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                  {filterOptions.provinces.map((prov) => (
+                    <CheckboxOption
+                      key={prov}
+                      label={prov}
+                      checked={Boolean(customerSearchRequest.provinces?.includes(prov))}
+                      onChange={() => toggleArrayItem("provinces", prov)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
+
+            {/* CITIES */}
+            {filterOptions?.cities && filterOptions.cities.length > 0 && (
+              <FilterSection
+                title="ទីក្រុង (Cities)"
+                icon={<MdOutlineCategory />}
+                isOpen={openSections.city}
+                onToggle={() => toggleSection("city")}
+              >
+                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                  {filterOptions.cities.map((city) => (
+                    <CheckboxOption
+                      key={city}
+                      label={city}
+                      checked={Boolean(customerSearchRequest.cities?.includes(city))}
+                      onChange={() => toggleArrayItem("cities", city)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
           </div>
         )}
       </div>

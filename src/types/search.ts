@@ -101,6 +101,9 @@ export interface CustomerSearchRequest {
   storePriceLevels?: number[];
   provinces?: string[];
   cities?: string[];
+  availabilityStatuses?: string[];
+  featuredOnly?: boolean;
+  minimumStoreRating?: number;
   openNow?: boolean;
   maxPreparationTimeMinutes?: number;
   sort?: string;
