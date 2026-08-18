@@ -2187,35 +2187,21 @@ export default function FoodPage() {
   ======================================================= */
 
   const renderSearch = () => (
-    <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-full border border-gray-200 bg-white px-5 transition focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
-      <IoSearchOutline className="shrink-0 text-[22px] text-primary-700" />
-
-      <input
-        type="search"
-        value={searchInput}
-        onChange={(event) => setSearchInput(event.target.value)}
-        placeholder="ស្វែងរកម្ហូប ហាង ប្រភេទម្ហូប..."
-        aria-label="Search foods"
-        className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400 dark:text-gray-100"
-      />
-
-      {searchInput && (
-        <button
-          type="button"
-          onClick={() => {
-            setSearchInput("");
-
-            setFilters((current) => ({
-              ...current,
-              query: "",
-            }));
-          }}
-          className="shrink-0 text-[16px] font-medium text-secondary-500"
-        >
-          សម្អាត
-        </button>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new Event("open-global-search"))}
+      className="flex min-h-[56px] flex-1 items-center justify-between gap-3 rounded-full border border-gray-200 bg-white px-5 text-left transition hover:border-primary-700 hover:bg-gray-50/80 focus:outline-none dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <IoSearchOutline className="shrink-0 text-[22px] text-primary-700 dark:text-emerald-400" />
+        <span className="text-[16px] text-gray-500 dark:text-gray-400 truncate">
+          {searchInput ? `ស្វែងរក: "${searchInput}"` : "ស្វែងរកហាង ឬ មុខម្ហូប (Search stores or dishes)..."}
+        </span>
+      </div>
+      <kbd className="hidden sm:inline-block rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 dark:bg-slate-800 dark:text-gray-400">
+        ⌘K
+      </kbd>
+    </button>
   );
 
   /* =======================================================

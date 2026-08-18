@@ -58,16 +58,21 @@ export default function Navbar() {
 
   const activeIndex = foundActiveIndex >= 0 ? foundActiveIndex : 0;
 
-  // Global Cmd+K or Ctrl+K shortcut listener
+  // Global Cmd+K or Ctrl+K or custom event listener
   useEffect(() => {
+    const handleOpenSearch = () => setIsSearchOpen(true);
     const handleCmdK = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setIsSearchOpen((prev) => !prev);
+        setIsSearchOpen(true);
       }
     };
+    window.addEventListener("open-global-search", handleOpenSearch);
     window.addEventListener("keydown", handleCmdK);
-    return () => window.removeEventListener("keydown", handleCmdK);
+    return () => {
+      window.removeEventListener("open-global-search", handleOpenSearch);
+      window.removeEventListener("keydown", handleCmdK);
+    };
   }, []);
 
   useEffect(() => {
