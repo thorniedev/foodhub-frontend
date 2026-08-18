@@ -328,7 +328,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {stores.map((store) => (
+                  {stores.map((store: any) => (
                     <div
                       key={store.id || store.uuid}
                       onClick={() => handleSelectStore(store)}
@@ -373,7 +373,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                 </div>
 
                 <div className="space-y-2">
-                  {menuItems.map((item) => (
+                  {menuItems.map((item: any) => (
                     <div
                       key={item.id || item.uuid}
                       onClick={() => handleSelectMenuItem(item)}
