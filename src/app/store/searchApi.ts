@@ -65,7 +65,7 @@ export const searchApi = baseApi.injectEndpoints({
       DiscoveryPaginatedResponse | MenuItemDiscoveryResponse[],
       DiscoverySearchQueryParams
     >({
-      query: ({ page = 0, size = 20, sort = "FOODHUB_RATING_DESC", request }) => ({
+      query: ({ page = 0, size = 20, sort = "NEWEST", request }) => ({
         url: "/discovery/menu-items/search",
         method: "POST",
         params: {

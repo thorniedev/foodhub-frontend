@@ -24,7 +24,7 @@ import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useDiscoverySearchMutation, useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
-import type { CustomerSearchRequest, MenuItemDiscoveryResponse, SafetyStatusType } from "@/types/search";
+import type { CustomerSearchRequest, FilterItemOption, MenuItemDiscoveryResponse, SafetyStatusType } from "@/types/search";
 import {
   useGetMemberProfileByIdQuery,
   useGetMemberProfilesQuery,
@@ -225,6 +225,41 @@ function getMealTypes(food: CatalogMenuItem): CatalogCodeName[] {
 
 function getAgeGroups(food: CatalogMenuItem): CatalogCodeName[] {
   return Array.isArray(food.food?.ageGroups) ? food.food.ageGroups : [];
+}
+
+function formatAgeGroupOptionLabel(a: FilterItemOption): string {
+  const min = a.minAge ?? a.minimumAge ?? a.min_age;
+  const max = a.maxAge ?? a.maximumAge ?? a.max_age;
+
+  if (min !== undefined && min !== null && max !== undefined && max !== null) {
+    return `${a.name} (${min}-${max})`;
+  }
+  if (min !== undefined && min !== null && (max === undefined || max === null)) {
+    return `${a.name} (${min}+)`;
+  }
+  if ((min === undefined || min === null) && max !== undefined && max !== null) {
+    return `${a.name} (≤${max})`;
+  }
+
+  // Fallback ranges for standard FoodHub age groups if not returned from backend
+  const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
+  if (key.includes("កុមារតូច") || key.includes("toddler") || key.includes("infant")) {
+    return `${a.name} (0-2)`;
+  }
+  if (key.includes("កុមារ") || key.includes("child") || key.includes("kid")) {
+    return `${a.name} (3-12)`;
+  }
+  if (key.includes("យុវវ័យ") || key.includes("យុវជន") || key.includes("teen") || key.includes("youth")) {
+    return `${a.name} (13-17)`;
+  }
+  if (key.includes("មនុស្សពេញវ័យ") || key.includes("adult")) {
+    return `${a.name} (18-59)`;
+  }
+  if (key.includes("មនុស្សវ័យចំណាស់") || key.includes("វ័យចំណាស់") || key.includes("senior") || key.includes("elderly")) {
+    return `${a.name} (60+)`;
+  }
+
+  return a.name;
 }
 
 function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
@@ -823,7 +858,6 @@ function FilterSidebar({
     allergens: false,
     price: true,
     storePrice: false,
-    rating: false,
     spice: false,
     preparation: false,
     ageGroup: false,
@@ -885,7 +919,6 @@ function FilterSidebar({
     (customerSearchRequest.provinces?.length || 0) +
     (customerSearchRequest.cities?.length || 0) +
     (customerSearchRequest.featuredOnly ? 1 : 0) +
-    (customerSearchRequest.minimumStoreRating !== undefined ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
     (customerSearchRequest.minimumPrice !== undefined || customerSearchRequest.maximumPrice !== undefined ? 1 : 0) +
     (customerSearchRequest.minimumSpiceLevel !== undefined || customerSearchRequest.maximumSpiceLevel !== undefined ? 1 : 0) +
@@ -989,7 +1022,7 @@ function FilterSidebar({
               <button
                 type="button"
                 disabled={activeFilterCount === 0}
-                onClick={() => onSearchRequestChange({ sort: "FOODHUB_RATING_DESC" })}
+                onClick={() => onSearchRequestChange({ sort: "NEWEST" })}
                 className="cursor-pointer text-[16px] font-medium text-secondary-500 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
               >
                 សម្អាតទាំងអស់
@@ -1040,7 +1073,7 @@ function FilterSidebar({
               onToggle={() => toggleSection("sort")}
             >
               <select
-                value={customerSearchRequest.sort || "FOODHUB_RATING_DESC"}
+                value={customerSearchRequest.sort || "NEWEST"}
                 onChange={(e) =>
                   onSearchRequestChange({
                     ...customerSearchRequest,
@@ -1049,11 +1082,10 @@ function FilterSidebar({
                 }
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-700"
               >
-                <option value="FOODHUB_RATING_DESC">⭐ ការវាយតម្លៃខ្ពស់បំផុត</option>
+                <option value="NEWEST">✨ ថ្មីបំផុត</option>
                 <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
                 <option value="PRICE_ASC">💵 តម្លៃទាបទៅខ្ពស់</option>
                 <option value="PRICE_DESC">💰 តម្លៃខ្ពស់ទៅទាប</option>
-                <option value="NEWEST">✨ ថ្មីបំផុត</option>
               </select>
             </FilterSection>
 
@@ -1316,7 +1348,7 @@ function FilterSidebar({
                   {filterOptions.ageGroups.map((a) => (
                     <CheckboxOption
                       key={a.uuid}
-                      label={a.name}
+                      label={formatAgeGroupOptionLabel(a)}
                       checked={Boolean(customerSearchRequest.ageGroupUuids?.includes(a.uuid))}
                       onChange={() => toggleArrayItem("ageGroupUuids", a.uuid)}
                     />
@@ -1417,39 +1449,6 @@ function FilterSidebar({
                 </div>
               </FilterSection>
             )}
-
-            {/* MINIMUM STORE RATING */}
-            <FilterSection
-              title="ការវាយតម្លៃហាងអប្បបរមា"
-              icon={<FaStar />}
-              isOpen={openSections.rating}
-              onToggle={() => toggleSection("rating")}
-            >
-              <div className="flex flex-wrap gap-2">
-                {[3, 4, 4.5].map((r) => {
-                  const selected = customerSearchRequest.minimumStoreRating === r;
-                  return (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() =>
-                        onSearchRequestChange({
-                          ...customerSearchRequest,
-                          minimumStoreRating: selected ? undefined : r,
-                        })
-                      }
-                      className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition ${
-                        selected
-                          ? "border-amber-500 bg-amber-500 text-white"
-                          : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
-                      }`}
-                    >
-                      ⭐ {r}+
-                    </button>
-                  );
-                })}
-              </div>
-            </FilterSection>
 
             {/* AVAILABILITY */}
             {filterOptions?.availabilityStatuses && filterOptions.availabilityStatuses.length > 0 && (
@@ -1708,7 +1707,7 @@ export default function FoodPage() {
   const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
 
   const [customerSearchRequest, setCustomerSearchRequest] = useState<CustomerSearchRequest>({
-    sort: "FOODHUB_RATING_DESC",
+    sort: "NEWEST",
   });
 
   const [executeDiscoverySearch, { data: discoveryResult, isLoading: isDiscoveryLoading }] =
@@ -1718,7 +1717,7 @@ export default function FoodPage() {
     executeDiscoverySearch({
       page: 0,
       size: 50,
-      sort: customerSearchRequest.sort || "FOODHUB_RATING_DESC",
+      sort: customerSearchRequest.sort || "NEWEST",
       request: {
         ...customerSearchRequest,
         query: searchInput.trim() || undefined,
@@ -2150,7 +2149,7 @@ export default function FoodPage() {
               type="button"
               onClick={() => {
                 setSearchInput("");
-                setCustomerSearchRequest({ sort: "FOODHUB_RATING_DESC" });
+                setCustomerSearchRequest({ sort: "NEWEST" });
                 setFilters(DEFAULT_FILTERS);
               }}
               className="rounded-full border border-secondary-200 px-5 py-3 text-[16px] font-semibold text-secondary-500 transition hover:bg-secondary-50"

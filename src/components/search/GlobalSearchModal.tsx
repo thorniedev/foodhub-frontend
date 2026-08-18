@@ -48,7 +48,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
       executeDiscoverySearch({
         page: 0,
         size: 20,
-        sort: "FOODHUB_RATING_DESC",
+        sort: "NEWEST",
         request: { query: debouncedQuery },
       });
     }

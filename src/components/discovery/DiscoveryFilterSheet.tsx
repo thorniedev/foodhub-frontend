@@ -15,6 +15,41 @@ interface DiscoveryFilterSheetProps {
   onResetFilters: () => void;
 }
 
+function formatAgeGroupOptionLabel(a: FilterItemOption): string {
+  const min = a.minAge ?? a.minimumAge ?? a.min_age;
+  const max = a.maxAge ?? a.maximumAge ?? a.max_age;
+
+  if (min !== undefined && min !== null && max !== undefined && max !== null) {
+    return `${a.name} (${min}-${max})`;
+  }
+  if (min !== undefined && min !== null && (max === undefined || max === null)) {
+    return `${a.name} (${min}+)`;
+  }
+  if ((min === undefined || min === null) && max !== undefined && max !== null) {
+    return `${a.name} (≤${max})`;
+  }
+
+  // Fallback ranges for standard FoodHub age groups
+  const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
+  if (key.includes("កុមារតូច") || key.includes("toddler") || key.includes("infant")) {
+    return `${a.name} (0-2)`;
+  }
+  if (key.includes("កុមារ") || key.includes("child") || key.includes("kid")) {
+    return `${a.name} (3-12)`;
+  }
+  if (key.includes("យុវវ័យ") || key.includes("យុវជន") || key.includes("teen") || key.includes("youth")) {
+    return `${a.name} (13-17)`;
+  }
+  if (key.includes("មនុស្សពេញវ័យ") || key.includes("adult")) {
+    return `${a.name} (18-59)`;
+  }
+  if (key.includes("មនុស្សវ័យចំណាស់") || key.includes("វ័យចំណាស់") || key.includes("senior") || key.includes("elderly")) {
+    return `${a.name} (60+)`;
+  }
+
+  return a.name;
+}
+
 export default function DiscoveryFilterSheet({
   isOpen,
   onClose,
@@ -168,15 +203,14 @@ export default function DiscoveryFilterSheet({
                     តម្រៀបតាម
                   </label>
                   <select
-                    value={draft.sort || "FOODHUB_RATING_DESC"}
+                    value={draft.sort || "NEWEST"}
                     onChange={(e) => setDraft({ ...draft, sort: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="FOODHUB_RATING_DESC">⭐ ការវាយតម្លៃខ្ពស់បំផុត</option>
+                    <option value="NEWEST">✨ ថ្មីបំផុត</option>
                     <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
                     <option value="PRICE_ASC">💵 តម្លៃទាបទៅខ្ពស់</option>
                     <option value="PRICE_DESC">💰 តម្លៃខ្ពស់ទៅទាប</option>
-                    <option value="NEWEST">✨ ថ្មីបំផុត</option>
                   </select>
                 </div>
 
@@ -270,6 +304,34 @@ export default function DiscoveryFilterSheet({
                             }`}
                           >
                             🌱 {d.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Age Groups */}
+                {filterOptions?.ageGroups && filterOptions.ageGroups.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="block font-semibold text-sm text-slate-900 dark:text-white">
+                      ក្រុមអាយុ
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {filterOptions.ageGroups.map((a) => {
+                        const selected = draft.ageGroupUuids?.includes(a.uuid);
+                        return (
+                          <button
+                            key={a.uuid}
+                            type="button"
+                            onClick={() => toggleArrayItem("ageGroupUuids", a.uuid)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
+                              selected
+                                ? "bg-emerald-600 text-white border-emerald-600"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
+                            }`}
+                          >
+                            👶 {formatAgeGroupOptionLabel(a)}
                           </button>
                         );
                       })}
