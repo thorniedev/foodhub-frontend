@@ -26,13 +26,13 @@ export default function SafetyStatusBadge({
     case "SAFE":
       return (
         <div
-          title="សុវត្ថិភាពសម្រាប់ប្រវត្តិរូបរបស់អ្នក (Safe for profile)"
+          title="សុវត្ថិភាពសម្រាប់ប្រវត្តិរូបរបស់អ្នក"
           className={`inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold ${
             isSmall ? "px-2.5 py-0.5 text-xs" : "px-3 py-1 text-sm"
           }`}
         >
           <ShieldCheck className={isSmall ? "h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" : "h-4 w-4 text-emerald-600 dark:text-emerald-400"} />
-          {showLabel && <span>សុវត្ថិភាព (Safe)</span>}
+          {showLabel && <span>សុវត្ថិភាព</span>}
         </div>
       );
 
@@ -49,7 +49,7 @@ export default function SafetyStatusBadge({
           }`}
         >
           <AlertTriangle className={isSmall ? "h-3.5 w-3.5 text-amber-600 dark:text-amber-400" : "h-4 w-4 text-amber-600 dark:text-amber-400"} />
-          {showLabel && <span>ប្រុងប្រយ័ត្ន (Warning)</span>}
+          {showLabel && <span>ប្រុងប្រយ័ត្ន</span>}
         </div>
       );
 
@@ -66,7 +66,7 @@ export default function SafetyStatusBadge({
           }`}
         >
           <ShieldAlert className={isSmall ? "h-3.5 w-3.5 text-rose-600 dark:text-rose-400" : "h-4 w-4 text-rose-600 dark:text-rose-400"} />
-          {showLabel && <span>ហាមឃាត់ (Blocked)</span>}
+          {showLabel && <span>ហាមឃាត់</span>}
         </div>
       );
 

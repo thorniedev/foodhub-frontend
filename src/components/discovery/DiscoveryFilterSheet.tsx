@@ -107,7 +107,7 @@ export default function DiscoveryFilterSheet({
             <div className="flex items-center gap-2">
               <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                តម្រងស្វែងរក (Discovery Filters)
+                តម្រងស្វែងរក
               </h2>
               {activeCount > 0 && (
                 <span className="ml-1 px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-600 text-white">
@@ -128,7 +128,7 @@ export default function DiscoveryFilterSheet({
           <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
             {isLoading ? (
               <div className="py-12 text-center text-slate-400 animate-pulse">
-                កំពុងទាញយកជម្រើសតម្រង... (Loading filter options...)
+                កំពុងទាញយកជម្រើសតម្រង...
               </div>
             ) : (
               <>
@@ -137,7 +137,7 @@ export default function DiscoveryFilterSheet({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 font-semibold text-sm text-emerald-800 dark:text-emerald-300">
                       <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                      វាយតម្លៃសុវត្ថិភាពម្ហូប (Profile Safety Evaluation)
+                      វាយតម្លៃសុវត្ថិភាពម្ហូប
                     </div>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -153,7 +153,7 @@ export default function DiscoveryFilterSheet({
                     }
                     className="w-full rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="">-- មិនជ្រើសរើសប្រវត្តិរូប (No Profile Selected) --</option>
+                    <option value="">-- មិនជ្រើសរើសប្រវត្តិរូប --</option>
                     {memberProfiles.map((p) => (
                       <option key={p.uuid} value={p.uuid}>
                         👤 {p.profileName || (p as any).name} {p.relationship ? `(${p.relationship})` : ""}
@@ -165,25 +165,25 @@ export default function DiscoveryFilterSheet({
                 {/* Sort Option */}
                 <div className="space-y-2">
                   <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                    តម្រៀបតាម (Sort By)
+                    តម្រៀបតាម
                   </label>
                   <select
                     value={draft.sort || "FOODHUB_RATING_DESC"}
                     onChange={(e) => setDraft({ ...draft, sort: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
-                    <option value="FOODHUB_RATING_DESC">⭐ ការវាយតម្លៃខ្ពស់បំផុត (Highest Rating)</option>
-                    <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត (Closest Distance)</option>
-                    <option value="PRICE_ASC">💵 តម្លៃទាបទៅខ្ពស់ (Price Low to High)</option>
-                    <option value="PRICE_DESC">💰 តម្លៃខ្ពស់ទៅទាប (Price High to Low)</option>
-                    <option value="NEWEST">✨ ថ្មីបំផុត (Newest)</option>
+                    <option value="FOODHUB_RATING_DESC">⭐ ការវាយតម្លៃខ្ពស់បំផុត</option>
+                    <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
+                    <option value="PRICE_ASC">💵 តម្លៃទាបទៅខ្ពស់</option>
+                    <option value="PRICE_DESC">💰 តម្លៃខ្ពស់ទៅទាប</option>
+                    <option value="NEWEST">✨ ថ្មីបំផុត</option>
                   </select>
                 </div>
 
                 {/* Open Now Toggle */}
                 <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                   <span className="font-semibold text-sm text-slate-900 dark:text-white">
-                    🏪 បើកដំណើរការឥឡូវនេះ (Open Now Only)
+                    🏪 បើកដំណើរការឥឡូវនេះ
                   </span>
                   <input
                     type="checkbox"
@@ -197,7 +197,7 @@ export default function DiscoveryFilterSheet({
                 {filterOptions?.categories && filterOptions.categories.length > 0 && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                      ប្រភេទម្ហូប (Categories)
+                      ប្រភេទម្ហូប
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {filterOptions.categories.map((cat) => {
@@ -225,7 +225,7 @@ export default function DiscoveryFilterSheet({
                 {filterOptions?.cuisines && filterOptions.cuisines.length > 0 && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                      ស្ទាយម្ហូប / តំបន់ (Cuisines)
+                      ស្ទាយម្ហូប / តំបន់
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {filterOptions.cuisines.map((c) => {
@@ -253,7 +253,7 @@ export default function DiscoveryFilterSheet({
                 {filterOptions?.dietaryTypes && filterOptions.dietaryTypes.length > 0 && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                      របបអាហារ (Dietary Preferences)
+                      របបអាហារ
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {filterOptions.dietaryTypes.map((d) => {
@@ -281,7 +281,7 @@ export default function DiscoveryFilterSheet({
                 {filterOptions?.allergens && filterOptions.allergens.length > 0 && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-rose-700 dark:text-rose-400">
-                      ជៀសវាងអាលែហ្ស៊ី (Exclude Allergens)
+                      ជៀសវាងអាលែហ្ស៊ី
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {filterOptions.allergens.map((alg) => {
@@ -308,11 +308,11 @@ export default function DiscoveryFilterSheet({
                 {/* Price Range */}
                 <div className="space-y-2">
                   <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                    កម្រិតតម្លៃ (Price Range USD)
+                    កម្រិតតម្លៃ
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <span className="text-xs text-slate-500">អប្បបរមា (Min $)</span>
+                      <span className="text-xs text-slate-500">អប្បបរមា ($)</span>
                       <input
                         type="number"
                         placeholder="0"
@@ -327,7 +327,7 @@ export default function DiscoveryFilterSheet({
                       />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-500">អតិបរមា (Max $)</span>
+                      <span className="text-xs text-slate-500">អតិបរមា ($)</span>
                       <input
                         type="number"
                         placeholder="100"
@@ -347,7 +347,7 @@ export default function DiscoveryFilterSheet({
                 {/* Spice Level */}
                 <div className="space-y-2">
                   <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                    កម្រិតហឹរ (Spice Level)
+                    កម្រិតហឹរ
                   </label>
                   <div className="grid grid-cols-4 gap-2">
                     {[
@@ -386,7 +386,7 @@ export default function DiscoveryFilterSheet({
                 {/* Max Prep Time */}
                 <div className="space-y-2">
                   <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                    រយៈពេលរៀបចំអតិបរមា (Max Prep Time)
+                    រយៈពេលរៀបចំអតិបរមា
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[

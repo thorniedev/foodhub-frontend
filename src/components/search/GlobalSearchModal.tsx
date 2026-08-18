@@ -257,7 +257,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="ស្វែងរកហាង ឬ មុខម្ហូប (Search stores or dishes)..."
+              placeholder="ស្វែងរកហាង ឬ មុខម្ហូប..."
               className="w-full bg-transparent text-lg font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
             />
             {isFetching && (
@@ -280,7 +280,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
             {!query && (
               <div className="space-y-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  ការស្វែងរកពេញនិយម (Popular Searches)
+                  ការស្វែងរកពេញនិយម
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {POPULAR_SEARCHES.map((term) => (
@@ -302,7 +302,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
             {query && isFetching && !hasResults && (
               <div className="py-12 text-center space-y-3">
                 <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400 mx-auto" />
-                <p className="text-sm text-slate-500">កំពុងស្វែងរក... (Searching...)</p>
+                <p className="text-sm text-slate-500">កំពុងស្វែងរក...</p>
               </div>
             )}
 
@@ -311,7 +311,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
               <div className="py-12 text-center space-y-2">
                 <Utensils className="h-10 w-10 text-slate-300 dark:text-slate-700 mx-auto" />
                 <p className="text-base font-semibold text-slate-800 dark:text-slate-200">
-                  រកមិនឃើញផលតដែលត្រូវគ្នាទេ (No results found)
+                  រកមិនឃើញលទ្ធផលដែលត្រូវគ្នាទេ
                 </p>
                 <p className="text-sm text-slate-500">
                   សូមព្យាយាមស្វែងរកពាក្យផ្សេងទៀត ឬពិនិត្យពាក្យរបស់អ្នក។
@@ -324,7 +324,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   <StoreIcon className="h-4 w-4" />
-                  🏪 ហាងអាហារ (Stores) ({stores.length})
+                  🏪 ហាងអាហារ ({stores.length})
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -369,7 +369,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   <Utensils className="h-4 w-4" />
-                  🍲 មុខម្ហូប (Dishes & Menu Items) ({menuItems.length})
+                  🍲 មុខម្ហូប ({menuItems.length})
                 </div>
 
                 <div className="space-y-2">

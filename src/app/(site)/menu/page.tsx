@@ -1174,7 +1174,7 @@ function FilterSidebar({
 
             {/* PRICE RANGE */}
             <FilterSection
-              title="កម្រិតតម្លៃ ($)"
+              title="កម្រិតតម្លៃ"
               icon={<IoPricetagOutline />}
               isOpen={openSections.price}
               onToggle={() => toggleSection("price")}
@@ -1182,7 +1182,7 @@ function FilterSidebar({
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="number"
-                  placeholder="Min $"
+                  placeholder="អប្បបរមា ($)"
                   value={customerSearchRequest.minimumPrice ?? ""}
                   onChange={(e) =>
                     onSearchRequestChange({
@@ -1194,7 +1194,7 @@ function FilterSidebar({
                 />
                 <input
                   type="number"
-                  placeholder="Max $"
+                  placeholder="អតិបរមា ($)"
                   value={customerSearchRequest.maximumPrice ?? ""}
                   onChange={(e) =>
                     onSearchRequestChange({
@@ -1286,7 +1286,7 @@ function FilterSidebar({
             {/* MEAL TYPES */}
             {filterOptions?.mealTypes && filterOptions.mealTypes.length > 0 && (
               <FilterSection
-                title="ពេលវេលាអាហារ (Meal Types)"
+                title="ពេលវេលាអាហារ"
                 icon={<IoTimeOutline />}
                 isOpen={openSections.mealType}
                 onToggle={() => toggleSection("mealType")}
@@ -1307,7 +1307,7 @@ function FilterSidebar({
             {/* AGE GROUPS */}
             {filterOptions?.ageGroups && filterOptions.ageGroups.length > 0 && (
               <FilterSection
-                title="ក្រុមអាយុ (Age Groups)"
+                title="ក្រុមអាយុ"
                 icon={<IoNutritionOutline />}
                 isOpen={openSections.ageGroup}
                 onToggle={() => toggleSection("ageGroup")}
@@ -1328,7 +1328,7 @@ function FilterSidebar({
             {/* SEASONS */}
             {filterOptions?.seasons && filterOptions.seasons.length > 0 && (
               <FilterSection
-                title="រដូវកាល (Seasons)"
+                title="រដូវកាល"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.season}
                 onToggle={() => toggleSection("season")}
@@ -1349,7 +1349,7 @@ function FilterSidebar({
             {/* EVENTS */}
             {filterOptions?.events && filterOptions.events.length > 0 && (
               <FilterSection
-                title="ព្រឹត្តិការណ៍ (Events)"
+                title="ព្រឹត្តិការណ៍"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.event}
                 onToggle={() => toggleSection("event")}
@@ -1370,7 +1370,7 @@ function FilterSidebar({
             {/* SUITABLE WEATHER */}
             {filterOptions?.suitableWeather && filterOptions.suitableWeather.length > 0 && (
               <FilterSection
-                title="អាកាសធាតុសមស្រប (Weather)"
+                title="អាកាសធាតុសមស្រប"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.weather}
                 onToggle={() => toggleSection("weather")}
@@ -1391,7 +1391,7 @@ function FilterSidebar({
             {/* STORE PRICE LEVEL */}
             {filterOptions?.storePriceLevels && filterOptions.storePriceLevels.length > 0 && (
               <FilterSection
-                title="កម្រិតតម្លៃហាង (Store Price Level)"
+                title="កម្រិតតម្លៃហាង"
                 icon={<IoPricetagOutline />}
                 isOpen={openSections.storePrice}
                 onToggle={() => toggleSection("storePrice")}
@@ -1420,7 +1420,7 @@ function FilterSidebar({
 
             {/* MINIMUM STORE RATING */}
             <FilterSection
-              title="ការវាយតម្លៃហាងអប្បបរមា (Min Rating)"
+              title="ការវាយតម្លៃហាងអប្បបរមា"
               icon={<FaStar />}
               isOpen={openSections.rating}
               onToggle={() => toggleSection("rating")}
@@ -1454,7 +1454,7 @@ function FilterSidebar({
             {/* AVAILABILITY */}
             {filterOptions?.availabilityStatuses && filterOptions.availabilityStatuses.length > 0 && (
               <FilterSection
-                title="ស្ថានភាពលក់ (Availability)"
+                title="ស្ថានភាពលក់"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.availability}
                 onToggle={() => toggleSection("availability")}
@@ -1475,7 +1475,7 @@ function FilterSidebar({
             {/* FEATURED ONLY */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
               <span className="text-[16px] font-semibold text-gray-700">
-                ⭐ តែមុខម្ហូបពិសេស (Featured only)
+                ⭐ តែមុខម្ហូបពិសេស
               </span>
               <input
                 type="checkbox"
@@ -1493,7 +1493,7 @@ function FilterSidebar({
             {/* PROVINCES */}
             {filterOptions?.provinces && filterOptions.provinces.length > 0 && (
               <FilterSection
-                title="ខេត្ត (Provinces)"
+                title="ខេត្ត"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.province}
                 onToggle={() => toggleSection("province")}
@@ -1514,7 +1514,7 @@ function FilterSidebar({
             {/* CITIES */}
             {filterOptions?.cities && filterOptions.cities.length > 0 && (
               <FilterSection
-                title="ទីក្រុង (Cities)"
+                title="ទីក្រុង"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.city}
                 onToggle={() => toggleSection("city")}
@@ -2047,7 +2047,7 @@ export default function FoodPage() {
       <div className="flex items-center gap-3 min-w-0">
         <IoSearchOutline className="shrink-0 text-[22px] text-primary-700 dark:text-emerald-400" />
         <span className="text-[16px] text-gray-500 dark:text-gray-400 truncate">
-          {searchInput ? `ស្វែងរក: "${searchInput}"` : "ស្វែងរកហាង ឬ មុខម្ហូប (Search stores or dishes)..."}
+          {searchInput ? `ស្វែងរក: "${searchInput}"` : "ស្វែងរកហាង ឬ មុខម្ហូប..."}
         </span>
       </div>
       <kbd className="hidden sm:inline-block rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 dark:bg-slate-800 dark:text-gray-400">
@@ -2132,7 +2132,7 @@ export default function FoodPage() {
             aria-label="Open food filters"
           >
             <IoFilterOutline className="text-[21px]" />
-            <span>តម្រង (Filters)</span>
+            <span>តម្រង</span>
           </button>
 
           <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
