@@ -18,6 +18,8 @@ import type {
   MeetupVoteResponse,
   MeetupVoteTallyResponse,
   MeetupVotesResponse,
+  RemoveMeetupParticipantArgs,
+  RetractMeetupVoteArgs,
   SubmitMeetupVoteRequest,
   UpdateMeetupGroupArgs,
   UpdateMeetupParticipantLocationArgs,
@@ -151,6 +153,59 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
           : [],
     }),
 
+    /** POST /api/v1/meetup/participants/{uuid}/remove */
+    removeMeetupParticipant: builder.mutation<
+      MeetupActionResponse,
+      RemoveMeetupParticipantArgs
+    >({
+      query: ({ participantUuid }) => ({
+        url: `/meetup/participants/${encodeURIComponent(participantUuid)}/remove`,
+        method: "POST",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupActionResponse(response),
+      invalidatesTags: (_result, _error, args) =>
+        args.meetupUuid
+          ? [{ type: "GroupRecommendation" as const, id: `MEETUP-${args.meetupUuid}` }]
+          : [],
+    }),
+
+    /** GET /api/v1/meetup/participants/{uuid} */
+    getMeetupParticipant: builder.query<MeetupParticipantResponse, string>({
+      query: (participantUuid) => ({
+        url: `/meetup/participants/${encodeURIComponent(participantUuid)}`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupParticipantResponse(response),
+    }),
+
+    /** GET /api/v1/meetup/participants/meetup/{meetupUuid} */
+    getMeetupParticipants: builder.query<MeetupParticipantResponse[], string>({
+      query: (meetupUuid) => ({
+        url: `/meetup/participants/meetup/${encodeURIComponent(meetupUuid)}`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown): MeetupParticipantResponse[] => {
+        if (Array.isArray(response)) {
+          return response.map(normalizeMeetupParticipantResponse);
+        }
+        if (typeof response === "object" && response !== null) {
+          const raw = response as Record<string, unknown>;
+          if (Array.isArray(raw.payload)) {
+            return raw.payload.map(normalizeMeetupParticipantResponse);
+          }
+          if (Array.isArray(raw.participants)) {
+            return raw.participants.map(normalizeMeetupParticipantResponse);
+          }
+        }
+        return [];
+      },
+      providesTags: (_result, _error, meetupUuid) => [
+        { type: "GroupRecommendation", id: `MEETUP-${meetupUuid}` },
+      ],
+    }),
+
     // ─────────────────────────────────────────────────────────
     // MEETUP VOTES
     // ─────────────────────────────────────────────────────────
@@ -160,13 +215,33 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "/meetup/votes",
         method: "POST",
-        body: { ...body, rankChoice: body.rankChoice ?? 1 },
+        body: {
+          meetupUuid: body.meetupUuid,
+          participantUuid: body.participantUuid,
+          foodUuid: body.foodUuid || body.candidateUuid,
+          candidateUuid: body.candidateUuid || body.foodUuid,
+          rankChoice: body.rankChoice ?? 1,
+        },
       }),
       transformResponse: (response: unknown) =>
         normalizeMeetupVoteResponse(response),
       invalidatesTags: (_result, _error, body) => [
         { type: "GroupVoting", id: `MEETUP-${body.meetupUuid}` },
       ],
+    }),
+
+    /** DELETE /api/v1/meetup/votes/{voteUuid} */
+    retractMeetupVote: builder.mutation<MeetupActionResponse, RetractMeetupVoteArgs>({
+      query: ({ voteUuid }) => ({
+        url: `/meetup/votes/${encodeURIComponent(voteUuid)}`,
+        method: "DELETE",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupActionResponse(response),
+      invalidatesTags: (_result, _error, args) =>
+        args.meetupUuid
+          ? [{ type: "GroupVoting", id: `MEETUP-${args.meetupUuid}` }]
+          : [],
     }),
 
     /** GET /api/v1/meetup/votes/meetup/{meetupUuid} */
@@ -232,10 +307,15 @@ export const {
   useDeleteMeetupGroupMutation,
   // Participants
   useJoinMeetupParticipantMutation,
-  useUpdateMeetupParticipantLocationMutation, 
+  useUpdateMeetupParticipantLocationMutation,
   useLeaveMeetupParticipantMutation,
+  useRemoveMeetupParticipantMutation,
+  useGetMeetupParticipantQuery,
+  useGetMeetupParticipantsQuery,
   // Votes
   useSubmitMeetupVoteMutation,
+  useRetractMeetupVoteMutation,
   useGetMeetupVotesQuery,
   useGetMeetupVoteTallyQuery,
 } = groupRecommendationApi;
+

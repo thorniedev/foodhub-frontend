@@ -422,32 +422,42 @@ export default function VotingLeaderboard({
 
                   <p className="text-[17px] leading-7 text-gray-600">
                     {currentVote
-                      ? "អ្នកបានបោះឆ្នោត។ អ្នកនៅតែអាចផ្លាស់ប្ដូរជម្រើស។"
-                      : "ជ្រើសរើសហាងមួយ មុនពេលចាកចេញ។"}
+                      ? votedCount >= members.length && members.length > 0
+                        ? "សមាជិកទាំងអស់បានបោះឆ្នោតរួចរាល់ហើយ! ឥឡូវអ្នកអាចមើលលទ្ធផលបាន។"
+                        : `អ្នកបានបោះឆ្នោតរួចរាល់។ កំពុងរង់ចាំសមាជិកផ្សេងទៀត (${votedCount}/${members.length} បានបោះឆ្នោត)...`
+                      : "ជ្រើសរើសហាងមួយដើម្បីបោះឆ្នោត។"}
                   </p>
                 </div>
 
-                {canFinish && onFinish ? (
-                  <button
-                    type="button"
-                    disabled={!currentVote || isFinishing}
-                    onClick={onFinish}
-                    className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <IoTrophyOutline className="text-[21px]" />
-                    {isFinishing
-                      ? "កំពុងប្រកាស..."
-                      : "បញ្ចប់ និងប្រកាសអ្នកឈ្នះ"}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="min-h-12 shrink-0 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700"
-                  >
-                    រួចរាល់
-                  </button>
-                )}
+                <div className="flex items-center gap-2 shrink-0">
+                  {onFinish ? (
+                    <button
+                      type="button"
+                      disabled={!(votedCount >= members.length && members.length > 0) || isFinishing}
+                      onClick={onFinish}
+                      className={`flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full px-6 text-[17px] font-semibold transition ${
+                        votedCount >= members.length && members.length > 0
+                          ? "bg-amber-500 hover:bg-amber-600 shadow-lg text-white animate-bounce cursor-pointer"
+                          : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-75"
+                      }`}
+                    >
+                      <IoTrophyOutline className="text-[21px]" />
+                      {isFinishing
+                        ? "កំពុងផ្ទុក..."
+                        : votedCount >= members.length && members.length > 0
+                        ? "មើលលទ្ធផលហាងឈ្នះឆ្នោត"
+                        : `រង់ចាំអ្នកផ្សេងទៀត (${votedCount}/${members.length})`}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="min-h-12 shrink-0 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700"
+                    >
+                      រួចរាល់
+                    </button>
+                  )}
+                </div>
               </div>
             </footer>
           </motion.section>

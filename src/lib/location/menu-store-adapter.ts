@@ -80,8 +80,8 @@ export function buildLocationStoresFromMenuItems(
       phoneNumber: null,
       email: null,
 
-      logoMediaUuid: null,
-      coverMediaUuid: null,
+      logoMediaUuid: (source as { logoMediaUuid?: string | null }).logoMediaUuid || null,
+      coverMediaUuid: (source as { coverMediaUuid?: string | null }).coverMediaUuid || null,
       logoUrl: normalizeImagePath(source.logoUrl),
       coverImageUrl: normalizeImagePath(source.coverImageUrl),
 

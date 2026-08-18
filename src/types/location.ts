@@ -93,6 +93,8 @@ export interface RecommendedStore {
   email: string | null;
   logoUrl: string | null;
   coverImageUrl: string | null;
+  logoMediaUuid?: string | null;
+  coverMediaUuid?: string | null;
   priceLevel: number | string | null;
   averageRating: number;
   totalReviews: number;

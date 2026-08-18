@@ -1138,7 +1138,7 @@ export default function LocationPickerModal({
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-1 text-[14px] font-bold text-amber-900">
                               <IoBookmark className="text-[16px] text-amber-600" />
-                              រក្សាទុកទីតាំងទៅក្នុងបញ្ជីសំណព្វ (Save to My Places)
+                              រក្សាទុកទីតាំងទៅក្នុងបញ្ជី (Save to My Places)
                             </span>
                             <button
                               type="button"
