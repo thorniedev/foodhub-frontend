@@ -26,6 +26,7 @@ import CreateMemberProfileModal from "@/app/(dashboard)/dashboard/CreateMemberPr
 import {
   useDeleteMemberProfileMutation,
   useGetMemberProfilesQuery,
+  useGetMemberProfileByIdQuery,
   useGetMediaAccessUrlQuery,
 } from "@/app/store/memberProfileApi";
 
@@ -176,21 +177,30 @@ interface ProfileCardProps {
 }
 
 function ProfileCard({ member, onDelete }: ProfileCardProps) {
-  const firstLetter = member.profileName.trim().charAt(0).toUpperCase() || "?";
+  const { data: detail } = useGetMemberProfileByIdQuery(member.uuid, {
+    skip: !member.uuid,
+  });
 
-  const allergyCount = member.allergies?.length ?? 0;
-  const dietaryCount = member.dietaryTypes?.length ?? 0;
-  const medicalCount = member.medicalConditions?.length ?? 0;
+  const fullMember = detail ?? member;
+  const firstLetter =
+    fullMember.profileName.trim().charAt(0).toUpperCase() || "?";
+
+  const allergyCount = fullMember.allergies?.length ?? 0;
+  const dietaryCount = fullMember.dietaryTypes?.length ?? 0;
+  const medicalCount = fullMember.medicalConditions?.length ?? 0;
+
+  const avatarMediaUuid =
+    fullMember.avatarMediaUuid ?? member.avatarMediaUuid ?? "";
 
   /* Fetch CDN URL for the avatar */
   const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
-    member.avatarMediaUuid ?? "",
-    { skip: !member.avatarMediaUuid },
+    avatarMediaUuid,
+    { skip: !avatarMediaUuid },
   );
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-800/20 hover:shadow-[0_18px_50px_rgba(15,23,42,0.09)]">
-      {member.isDefault && (
+      {fullMember.isDefault && (
         <div className="absolute right-4 top-4 z-10 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-lg font-semibold text-amber-700 shadow-sm">
           <Crown className="h-4 w-4" />
           លំនាំដើម
@@ -199,7 +209,7 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <Link
-          href={`/dashboard/family-profile/${member.uuid}`}
+          href={`/dashboard/family-profile/${fullMember.uuid}`}
           className="block rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-800/10"
         >
           <div className="flex items-center gap-4">
@@ -207,7 +217,7 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
               {avatarAccessUrlData?.url ? (
                 <Image
                   src={avatarAccessUrlData.url}
-                  alt={member.profileName}
+                  alt={fullMember.profileName}
                   fill
                   className="object-cover"
                   sizes="72px"
@@ -218,7 +228,7 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
                 </span>
               )}
 
-              {member.isActive && (
+              {fullMember.isActive && (
                 <span
                   title="Active"
                   className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-[4px] border-white bg-emerald-500"
@@ -228,16 +238,17 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
 
             <div className="min-w-0 flex-1 pr-1">
               <h3 className="truncate text-[22px] font-bold text-primary-800">
-                {member.profileName}
+                {fullMember.profileName}
               </h3>
 
               <p className="mt-1.5 truncate text-lg font-medium text-slate-500">
-                {relationshipLabels[member.relationship] ?? member.relationship}
+                {relationshipLabels[fullMember.relationship] ??
+                  fullMember.relationship}
               </p>
 
-              {member.ageGroup?.name && (
+              {fullMember.ageGroup?.name && (
                 <p className="mt-1 truncate text-lg text-slate-400">
-                  {member.ageGroup.name}
+                  {fullMember.ageGroup.name}
                 </p>
               )}
             </div>
@@ -272,7 +283,7 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
 
         <div className="mt-6 flex items-center gap-2.5 border-t border-slate-100 pt-5">
           <Link
-            href={`/dashboard/family-profile/${member.uuid}`}
+            href={`/dashboard/family-profile/${fullMember.uuid}`}
             className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary-800 px-4 py-3 text-lg font-semibold text-white shadow-sm transition hover:bg-primary-900"
           >
             <Eye className="h-5 w-5" />
@@ -280,7 +291,7 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
           </Link>
 
           <Link
-            href={`/dashboard/family-profile/${member.uuid}?mode=edit`}
+            href={`/dashboard/family-profile/${fullMember.uuid}?mode=edit`}
             title="កែប្រែ"
             aria-label="កែប្រែ"
             className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-primary-800/20 hover:bg-primary-800/5 hover:text-primary-800"
@@ -290,9 +301,13 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
 
           <button
             type="button"
-            onClick={() => onDelete(member)}
-            disabled={member.isDefault}
-            title={member.isDefault ? "មិនអាចលុបគណនីលំនាំដើមបានទេ" : "លុបគណនី"}
+            onClick={() => onDelete(fullMember)}
+            disabled={fullMember.isDefault}
+            title={
+              fullMember.isDefault
+                ? "មិនអាចលុបគណនីលំនាំដើមបានទេ"
+                : "លុបគណនី"
+            }
             aria-label="លុបគណនី"
             className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
           >
