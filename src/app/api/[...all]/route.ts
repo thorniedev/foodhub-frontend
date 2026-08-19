@@ -60,16 +60,15 @@ const memoryVotes = new Map<string, InMemoryVote[]>();
 const memoryMeetups = new Map<string, InMemoryMeetupMeta>();
 const memoryMeetupGroups = new Map<string, InMemoryMeetupGroup>();
 
-const configuredBackendUrl = process.env.BACKEND_API_URL?.trim().replace(
-  /\/+$/,
-  "",
-);
+const configuredBackendUrl = (
+  process.env.BACKEND_API_URL || "https://api.mhoubahar.store"
+)
+  .trim()
+  .replace(/\/+$/, "");
 
-const backendApiUrl = configuredBackendUrl
-  ? /\/api\/v1$/i.test(configuredBackendUrl)
-    ? configuredBackendUrl
-    : `${configuredBackendUrl}/api/v1`
-  : null;
+const backendApiUrl = /\/api\/v1$/i.test(configuredBackendUrl)
+  ? configuredBackendUrl
+  : `${configuredBackendUrl}/api/v1`;
 
 const allowedRoutes: Record<string, ReadonlySet<string>> = {
   "users/me": new Set(["GET", "PATCH", "DELETE"]),

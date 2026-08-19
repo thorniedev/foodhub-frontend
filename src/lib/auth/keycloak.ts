@@ -211,14 +211,9 @@ export interface KeycloakTokenResponse {
   scope?: string;
 }
 
-function requiredEnv(name: string): string {
+function safeEnv(name: string, fallback = ""): string {
   const value = process.env[name]?.trim();
-
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
+  return value || fallback;
 }
 
 function trimTrailingSlash(value: string) {
@@ -226,14 +221,20 @@ function trimTrailingSlash(value: string) {
 }
 
 export function getAuthConfig() {
-  const appUrl = trimTrailingSlash(requiredEnv("APP_URL"));
-  const rawBackendUrl = trimTrailingSlash(requiredEnv("BACKEND_API_URL"));
+  const appUrl = trimTrailingSlash(
+    safeEnv("APP_URL", process.env.NEXT_PUBLIC_SITE_URL || "https://mhoubahar.store"),
+  );
+  const rawBackendUrl = trimTrailingSlash(
+    safeEnv("BACKEND_API_URL", "https://api.mhoubahar.store"),
+  );
   const backendApiUrl = /\/api\/v1$/i.test(rawBackendUrl)
     ? rawBackendUrl
     : `${rawBackendUrl}/api/v1`;
-  const keycloakUrl = trimTrailingSlash(requiredEnv("KEYCLOAK_URL"));
-  const realm = requiredEnv("KEYCLOAK_REALM");
-  const clientId = requiredEnv("KEYCLOAK_CLIENT_ID");
+  const keycloakUrl = trimTrailingSlash(
+    safeEnv("KEYCLOAK_URL", "https://auth.mhoubahar.store"),
+  );
+  const realm = safeEnv("KEYCLOAK_REALM", "foodhub");
+  const clientId = safeEnv("KEYCLOAK_CLIENT_ID", "mhoubahar-web");
   const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET?.trim() || "";
 
   return {

@@ -19,10 +19,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+function getSafeSiteUrl(): URL {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (envUrl && envUrl !== "") {
+    try {
+      const urlString =
+        envUrl.startsWith("http://") || envUrl.startsWith("https://")
+          ? envUrl
+          : `https://${envUrl}`;
+      return new URL(urlString);
+    } catch {
+      // fallback
+    }
+  }
+  return new URL("https://www.mhoubahar.store");
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.mhoubahar.store",
-  ),
+  metadataBase: getSafeSiteUrl(),
 
   title: {
     default: "មូបអាហារ - FoodHub",

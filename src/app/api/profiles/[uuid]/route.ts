@@ -18,13 +18,11 @@ function normalizeBaseUrl(url: string): string {
   return url.trim().replace(/\/+$/, "");
 }
 
-function getBackendApiUrl(): string | null {
+function getBackendApiUrl(): string {
   const configuredBackendUrl =
-    process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  if (!configuredBackendUrl) {
-    return null;
-  }
+    process.env.BACKEND_API_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://api.mhoubahar.store";
 
   const normalizedUrl = normalizeBaseUrl(configuredBackendUrl);
 
