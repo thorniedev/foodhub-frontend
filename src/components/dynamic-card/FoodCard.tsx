@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 import { CiHeart } from "react-icons/ci";
-import { FaHeart, FaStar, FaStore } from "react-icons/fa";
+import { FaHeart, FaStore } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
@@ -59,6 +59,11 @@ function getStoredFavoriteIds(): string[] {
   } catch {
     return [];
   }
+}
+
+function cleanKhmerLabel(label: string): string {
+  if (!label) return "";
+  return label.replace(/\s*\([A-Za-z0-9\s&,/-]+\)/g, "").trim();
 }
 
 /* =========================================================
@@ -132,12 +137,6 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
    * dietaryTypes is inside food.food in your current response.
    */
   const dietaryTypes = food.food?.dietaryTypes ?? [];
-
-  const averageRating = Number(food.store?.averageRating ?? 0);
-
-  const displayedRating = Number.isFinite(averageRating)
-    ? averageRating.toFixed(1)
-    : "0.0";
 
   /* =======================================================
      UI
@@ -262,119 +261,63 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
           </div>
 
           {/* ======================================
-              RATING + PREPARATION TIME
+              PREPARATION TIME
           ====================================== */}
 
-          <div className="flex flex-wrap gap-4">
-            {/* RATING */}
-
-            <div className="flex items-center gap-2 text-accent-400">
-              <FaStar />
-
-              <span>{displayedRating}</span>
-            </div>
-
-            {/* PREPARATION TIME */}
-
-            {food.preparationTimeMinutes !== null &&
-              food.preparationTimeMinutes !== undefined && (
+          {food.preparationTimeMinutes !== null &&
+            food.preparationTimeMinutes !== undefined && (
+              <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 text-primary-400">
                   <IoMdTime />
 
                   <span>{food.preparationTimeMinutes} min</span>
                 </div>
-              )}
-          </div>
+              </div>
+            )}
 
           {/* ======================================
-              DIETARY TAGS
+              DIETARY TAGS (Blank if no dietaryTypes)
           ====================================== */}
-          {/* ======================================
-    DIETARY TAGS
-====================================== */}
 
           {dietaryTypes.length > 0 && (
             <div className="flex items-center gap-2 overflow-hidden">
               {dietaryTypes.slice(0, 2).map((diet) => (
                 <span
                   key={diet.code}
-                  title={diet.name}
+                  title={cleanKhmerLabel(diet.name)}
                   className="
-         
-          shrink-0
-          truncate
-          rounded-full
-          bg-primary-800
-          px-2
-          py-1
-          text-center
-          text-sm
-          text-gray-100
-        "
+                    shrink-0
+                    truncate
+                    rounded-full
+                    bg-primary-800
+                    px-2
+                    py-1
+                    text-center
+                    text-sm
+                    text-gray-100
+                  "
                 >
-                  {diet.name}
+                  {cleanKhmerLabel(diet.name)}
                 </span>
               ))}
 
               {dietaryTypes.length > 2 && (
                 <span
                   className="
-         w-8 h-8 justify-center
-          shrink-0
-          rounded-full
-          bg-gray-100
-          
-          py-1
-          text-center
-          text-sm
-          font-medium
-          text-gray-600
-          dark:bg-gray-800
-          dark:text-gray-300
-        "
+                    w-8 h-8 justify-center
+                    shrink-0
+                    rounded-full
+                    bg-gray-100
+                    py-1
+                    text-center
+                    text-sm
+                    font-medium
+                    text-gray-600
+                    dark:bg-gray-800
+                    dark:text-gray-300
+                  "
                 >
                   +{dietaryTypes.length - 2}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* ======================================
-              FALLBACK TAGS
-
-              When dietaryTypes is empty,
-              use category and cuisine from food.food.
-          ====================================== */}
-
-          {dietaryTypes.length === 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {food.food?.category && (
-                <span
-                  className="
-                    rounded-full
-                    bg-primary-800
-                    px-3
-                    py-1
-                    text-lg
-                    text-gray-100
-                  "
-                >
-                  {food.food.category.name}
-                </span>
-              )}
-
-              {food.food?.cuisine && (
-                <span
-                  className="
-                    rounded-full
-                    bg-primary-800
-                    px-3
-                    py-1
-                    text-lg
-                    text-gray-100
-                  "
-                >
-                  {food.food.cuisine.name}
                 </span>
               )}
             </div>

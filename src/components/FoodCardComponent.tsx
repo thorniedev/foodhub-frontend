@@ -53,11 +53,6 @@ export default function FoodCardComponent({ food }: Props) {
         </div>
 
         <div className="flex gap-4">
-          <div className="flex items-center gap-2 text-accent-400">
-            <FaStar />
-            <span>{rating}</span>
-          </div>
-
           <div className="flex items-center gap-2 text-primary-400">
             <IoMdTime />
             <span>{time}</span>

@@ -1836,23 +1836,30 @@ export default function FoodPage() {
      OPTIONS FROM CURRENT API RESPONSE
   ======================================================= */
 
+function cleanKhmerLabel(label: string): string {
+  if (!label) return "";
+  return label.replace(/\s*\([A-Za-z0-9\s&,/-]+\)/g, "").trim();
+}
+
   const categoryOptions = useMemo(
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) => {
           const category = item.food?.category;
 
-          return category
-            ? [
-                {
-                  code: category.code,
-                  name:
-                    category.code === "FOOD" || category.name === "Food"
-                      ? "អាហារ"
-                      : category.name,
-                },
-              ]
-            : [];
+          if (!category) return [];
+
+          const rawName =
+            category.code === "FOOD" || category.name === "Food"
+              ? "អាហារ"
+              : category.name;
+
+          return [
+            {
+              code: category.code,
+              name: cleanKhmerLabel(rawName),
+            },
+          ];
         }),
       ),
     [menuItems],
@@ -2071,7 +2078,7 @@ export default function FoodPage() {
       ) {
         return discoveryFilterOptions.categories.map((category) => ({
           code: category.uuid,
-          name: category.name,
+          name: cleanKhmerLabel(category.name),
           count: 0,
         }));
       }

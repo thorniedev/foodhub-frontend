@@ -58,13 +58,8 @@ function FoodCard({ food }: { food: MenuItem }) {
           </p>
         </div>
 
-        {/* Rating / Time / Distance */}
+        {/* Time / Distance */}
         <div className="flex gap-4">
-          <div className="flex gap-2 items-center text-accent-400">
-            <FaStar />
-            <span>{food.store?.averageRating ?? 0}</span>
-          </div>
-
           <div className="flex gap-2 items-center text-primary-400">
             <IoMdTime />
             <span>{food.preparationTimeMinutes} min</span>

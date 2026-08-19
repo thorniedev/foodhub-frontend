@@ -79,21 +79,8 @@ export default function FoodCard({ food }: { food: MenuItem }) {
           </p>
         </div>
 
-        {/* Rating */}
+        {/* Time and Distance */}
         <div className="flex gap-4">
-          <div
-            className="
-          flex 
-          gap-2 
-          items-center
-          text-accent-400
-          "
-          >
-            <FaStar />
-
-            <span>{food.store?.averageRating ?? 0}</span>
-          </div>
-
           <div
             className="
           flex

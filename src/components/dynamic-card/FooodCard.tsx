@@ -353,16 +353,10 @@ export default function FooodCard({
         </Link>
 
         {/* ======================================
-            RATING + TIME + DISTANCE
+            TIME + DISTANCE
         ====================================== */}
 
         <div className="flex flex-wrap gap-x-4 gap-y-2">
-          <div className="flex items-center gap-2 text-accent-400">
-            <FaStar />
-
-            <span>{displayedRating}</span>
-          </div>
-
           {food.preparationTimeMinutes !== null &&
             food.preparationTimeMinutes !== undefined && (
               <div className="flex items-center gap-2 text-primary-400">
@@ -382,7 +376,7 @@ export default function FooodCard({
         </div>
 
         {/* ======================================
-            DIETARY TAGS
+            DIETARY TAGS (Blank if no dietaryTypes)
         ====================================== */}
 
         {dietaryTypes.length > 0 && (
@@ -402,44 +396,6 @@ export default function FooodCard({
                 {diet.name}
               </span>
             ))}
-          </div>
-        )}
-
-        {/* ======================================
-            FALLBACK TAGS
-        ====================================== */}
-
-        {dietaryTypes.length === 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            {food.food?.category && (
-              <span
-                className="
-                  rounded-full
-                  bg-primary-800
-                  px-3
-                  py-1
-                  text-lg
-                  text-gray-100
-                "
-              >
-                {food.food.category.name}
-              </span>
-            )}
-
-            {food.food?.cuisine && (
-              <span
-                className="
-                  rounded-full
-                  bg-primary-800
-                  px-3
-                  py-1
-                  text-lg
-                  text-gray-100
-                "
-              >
-                {food.food.cuisine.name}
-              </span>
-            )}
           </div>
         )}
 

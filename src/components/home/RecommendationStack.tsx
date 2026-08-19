@@ -185,10 +185,6 @@ function FoodCard({ food }: { food: FoodItem }) {
           <p className="text-[24px] font-medium text-primary-800 dark:text-primary-dark">{`${food.price}$`}</p>
         </div>
         <div className="flex gap-4">
-          <div className="flex gap-2 items-center text-accent-400">
-            <FaStar />
-            <p className="mt-1">{food.rating}</p>
-          </div>
           <div className="flex gap-2 items-center text-primary-400">
             <IoMdTime />
             <p>{food.time}</p>
