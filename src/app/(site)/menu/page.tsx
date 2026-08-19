@@ -1590,7 +1590,9 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
           >
             {option.name}
 
-            <span className="ml-2 opacity-70">{option.count}</span>
+            {option.count > 0 && (
+              <span className="ml-2 opacity-70">{option.count}</span>
+            )}
           </button>
         );
       })}
@@ -1713,6 +1715,8 @@ export default function FoodPage() {
 
   const [executeDiscoverySearch, { data: discoveryResult, isLoading: isDiscoveryLoading }] =
     useDiscoverySearchMutation();
+
+  const { data: discoveryFilterOptions } = useGetDiscoveryFiltersQuery();
 
   useEffect(() => {
     executeDiscoverySearch({
@@ -2002,9 +2006,50 @@ export default function FoodPage() {
     return [];
   }, [discoveryItems]);
 
-  const displayFoods = apiCatalogFoods.length > 0 ? apiCatalogFoods : filteredFoods;
+  const apiCategoryOptions: FilterOption[] = useMemo(
+    () =>
+      (discoveryFilterOptions?.categories ?? []).map((category) => ({
+        code: category.uuid,
+        name: category.name,
+        count: 0,
+      })),
+    [discoveryFilterOptions],
+  );
 
-  const activeFilterCount = countActiveFilters(filters);
+  // The discovery API is the single source of truth for the grid: once it has
+  // returned, show its (filtered) results — including an empty result — instead
+  // of falling back to unfiltered client data, so every sidebar/tab filter
+  // actually changes what is displayed.
+  const displayFoods =
+    discoveryResult !== undefined ? apiCatalogFoods : filteredFoods;
+
+  const activeFilterCount =
+    (customerSearchRequest.categoryUuids?.length || 0) +
+    (customerSearchRequest.cuisineUuids?.length || 0) +
+    (customerSearchRequest.mealTypeUuids?.length || 0) +
+    (customerSearchRequest.ageGroupUuids?.length || 0) +
+    (customerSearchRequest.seasonUuids?.length || 0) +
+    (customerSearchRequest.eventUuids?.length || 0) +
+    (customerSearchRequest.weatherConditionUuids?.length || 0) +
+    (customerSearchRequest.dietaryTypeUuids?.length || 0) +
+    (customerSearchRequest.excludeAllergenUuids?.length || 0) +
+    (customerSearchRequest.storePriceLevels?.length || 0) +
+    (customerSearchRequest.availabilityStatuses?.length || 0) +
+    (customerSearchRequest.provinces?.length || 0) +
+    (customerSearchRequest.cities?.length || 0) +
+    (customerSearchRequest.featuredOnly ? 1 : 0) +
+    (customerSearchRequest.minimumStoreRating !== undefined ? 1 : 0) +
+    (customerSearchRequest.openNow ? 1 : 0) +
+    (customerSearchRequest.minimumPrice !== undefined ||
+    customerSearchRequest.maximumPrice !== undefined
+      ? 1
+      : 0) +
+    (customerSearchRequest.minimumSpiceLevel !== undefined ||
+    customerSearchRequest.maximumSpiceLevel !== undefined
+      ? 1
+      : 0) +
+    (customerSearchRequest.maxPreparationTimeMinutes !== undefined ? 1 : 0) +
+    (customerSearchRequest.profileUuid ? 1 : 0);
 
   /* =======================================================
      MOBILE FILTER DRAWER
@@ -2169,12 +2214,12 @@ export default function FoodPage() {
 
         <main className="min-w-0 flex-1">
           <CategoryTabs
-            options={categoryOptions}
-            selectedCodes={filters.categoryCodes}
-            onChange={(categoryCodes) =>
-              setFilters((current) => ({
+            options={apiCategoryOptions}
+            selectedCodes={customerSearchRequest.categoryUuids ?? []}
+            onChange={(categoryUuids) =>
+              setCustomerSearchRequest((current) => ({
                 ...current,
-                categoryCodes,
+                categoryUuids: categoryUuids.length ? categoryUuids : undefined,
               }))
             }
           />

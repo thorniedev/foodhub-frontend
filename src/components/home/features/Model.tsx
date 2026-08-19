@@ -18,6 +18,7 @@ import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
 import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
+import AiPromptRecommender from "./AiPromptRecommender";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
@@ -244,8 +245,12 @@ export default function Model() {
 
     if (activeTab === "swipe") {
       return (
-        <div className="flex w-full  justify-center">
-          <SwipeCardTinderStyle foods={recommendedFoods} />
+        <div className="flex w-full flex-col">
+          <div className="flex w-full justify-center">
+            <SwipeCardTinderStyle foods={recommendedFoods} />
+          </div>
+          {/* Real AI recommendation: user prompt -> /recommendations/sessions */}
+          <AiPromptRecommender />
         </div>
       );
     }
