@@ -276,11 +276,18 @@ async function forwardRequest(
     requestHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
+  const isAiOrHeavyRoute =
+    backendPath.startsWith("recommendations") ||
+    backendPath.startsWith("discovery") ||
+    backendPath.startsWith("search");
+
+  const timeoutMs = isAiOrHeavyRoute ? 60_000 : 30_000;
+
   const canHaveBody = request.method !== "GET" && request.method !== "HEAD";
   const requestBody = canHaveBody ? await request.arrayBuffer() : undefined;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     console.log("[FOODHUB PROXY REQUEST]", {
