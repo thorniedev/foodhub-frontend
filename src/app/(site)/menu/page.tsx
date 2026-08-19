@@ -428,163 +428,218 @@ function getUniqueOptions(
    FILTERING
 ========================================================= */
 
-function applyFilters(
+function applyCustomerSearchFilters(
   foods: CatalogMenuItem[],
-  filters: FilterState,
+  req: CustomerSearchRequest,
+  searchQuery: string,
   profile?: MemberProfile | null,
 ): CatalogMenuItem[] {
+  const normalizedQuery = normalizeText(searchQuery);
+
   const filteredFoods = foods.filter((food) => {
-    if (filters.availabilityOnly && food.availabilityStatus !== "AVAILABLE") {
+    // 1. Search text
+    if (normalizedQuery && !matchesSearch(food, normalizedQuery)) {
       return false;
     }
 
-    if (filters.featuredOnly && !food.isFeatured) {
+    // 2. Open Now
+    if (req.openNow && food.store?.operatingStatus !== "OPEN") {
       return false;
     }
 
-    if (!matchesSearch(food, filters.query)) {
+    // 3. Featured Only
+    if (req.featuredOnly && !food.isFeatured) {
       return false;
     }
 
-    const category = food.food?.category;
+    // 4. Category
+    if (req.categoryUuids && req.categoryUuids.length > 0) {
+      const category = food.food?.category;
+      const matchesCategory =
+        category &&
+        (req.categoryUuids.includes(category.code) ||
+          req.categoryUuids.some(
+            (u) =>
+              normalizeText(u) === normalizeText(category.name) ||
+              normalizeText(u) === normalizeText(category.code),
+          ));
+      if (!matchesCategory) return false;
+    }
 
+    // 5. Cuisine
+    if (req.cuisineUuids && req.cuisineUuids.length > 0) {
+      const cuisine = food.food?.cuisine;
+      const matchesCuisine =
+        cuisine &&
+        (req.cuisineUuids.includes(cuisine.code) ||
+          req.cuisineUuids.some(
+            (u) =>
+              normalizeText(u) === normalizeText(cuisine.name) ||
+              normalizeText(u) === normalizeText(cuisine.code),
+          ));
+      if (!matchesCuisine) return false;
+    }
+
+    // 6. Meal Types
+    if (req.mealTypeUuids && req.mealTypeUuids.length > 0) {
+      const mealTypes = getMealTypes(food);
+      const matchesMeal = mealTypes.some(
+        (m) =>
+          req.mealTypeUuids!.includes(m.code) ||
+          req.mealTypeUuids!.some(
+            (u) =>
+              normalizeText(u) === normalizeText(m.name) ||
+              normalizeText(u) === normalizeText(m.code),
+          ),
+      );
+      if (!matchesMeal) return false;
+    }
+
+    // 7. Dietary Types
+    if (req.dietaryTypeUuids && req.dietaryTypeUuids.length > 0) {
+      const dietaryTypes = getDietaryTypes(food);
+      const matchesDietary = dietaryTypes.some(
+        (d) =>
+          req.dietaryTypeUuids!.includes(d.code) ||
+          req.dietaryTypeUuids!.some(
+            (u) =>
+              normalizeText(u) === normalizeText(d.name) ||
+              normalizeText(u) === normalizeText(d.code),
+          ),
+      );
+      if (!matchesDietary) return false;
+    }
+
+    // 8. Age Groups
+    if (req.ageGroupUuids && req.ageGroupUuids.length > 0) {
+      const ageGroups = getAgeGroups(food);
+      const matchesAge = ageGroups.some(
+        (a) =>
+          req.ageGroupUuids!.includes(a.code) ||
+          req.ageGroupUuids!.some(
+            (u) =>
+              normalizeText(u) === normalizeText(a.name) ||
+              normalizeText(u) === normalizeText(a.code),
+          ),
+      );
+      if (!matchesAge) return false;
+    }
+
+    // 9. Seasons
+    if (req.seasonUuids && req.seasonUuids.length > 0) {
+      const seasons = getSeasons(food);
+      const matchesSeason = seasons.some(
+        (s) =>
+          req.seasonUuids!.includes(s.code) ||
+          req.seasonUuids!.some(
+            (u) =>
+              normalizeText(u) === normalizeText(s.name) ||
+              normalizeText(u) === normalizeText(s.code),
+          ),
+      );
+      if (!matchesSeason) return false;
+    }
+
+    // 10. Events
+    if (req.eventUuids && req.eventUuids.length > 0) {
+      const events = getEvents(food);
+      const matchesEvent = events.some(
+        (e) =>
+          req.eventUuids!.includes(e.code) ||
+          req.eventUuids!.some(
+            (u) =>
+              normalizeText(u) === normalizeText(e.name) ||
+              normalizeText(u) === normalizeText(e.code),
+          ),
+      );
+      if (!matchesEvent) return false;
+    }
+
+    // 11. Weather
+    if (req.weatherConditionUuids && req.weatherConditionUuids.length > 0) {
+      const weather = getSuitableWeather(food);
+      const matchesWeather = weather.some(
+        (w) =>
+          req.weatherConditionUuids!.includes(w.code) ||
+          req.weatherConditionUuids!.some(
+            (u) =>
+              normalizeText(u) === normalizeText(w.name) ||
+              normalizeText(u) === normalizeText(w.code),
+          ),
+      );
+      if (!matchesWeather) return false;
+    }
+
+    // 12. Allergen Exclusions
+    if (req.excludeAllergenUuids && req.excludeAllergenUuids.length > 0) {
+      const allergens = getAllergens(food);
+      const hasExcluded = allergens.some(
+        (alg) =>
+          req.excludeAllergenUuids!.includes(alg.code) ||
+          req.excludeAllergenUuids!.some(
+            (u) =>
+              normalizeText(u) === normalizeText(alg.name) ||
+              normalizeText(u) === normalizeText(alg.code),
+          ),
+      );
+      if (hasExcluded) return false;
+    }
+
+    // 13. Price Range
+    if (req.minimumPrice !== undefined && food.price < req.minimumPrice) {
+      return false;
+    }
+    if (req.maximumPrice !== undefined && food.price > req.maximumPrice) {
+      return false;
+    }
+
+    // 14. Spice Level
     if (
-      filters.categoryCodes.length > 0 &&
-      (!category || !filters.categoryCodes.includes(category.code))
+      req.minimumSpiceLevel !== undefined &&
+      (food.food?.spiceLevel ?? 0) < req.minimumSpiceLevel
+    ) {
+      return false;
+    }
+    if (
+      req.maximumSpiceLevel !== undefined &&
+      (food.food?.spiceLevel ?? 0) > req.maximumSpiceLevel
     ) {
       return false;
     }
 
-    const cuisine = food.food?.cuisine;
-
+    // 15. Max Preparation Time
     if (
-      filters.cuisineCodes.length > 0 &&
-      (!cuisine || !filters.cuisineCodes.includes(cuisine.code))
+      req.maxPreparationTimeMinutes !== undefined &&
+      (food.preparationTimeMinutes == null ||
+        food.preparationTimeMinutes > req.maxPreparationTimeMinutes)
     ) {
       return false;
     }
 
-    const mealTypes = getMealTypes(food);
-
+    // 16. Availability Status
     if (
-      filters.mealTypeCodes.length > 0 &&
-      !mealTypes.some((item) => filters.mealTypeCodes.includes(item.code))
+      req.availabilityStatuses &&
+      req.availabilityStatuses.length > 0 &&
+      !req.availabilityStatuses.includes(food.availabilityStatus)
     ) {
       return false;
     }
 
-    const dietaryTypes = getDietaryTypes(food);
-
+    // 17. Provinces
     if (
-      filters.dietaryTypeCodes.length > 0 &&
-      !dietaryTypes.some((item) => filters.dietaryTypeCodes.includes(item.code))
+      req.provinces &&
+      req.provinces.length > 0 &&
+      (!food.origin?.provinceName ||
+        !req.provinces.includes(food.origin.provinceName))
     ) {
       return false;
     }
 
-    const ageGroups = getAgeGroups(food);
-
+    // 18. Cities
     if (
-      filters.ageGroupCodes.length > 0 &&
-      !ageGroups.some((item) => filters.ageGroupCodes.includes(item.code))
-    ) {
-      return false;
-    }
-
-    const seasons = getSeasons(food);
-
-    if (
-      filters.seasonCodes.length > 0 &&
-      !seasons.some((item) => filters.seasonCodes.includes(item.code))
-    ) {
-      return false;
-    }
-
-    const events = getEvents(food);
-
-    if (
-      filters.eventCodes.length > 0 &&
-      !events.some((item) => filters.eventCodes.includes(item.code))
-    ) {
-      return false;
-    }
-
-    const suitableWeather = getSuitableWeather(food);
-
-    if (
-      filters.weatherCodes.length > 0 &&
-      !suitableWeather.some((item) => filters.weatherCodes.includes(item.code))
-    ) {
-      return false;
-    }
-
-    const originCountry = getOriginCountry(food);
-
-    if (
-      filters.originCountryCodes.length > 0 &&
-      (!originCountry ||
-        !filters.originCountryCodes.includes(originCountry.code))
-    ) {
-      return false;
-    }
-
-    if (filters.traditionalOnly && !food.origin?.isTraditional) {
-      return false;
-    }
-
-    const allergens = getAllergens(food);
-
-    if (
-      filters.excludedAllergenCodes.length > 0 &&
-      allergens.some((item) =>
-        filters.excludedAllergenCodes.includes(item.code),
-      )
-    ) {
-      return false;
-    }
-
-    if (
-      filters.storeIds.length > 0 &&
-      !filters.storeIds.includes(food.store.uuid)
-    ) {
-      return false;
-    }
-
-    const ingredients = getIngredientNames(food);
-
-    if (
-      filters.ingredientNames.length > 0 &&
-      !filters.ingredientNames.every((selectedIngredient) =>
-        ingredients.some((ingredient) =>
-          normalizeText(ingredient).includes(normalizeText(selectedIngredient)),
-        ),
-      )
-    ) {
-      return false;
-    }
-
-    if (
-      filters.spiceLevels.length > 0 &&
-      !filters.spiceLevels.includes(food.food?.spiceLevel ?? -1)
-    ) {
-      return false;
-    }
-
-    if (!matchesPriceTier(food.price, filters.priceTier)) {
-      return false;
-    }
-
-    if (
-      filters.maximumPreparationMinutes !== null &&
-      (food.preparationTimeMinutes === null ||
-        food.preparationTimeMinutes > filters.maximumPreparationMinutes)
-    ) {
-      return false;
-    }
-
-    if (
-      filters.minimumRating !== null &&
-      Number(food.store?.averageRating ?? 0) < filters.minimumRating
+      req.cities &&
+      req.cities.length > 0 &&
+      (!food.store?.city || !req.cities.includes(food.store.city))
     ) {
       return false;
     }
@@ -592,45 +647,31 @@ function applyFilters(
     return true;
   });
 
-  const profileSortedFoods = sortFoodsForProfile(filteredFoods, profile);
+  const profileSortedFoods = profile
+    ? sortFoodsForProfile(filteredFoods, profile)
+    : filteredFoods;
 
   return [...profileSortedFoods].sort((first, second) => {
-    switch (filters.sortBy) {
-      case "rating":
-        return (
-          Number(second.store?.averageRating ?? 0) -
-          Number(first.store?.averageRating ?? 0)
-        );
-
-      case "fastest": {
-        const firstTime =
-          first.preparationTimeMinutes ?? Number.POSITIVE_INFINITY;
-
-        const secondTime =
-          second.preparationTimeMinutes ?? Number.POSITIVE_INFINITY;
-
-        return firstTime - secondTime;
-      }
-
-      case "name":
-        return normalizeText(first.localName || first.name).localeCompare(
-          normalizeText(second.localName || second.name),
-        );
-
-      case "price-low":
+    switch (req.sort) {
+      case "PRICE_ASC":
         return first.price - second.price;
 
-      case "price-high":
+      case "PRICE_DESC":
         return second.price - first.price;
 
-      case "featured":
-      default: {
-        const profileScoreDifference =
-          getProfileFoodScore(second, profile) -
-          getProfileFoodScore(first, profile);
+      case "DISTANCE_ASC":
+        return (first.distanceKm ?? 0) - (second.distanceKm ?? 0);
 
-        if (profileScoreDifference !== 0) {
-          return profileScoreDifference;
+      case "NEWEST":
+      default: {
+        if (profile) {
+          const profileScoreDifference =
+            getProfileFoodScore(second, profile) -
+            getProfileFoodScore(first, profile);
+
+          if (profileScoreDifference !== 0) {
+            return profileScoreDifference;
+          }
         }
 
         if (first.isFeatured !== second.isFeatured) {
@@ -1753,16 +1794,26 @@ export default function FoodPage() {
     size: 100,
   });
 
-  const defaultProfile = useMemo(
+  const memberProfiles: MemberProfile[] = useMemo(
     () =>
-      profileResponse?.contents.find((profile) => profile.isDefault) ?? null,
+      Array.isArray(profileResponse)
+        ? profileResponse
+        : profileResponse?.contents ?? [],
     [profileResponse],
   );
 
-  const { data: memberProfile } = useGetMemberProfileByIdQuery(
-    defaultProfile?.uuid ?? "",
-    { skip: !defaultProfile?.uuid },
-  );
+  const selectedProfile: MemberProfile | null = useMemo(() => {
+    if (customerSearchRequest.profileUuid) {
+      return (
+        memberProfiles.find(
+          (p: MemberProfile) => p.uuid === customerSearchRequest.profileUuid,
+        ) ?? null
+      );
+    }
+    return (
+      memberProfiles.find((p: MemberProfile) => p.isDefault) ?? null
+    );
+  }, [customerSearchRequest.profileUuid, memberProfiles]);
 
   /* =======================================================
      SEARCH DEBOUNCE
@@ -1923,8 +1974,14 @@ export default function FoodPage() {
   ======================================================= */
 
   const filteredFoods = useMemo(
-    () => applyFilters(menuItems, filters, memberProfile),
-    [menuItems, filters, memberProfile],
+    () =>
+      applyCustomerSearchFilters(
+        menuItems,
+        customerSearchRequest,
+        searchInput,
+        selectedProfile,
+      ),
+    [menuItems, customerSearchRequest, searchInput, selectedProfile],
   );
 
   const apiCatalogFoods = useMemo(() => {
@@ -2007,21 +2064,26 @@ export default function FoodPage() {
   }, [discoveryItems]);
 
   const apiCategoryOptions: FilterOption[] = useMemo(
-    () =>
-      (discoveryFilterOptions?.categories ?? []).map((category) => ({
-        code: category.uuid,
-        name: category.name,
-        count: 0,
-      })),
-    [discoveryFilterOptions],
+    () => {
+      if (
+        discoveryFilterOptions?.categories &&
+        discoveryFilterOptions.categories.length > 0
+      ) {
+        return discoveryFilterOptions.categories.map((category) => ({
+          code: category.uuid,
+          name: category.name,
+          count: 0,
+        }));
+      }
+      return categoryOptions;
+    },
+    [discoveryFilterOptions, categoryOptions],
   );
 
-  // The discovery API is the single source of truth for the grid: once it has
-  // returned, show its (filtered) results — including an empty result — instead
-  // of falling back to unfiltered client data, so every sidebar/tab filter
-  // actually changes what is displayed.
+  // If discovery returned items, display them. Otherwise fall back to filteredFoods
+  // so all menu items are shown when no filter is active, and client filters work smoothly.
   const displayFoods =
-    discoveryResult !== undefined ? apiCatalogFoods : filteredFoods;
+    apiCatalogFoods.length > 0 ? apiCatalogFoods : filteredFoods;
 
   const activeFilterCount =
     (customerSearchRequest.categoryUuids?.length || 0) +

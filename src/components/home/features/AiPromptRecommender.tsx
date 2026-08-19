@@ -42,14 +42,17 @@ function formatPrice(amount: number | null, currency: string | null): string | n
 export default function AiPromptRecommender() {
   const [prompt, setPrompt] = useState("");
 
-  const { data: profilesData } = useGetMemberProfilesQuery();
+  const { data: profilesData, isLoading: isLoadingProfiles } =
+    useGetMemberProfilesQuery();
   const [createSession, { data: session, isLoading, error }] =
     useCreateRecommendationSessionMutation();
 
-  const activeProfiles = useMemo(
-    () => (profilesData?.contents ?? []).filter((p) => p.isActive),
-    [profilesData],
-  );
+  const activeProfiles = useMemo(() => {
+    const list = Array.isArray(profilesData)
+      ? profilesData
+      : profilesData?.contents ?? [];
+    return list.filter((p) => p.isActive !== false);
+  }, [profilesData]);
 
   const canRecommend = activeProfiles.length > 0;
   const items: RecommendationItem[] = session?.items ?? [];
@@ -79,9 +82,19 @@ export default function AiPromptRecommender() {
 
   return (
     <div className="border-t border-gray-200 bg-white/70 px-4 py-4">
-      <div className="mb-2 flex items-center gap-2 text-[15px] font-semibold text-primary-900">
-        <Sparkles className="h-4 w-4 text-secondary-500" />
-        ប្រាប់ AI នូវលក្ខខណ្ឌរបស់អ្នក (Tell the AI what you want)
+      <div className="mb-2 flex items-center justify-between gap-2 text-[15px] font-semibold text-primary-900">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-secondary-500" />
+          <span>ប្រាប់ AI នូវលក្ខខណ្ឌរបស់អ្នក (Tell the AI what you want)</span>
+        </div>
+
+        {activeProfiles.length > 0 && (
+          <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[12px] font-medium text-emerald-700">
+            {activeProfiles.length > 1
+              ? `គ្រួសារ (${activeProfiles.length} នាក់)`
+              : activeProfiles[0]?.profileName || "ប្រវត្តិរូបផ្ទាល់ខ្លួន"}
+          </span>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
@@ -109,7 +122,7 @@ export default function AiPromptRecommender() {
         </button>
       </form>
 
-      {!canRecommend && (
+      {!canRecommend && !isLoadingProfiles && (
         <p className="mt-2 text-[13px] text-amber-600">
           សូមចូលគណនី និងបង្កើតប្រវត្តិរូប ដើម្បីទទួលការណែនាំ AI។
         </p>
