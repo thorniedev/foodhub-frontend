@@ -403,17 +403,34 @@ export default function GroupRecommendation({
     try {
       setSessionError(null);
 
-      const created = await createMeetup({
-        createdByUserId: finalUserId,
-        title: groupName.trim() || "FoodHub Group",
-        votingMethod: "SINGLE_PICK",
-        searchRadiusKm: filters.radiusKm,
-        timezone: getClientTimezone(),
-        expiresAt: buildMeetupExpiry(),
-        meetingPointLat: meetingPoint?.latitude ?? null,
-        meetingPointLng: meetingPoint?.longitude ?? null,
-        candidateStoreUuids: candidateStores.map((s) => s.uuid),
-      }).unwrap();
+      const groupTitle = groupName.trim() || "FoodHub Group";
+      let created;
+      try {
+        created = await createMeetup({
+          createdByUserId: finalUserId,
+          title: groupTitle,
+          votingMethod: "SINGLE_PICK",
+          searchRadiusKm: filters.radiusKm,
+          timezone: getClientTimezone(),
+          expiresAt: buildMeetupExpiry(),
+          meetingPointLat: meetingPoint?.latitude ?? null,
+          meetingPointLng: meetingPoint?.longitude ?? null,
+          candidateStoreUuids: candidateStores.map((s) => s.uuid),
+        }).unwrap();
+      } catch {
+        // If conflict occurs, retry with a timestamp suffix
+        created = await createMeetup({
+          createdByUserId: finalUserId,
+          title: `${groupTitle} (${Date.now().toString().slice(-4)})`,
+          votingMethod: "SINGLE_PICK",
+          searchRadiusKm: filters.radiusKm,
+          timezone: getClientTimezone(),
+          expiresAt: buildMeetupExpiry(),
+          meetingPointLat: meetingPoint?.latitude ?? null,
+          meetingPointLng: meetingPoint?.longitude ?? null,
+          candidateStoreUuids: candidateStores.map((s) => s.uuid),
+        }).unwrap();
+      }
 
       if (!created.uuid) {
         throw new Error("Meetup created but no UUID was returned.");
