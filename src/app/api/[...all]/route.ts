@@ -279,9 +279,11 @@ async function forwardRequest(
   const isAiOrHeavyRoute =
     backendPath.startsWith("recommendations") ||
     backendPath.startsWith("discovery") ||
-    backendPath.startsWith("search");
+    backendPath.startsWith("search") ||
+    backendPath.includes("/detail") ||
+    backendPath.startsWith("catalog");
 
-  const timeoutMs = isAiOrHeavyRoute ? 60_000 : 30_000;
+  const timeoutMs = isAiOrHeavyRoute ? 90_000 : 45_000;
 
   const canHaveBody = request.method !== "GET" && request.method !== "HEAD";
   const requestBody = canHaveBody ? await request.arrayBuffer() : undefined;

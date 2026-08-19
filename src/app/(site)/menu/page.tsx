@@ -2002,22 +2002,54 @@ function cleanKhmerLabel(label: string): string {
   const apiCatalogFoods = useMemo(() => {
     if (discoveryItems.length > 0) {
       return discoveryItems.map((item) => {
-        const catalogItem: CatalogMenuItem & { safetyStatus?: SafetyStatusType; safetyReasonCodes?: string[] } = {
+        const matchingCatalogItem = menuItems.find(
+          (m) => m.uuid === item.menuItemUuid,
+        );
+
+        const thumbnail =
+          item.imageUrl ||
+          matchingCatalogItem?.thumbnail ||
+          (matchingCatalogItem?.gallery && matchingCatalogItem.gallery[0]) ||
+          (item.menuItemUuid
+            ? `/api/v1/catalog/menu-items/${item.menuItemUuid}/images/1`
+            : null);
+
+        const catalogItem: CatalogMenuItem & {
+          safetyStatus?: SafetyStatusType;
+          safetyReasonCodes?: string[];
+        } = {
           uuid: item.menuItemUuid,
-          legacyId: 0,
-          name: item.name,
-          localName: item.food?.localName || item.name,
-          description: item.description || null,
-          localDescription: null,
-          thumbnail: item.imageUrl || null,
-          gallery: item.imageUrl ? [item.imageUrl] : [],
-          price: item.price,
-          currencyCode: item.currencyCode || "USD",
-          preparationTimeMinutes: item.food?.defaultSpiceLevel || null,
-          availabilityStatus: (item.availabilityStatus as any) || "AVAILABLE",
-          isFeatured: false,
+          legacyId: matchingCatalogItem?.legacyId ?? 0,
+          name: item.name || matchingCatalogItem?.name || "",
+          localName:
+            item.food?.localName ||
+            matchingCatalogItem?.localName ||
+            item.name,
+          description:
+            item.description || matchingCatalogItem?.description || null,
+          localDescription: matchingCatalogItem?.localDescription || null,
+          thumbnail: thumbnail,
+          gallery: matchingCatalogItem?.gallery?.length
+            ? matchingCatalogItem.gallery
+            : item.imageUrl
+              ? [item.imageUrl]
+              : thumbnail
+                ? [thumbnail]
+                : [],
+          price: item.price ?? matchingCatalogItem?.price ?? 0,
+          currencyCode:
+            item.currencyCode || matchingCatalogItem?.currencyCode || "USD",
+          preparationTimeMinutes:
+            matchingCatalogItem?.preparationTimeMinutes ??
+            item.food?.defaultSpiceLevel ??
+            null,
+          availabilityStatus:
+            (item.availabilityStatus as any) ||
+            matchingCatalogItem?.availabilityStatus ||
+            "AVAILABLE",
+          isFeatured: matchingCatalogItem?.isFeatured ?? false,
           source: "DISCOVERY",
-          store: {
+          store: matchingCatalogItem?.store || {
             uuid: item.store?.uuid || "",
             name: item.store?.name || "Store",
             localName: item.store?.name || "Store",
@@ -2033,8 +2065,10 @@ function cleanKhmerLabel(label: string): string {
             averageRating: item.store?.averageRating || 0,
             totalReviews: 0,
           },
-          distanceKm: item.distanceMeters ? item.distanceMeters / 1000 : null,
-          food: {
+          distanceKm: item.distanceMeters
+            ? item.distanceMeters / 1000
+            : (matchingCatalogItem?.distanceKm ?? null),
+          food: matchingCatalogItem?.food || {
             uuid: item.menuItemUuid,
             canonicalName: item.food?.canonicalName || item.name,
             category: { code: "", name: "" },
@@ -2047,14 +2081,22 @@ function cleanKhmerLabel(label: string): string {
             events: [],
             suitableWeather: [],
           },
-          allergenDeclarations: [],
-          ingredients: [],
-          beveragePairings: [],
-          nutrition: { calories: 0, fatGrams: 0, carbsGrams: 0, proteinGrams: 0 },
-          recommendation: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          origin: {
+          allergenDeclarations:
+            matchingCatalogItem?.allergenDeclarations || [],
+          ingredients: matchingCatalogItem?.ingredients || [],
+          beveragePairings: matchingCatalogItem?.beveragePairings || [],
+          nutrition: matchingCatalogItem?.nutrition || {
+            calories: 0,
+            fatGrams: 0,
+            carbsGrams: 0,
+            proteinGrams: 0,
+          },
+          recommendation: matchingCatalogItem?.recommendation || null,
+          createdAt:
+            matchingCatalogItem?.createdAt || new Date().toISOString(),
+          updatedAt:
+            matchingCatalogItem?.updatedAt || new Date().toISOString(),
+          origin: matchingCatalogItem?.origin || {
             countryCode: "KH",
             countryName: "Cambodia",
             countryLocalName: "កម្ពុជា",
@@ -2063,7 +2105,7 @@ function cleanKhmerLabel(label: string): string {
             provinceLocalName: null,
             isTraditional: false,
           },
-          filterOption: {
+          filterOption: matchingCatalogItem?.filterOption || {
             seasons: [],
             events: [],
             provincePopularity: [],
@@ -2076,7 +2118,7 @@ function cleanKhmerLabel(label: string): string {
       });
     }
     return [];
-  }, [discoveryItems]);
+  }, [discoveryItems, menuItems]);
 
   const apiCategoryOptions: FilterOption[] = useMemo(
     () => {

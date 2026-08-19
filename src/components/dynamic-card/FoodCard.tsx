@@ -73,8 +73,13 @@ function cleanKhmerLabel(label: string): string {
 export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: FoodCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
+  const effectiveThumbnail =
+    food.thumbnail ||
+    (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
+    (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
+
   const [thumbnailUrl, setThumbnailUrl] = useState<string>(
-    toFrontendApiAssetUrl(food.thumbnail),
+    toFrontendApiAssetUrl(effectiveThumbnail),
   );
 
   /* =======================================================
@@ -92,8 +97,13 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
   ======================================================= */
 
   useEffect(() => {
-    setThumbnailUrl(toFrontendApiAssetUrl(food.thumbnail));
-  }, [food.thumbnail]);
+    const nextThumbnail =
+      food.thumbnail ||
+      (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
+      (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
+
+    setThumbnailUrl(toFrontendApiAssetUrl(nextThumbnail));
+  }, [food.thumbnail, food.gallery, food.uuid]);
 
   /* =======================================================
      FAVORITE TOGGLE
@@ -193,6 +203,11 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
             alt={displayName}
             width={485}
             height={370}
+            onError={() => {
+              if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {
+                setThumbnailUrl(DEFAULT_FOOD_IMAGE);
+              }
+            }}
             className="
               h-[190px]
               w-full

@@ -9,6 +9,8 @@ import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useGetStoresQuery } from "@/app/store/locationApi";
 import type { MenuItemHit, StoreHit } from "@/types/search";
 
+import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
+
 interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -98,21 +100,14 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
 
   const parsedDiscoveryMenuItems = useMemo(() => {
     return discoveryItems.map((item: any) => {
-      let image = item.imageUrl || item.thumbnail;
-      if (image && typeof image === "string") {
-        if (image.startsWith("/api/v1/media/")) {
-          const mediaUuid = image.replace("/api/v1/media/", "");
-          image = `/api/media/${mediaUuid}/file`;
-        } else if (!image.startsWith("http") && !image.startsWith("/api/")) {
-          image = `/api/media/${encodeURIComponent(image)}/file`;
-        }
-      }
+      const rawImage = item.imageUrl || item.thumbnail;
+      const imageUrl = rawImage ? toFrontendApiAssetUrl(rawImage) : undefined;
       return {
         uuid: item.menuItemUuid || item.uuid,
         name: item.name || item.food?.localName || item.food?.canonicalName,
         storeName: item.store?.name || "Store",
         price: item.price,
-        imageUrl: image,
+        imageUrl,
       };
     });
   }, [discoveryItems]);
@@ -140,7 +135,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
         name: item.localName || item.name || item.food?.canonicalName || "Menu Item",
         storeName: item.store?.name || "Store",
         price: item.price,
-        imageUrl: item.thumbnail ? `/api/media/${encodeURIComponent(item.thumbnail)}/file` : undefined,
+        imageUrl: item.thumbnail ? toFrontendApiAssetUrl(item.thumbnail) : undefined,
       }));
   }, [debouncedQuery, catalogMenuItems]);
 
@@ -161,7 +156,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
         storeName: store.storeName || store.name,
         city: store.city || undefined,
         averageRating: store.averageRating,
-        logoUrl: store.logoMediaUuid ? `/api/media/${encodeURIComponent(store.logoMediaUuid)}/file` : undefined,
+        logoUrl: store.logoMediaUuid ? toFrontendApiAssetUrl(store.logoMediaUuid) : undefined,
       }));
   }, [debouncedQuery, catalogStoresData]);
 
@@ -211,7 +206,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     }
 
     onClose();
-    router.push(`/menu/${itemUuid}`);
+    router.push(`/menu-items/${itemUuid}`);
   };
 
   const renderPriceLevel = (level?: number) => {

@@ -1850,7 +1850,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const {
-    data: food,
+    data: foodDetail,
     isLoading,
     isFetching,
     isError,
@@ -1858,6 +1858,12 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   } = useGetMenuItemByUuidQuery(uuid);
 
   const { data: allMenuItems = [] } = useGetMenuItemsQuery();
+
+  const fallbackFood = useMemo(() => {
+    return allMenuItems.find((item) => item.uuid === uuid) ?? null;
+  }, [allMenuItems, uuid]);
+
+  const food = foodDetail ?? fallbackFood;
 
   const relatedFoods = useMemo(() => {
     if (!food) {
@@ -1921,11 +1927,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     setActiveImage(0);
   }, [uuid]);
 
-  if (isLoading || isFetching) {
+  if ((isLoading || isFetching) && !food) {
     return <LoadingPage />;
   }
 
-  if (isError) {
+  if (isError && !food) {
     return <ErrorPage onRetry={refetch} />;
   }
 
