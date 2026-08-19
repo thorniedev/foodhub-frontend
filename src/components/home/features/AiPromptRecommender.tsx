@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Sparkles, Send, Loader2 } from "lucide-react";
+import { Sparkles, Send, Loader2, ShieldCheck } from "lucide-react";
 
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
@@ -31,6 +31,30 @@ function formatPrice(amount: number | null, currency: string | null): string | n
   } catch {
     return `${amount} ${currency ?? ""}`.trim();
   }
+}
+
+/** Match-score pill color: green >=85%, teal >=70%, else neutral. */
+function matchClasses(match: number | null): string {
+  if (match == null) return "bg-gray-100 text-gray-500";
+  if (match >= 85) return "bg-emerald-100 text-emerald-700";
+  if (match >= 70) return "bg-teal-100 text-teal-700";
+  return "bg-gray-100 text-gray-600";
+}
+
+/** Hover tooltip text summarizing the per-strategy score breakdown. */
+function breakdownTitle(breakdown: Record<string, number> | null): string | undefined {
+  if (!breakdown) return undefined;
+  const labels: Record<string, string> = {
+    AI_JUDGMENT: "AI",
+    CONTENT_BASED: "Taste",
+    BEHAVIOR: "Behavior",
+    POPULARITY: "Popularity",
+    TRENDING: "Trending",
+  };
+  const parts = Object.entries(breakdown).map(
+    ([key, value]) => `${labels[key] ?? key} ${Math.round(value * 100)}%`,
+  );
+  return parts.length ? parts.join(" · ") : undefined;
 }
 
 /**
@@ -138,8 +162,15 @@ export default function AiPromptRecommender() {
         </p>
       )}
 
+      {items.length > 0 && session?.mode === "GROUP" && (
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[12px] font-semibold text-emerald-700">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          សុវត្ថិភាពសម្រាប់សមាជិកទាំង {activeProfiles.length} នាក់ (safe for all members)
+        </p>
+      )}
+
       {items.length > 0 && (
-        <ul className="mt-3 max-h-[220px] space-y-2 overflow-y-auto pr-1">
+        <ul className="mt-3 max-h-[240px] space-y-2 overflow-y-auto pr-1">
           {items.map((item) => {
             const price = formatPrice(item.priceSnapshot, item.currencyCode);
             const match =
@@ -147,9 +178,14 @@ export default function AiPromptRecommender() {
             return (
               <li
                 key={item.uuid}
-                className="flex items-start justify-between gap-3 rounded-xl border border-gray-100 bg-white p-3"
+                className="flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-3"
               >
-                <div className="min-w-0">
+                {item.rankPosition != null && (
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-800 text-[12px] font-bold text-white">
+                    {item.rankPosition}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-gray-900">
                     {item.menuItemName ?? "Recommended dish"}
                   </p>
@@ -165,13 +201,16 @@ export default function AiPromptRecommender() {
                   )}
                 </div>
                 <div className="shrink-0 text-right">
-                  {price && (
-                    <p className="font-bold text-gray-900">{price}</p>
-                  )}
+                  {price && <p className="font-bold text-gray-900">{price}</p>}
                   {match != null && (
-                    <p className="text-[12px] font-semibold text-primary-700">
+                    <span
+                      title={breakdownTitle(item.scoreBreakdown)}
+                      className={`mt-1 inline-block cursor-default rounded-full px-2 py-0.5 text-[12px] font-semibold ${matchClasses(
+                        match,
+                      )}`}
+                    >
                       {match}% match
-                    </p>
+                    </span>
                   )}
                 </div>
               </li>

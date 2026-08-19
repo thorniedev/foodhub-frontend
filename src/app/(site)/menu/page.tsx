@@ -1771,13 +1771,21 @@ export default function FoodPage() {
     });
   }, [customerSearchRequest, searchInput, executeDiscoverySearch]);
 
-  const discoveryItems = useMemo(() => {
+  const discoveryItems = useMemo<MenuItemDiscoveryResponse[]>(() => {
     if (!discoveryResult) return [];
-    if (Array.isArray(discoveryResult)) return discoveryResult;
-    if ("content" in discoveryResult && Array.isArray((discoveryResult as any).content)) {
-      return (discoveryResult as any).content as MenuItemDiscoveryResponse[];
+    if (Array.isArray(discoveryResult)) {
+      return discoveryResult as MenuItemDiscoveryResponse[];
     }
-    return [];
+    const record = discoveryResult as unknown as Record<string, unknown>;
+    const container =
+      (record.payload as Record<string, unknown> | undefined) ?? record;
+    // Backend page envelope uses `contents` (plural); tolerate content/items too.
+    const list =
+      (Array.isArray(container.contents) && container.contents) ||
+      (Array.isArray(container.content) && container.content) ||
+      (Array.isArray(container.items) && container.items) ||
+      [];
+    return list as MenuItemDiscoveryResponse[];
   }, [discoveryResult]);
 
   const {

@@ -262,7 +262,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
 
   return (
     <Link
-      href={`/food/${food.uuid}`}
+      href={`/menu-items/${food.uuid}`}
       draggable={false}
       className="flex h-full w-full flex-col gap-3 rounded-[24px] border border-gray-200 bg-white p-2.5 shadow-sm"
     >
@@ -329,11 +329,6 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
         </div>
 
         <div className="flex items-center gap-4 text-base">
-          <div className="flex items-center gap-1.5 text-accent-400">
-            <FaStar />
-            <span>{displayedRating}</span>
-          </div>
-
           <div className="flex items-center gap-1.5 text-primary-400">
             <IoMdTime />
             <span>
@@ -363,22 +358,6 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
             {dietaryTypes.length > 2 && (
               <span className="shrink-0 whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-base text-gray-600">
                 +{dietaryTypes.length - 2}
-              </span>
-            )}
-          </div>
-        )}
-
-        {dietaryTypes.length === 0 && (
-          <div className="flex items-center gap-2 overflow-hidden">
-            {category && (
-              <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-base text-white">
-                {category.name}
-              </span>
-            )}
-
-            {cuisine && (
-              <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-base text-white">
-                {cuisine.name}
               </span>
             )}
           </div>

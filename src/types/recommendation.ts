@@ -46,6 +46,8 @@ export interface RecommendationItem {
   /** Backend serializes this as a JSON array of stable codes; narrow at use. */
   reasonCodes: string[] | null;
   reasonText: string | null;
+  /** Per-strategy contributions, e.g. { AI_JUDGMENT: 0.9, CONTENT_BASED: 0.8 }. */
+  scoreBreakdown: Record<string, number> | null;
   isExploration: boolean;
 }
 
