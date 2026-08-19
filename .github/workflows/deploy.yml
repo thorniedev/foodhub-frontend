@@ -3,7 +3,7 @@ name: Fast Vercel Deploy
 on:
   push:
     branches:
-      - thornie
+      - main
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
