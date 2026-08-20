@@ -14,28 +14,13 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const banners = [
-  {
-    id: 1,
-    image: "/banner/food1.png",
-    alt: "FoodHub promotion 1",
-  },
-  {
-    id: 2,
-    image: "/banner/food1.png",
-    alt: "FoodHub promotion 2",
-  },
-  {
-    id: 3,
-    image: "/banner/food3.png",
-    alt: "FoodHub promotion 3",
-  },
-  {
-    id: 4,
-    image: "/banner/food3.png",
-    alt: "FoodHub promotion 3",
-  },
-];
+export interface HeroBannerSlide {
+  id: string;
+  image: string;
+  alt: string;
+  title: string;
+  description?: string | null;
+}
 
 const SLIDE_TIME = 5000;
 
@@ -76,7 +61,7 @@ function Slide({
   isPriority,
   reduceMotion,
 }: {
-  banner: (typeof banners)[number];
+  banner: HeroBannerSlide;
   index: number;
   x: MotionValue<number>;
   width: number;
@@ -174,11 +159,37 @@ function Slide({
           "
         />
       )}
+
+      {/* text overlay, readable over the bottom scrim added by the parent */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-x-0
+          bottom-0
+          z-20
+          p-5
+          md:p-10
+        "
+      >
+        <p className="max-w-2xl text-xl font-bold text-white drop-shadow-md md:text-4xl">
+          {banner.title}
+        </p>
+        {banner.description && (
+          <p className="mt-2 max-w-xl text-sm text-white/90 drop-shadow-md md:text-lg">
+            {banner.description}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
-export default function BannerCarousel() {
+export interface BannerCarouselProps {
+  banners: HeroBannerSlide[];
+}
+
+export default function BannerCarousel({ banners }: BannerCarouselProps) {
   const reduceMotion = useReducedMotion();
 
   const n = banners.length;
@@ -189,7 +200,10 @@ export default function BannerCarousel() {
    * the copies are pixel-identical we can hop between them without
    * anyone seeing it. No "rewind to slide 1" jump.
    */
-  const slides = useMemo(() => [...banners, ...banners, ...banners], []);
+  const slides = useMemo(
+    () => [...banners, ...banners, ...banners],
+    [banners],
+  );
 
   const containerRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(0);
@@ -373,6 +387,14 @@ export default function BannerCarousel() {
       step(-1);
     }
   };
+
+  // The wrapping Server Component hides this section entirely on an empty
+  // published-MAIN-banner response; this guard only protects against the
+  // n=0 modulo math above being reached if this component is ever reused
+  // without that guarantee.
+  if (n === 0) {
+    return null;
+  }
 
   return (
     <section
