@@ -26,13 +26,10 @@ const CATEGORY_PATH: Record<BannerCategory, string> = {
 const CACHE_REVALIDATE_SECONDS = 60;
 
 function getBackendApiBaseUrl(): string {
-  const configured = process.env.BACKEND_API_URL;
-
-  if (!configured || !configured.trim()) {
-    throw new Error(
-      "BACKEND_API_URL is not configured. Public banner sections cannot load without it.",
-    );
-  }
+  const configured =
+    process.env.BACKEND_API_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://api.mhoubahar.store";
 
   const trimmed = configured.trim().replace(/\/+$/, "");
   return /\/api\/v1$/i.test(trimmed) ? trimmed : `${trimmed}/api/v1`;
@@ -71,17 +68,23 @@ async function fetchPublicBanners(
   const url = `${getBackendApiBaseUrl()}/banners/public/${CATEGORY_PATH[category]}`;
 
   let response: Response;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
     response = await fetch(url, {
+      signal: controller.signal,
       next: {
         revalidate: CACHE_REVALIDATE_SECONDS,
         tags: [`banners:${category.toLowerCase()}`],
       },
     });
-  } catch {
+  } catch (error) {
     throw new BannerApiError(
       `Could not reach the FoodHub backend for ${category} banners`,
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!response.ok) {

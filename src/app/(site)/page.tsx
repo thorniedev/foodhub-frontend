@@ -17,6 +17,8 @@ import {
  * homepage content. Each Banner section streams in behind its own Suspense
  * boundary so a slow/failed category never blocks the rest of the page.
  */
+export const dynamic = "force-dynamic";
+
 export default function Page() {
   return (
     <>
