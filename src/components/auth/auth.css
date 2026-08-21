@@ -1,0 +1,679 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700;800;900&display=swap");
+
+:root {
+  --kc-text: #1f2937;
+  --kc-text-strong: #111827;
+  --kc-panel-bg: #f4f0e8;
+  --kc-card-bg: #ffffff;
+  --kc-border: #dcd5c7;
+  --kc-green-brand: #84cc16;
+  --kc-green-dark: #65a30d;
+  --kc-green-darker: #4d7c0f;
+  --kc-green-50: #f7fee7;
+  --kc-orange-1: #ec9a35;
+  --kc-orange-2: #e0821c;
+  --kc-band: rgba(0, 0, 0, 0.6);
+  --kc-gray-placeholder: #a39c8d;
+  --kc-gray-500: #6b6559;
+  --kc-input-bg: #e9e3d7;
+  --kc-input-bg-focus: #ffffff;
+  --kc-radius-input: 14px;
+  --kc-radius-btn: 12px;
+  --kc-radius-lg: 20px;
+  --kc-bg: #f4f0e8;
+}
+
+html.kc-dark,
+html.dark,
+.kc-dark {
+  --kc-text: #f9fafb;
+  --kc-text-strong: #ffffff;
+  --kc-panel-bg: #111827;
+  --kc-card-bg: #1f2937;
+  --kc-border: #374151;
+  --kc-green-brand: #a3e635;
+  --kc-green-dark: #84cc16;
+  --kc-green-darker: #65a30d;
+  --kc-green-50: #1a2e05;
+  --kc-orange-1: #d98429;
+  --kc-orange-2: #b96912;
+  --kc-band: rgba(0, 0, 0, 0.68);
+  --kc-gray-placeholder: #9ca3af;
+  --kc-gray-500: #9ca3af;
+  --kc-input-bg: #1f2937;
+  --kc-input-bg-focus: #111827;
+  --kc-bg: #111827;
+}
+
+.kc-auth-root {
+  font-family: "Noto Sans Khmer", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--kc-bg);
+  color: var(--kc-text);
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ============================================================= *
+ * Split Layout
+ * ============================================================= */
+.kc-split-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  background: var(--kc-panel-bg);
+}
+
+/* ============================================================= *
+ * Left Visual Hero — solid warm orange panel
+ * ============================================================= */
+.kc-visual-hero {
+  flex: 1.1;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(155deg, var(--kc-orange-1) 0%, var(--kc-orange-2) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* Brand logo, top-center of the orange panel */
+.kc-hero-logo {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kc-hero-logo img {
+  height: 150px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  /* Layered dark halo keeps the orange half of the wordmark legible on orange */
+  filter:
+    drop-shadow(0 0 1.5px rgba(20, 12, 0, 0.55))
+    drop-shadow(0 1px 1px rgba(20, 12, 0, 0.45))
+    drop-shadow(0 8px 16px rgba(60, 30, 0, 0.3));
+}
+
+/* Mobile-only logo shown above the form when the hero is hidden */
+.kc-form-logo-mobile {
+  display: none;
+}
+
+/* Angular zig-zag lightning bolts scattered on the orange */
+.kc-bolt {
+  position: absolute;
+  width: 22px;
+  height: auto;
+  color: #14120f;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.kc-bolt-1 { top: 11%; left: 6%; transform: rotate(-10deg); }
+.kc-bolt-2 { top: 19%; left: 63%; width: 17px; transform: rotate(14deg); }
+.kc-bolt-3 { top: 50%; left: 71%; width: 19px; transform: rotate(-6deg); }
+.kc-bolt-4 { bottom: 13%; left: 45%; transform: rotate(10deg); }
+.kc-bolt-5 { bottom: 6%; left: 9%; width: 18px; transform: rotate(-16deg); }
+
+/* Faint food line-art overlay drawn in a darker orange */
+.kc-hero-lineart {
+  position: absolute;
+  top: 22%;
+  left: 40%;
+  width: 360px;
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  color: #b7590f;
+  opacity: 0.5;
+}
+
+.kc-hero-lineart svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Dark vertical band with stacked salad imagery */
+.kc-food-showcase-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 46px;
+  width: 210px;
+  background: var(--kc-band);
+  z-index: 2;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.16);
+}
+
+.kc-salad-dish {
+  position: absolute;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
+  transition: transform 0.3s ease;
+}
+
+.kc-salad-dish:hover {
+  transform: scale(1.03);
+}
+
+.kc-salad-dish img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kc-dish-top {
+  width: 300px;
+  height: 300px;
+  top: 120px;
+  left: -70px;
+  border: 6px solid #ffffff;
+  z-index: 5;
+}
+
+.kc-dish-middle {
+  width: 210px;
+  height: 210px;
+  top: 400px;
+  left: 150px;
+  border: 5px solid #ffffff;
+  z-index: 4;
+}
+
+.kc-dish-bottom {
+  width: 170px;
+  height: 170px;
+  top: 590px;
+  left: 10px;
+  border: 5px solid #ffffff;
+  z-index: 3;
+}
+
+/* ============================================================= *
+ * Right Form Panel — cream, with a curved seam biting into orange
+ * ============================================================= */
+.kc-form-panel {
+  flex: 0.9;
+  min-width: 460px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 56px;
+  position: relative;
+  background: var(--kc-panel-bg);
+}
+
+/* Organic curved seam: a cream lens bulging left into the orange */
+.kc-form-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(100% - 2px);
+  width: 90px;
+  background: var(--kc-panel-bg);
+  border-top-left-radius: 100% 42%;
+  border-bottom-left-radius: 100% 58%;
+  z-index: 2;
+}
+
+/* Corner leaf watermarks */
+.kc-watermark-top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.12;
+}
+
+.kc-watermark-bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.14;
+}
+
+/* Top controls (theme + language) */
+.kc-top-controls {
+  position: absolute;
+  top: 24px;
+  right: 36px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  z-index: 10;
+}
+
+.kc-lang-switcher {
+  display: flex;
+  gap: 12px;
+}
+
+.kc-lang-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--kc-gray-500);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.kc-lang-link.active,
+.kc-lang-link:hover {
+  font-weight: 700;
+  color: var(--kc-green-dark);
+}
+
+.kc-theme-toggle {
+  background: transparent;
+  border: none;
+  color: var(--kc-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  opacity: 0.75;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.kc-theme-toggle:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+html.kc-dark .kc-theme-toggle:hover,
+html.dark .kc-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Form wrapper */
+.kc-form-wrapper {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  z-index: 3;
+}
+
+.kc-card {
+  width: 100%;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* ============================================================= *
+ * Headings
+ * ============================================================= */
+.kc-login-header-group {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.kc-title {
+  margin: 0 0 8px;
+  font-size: 35px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+  color: var(--kc-text-strong);
+}
+
+.kc-subtitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--kc-gray-500);
+}
+
+/* ============================================================= *
+ * Form controls
+ * ============================================================= */
+.kc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.kc-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.kc-field-row {
+  display: flex;
+  gap: 14px;
+}
+
+.kc-field-row .kc-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.kc-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--kc-gray-500);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.kc-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.kc-input,
+.kc-pill-input {
+  width: 100%;
+  padding: 17px 22px;
+  background: var(--kc-input-bg);
+  border: 1.5px solid transparent;
+  border-radius: var(--kc-radius-input);
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--kc-text);
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.kc-input::placeholder,
+.kc-pill-input::placeholder {
+  color: var(--kc-gray-placeholder);
+}
+
+.kc-input:focus,
+.kc-pill-input:focus {
+  background: var(--kc-input-bg-focus);
+  border-color: var(--kc-green-brand);
+  box-shadow: 0 0 0 4px rgba(132, 204, 22, 0.16);
+}
+
+.kc-input-wrap .kc-input,
+.kc-input-wrap .kc-pill-input {
+  padding-right: 48px;
+}
+
+.kc-input-icon-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--kc-gray-500);
+  transition: color 0.2s;
+}
+
+.kc-input-icon-btn:hover {
+  color: var(--kc-text);
+}
+
+/* Primary button — solid green rounded rectangle */
+.kc-btn-primary,
+.kc-pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 17px 28px;
+  border: none;
+  border-radius: var(--kc-radius-btn);
+  background: var(--kc-green-brand);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(132, 204, 22, 0.32);
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  text-decoration: none;
+}
+
+.kc-btn-primary:hover:not(:disabled),
+.kc-pill-btn:hover:not(:disabled) {
+  background: var(--kc-green-dark);
+  box-shadow: 0 8px 20px rgba(132, 204, 22, 0.42);
+  transform: translateY(-1px);
+}
+
+.kc-btn-primary:disabled,
+.kc-pill-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================= *
+ * Divider
+ * ============================================================= */
+.kc-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0 20px;
+  color: var(--kc-green-dark);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kc-divider::before,
+.kc-divider::after {
+  content: "";
+  flex: 1;
+  height: 1.5px;
+  background: var(--kc-green-brand);
+  opacity: 0.4;
+}
+
+/* ============================================================= *
+ * Social buttons — white bordered rounded rectangles
+ * ============================================================= */
+.kc-social-row {
+  display: flex;
+  gap: 14px;
+}
+
+.kc-pill-social-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border: 1.5px solid var(--kc-border);
+  border-radius: var(--kc-radius-btn);
+  text-decoration: none;
+  color: var(--kc-text);
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--kc-card-bg);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.kc-pill-social-btn:hover {
+  border-color: var(--kc-green-brand);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================= *
+ * Footer + links
+ * ============================================================= */
+.kc-footer-text {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 15px;
+  color: var(--kc-gray-500);
+}
+
+.kc-link {
+  color: var(--kc-green-dark);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.kc-link:hover {
+  color: var(--kc-green-darker);
+  text-decoration: underline;
+}
+
+.kc-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 14px;
+  color: var(--kc-gray-500);
+  line-height: 1.4;
+}
+
+.kc-checkbox-row input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--kc-green-brand);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ============================================================= *
+ * Alerts + errors
+ * ============================================================= */
+.kc-alert {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.kc-alert-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.kc-dark .kc-alert-error,
+html.dark .kc-alert-error {
+  background: rgba(185, 28, 28, 0.15);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.kc-alert-success {
+  background: var(--kc-green-50);
+  color: var(--kc-green-dark);
+  border: 1px solid #bbf7d0;
+}
+
+.kc-dark .kc-alert-success,
+html.dark .kc-alert-success {
+  background: rgba(132, 204, 22, 0.15);
+  color: #a3e635;
+  border-color: rgba(163, 230, 53, 0.3);
+}
+
+.kc-alert-warning {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.kc-alert-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.kc-field-error {
+  font-size: 13px;
+  color: #dc2626;
+  margin-top: 6px;
+  padding-left: 6px;
+  font-weight: 500;
+  display: block;
+}
+
+.kc-dark .kc-field-error,
+html.dark .kc-field-error {
+  color: #f87171;
+}
+
+/* ============================================================= *
+ * Responsive
+ * ============================================================= */
+@media (max-width: 960px) {
+  .kc-visual-hero {
+    display: none;
+  }
+
+  .kc-form-panel {
+    flex: 1;
+    min-width: 100%;
+    padding: 32px 24px;
+  }
+
+  .kc-form-panel::before {
+    display: none;
+  }
+
+  /* Widen the form to fill the space once the hero is gone */
+  .kc-form-wrapper {
+    max-width: 600px;
+  }
+
+  /* Bring the brand logo to the top-center of the form on mobile */
+  .kc-form-logo-mobile {
+    display: flex;
+    justify-content: center;
+    margin: -16px 0 8px;
+  }
+
+  .kc-form-logo-mobile img {
+    height: 140px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+/* Trim the title on the narrowest phones so it wraps cleanly */
+@media (max-width: 420px) {
+  .kc-title {
+    font-size: 30px;
+  }
+
+  .kc-field-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

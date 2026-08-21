@@ -1,10 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Sparkles, Send, Loader2, ShieldCheck } from "lucide-react";
 
-import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
-import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
 import type { RecommendationItem } from "@/types/recommendation";
 
 const MAX_PROMPT = 200;
@@ -58,52 +55,37 @@ function breakdownTitle(breakdown: Record<string, number> | null): string | unde
 }
 
 /**
- * Prompt-driven AI recommendation, mounted under the swipe cards. The user's
- * free text is sent to the real recommendation API as contextData.userPrompt
- * across every owned profile (GROUP = safety intersection). Anonymous users are
- * prompted to sign in; the swipe browse above keeps working regardless.
+ * Prompt-driven AI recommendation, mounted under the swipe cards. Controlled
+ * by the parent (Model.tsx), which owns the single recommendation session
+ * shared with the swipe deck above — submitting a prompt here replaces that
+ * same session's items, so the swipe cards reflect it too instead of the two
+ * staying independent of each other.
  */
-export default function AiPromptRecommender() {
-  const [prompt, setPrompt] = useState("");
-
-  const { data: profilesData, isLoading: isLoadingProfiles } =
-    useGetMemberProfilesQuery();
-  const [createSession, { data: session, isLoading, error }] =
-    useCreateRecommendationSessionMutation();
-
-  const activeProfiles = useMemo(() => {
-    const list = Array.isArray(profilesData)
-      ? profilesData
-      : profilesData?.contents ?? [];
-    return list.filter((p) => p.isActive !== false);
-  }, [profilesData]);
-
-  const canRecommend = activeProfiles.length > 0;
-  const items: RecommendationItem[] = session?.items ?? [];
-
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!canRecommend || isLoading) return;
-
-    const trimmed = prompt.trim();
-    const profiles = activeProfiles.map((p, index) => ({
-      profileId: p.uuid,
-      isPrimary: index === 0,
-    }));
-
-    try {
-      await createSession({
-        mode: profiles.length >= 2 ? "GROUP" : "SINGLE",
-        requestSource: "USER_PROMPT",
-        requestedLimit: 12,
-        contextData: trimmed ? { userPrompt: trimmed } : undefined,
-        profiles,
-      }).unwrap();
-    } catch {
-      // surfaced via `error`
-    }
-  }
-
+export default function AiPromptRecommender({
+  prompt,
+  onPromptChange,
+  onSubmit,
+  isLoading,
+  error,
+  items,
+  canRecommend,
+  isLoadingProfiles,
+  activeProfileCount,
+  primaryProfileName,
+  sessionMode,
+}: {
+  prompt: string;
+  onPromptChange: (value: string) => void;
+  onSubmit: (event: React.FormEvent) => void;
+  isLoading: boolean;
+  error: unknown;
+  items: RecommendationItem[];
+  canRecommend: boolean;
+  isLoadingProfiles: boolean;
+  activeProfileCount: number;
+  primaryProfileName?: string;
+  sessionMode?: string;
+}) {
   return (
     <div className="border-t border-gray-200 bg-white/70 px-4 py-4">
       <div className="mb-2 flex items-center justify-between gap-2 text-[15px] font-semibold text-primary-900">
@@ -112,21 +94,21 @@ export default function AiPromptRecommender() {
           <span>ប្រាប់ AI នូវលក្ខខណ្ឌរបស់អ្នក (Tell the AI what you want)</span>
         </div>
 
-        {activeProfiles.length > 0 && (
+        {activeProfileCount > 0 && (
           <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[12px] font-medium text-emerald-700">
-            {activeProfiles.length > 1
-              ? `គ្រួសារ (${activeProfiles.length} នាក់)`
-              : activeProfiles[0]?.profileName || "ប្រវត្តិរូបផ្ទាល់ខ្លួន"}
+            {activeProfileCount > 1
+              ? `គ្រួសារ (${activeProfileCount} នាក់)`
+              : primaryProfileName || "ប្រវត្តិរូបផ្ទាល់ខ្លួន"}
           </span>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={onSubmit} className="flex gap-2">
         <input
           type="text"
           value={prompt}
           maxLength={MAX_PROMPT}
-          onChange={(e) => setPrompt(e.target.value)}
+          onChange={(e) => onPromptChange(e.target.value)}
           disabled={!canRecommend || isLoading}
           placeholder="ឧ. ម្ហូបហឹរតិច ក្រោម $5 (e.g. light spicy under $5)"
           aria-label="Describe what you want to eat"
@@ -152,20 +134,20 @@ export default function AiPromptRecommender() {
         </p>
       )}
 
-      {error && (
+      {error != null && (
         <p className="mt-2 text-[13px] text-red-600">{getErrorMessage(error)}</p>
       )}
 
-      {session && items.length === 0 && !isLoading && !error && (
+      {items.length === 0 && !isLoading && error == null && (
         <p className="mt-2 text-[13px] text-gray-500">
           គ្មានម្ហូបត្រូវនឹងលក្ខខណ្ឌសុវត្ថិភាពនៃប្រវត្តិរូបទាំងអស់ទេ។
         </p>
       )}
 
-      {items.length > 0 && session?.mode === "GROUP" && (
+      {items.length > 0 && sessionMode === "GROUP" && (
         <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[12px] font-semibold text-emerald-700">
           <ShieldCheck className="h-3.5 w-3.5" />
-          សុវត្ថិភាពសម្រាប់សមាជិកទាំង {activeProfiles.length} នាក់ (safe for all members)
+          សុវត្ថិភាពសម្រាប់សមាជិកទាំង {activeProfileCount} នាក់ (safe for all members)
         </p>
       )}
 

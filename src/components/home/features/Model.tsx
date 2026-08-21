@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useDispatch } from "react-redux";
 
 import { createPortal } from "react-dom";
 
@@ -14,13 +15,16 @@ import { MdSwipe } from "react-icons/md";
 import { RiRobot2Line } from "react-icons/ri";
 import { TbWheel } from "react-icons/tb";
 
-import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { menuApi, useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
+import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
 
 import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
 import AiPromptRecommender from "./AiPromptRecommender";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import type { AppDispatch } from "@/app/store/store";
 
 type ModalTab = "swipe" | "spin";
 
@@ -102,6 +106,106 @@ export default function Model() {
         }),
     [menuItems],
   );
+
+  // --- Real recommendation session, shared by the swipe deck and the AI
+  // prompt box below it (previously two independent features: the swipe
+  // deck always showed the full catalog regardless of what was typed here).
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { data: profilesData, isLoading: isLoadingProfiles } =
+    useGetMemberProfilesQuery();
+  const [createSession, { data: session, isLoading: isSessionLoading, error: sessionError }] =
+    useCreateRecommendationSessionMutation();
+
+  const [prompt, setPrompt] = useState("");
+  const [enrichedSwipeFoods, setEnrichedSwipeFoods] = useState<CatalogMenuItem[]>([]);
+  const hasAutoTriggeredRef = useRef(false);
+
+  const activeProfiles = useMemo(() => {
+    const list = Array.isArray(profilesData)
+      ? profilesData
+      : profilesData?.contents ?? [];
+    return list.filter((p) => p.isActive !== false);
+  }, [profilesData]);
+
+  const canRecommend = activeProfiles.length > 0;
+  const sessionItems = useMemo(() => session?.items ?? [], [session]);
+
+  const runRecommendation = (promptText?: string) => {
+    if (!canRecommend || isSessionLoading) return;
+
+    const profiles = activeProfiles.map((p, index) => ({
+      profileId: p.uuid,
+      isPrimary: index === 0,
+    }));
+
+    void createSession({
+      mode: profiles.length >= 2 ? "GROUP" : "SINGLE",
+      requestSource: promptText ? "USER_PROMPT" : "HOME_SWIPE",
+      requestedLimit: 12,
+      contextData: promptText ? { userPrompt: promptText } : undefined,
+      profiles,
+    });
+  };
+
+  const handlePromptSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    runRecommendation(prompt.trim());
+  };
+
+  // Auto-run a default (prompt-less) session the first time the modal opens,
+  // so the swipe deck starts personalized without requiring the user to type
+  // anything first.
+  useEffect(() => {
+    if (!isOpen || hasAutoTriggeredRef.current || !canRecommend) return;
+    hasAutoTriggeredRef.current = true;
+    runRecommendation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, canRecommend]);
+
+  // Enrich the ranked recommendation UUIDs with full catalog detail (image,
+  // store, price, ...) that SwipeCardTinderStyle's card UI needs but
+  // RecommendationItem does not carry. The detail endpoint accepts the
+  // session UUID and returns the same personalized ranking/reason for each.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      if (!session || sessionItems.length === 0) {
+        if (!cancelled) setEnrichedSwipeFoods([]);
+        return;
+      }
+
+      const results = await Promise.all(
+        sessionItems.map((item) =>
+          dispatch(
+            menuApi.endpoints.getMenuItemByUuid.initiate({
+              uuid: item.uuid,
+              sessionUuid: session.uuid,
+            }),
+          )
+            .unwrap()
+            .catch(() => null),
+        ),
+      );
+
+      if (cancelled) return;
+
+      setEnrichedSwipeFoods(
+        results.filter((food): food is CatalogMenuItem => food !== null),
+      );
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session, sessionItems, dispatch]);
+
+  // Personalized swipe deck when a session produced enriched results;
+  // otherwise fall back to the plain catalog browse list so swiping still
+  // works for anonymous users or while the session is still loading.
+  const swipeFoods =
+    enrichedSwipeFoods.length > 0 ? enrichedSwipeFoods : recommendedFoods;
 
   const topRecommendation = useMemo(
     () => getTopRecommendation(recommendedFoods),
@@ -247,10 +351,23 @@ export default function Model() {
       return (
         <div className="flex w-full flex-col">
           <div className="flex w-full justify-center">
-            <SwipeCardTinderStyle foods={recommendedFoods} />
+            <SwipeCardTinderStyle foods={swipeFoods} />
           </div>
-          {/* Real AI recommendation: user prompt -> /recommendations/sessions */}
-          <AiPromptRecommender />
+          {/* Same recommendation session feeds the deck above: submitting a
+              prompt here re-ranks the swipe cards too, not just this list. */}
+          <AiPromptRecommender
+            prompt={prompt}
+            onPromptChange={setPrompt}
+            onSubmit={handlePromptSubmit}
+            isLoading={isSessionLoading}
+            error={sessionError}
+            items={sessionItems}
+            canRecommend={canRecommend}
+            isLoadingProfiles={isLoadingProfiles}
+            activeProfileCount={activeProfiles.length}
+            primaryProfileName={activeProfiles[0]?.profileName}
+            sessionMode={session?.mode}
+          />
         </div>
       );
     }
