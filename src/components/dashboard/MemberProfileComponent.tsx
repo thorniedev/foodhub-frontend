@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   ArrowRight,
@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Salad,
   ShieldAlert,
+  Sparkles,
   Trash2,
   UserRound,
   UsersRound,
@@ -29,6 +30,11 @@ import {
   useGetMemberProfileByIdQuery,
   useGetMediaAccessUrlQuery,
 } from "@/app/store/memberProfileApi";
+
+import {
+  getRecommendationTargets,
+  useRecommendationProfileSelection,
+} from "@/hooks/useRecommendationProfileSelection";
 
 import type {
   MemberProfile,
@@ -174,9 +180,16 @@ function DeleteProfileDialog({
 interface ProfileCardProps {
   member: MemberProfile;
   onDelete: (member: MemberProfile) => void;
+  isIncludedInRecommendations: boolean;
+  onToggleRecommendation: (member: MemberProfile) => void;
 }
 
-function ProfileCard({ member, onDelete }: ProfileCardProps) {
+function ProfileCard({
+  member,
+  onDelete,
+  isIncludedInRecommendations,
+  onToggleRecommendation,
+}: ProfileCardProps) {
   const { data: detail } = useGetMemberProfileByIdQuery(member.uuid, {
     skip: !member.uuid,
   });
@@ -281,6 +294,41 @@ function ProfileCard({ member, onDelete }: ProfileCardProps) {
           </div>
         </div>
 
+        <button
+          type="button"
+          onClick={() => onToggleRecommendation(fullMember)}
+          disabled={!fullMember.isActive}
+          title={
+            !fullMember.isActive
+              ? "គណនីនេះមិនសកម្មទេ"
+              : isIncludedInRecommendations
+                ? "កំពុងណែនាំម្ហូបសម្រាប់គណនីនេះ"
+                : "មិនណែនាំម្ហូបសម្រាប់គណនីនេះទេ"
+          }
+          className={`mt-4 flex w-full items-center justify-between gap-2 rounded-2xl border px-4 py-3 text-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+            isIncludedInRecommendations
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-slate-200 bg-white text-slate-400 hover:border-slate-300"
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            ណែនាំម្ហូបសម្រាប់គណនីនេះ
+          </span>
+
+          <span
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
+              isIncludedInRecommendations ? "bg-emerald-500" : "bg-slate-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                isIncludedInRecommendations ? "translate-x-5" : "translate-x-0.5"
+              }`}
+            />
+          </span>
+        </button>
+
         <div className="mt-6 flex items-center gap-2.5 border-t border-slate-100 pt-5">
           <Link
             href={`/dashboard/family-profile/${fullMember.uuid}`}
@@ -371,7 +419,25 @@ export default function FamilyProfiles() {
   const [deleteMemberProfile, { isLoading: isDeleting }] =
     useDeleteMemberProfileMutation();
 
-  const members = data?.contents ?? [];
+  const members = useMemo(() => data?.contents ?? [], [data]);
+
+  // Same selection the AI recommendation dropdown reads/writes — toggling a
+  // profile here immediately shows up there too, and vice versa.
+  const { selectedUuids: recommendationSelectedUuids, toggleProfile } =
+    useRecommendationProfileSelection();
+
+  const activeMembers = useMemo(
+    () => members.filter((member) => member.isActive),
+    [members],
+  );
+
+  const recommendationTargetUuids = useMemo(() => {
+    const targets = getRecommendationTargets(
+      activeMembers,
+      recommendationSelectedUuids,
+    );
+    return new Set(targets.map((profile) => profile.uuid));
+  }, [activeMembers, recommendationSelectedUuids]);
 
   const handleDeleteRequest = (member: MemberProfile) => {
     setDeleteError(null);
@@ -556,6 +622,12 @@ export default function FamilyProfiles() {
                 key={member.uuid}
                 member={member}
                 onDelete={handleDeleteRequest}
+                isIncludedInRecommendations={recommendationTargetUuids.has(
+                  member.uuid,
+                )}
+                onToggleRecommendation={(profile) =>
+                  toggleProfile(profile.uuid)
+                }
               />
             ))}
 

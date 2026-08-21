@@ -18,6 +18,10 @@ import { TbWheel } from "react-icons/tb";
 import { menuApi, useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
+import {
+  getRecommendationTargets,
+  useRecommendationProfileSelection,
+} from "@/hooks/useRecommendationProfileSelection";
 
 import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
@@ -25,6 +29,7 @@ import AiPromptRecommender from "./AiPromptRecommender";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import type { AppDispatch } from "@/app/store/store";
+import type { MemberProfile } from "@/types/member-profile/member-profile";
 
 type ModalTab = "swipe" | "spin";
 
@@ -128,23 +133,45 @@ export default function Model() {
     return list.filter((p) => p.isActive !== false);
   }, [profilesData]);
 
+  // Which family profiles are opted in to receive recommendations. Persisted
+  // (see the hook) so this stays in sync with the same toggle on the
+  // "គណនីសមាជិកគ្រួសារ" dashboard list. Selecting none falls back to the
+  // default profile; selecting several runs a GROUP session safe for all of
+  // them.
+  const {
+    selectedUuids: selectedProfileUuids,
+    toggleProfile: toggleProfileSelection,
+    selectAll: selectAllProfileUuids,
+  } = useRecommendationProfileSelection();
+
+  const targetProfiles = useMemo(
+    () => getRecommendationTargets(activeProfiles, selectedProfileUuids),
+    [activeProfiles, selectedProfileUuids],
+  );
+
+  const allActiveProfilesSelected =
+    activeProfiles.length > 0 &&
+    activeProfiles.every((p) => selectedProfileUuids.includes(p.uuid));
+
   const canRecommend = activeProfiles.length > 0;
   const sessionItems = useMemo(() => session?.items ?? [], [session]);
 
-  const runRecommendation = (promptText?: string) => {
-    if (!canRecommend || isSessionLoading) return;
-
-    const profiles = activeProfiles.map((p, index) => ({
-      profileId: p.uuid,
-      isPrimary: index === 0,
-    }));
+  const runRecommendation = (
+    promptText?: string,
+    targetProfilesOverride?: MemberProfile[],
+  ) => {
+    const targets = targetProfilesOverride ?? targetProfiles;
+    if (!canRecommend || isSessionLoading || targets.length === 0) return;
 
     void createSession({
-      mode: profiles.length >= 2 ? "GROUP" : "SINGLE",
+      mode: targets.length > 1 ? "GROUP" : "SINGLE",
       requestSource: promptText ? "USER_PROMPT" : "HOME_SWIPE",
       requestedLimit: 12,
       contextData: promptText ? { userPrompt: promptText } : undefined,
-      profiles,
+      profiles: targets.map((profile, index) => ({
+        profileId: profile.uuid,
+        isPrimary: index === 0,
+      })),
     });
   };
 
@@ -153,15 +180,42 @@ export default function Model() {
     runRecommendation(prompt.trim());
   };
 
+  const handleToggleProfile = (profile: MemberProfile) => {
+    const nextUuids = selectedProfileUuids.includes(profile.uuid)
+      ? selectedProfileUuids.filter((id) => id !== profile.uuid)
+      : [...selectedProfileUuids, profile.uuid];
+
+    toggleProfileSelection(profile.uuid);
+    runRecommendation(
+      prompt.trim() || undefined,
+      getRecommendationTargets(activeProfiles, nextUuids),
+    );
+  };
+
+  const handleSelectAllProfiles = () => {
+    if (allActiveProfilesSelected) {
+      selectAllProfileUuids([]);
+      runRecommendation(
+        prompt.trim() || undefined,
+        getRecommendationTargets(activeProfiles, []),
+      );
+    } else {
+      const allUuids = activeProfiles.map((p) => p.uuid);
+      selectAllProfileUuids(allUuids);
+      runRecommendation(prompt.trim() || undefined, activeProfiles);
+    }
+  };
+
   // Auto-run a default (prompt-less) session the first time the modal opens,
   // so the swipe deck starts personalized without requiring the user to type
   // anything first.
   useEffect(() => {
-    if (!isOpen || hasAutoTriggeredRef.current || !canRecommend) return;
+    if (!isOpen || hasAutoTriggeredRef.current || !canRecommend || targetProfiles.length === 0)
+      return;
     hasAutoTriggeredRef.current = true;
     runRecommendation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, canRecommend]);
+  }, [isOpen, canRecommend, targetProfiles]);
 
   // Enrich the ranked recommendation UUIDs with full catalog detail (image,
   // store, price, ...) that SwipeCardTinderStyle's card UI needs but
@@ -364,9 +418,11 @@ export default function Model() {
             items={sessionItems}
             canRecommend={canRecommend}
             isLoadingProfiles={isLoadingProfiles}
-            activeProfileCount={activeProfiles.length}
-            primaryProfileName={activeProfiles[0]?.profileName}
-            sessionMode={session?.mode}
+            profiles={activeProfiles}
+            targetProfiles={targetProfiles}
+            onToggleProfile={handleToggleProfile}
+            onSelectAllProfiles={handleSelectAllProfiles}
+            allProfilesSelected={allActiveProfilesSelected}
           />
         </div>
       );
