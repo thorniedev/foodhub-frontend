@@ -19,13 +19,13 @@ async function loadLocationBanners(): Promise<
 }
 
 /**
- * Server Component: published LOCATION banners rendered via LocationBannerRow.
+ * Server Component: published LOCATION banners rendered via LocationBannerRow ("ចំណីអាហារប្រចាំតំបន់").
  */
 export default async function LocationBannerSection() {
   const result = await loadLocationBanners();
 
-  if (!result.ok || result.banners.length === 0) {
-    return null;
+  if (!result.ok) {
+    return <LocationBannerRow />;
   }
 
   return <LocationBannerRow banners={result.banners} />;
