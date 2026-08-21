@@ -275,7 +275,7 @@ export function createCodeChallenge(codeVerifier: string) {
 
 export function safeReturnTo(
   value: string | null | undefined,
-  fallback = "/dashboard",
+  fallback = "/",
 ) {
   if (!value) {
     return fallback;

@@ -296,7 +296,7 @@ export async function GET(request: NextRequest) {
 
     const returnTo = safeReturnTo(
       request.cookies.get(AUTH_COOKIES.returnTo)?.value,
-      "/dashboard",
+      "/",
     );
 
     console.log("[KEYCLOAK CALLBACK]", {

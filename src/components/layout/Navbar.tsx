@@ -189,7 +189,7 @@ export default function Navbar() {
           ) : (
             <>
               <Link
-                href="/api/auth/login?returnTo=%2Fdashboard"
+                href="/api/auth/login"
                 className="inline-flex text-white items-center gap-2 rounded-full px-4 py-2 font-medium bg-primary-800 transition hover:bg-primary-900 dark:text-white"
               >
                 <LogIn className="h-4 w-4" />
@@ -327,7 +327,7 @@ export default function Navbar() {
                 <>
                   <li className="mt-2">
                     <Link
-                      href="/api/auth/login?returnTo=%2Fdashboard"
+                      href="/api/auth/login"
                       tabIndex={open ? 0 : -1}
                       onClick={() => setOpen(false)}
                       className="flex items-center justify-center gap-2 rounded-full border border-primary-800 px-4 py-3 text-[16px] font-semibold text-primary-900 transition hover:bg-primary-800/10 active:scale-[0.98] dark:border-white dark:text-white"

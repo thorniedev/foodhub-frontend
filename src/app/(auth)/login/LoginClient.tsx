@@ -1,93 +1,115 @@
 "use client";
 
+import React, { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import AuthLayout from "@/components/auth/AuthLayout";
 import {
-  useSearchParams,
-} from "next/navigation";
+  AlertCircleIcon,
+  GoogleIcon,
+  GitHubIcon,
+} from "@/components/auth/icons";
+import { safeReturnTo } from "@/lib/auth/keycloak";
 
-function safeReturnTo(
-  value: string | null,
-) {
-  if (
-    !value ||
-    !value.startsWith("/") ||
-    value.startsWith("//")
-  ) {
-    return "/dashboard";
+function formatErrorMessage(error: string | null, description: string | null): string {
+  if (!error) return "";
+  if (error === "invalid_state") {
+    return "ការផ្ទៀងផ្ទាត់សុពលភាពបានផុតកំណត់ ឬមិនត្រឹមត្រូវ។ សូមព្យាយាមចូលគណនីម្តងទៀត។ (Session expired. Please sign in again.)";
   }
-
-  return value;
+  if (error === "missing_code") {
+    return "មិនទទួលបានលេខកូដអនុញ្ញាតពី Keycloak ទេ។ (Missing authorization code.)";
+  }
+  if (error === "keycloak_connection_failed") {
+    return "មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើ Keycloak បានទេ។ (Could not communicate with authentication server.)";
+  }
+  return description || error || "ការចូលគណនីមិនបានជោគជ័យទេ។ សូមព្យាយាមម្តងទៀត។";
 }
 
 export default function LoginClient() {
-  const searchParams =
-    useSearchParams();
+  const searchParams = useSearchParams();
 
-  const returnTo =
-    safeReturnTo(
-      searchParams.get(
-        "returnTo",
-      ),
-    );
+  const returnTo = safeReturnTo(searchParams.get("returnTo"), "/");
+  const error = searchParams.get("error");
+  const errorDescription = searchParams.get("error_description");
 
-  const error =
-    searchParams.get(
-      "error",
-    );
+  const loginUrl = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
 
-  const errorDescription =
-    searchParams.get(
-      "error_description",
-    );
-
-  const loginUrl =
-    `/api/auth/login?returnTo=${encodeURIComponent(
-      returnTo,
-    )}`;
+  // Auto-redirect to Keycloak when visiting /login without errors
+  useEffect(() => {
+    if (!error) {
+      window.location.replace(loginUrl);
+    }
+  }, [error, loginUrl]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-[#136C34]">
-            FoodHub
-          </h1>
+    <AuthLayout>
+      <div className="kc-login-header-group">
+        <h1 className="kc-title">ចូលទៅកាន់គណនី FoodHub</h1>
+        <p className="kc-subtitle">
+          រីករាយដែលជួបអ្នកម្ដងទៀត។ តោះយើងរកអ្វីដែលឆ្ងាញ់ៗញាំ
+        </p>
+      </div>
 
-          <p className="mt-3 text-slate-500">
-            Sign in to continue to
-            your FoodHub account.
+      {error ? (
+        <div className="space-y-5">
+          <div className="kc-alert kc-alert-error" role="alert">
+            <AlertCircleIcon className="shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold mb-0.5">ការចូលគណនីបរាជ័យ (Login Failed)</p>
+              <p className="text-xs sm:text-sm">
+                {formatErrorMessage(error, errorDescription)}
+              </p>
+            </div>
+          </div>
+
+          <a
+            href={loginUrl}
+            className="kc-btn-primary kc-pill-btn"
+          >
+            ព្យាយាមចូលគណនីម្តងទៀត / Login Again
+          </a>
+
+          <div className="kc-divider">
+            <span>ឬចូលគណនីជាមួយ</span>
+          </div>
+
+          <div className="kc-social-row">
+            <a
+              href="/api/auth/login?kc_idp_hint=google"
+              className="kc-pill-social-btn"
+              id="social-google"
+            >
+              <GoogleIcon />
+              <span>Google</span>
+            </a>
+            <a
+              href="/api/auth/login?kc_idp_hint=github"
+              className="kc-pill-social-btn"
+              id="social-github"
+            >
+              <GitHubIcon />
+              <span>GitHub</span>
+            </a>
+          </div>
+
+          <p className="kc-footer-text">
+            មិនទាន់មានគណនីមែនទេ?{" "}
+            <Link href="/register" className="kc-link">
+              បង្កើតគណនី
+            </Link>
           </p>
         </div>
-
-        {error && (
-          <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 p-4">
-            <p className="font-semibold text-red-700">
-              Login failed
-            </p>
-
-            <p className="mt-1 text-sm text-red-600">
-              {errorDescription ??
-                error}
-            </p>
-          </div>
-        )}
-
-        <a
-          href={loginUrl}
-          className="mt-7 flex h-12 w-full items-center justify-center rounded-xl bg-[#136C34] font-semibold text-white transition hover:bg-[#0f592b]"
-        >
-          Login with FoodHub
-        </a>
-
-        <div className="mt-6 text-center text-sm text-slate-500">
-          Don&apos;t have an account?{" "}
-          <a
-            href="/register"
-            className="font-semibold text-[#136C34] hover:underline"
-          >
-            Create an account
-          </a>
+      ) : (
+        <div className="py-12 flex flex-col items-center justify-center text-center gap-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-3 border-[#84cc16] border-t-transparent" />
+          <p className="text-base font-semibold text-slate-700 dark:text-slate-200">
+            កំពុងបញ្ជូនទៅកាន់ទំព័រចូលគណនី...
+          </p>
+          <p className="text-xs text-slate-500">
+            Redirecting to secure login...
+          </p>
         </div>
-      </div>
-    </main>
+      )}
+    </AuthLayout>
   );
 }
