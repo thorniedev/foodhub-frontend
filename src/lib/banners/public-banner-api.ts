@@ -28,8 +28,12 @@ const CACHE_REVALIDATE_SECONDS = 60;
 function getBackendApiBaseUrl(): string {
   const configured =
     process.env.BACKEND_API_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://api.mhoubahar.store";
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  if (!configured) {
+    throw new BannerApiError("Missing BACKEND_API_URL configuration");
+  }
 
   const trimmed = configured.trim().replace(/\/+$/, "");
   return /\/api\/v1$/i.test(trimmed) ? trimmed : `${trimmed}/api/v1`;

@@ -1,76 +1,149 @@
-import Image from "next/image";
-import { publicBannerApi, BannerApiError } from "@/lib/banners/public-banner-api";
-import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
-import type { PublicBannerResponse } from "@/types/banner";
+"use client";
 
-async function loadSeasonBanners(): Promise<
-  { ok: true; banners: PublicBannerResponse[] } | { ok: false }
-> {
-  try {
-    return { ok: true, banners: await publicBannerApi.getSeasonBanners() };
-  } catch (error) {
-    if (error instanceof BannerApiError) {
-      console.error("[SeasonalBannerSection]", error.message, error.status);
-    } else {
-      console.error("[SeasonalBannerSection] unexpected error", error);
-    }
-    return { ok: false };
-  }
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Sparkles, ArrowRight } from "lucide-react";
+import type { PublicBannerResponse } from "@/types/banner";
+import { bannerApi } from "@/services/bannerApi";
+import { resolveImageUrl } from "@/utils/image";
+import { SeasonalBannerSkeleton } from "./BannerSkeleton";
+
+export interface SeasonalBannerSectionProps {
+  banners?: PublicBannerResponse[];
+  title?: string;
+  subtitle?: string;
 }
 
-/** Server Component: published SEASON banners as a promotional strip. */
-export default async function SeasonalBannerSection() {
-  const result = await loadSeasonBanners();
+export default function SeasonalBannerSection({
+  banners: initialBanners,
+  title = "កម្មវិធីពិសេសតាមរដូវកាល / Seasonal Specials",
+  subtitle = "ការផ្តល់ជូនពិសេស និងម្ហូបប្រពៃណីតាមពិធីបុណ្យជាតិ",
+}: SeasonalBannerSectionProps) {
+  const [banners, setBanners] = useState<PublicBannerResponse[]>(
+    initialBanners || [],
+  );
+  const [loading, setLoading] = useState(!initialBanners);
+  const [error, setError] = useState(false);
 
-  if (!result.ok) {
-    return (
-      <section className="container mx-auto max-w-7xl py-8">
-        <p className="rounded-2xl bg-neutral-100 p-6 text-center text-sm text-gray-500 dark:bg-neutral-900 dark:text-gray-400">
-          មិនអាចផ្ទុកបែនណឺរដូវកាលបានទេ សូមព្យាយាមម្តងទៀត
-        </p>
-      </section>
-    );
+  useEffect(() => {
+    if (initialBanners) {
+      setBanners(initialBanners);
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    bannerApi
+      .getSeasonBanners()
+      .then((data) => {
+        if (isMounted) {
+          setBanners(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("[SeasonalBannerSection] Error fetching season banners:", err);
+        if (isMounted) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialBanners]);
+
+  if (loading) {
+    return <SeasonalBannerSkeleton />;
   }
 
-  if (result.banners.length === 0) {
+  if (error || banners.length === 0) {
     return null;
   }
+
+  const isSingle = banners.length === 1;
 
   return (
     <section
       aria-labelledby="seasonal-banners-heading"
-      className="container mx-auto max-w-7xl py-8"
+      className="container mx-auto max-w-7xl px-4 py-8 md:py-10"
     >
-      <h2
-        id="seasonal-banners-heading"
-        className="mb-6 text-2xl font-semibold text-primary-800 md:text-4xl dark:text-primary-dark"
-      >
-        រដូវកាល
-      </h2>
+      {/* Section Header */}
+      <div className="mb-6">
+        <h2
+          id="seasonal-banners-heading"
+          className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl dark:text-white"
+        >
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            {subtitle}
+          </p>
+        )}
+      </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {result.banners.map((banner, index) => (
-          <figure
+      {/* Grid of Seasonal Banners */}
+      <div
+        className={`grid gap-6 ${
+          isSingle ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+        }`}
+      >
+        {banners.map((banner) => (
+          <div
             key={banner.id}
-            className="relative aspect-16/9 overflow-hidden rounded-2xl bg-neutral-100 shadow-sm dark:bg-neutral-900"
+            className="group relative overflow-hidden rounded-3xl bg-neutral-900 shadow-lg transition-all duration-300 hover:shadow-2xl"
           >
-            <Image
-              src={toFrontendApiAssetUrl(banner.image)}
-              alt={banner.title}
-              fill
-              sizes="(min-width: 768px) 50vw, 100vw"
-              priority={index === 0}
-              className="object-cover"
-            />
-            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-              <p className="text-lg font-semibold text-white">{banner.title}</p>
-              {banner.description && (
-                <p className="mt-1 line-clamp-2 text-sm text-white/90">
-                  {banner.description}
-                </p>
-              )}
-            </figcaption>
-          </figure>
+            <div
+              className={`relative w-full ${
+                isSingle ? "h-64 sm:h-80 md:h-96" : "h-60 sm:h-72 md:h-80"
+              }`}
+            >
+              <Image
+                src={resolveImageUrl(banner.image)}
+                alt={banner.title}
+                fill
+                sizes={isSingle ? "100vw" : "(min-width: 768px) 50vw, 100vw"}
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+
+              {/* Gradient Scrim */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
+
+              {/* Festive Badge */}
+              <div className="absolute left-4 top-4 z-10">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-bold text-white shadow-md backdrop-blur-md">
+                  <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                  <span>ពិធីបុណ្យ & រដូវកាល</span>
+                </span>
+              </div>
+
+              {/* Content Overlay */}
+              <div className="absolute inset-x-0 bottom-0 z-10 p-5 md:p-8">
+                <h3 className="text-xl font-bold text-white sm:text-2xl md:text-3xl">
+                  {banner.title}
+                </h3>
+
+                {banner.description && (
+                  <p className="mt-2 line-clamp-2 text-sm text-white/90 sm:text-base">
+                    {banner.description}
+                  </p>
+                )}
+
+                <div className="mt-4">
+                  <Link
+                    href="/food-page"
+                    className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-xs sm:text-sm font-semibold text-white backdrop-blur-md transition-all duration-200 hover:bg-white hover:text-neutral-900"
+                  >
+                    <span>ស្វែងរកការបញ្ចុះតម្លៃ</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </section>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useDispatch } from "react-redux";
 
 import { createPortal } from "react-dom";
 
@@ -15,20 +14,20 @@ import { MdSwipe } from "react-icons/md";
 import { RiRobot2Line } from "react-icons/ri";
 import { TbWheel } from "react-icons/tb";
 
-import { menuApi, useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
 import {
   getRecommendationTargets,
   useRecommendationProfileSelection,
 } from "@/hooks/useRecommendationProfileSelection";
+import { useEnrichedRecommendationItems } from "@/hooks/useEnrichedRecommendationItems";
 
 import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
 import AiPromptRecommender from "./AiPromptRecommender";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
-import type { AppDispatch } from "@/app/store/store";
 import type { MemberProfile } from "@/types/member-profile/member-profile";
 
 type ModalTab = "swipe" | "spin";
@@ -115,15 +114,12 @@ export default function Model() {
   // --- Real recommendation session, shared by the swipe deck and the AI
   // prompt box below it (previously two independent features: the swipe
   // deck always showed the full catalog regardless of what was typed here).
-  const dispatch = useDispatch<AppDispatch>();
-
   const { data: profilesData, isLoading: isLoadingProfiles } =
     useGetMemberProfilesQuery();
   const [createSession, { data: session, isLoading: isSessionLoading, error: sessionError }] =
     useCreateRecommendationSessionMutation();
 
   const [prompt, setPrompt] = useState("");
-  const [enrichedSwipeFoods, setEnrichedSwipeFoods] = useState<CatalogMenuItem[]>([]);
   const hasAutoTriggeredRef = useRef(false);
 
   const activeProfiles = useMemo(() => {
@@ -219,41 +215,11 @@ export default function Model() {
 
   // Enrich the ranked recommendation UUIDs with full catalog detail (image,
   // store, price, ...) that SwipeCardTinderStyle's card UI needs but
-  // RecommendationItem does not carry. The detail endpoint accepts the
-  // session UUID and returns the same personalized ranking/reason for each.
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      if (!session || sessionItems.length === 0) {
-        if (!cancelled) setEnrichedSwipeFoods([]);
-        return;
-      }
-
-      const results = await Promise.all(
-        sessionItems.map((item) =>
-          dispatch(
-            menuApi.endpoints.getMenuItemByUuid.initiate({
-              uuid: item.uuid,
-              sessionUuid: session.uuid,
-            }),
-          )
-            .unwrap()
-            .catch(() => null),
-        ),
-      );
-
-      if (cancelled) return;
-
-      setEnrichedSwipeFoods(
-        results.filter((food): food is CatalogMenuItem => food !== null),
-      );
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [session, sessionItems, dispatch]);
+  // RecommendationItem does not carry.
+  const { enrichedItems: enrichedSwipeFoods } = useEnrichedRecommendationItems(
+    session,
+    sessionItems,
+  );
 
   // Personalized swipe deck when a session produced enriched results;
   // otherwise fall back to the plain catalog browse list so swiping still

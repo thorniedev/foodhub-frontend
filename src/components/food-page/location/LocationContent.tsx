@@ -4,22 +4,37 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
-import { IoRestaurantOutline, IoSearchOutline } from "react-icons/io5";
+import {
+  IoAlertCircleOutline,
+  IoRestaurantOutline,
+  IoSearchOutline,
+  IoShieldCheckmarkOutline,
+} from "react-icons/io5";
 
 import {
   useGetStoresQuery,
   useGetNearbyStoresQuery,
 } from "@/app/store/locationApi";
+import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
+import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
 import { useUserLocation } from "@/hooks/useUserLocation";
+import {
+  getRecommendationTargets,
+  useRecommendationProfileSelection,
+} from "@/hooks/useRecommendationProfileSelection";
+import { useEnrichedRecommendationItems } from "@/hooks/useEnrichedRecommendationItems";
 import { calculateDistanceKm } from "@/lib/location/geo";
 import {
   buildLocationStoresForFoods,
   filterLocationMenuItems,
 } from "@/lib/location/location-food-filter";
 
+import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
+
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import type { MemberProfile } from "@/types/member-profile/member-profile";
 import type {
   Coordinates,
   LocationFiltersState,
@@ -475,7 +490,12 @@ export default function LocationContent({
 
   /* =========================================================
    * SINGLE USER MODE
-   * Food filter -> matching foods -> stores that sell them.
+   * Safety-filtered + ranked recommendation session (PostgreSQL radius
+   * filter, Java safety evaluator, deterministic scoring on the backend)
+   * -> enrich ranked items with catalog detail -> preference filters ->
+   * stores that sell them. This replaced a purely client-side sort over
+   * the entire unauthenticated catalog, which never applied any profile
+   * safety filtering at all.
    * ========================================================= */
 
   const effectiveFoodFilters = useMemo<LocationFoodFilterState>(
@@ -486,9 +506,124 @@ export default function LocationContent({
     [foodFilters, searchQuery],
   );
 
+  const singleRadiusKm =
+    effectiveFoodFilters.maximumDistanceKm ?? DEFAULT_LOCATION_FILTERS.radiusKm;
+
+  const { data: profilesData, isLoading: isLoadingProfiles } =
+    useGetMemberProfilesQuery();
+
+  const activeProfiles = useMemo(() => {
+    const list = Array.isArray(profilesData)
+      ? profilesData
+      : profilesData?.contents ?? [];
+    return list.filter((profile) => profile.isActive !== false);
+  }, [profilesData]);
+
+  // Same selection the AI recommendation modal and the "គណនីសមាជិកគ្រួសារ"
+  // dashboard toggle read/write, so picking a profile here (or there) stays
+  // in sync everywhere.
+  const {
+    selectedUuids: selectedProfileUuids,
+    toggleProfile: toggleProfileSelection,
+    selectAll: selectAllProfileUuids,
+  } = useRecommendationProfileSelection();
+
+  const targetProfiles = useMemo(
+    () => getRecommendationTargets(activeProfiles, selectedProfileUuids),
+    [activeProfiles, selectedProfileUuids],
+  );
+
+  const targetProfileUuidsKey = useMemo(
+    () => targetProfiles.map((profile) => profile.uuid).join(","),
+    [targetProfiles],
+  );
+
+  const allActiveProfilesSelected =
+    activeProfiles.length > 0 &&
+    activeProfiles.every((profile) => selectedProfileUuids.includes(profile.uuid));
+
+  const canRecommend = activeProfiles.length > 0;
+
+  const [
+    createRecommendationSession,
+    {
+      data: recommendationSession,
+      isLoading: isRecommendationSessionLoading,
+      error: recommendationSessionError,
+    },
+  ] = useCreateRecommendationSessionMutation();
+
+  const recommendationSessionItems = useMemo(
+    () => recommendationSession?.items ?? [],
+    [recommendationSession],
+  );
+
+  const { enrichedItems: recommendedFoodsRaw, isEnriching } =
+    useEnrichedRecommendationItems(
+      recommendationSession,
+      recommendationSessionItems,
+    );
+
+  // Re-run the safety-filtered recommendation whenever a meaningful input
+  // changes: location, radius, which profile(s) are targeted, or the search
+  // text (passed through as an AI prompt hint). Preference filters
+  // (category, cuisine, dietary type, spice level, ...) do NOT retrigger a
+  // new session — they narrow the already safety-correct, ranked result
+  // client-side, the same way Advanced Filter narrows a candidate set.
+  useEffect(() => {
+    if (
+      mode !== "single" ||
+      !hasValidCoordinates(coordinates) ||
+      !canRecommend ||
+      targetProfiles.length === 0
+    ) {
+      return;
+    }
+
+    void createRecommendationSession({
+      mode: targetProfiles.length > 1 ? "GROUP" : "SINGLE",
+      requestSource: "DISCOVERY",
+      requestedLimit: 50,
+      searchRadiusKm: singleRadiusKm,
+      contextData: searchQuery.trim()
+        ? { userPrompt: searchQuery.trim() }
+        : undefined,
+      profiles: targetProfiles.map((profile, index) => ({
+        profileId: profile.uuid,
+        isPrimary: index === 0,
+      })),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    mode,
+    coordinates?.latitude,
+    coordinates?.longitude,
+    canRecommend,
+    targetProfileUuidsKey,
+    singleRadiusKm,
+    searchQuery,
+  ]);
+
+  const handleToggleProfile = (profile: MemberProfile) => {
+    toggleProfileSelection(profile.uuid);
+  };
+
+  const handleSelectAllProfiles = () => {
+    if (allActiveProfilesSelected) {
+      selectAllProfileUuids([]);
+    } else {
+      selectAllProfileUuids(activeProfiles.map((profile) => profile.uuid));
+    }
+  };
+
+  const recommendedMenuItems = useMemo(
+    () => recommendedFoodsRaw.map(toLocationMenuItem),
+    [recommendedFoodsRaw],
+  );
+
   const matchingFoods = useMemo(
-    () => filterLocationMenuItems(menuItems, effectiveFoodFilters),
-    [effectiveFoodFilters, menuItems],
+    () => filterLocationMenuItems(recommendedMenuItems, effectiveFoodFilters),
+    [effectiveFoodFilters, recommendedMenuItems],
   );
 
   const foodStores = useMemo(
@@ -500,9 +635,6 @@ export default function LocationContent({
     () => buildSingleLocationFilters(effectiveFoodFilters),
     [effectiveFoodFilters],
   );
-
-  const singleRadiusKm =
-    effectiveFoodFilters.maximumDistanceKm ?? DEFAULT_LOCATION_FILTERS.radiusKm;
 
   const nearbyStoreCount = useMemo(() => {
     if (!hasValidCoordinates(coordinates)) {
@@ -737,6 +869,23 @@ export default function LocationContent({
               }}
             />
 
+            {mode === "single" && canRecommend && (
+              <div className="mt-5 flex items-center justify-between gap-2 rounded-[18px] border border-gray-100 bg-white px-4 py-3 shadow-sm">
+                <span className="flex items-center gap-2 text-[16px] font-semibold text-primary-900">
+                  <IoShieldCheckmarkOutline className="text-[20px] text-primary-700" />
+                  ណែនាំសម្រាប់
+                </span>
+
+                <ProfileMultiSelect
+                  profiles={activeProfiles}
+                  targetProfiles={targetProfiles}
+                  onToggle={handleToggleProfile}
+                  onSelectAll={handleSelectAllProfiles}
+                  allSelected={allActiveProfilesSelected}
+                />
+              </div>
+            )}
+
             <div className="mt-6 pb-10">
               {mode === "single" ? (
                 !coordinates ? (
@@ -750,6 +899,46 @@ export default function LocationContent({
                       setLocationPickerOpen(true);
                     }}
                   />
+                ) : !isLoadingProfiles && !canRecommend ? (
+                  <ReadableMessage
+                    icon={<IoShieldCheckmarkOutline />}
+                    title="សូមចូលគណនី និងបង្កើតប្រវត្តិរូប"
+                    description="ការណែនាំម្ហូបទាមទារឱ្យអ្នកចូលគណនី ដើម្បីត្រួតពិនិត្យសុវត្ថិភាពទៅតាមអាឡែហ្ស៊ី និងលក្ខខណ្ឌសុខភាពរបស់អ្នក។"
+                    actionLabel="ចូលគណនី"
+                    onAction={() => {
+                      window.location.href = "/api/auth/login";
+                    }}
+                  />
+                ) : recommendationSessionError ? (
+                  <ReadableMessage
+                    icon={<IoAlertCircleOutline />}
+                    title="មិនអាចផ្ទុកការណែនាំបានទេ"
+                    description="មានបញ្ហាកើតឡើងពេលកំពុងស្វែងរកមុខម្ហូបដែលមានសុវត្ថិភាព។ សូមព្យាយាមម្តងទៀត។"
+                    actionLabel="ព្យាយាមម្តងទៀត"
+                    onAction={() =>
+                      void createRecommendationSession({
+                        mode: targetProfiles.length > 1 ? "GROUP" : "SINGLE",
+                        requestSource: "DISCOVERY",
+                        requestedLimit: 50,
+                        searchRadiusKm: singleRadiusKm,
+                        contextData: searchQuery.trim()
+                          ? { userPrompt: searchQuery.trim() }
+                          : undefined,
+                        profiles: targetProfiles.map((profile, index) => ({
+                          profileId: profile.uuid,
+                          isPrimary: index === 0,
+                        })),
+                      })
+                    }
+                  />
+                ) : (isRecommendationSessionLoading || isEnriching) &&
+                  matchingFoods.length === 0 ? (
+                  <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-[24px] border border-gray-100 bg-white">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-100 border-t-primary-800" />
+                    <p className="text-[16px] text-gray-500">
+                      កំពុងស្វែងរកមុខម្ហូបដែលមានសុវត្ថិភាពសម្រាប់អ្នក...
+                    </p>
+                  </div>
                 ) : noMatchingFood ? (
                   <ReadableMessage
                     icon={<IoRestaurantOutline />}
