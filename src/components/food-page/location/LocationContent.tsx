@@ -29,7 +29,6 @@ import {
   filterLocationMenuItems,
 } from "@/lib/location/location-food-filter";
 
-import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
 
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
@@ -430,6 +429,7 @@ export default function LocationContent({
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [locationPickerTab, setLocationPickerTab] = useState<"map" | "saved">("map");
   const [resultCount, setResultCount] = useState(0);
+  const [selectedRadiusKm, setSelectedRadiusKm] = useState<number>(5);
 
   const {
     coordinates,
@@ -849,7 +849,7 @@ export default function LocationContent({
             <LocationHeader
               mode={mode}
               storeCount={resultCount}
-              radiusKm={effectiveRadiusKm}
+              radiusKm={selectedRadiusKm}
               locationStatus={headerLocationStatus}
               locationSource={source}
               locationError={error}
@@ -869,124 +869,18 @@ export default function LocationContent({
               }}
             />
 
-            {mode === "single" && canRecommend && (
-              <div className="mt-5 flex items-center justify-between gap-2 rounded-[18px] border border-gray-100 bg-white px-4 py-3 shadow-sm">
-                <span className="flex items-center gap-2 text-[16px] font-semibold text-primary-900">
-                  <IoShieldCheckmarkOutline className="text-[20px] text-primary-700" />
-                  ណែនាំសម្រាប់
-                </span>
-
-                <ProfileMultiSelect
-                  profiles={activeProfiles}
-                  targetProfiles={targetProfiles}
-                  onToggle={handleToggleProfile}
-                  onSelectAll={handleSelectAllProfiles}
-                  allSelected={allActiveProfilesSelected}
-                />
-              </div>
-            )}
-
             <div className="mt-6 pb-10">
-              {mode === "single" ? (
-                !coordinates ? (
-                  <ReadableMessage
-                    icon={<IoSearchOutline />}
-                    title="សូមជ្រើសទីតាំងសម្រាប់ស្វែងរកហាង"
-                    description="អ្នកអាចប្រើទីតាំងបច្ចុប្បន្នរបស់អ្នក ឬជ្រើសទីតាំងផ្សេងដោយផ្ទាល់លើផែនទី។"
-                    actionLabel="ជ្រើសទីតាំងលើផែនទី"
-                    onAction={() => {
-                      setLocationPickerTab("map");
-                      setLocationPickerOpen(true);
-                    }}
-                  />
-                ) : !isLoadingProfiles && !canRecommend ? (
-                  <ReadableMessage
-                    icon={<IoShieldCheckmarkOutline />}
-                    title="សូមចូលគណនី និងបង្កើតប្រវត្តិរូប"
-                    description="ការណែនាំម្ហូបទាមទារឱ្យអ្នកចូលគណនី ដើម្បីត្រួតពិនិត្យសុវត្ថិភាពទៅតាមអាឡែហ្ស៊ី និងលក្ខខណ្ឌសុខភាពរបស់អ្នក។"
-                    actionLabel="ចូលគណនី"
-                    onAction={() => {
-                      window.location.href = "/api/auth/login";
-                    }}
-                  />
-                ) : recommendationSessionError ? (
-                  <ReadableMessage
-                    icon={<IoAlertCircleOutline />}
-                    title="មិនអាចផ្ទុកការណែនាំបានទេ"
-                    description="មានបញ្ហាកើតឡើងពេលកំពុងស្វែងរកមុខម្ហូបដែលមានសុវត្ថិភាព។ សូមព្យាយាមម្តងទៀត។"
-                    actionLabel="ព្យាយាមម្តងទៀត"
-                    onAction={() =>
-                      void createRecommendationSession({
-                        mode: targetProfiles.length > 1 ? "GROUP" : "SINGLE",
-                        requestSource: "DISCOVERY",
-                        requestedLimit: 50,
-                        searchRadiusKm: singleRadiusKm,
-                        contextData: searchQuery.trim()
-                          ? { userPrompt: searchQuery.trim() }
-                          : undefined,
-                        profiles: targetProfiles.map((profile, index) => ({
-                          profileId: profile.uuid,
-                          isPrimary: index === 0,
-                        })),
-                      })
-                    }
-                  />
-                ) : (isRecommendationSessionLoading || isEnriching) &&
-                  matchingFoods.length === 0 ? (
-                  <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-[24px] border border-gray-100 bg-white">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-100 border-t-primary-800" />
-                    <p className="text-[16px] text-gray-500">
-                      កំពុងស្វែងរកមុខម្ហូបដែលមានសុវត្ថិភាពសម្រាប់អ្នក...
-                    </p>
-                  </div>
-                ) : noMatchingFood ? (
-                  <ReadableMessage
-                    icon={<IoRestaurantOutline />}
-                    title="រកមិនឃើញមុខម្ហូបដែលត្រូវនឹងជម្រើសរបស់អ្នក"
-                    description="សូមកែតម្រងមុខម្ហូប ឬសាកល្បងជ្រើសប្រភេទ របបអាហារ គ្រឿងផ្សំ ឬតម្លៃផ្សេង។"
-                    actionLabel="សម្អាតតម្រង"
-                    onAction={resetFoodFilters}
-                  />
-                ) : noMatchingStore ? (
-                  <ReadableMessage
-                    icon={<IoRestaurantOutline />}
-                    title="មានមុខម្ហូបដែលអ្នកចង់បាន ប៉ុន្តែមិនទាន់រកឃើញហាង"
-                    description="មុខម្ហូបដែលបានជ្រើសមានក្នុងបញ្ជី FoodHub ប៉ុន្តែមិនទាន់មានព័ត៌មានទីតាំងហាងដែលអាចប្រើបាន។ សូមសាកល្បងមុខម្ហូបផ្សេង។"
-                    actionLabel="កែតម្រងមុខម្ហូប"
-                    onAction={() => setFiltersOpen(true)}
-                  />
-                ) : noNearbyStore ? (
-                  <ReadableMessage
-                    icon={<IoRestaurantOutline />}
-                    title="មិនមានហាងក្នុងចម្ងាយដែលបានកំណត់"
-                    description="សូមសាកល្បងពង្រីកកាំស្វែងរក ជ្រើសទីតាំងផ្សេង ឬបិទតម្រងមួយចំនួន។"
-                    actionLabel="កែតម្រង"
-                    onAction={() => setFiltersOpen(true)}
-                  />
-                ) : (
-                  <GroupRecommendation
-                    meetupMode="friends"
-                    menuItems={menuItems}
-                    stores={groupFilteredStores}
-                    userLocation={coordinates}
-                    filters={groupLocationFilters}
-                    searchQuery={searchQuery}
-                    onOpenFilters={() => setFiltersOpen(true)}
-                    onResultCountChange={setResultCount}
-                  />
-                )
-              ) : (
-                <GroupRecommendation
-                  meetupMode="guest"
-                  menuItems={menuItems}
-                  stores={groupFilteredStores}
-                  userLocation={coordinates}
-                  filters={groupLocationFilters}
-                  searchQuery={searchQuery}
-                  onOpenFilters={() => setFiltersOpen(true)}
-                  onResultCountChange={setResultCount}
-                />
-              )}
+              <GroupRecommendation
+                meetupMode={mode === "single" ? "friends" : "guest"}
+                menuItems={menuItems}
+                stores={groupFilteredStores}
+                userLocation={coordinates}
+                filters={groupLocationFilters}
+                searchQuery={searchQuery}
+                onOpenFilters={() => setFiltersOpen(true)}
+                onResultCountChange={setResultCount}
+                onRadiusChange={setSelectedRadiusKm}
+              />
             </div>
           </main>
         </div>

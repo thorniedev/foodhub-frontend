@@ -32,6 +32,7 @@ import {
   Loader2,
   CheckCircle2,
   Utensils,
+  Plus,
 } from "lucide-react";
 import {
   Dialog,
@@ -58,6 +59,7 @@ interface GroupRecommendationProps {
   searchQuery: string;
   onOpenFilters: () => void;
   onResultCountChange: (count: number) => void;
+  onRadiusChange?: (radius: number) => void;
 }
 
 export default function GroupRecommendation({
@@ -69,6 +71,7 @@ export default function GroupRecommendation({
   searchQuery,
   onOpenFilters,
   onResultCountChange,
+  onRadiusChange,
 }: GroupRecommendationProps) {
   const router = useRouter();
 
@@ -91,12 +94,12 @@ export default function GroupRecommendation({
   const [view, setView] = useState<LocationViewMode>("list");
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
+  // Radius & Duration (Dynamic)
+  const [searchRadiusKm, setSearchRadiusKm] = useState<number>(filters.radiusKm || 5);
+  const [durationMinutes, setDurationMinutes] = useState<number>(30);
+
   // Friend Mode Fields
   const [selectedFriendUuids, setSelectedFriendUuids] = useState<string[]>([]);
-
-  // Guest Mode Fields
-  const [searchRadiusKm, setSearchRadiusKm] = useState<number>(filters.radiusKm || 3);
-  const [durationMinutes, setDurationMinutes] = useState<number>(30);
 
   // Share / Success State
   const [createdMeetup, setCreatedMeetup] = useState<{
@@ -105,6 +108,13 @@ export default function GroupRecommendation({
     title: string;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleRadiusSelect = (radius: number) => {
+    setSearchRadiusKm(radius);
+    if (onRadiusChange) {
+      onRadiusChange(radius);
+    }
+  };
 
   // Build recommended stores with compatibility scores
   const recommendedStores: GroupRecommendedStore[] = useMemo(() => {
@@ -162,7 +172,7 @@ export default function GroupRecommendation({
         createdByUserId: currentUserId,
         title: meetupTitle,
         votingMethod,
-        searchRadiusKm: activeMode === "guest" ? searchRadiusKm : (filters.radiusKm || 3),
+        searchRadiusKm,
         timezone: "Asia/Phnom_Penh",
         expiresAt,
         meetingPointLat: lat,
@@ -190,7 +200,7 @@ export default function GroupRecommendation({
             status: "VOTING",
             createdAt: new Date().toISOString(),
             participantCount: activeMode === "friends" ? selectedFriendUuids.length + 1 : 1,
-            radiusKm: activeMode === "guest" ? searchRadiusKm : (filters.radiusKm || 3),
+            radiusKm: searchRadiusKm,
           }),
         );
       } catch {
@@ -346,35 +356,34 @@ export default function GroupRecommendation({
           </div>
         )}
 
-        {/* MODE 2: Radius & Duration Settings */}
-        {activeMode === "guest" && (
-          <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
-            {/* Radius Selector */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
-                <span>កាំស្វែងរកហាង (Search Radius)</span>
-                <span className="text-primary-800 dark:text-emerald-400 font-bold">{searchRadiusKm} km</span>
-              </div>
-              <div className="grid grid-cols-5 gap-2">
-                {[1, 2, 3, 5, 10].map((r) => (
-                  <button
-                    type="button"
-                    key={r}
-                    onClick={() => setSearchRadiusKm(r)}
-                    className={`rounded-xl py-2 text-xs font-bold transition ${
-                      searchRadiusKm === r
-                        ? "bg-primary-800 text-white shadow-xs"
-                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
-                    }`}
-                  >
-                    {r} km
-                  </button>
-                ))}
-              </div>
+        {/* Dynamic Search Radius (Active for both modes) */}
+        <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
+              <span>កាំស្វែងរកហាង (Search Radius)</span>
+              <span className="text-primary-800 dark:text-emerald-400 font-bold">{searchRadiusKm} km</span>
             </div>
+            <div className="grid grid-cols-5 gap-2">
+              {[1, 2, 3, 5, 10].map((r) => (
+                <button
+                  type="button"
+                  key={r}
+                  onClick={() => handleRadiusSelect(r)}
+                  className={`rounded-xl py-2 text-xs font-bold transition ${
+                    searchRadiusKm === r
+                      ? "bg-primary-800 text-white shadow-xs"
+                      : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+                  }`}
+                >
+                  {r} km
+                </button>
+              ))}
+            </div>
+          </div>
 
-            {/* Duration Selector */}
-            <div className="space-y-2">
+          {/* Duration Selector (for Guest Mode) */}
+          {activeMode === "guest" && (
+            <div className="space-y-2 pt-2 border-t border-gray-200/60 dark:border-slate-800">
               <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
                 <span className="flex items-center gap-1.5">
                   <Clock className="h-4 w-4 text-primary-800" />
@@ -406,8 +415,8 @@ export default function GroupRecommendation({
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Voting Method Selector */}
         <div className="space-y-2">
@@ -481,7 +490,7 @@ export default function GroupRecommendation({
               meetingPoint={userLocation}
               stores={filteredStores}
               selectedStoreId={selectedStoreId}
-              radiusKm={activeMode === "guest" ? searchRadiusKm : (filters.radiusKm || 3)}
+              radiusKm={searchRadiusKm}
               onSelectStore={setSelectedStoreId}
             />
           )}
@@ -501,7 +510,7 @@ export default function GroupRecommendation({
                 meetingPoint={userLocation}
                 stores={filteredStores}
                 selectedStoreId={selectedStoreId}
-                radiusKm={activeMode === "guest" ? searchRadiusKm : (filters.radiusKm || 3)}
+                radiusKm={searchRadiusKm}
                 onSelectStore={setSelectedStoreId}
               />
             </div>
