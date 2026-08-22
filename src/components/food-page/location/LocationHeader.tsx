@@ -115,11 +115,13 @@ export default function LocationHeader({
             aria-level={1}
             className="mt-2 text-[24px] font-semibold leading-tight text-primary-900 sm:text-[27px]"
           >
-            ហាងនៅជិតអ្នក
+            {mode === "group" ? "ការណាត់ញ៉ាំអាហារជាក្រុម" : "ហាងនៅជិតអ្នក"}
           </p>
 
           <p className="mt-2 max-w-2xl text-[17px] leading-8 text-gray-500">
-            {locationLabel || "ស្វែងរកហាង និងមុខម្ហូបនៅជិតទីតាំងរបស់អ្នក"}
+            {mode === "group"
+              ? "កំណត់ទីតាំងក្រុម និងស្វែងរកហាងដែលស័ក្តិសមសម្រាប់អ្នកទាំងអស់គ្នា"
+              : locationLabel || "ស្វែងរកហាង និងមុខម្ហូបនៅជិតទីតាំងរបស់អ្នក"}
           </p>
         </div>
 
@@ -341,12 +343,12 @@ function RecommendationModeSwitch({
   }> = [
     {
       value: "single",
-      label: "សម្រាប់ខ្ញុំ",
+      label: "Friend",
       icon: <IoPersonOutline />,
     },
     {
       value: "group",
-      label: "សម្រាប់ក្រុម",
+      label: "Guest Link",
       icon: <IoPeopleOutline />,
     },
   ];

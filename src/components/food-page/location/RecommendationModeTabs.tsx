@@ -25,7 +25,7 @@ export default function RecommendationModeTabs({
         }`}
       >
         <IoPersonOutline className="text-[20px]" />
-        សម្រាប់ខ្ញុំ
+        Friend
       </button>
 
       <button
@@ -38,7 +38,7 @@ export default function RecommendationModeTabs({
         }`}
       >
         <IoPeopleOutline className="text-[20px]" />
-        សម្រាប់ក្រុម
+        Guest Link
       </button>
     </div>
   );
