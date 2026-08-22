@@ -1,36 +1,49 @@
 import { PublicBannerResponse, BannerCategory } from "@/types/publicBanner";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.BACKEND_API_URL ||
-  "https://api.mhoubahar.store";
-
 const CATEGORY_ENDPOINTS: Record<BannerCategory, string> = {
-  MAIN: "/api/v1/banners/public/main",
-  POPULAR: "/api/v1/banners/public/popular",
-  LOCATION: "/api/v1/banners/public/locations",
-  SEASON: "/api/v1/banners/public/season",
+  MAIN: "/banners/public/main",
+  POPULAR: "/banners/public/popular",
+  LOCATION: "/banners/public/locations",
+  SEASON: "/banners/public/season",
 };
 
 export const publicBannerApi = {
   /**
    * Fetch banners for a specific category
-   * Uses 60-second ISR caching with Next.js revalidate tags
+   * Uses client-safe /api proxy in browser to prevent CORS 403 blocks,
+   * and direct backend endpoint on the server with 60-second ISR caching.
    */
   async getBannersByCategory(
     category: BannerCategory,
   ): Promise<PublicBannerResponse[]> {
     try {
-      const cleanBaseUrl = API_BASE_URL.replace(/\/api\/v1\/?$/i, "").replace(
-        /\/+$/,
-        "",
-      );
+      const isClient = typeof window !== "undefined";
       const endpoint = CATEGORY_ENDPOINTS[category];
-      const url = `${cleanBaseUrl}${endpoint}`;
+
+      let url: string;
+      if (isClient) {
+        url = `/api${endpoint}`;
+      } else {
+        const rawBackendUrl = (
+          process.env.BACKEND_API_URL ||
+          process.env.NEXT_PUBLIC_API_URL ||
+          "https://api.mhoubahar.store"
+        )
+          .trim()
+          .replace(/\/+$/, "");
+
+        const backendBase = /\/api\/v1$/i.test(rawBackendUrl)
+          ? rawBackendUrl
+          : `${rawBackendUrl}/api/v1`;
+
+        url = `${backendBase}${endpoint}`;
+      }
 
       const res = await fetch(url, {
         method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
         next: {
           revalidate: 60,
           tags: [`banners:${category.toLowerCase()}`],
@@ -38,13 +51,18 @@ export const publicBannerApi = {
       });
 
       if (!res.ok) {
-        console.error(`Failed to fetch ${category} banners:`, res.statusText);
+        console.error(
+          `[publicBannerApi] Failed to fetch ${category} banners:`,
+          res.status,
+          res.statusText,
+        );
         return [];
       }
 
-      return res.json();
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
     } catch (error) {
-      console.error(`Error fetching ${category} banners:`, error);
+      console.error(`[publicBannerApi] Error fetching ${category} banners:`, error);
       return [];
     }
   },
@@ -53,23 +71,29 @@ export const publicBannerApi = {
    * Helper to build full image URL from MinIO media endpoint or external CDN
    */
   resolveImageUrl(relativeOrAbsoluteUrl?: string | null): string {
-    if (!relativeOrAbsoluteUrl) return "/images/banner-placeholder.webp";
-    if (
-      relativeOrAbsoluteUrl.startsWith("http://") ||
-      relativeOrAbsoluteUrl.startsWith("https://") ||
-      relativeOrAbsoluteUrl.startsWith("data:") ||
-      relativeOrAbsoluteUrl.startsWith("blob:")
-    ) {
-      return relativeOrAbsoluteUrl;
+    if (!relativeOrAbsoluteUrl || !relativeOrAbsoluteUrl.trim()) {
+      return "/images/banner-placeholder.webp";
     }
-    const cleanBaseUrl = API_BASE_URL.replace(/\/api\/v1\/?$/i, "").replace(
-      /\/+$/,
-      "",
-    );
-    const formattedPath = relativeOrAbsoluteUrl.startsWith("/")
-      ? relativeOrAbsoluteUrl
-      : `/${relativeOrAbsoluteUrl}`;
-    return `${cleanBaseUrl}${formattedPath}`;
+    const trimmed = relativeOrAbsoluteUrl.trim();
+    if (
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("data:") ||
+      trimmed.startsWith("blob:")
+    ) {
+      return trimmed;
+    }
+    const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    const rawBackendUrl = (
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.BACKEND_API_URL ||
+      "https://api.mhoubahar.store"
+    )
+      .trim()
+      .replace(/\/api\/v1\/?$/i, "")
+      .replace(/\/+$/, "");
+
+    return `${rawBackendUrl}${cleanPath}`;
   },
 
   getMainBanners(): Promise<PublicBannerResponse[]> {

@@ -1,16 +1,72 @@
-/**
- * Types for the deterministic + AI recommendation API.
- *
- * Contract (backend, source of truth):
- *   POST /api/v1/recommendations/sessions  (auth required)
- *     body -> CreateRecommendationSessionRequest
- *     returns -> RecommendationSession (already includes `items`)
- *
- * The free-text user prompt is passed through `contextData.userPrompt`; the
- * backend AI strategy reads `session.contextData` as the "diner's request
- * context". GROUP mode across every owned profile yields the safety
- * intersection (an item must be safe for every selected profile).
- */
+// types/recommendation.ts
+
+export interface ProfileSummary {
+  uuid: string;
+  profileName: string;
+  relationship: string;
+  gender: string;
+  isDefault: boolean;
+  avatarMediaUuid?: string;
+}
+
+export interface ProfileItemRequest {
+  profileId: string; // Profile UUID
+  isPrimary: boolean;
+  budgetMin?: number;
+  budgetMax?: number;
+}
+
+export interface CreateSessionRequest {
+  mode: "SINGLE" | "GROUP";
+  requestSource: "APP" | "WEB" | "HOMEPAGE_AUTO";
+  mealTypeId?: number;
+  searchRadiusKm?: number;
+  maximumPrice?: number;
+  currencyCode?: string;
+  requestedLimit?: number;
+  contextData?: Record<string, any>;
+  profiles: ProfileItemRequest[];
+}
+
+export interface SessionResponse {
+  uuid: string;
+  mode: "SINGLE" | "GROUP";
+  status: "PENDING" | "PROCESSING" | "READY" | "COMPLETED" | "FAILED";
+  requestSource: string;
+  searchRadiusKm?: number;
+  maximumPrice?: number;
+  currencyCode?: string;
+  requestedLimit: number;
+  candidateCount: number;
+  eligibleCount: number;
+  contextData?: Record<string, any>;
+  startedAt: string;
+  completedAt?: string;
+}
+
+export interface RecommendationItemDto {
+  uuid: string;
+  menuItemId: number;
+  menuItemName: string;
+  storeId: number;
+  storeName: string;
+  rankPosition: number;
+  finalScore: number;
+  groupScore?: number;
+  candidateSource: string;
+  distanceKm?: number;
+  priceSnapshot?: number;
+  currencyCode?: string;
+  scoreBreakdown?: Record<string, number>;
+  reasonCodes?: string[];
+  reasonText?: string;
+  isExploration: boolean;
+  createdAt: string;
+}
+
+/* ========================================================================== */
+/* Backward Compatibility Types for Existing Codebase                         */
+/* ========================================================================== */
 
 export type RecommendationMode = "SINGLE" | "GROUP";
 
