@@ -8,13 +8,12 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { HiOutlineLightBulb, HiSparkles } from "react-icons/hi2";
 
-import { IoClose, IoRefresh, IoSparkles } from "react-icons/io5";
+import { IoAlertCircleOutline, IoClose, IoRefresh, IoSparkles } from "react-icons/io5";
 
 import { MdSwipe } from "react-icons/md";
 import { RiRobot2Line } from "react-icons/ri";
 import { TbWheel } from "react-icons/tb";
 
-import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
 import {
@@ -27,7 +26,6 @@ import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
 import AiPromptRecommender from "./AiPromptRecommender";
 
-import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import type { MemberProfile } from "@/types/member-profile/member-profile";
 
 type ModalTab = "swipe" | "spin";
@@ -54,62 +52,12 @@ const MODAL_TABS: ModalTabItem[] = [
   },
 ];
 
-function getTopRecommendation(
-  foods: CatalogMenuItem[],
-): CatalogMenuItem | null {
-  return foods[0] ?? null;
-}
-
-function getPreferenceLabels(foods: CatalogMenuItem[]): string[] {
-  const values = new Set<string>();
-
-  foods.slice(0, 6).forEach((food) => {
-    if (!Array.isArray(food.food?.dietaryTypes)) {
-      return;
-    }
-
-    food.food.dietaryTypes.forEach((item) => {
-      if (item.name) {
-        values.add(item.name);
-      }
-    });
-  });
-
-  return Array.from(values).slice(0, 4);
-}
-
 export default function Model() {
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<ModalTab>("swipe");
-
-  const {
-    data: menuItems = [],
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useGetMenuItemsQuery();
-
-  const recommendedFoods = useMemo(
-    () =>
-      [...menuItems]
-        .filter((food) => food.availabilityStatus === "AVAILABLE")
-        .sort((firstFood, secondFood) => {
-          if (firstFood.isFeatured !== secondFood.isFeatured) {
-            return firstFood.isFeatured ? -1 : 1;
-          }
-
-          return (
-            Number(secondFood.store?.averageRating ?? 0) -
-            Number(firstFood.store?.averageRating ?? 0)
-          );
-        }),
-    [menuItems],
-  );
 
   // --- Real recommendation session, shared by the swipe deck and the AI
   // prompt box below it (previously two independent features: the swipe
@@ -216,26 +164,8 @@ export default function Model() {
   // Enrich the ranked recommendation UUIDs with full catalog detail (image,
   // store, price, ...) that SwipeCardTinderStyle's card UI needs but
   // RecommendationItem does not carry.
-  const { enrichedItems: enrichedSwipeFoods } = useEnrichedRecommendationItems(
-    session,
-    sessionItems,
-  );
-
-  // Personalized swipe deck when a session produced enriched results;
-  // otherwise fall back to the plain catalog browse list so swiping still
-  // works for anonymous users or while the session is still loading.
-  const swipeFoods =
-    enrichedSwipeFoods.length > 0 ? enrichedSwipeFoods : recommendedFoods;
-
-  const topRecommendation = useMemo(
-    () => getTopRecommendation(recommendedFoods),
-    [recommendedFoods],
-  );
-
-  const preferenceLabels = useMemo(
-    () => getPreferenceLabels(recommendedFoods),
-    [recommendedFoods],
-  );
+  const { enrichedItems: enrichedSwipeFoods, isEnriching } =
+    useEnrichedRecommendationItems(session, sessionItems);
 
   const activeTabInformation =
     MODAL_TABS.find((tab) => tab.id === activeTab) ?? MODAL_TABS[0];
@@ -278,7 +208,54 @@ export default function Model() {
   };
 
   const renderTabContent = () => {
-    if (isLoading || isFetching) {
+    if (activeTab === "spin") {
+      return <SpinFood />;
+    }
+
+    // The swipe deck must never fall back to the raw, unfiltered catalog —
+    // every state below is explicit so it can never look like "here are
+    // random menu items" when it is actually "no session yet" / "no safe
+    // matches" / "sign in required".
+
+    if (isLoadingProfiles) {
+      return (
+        <div className="flex min-h-[460px] flex-col items-center justify-center gap-5 px-5 text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-100 border-t-primary-800" />
+          <p className="text-[16px] text-gray-500">កំពុងផ្ទុកប្រវត្តិរូប...</p>
+        </div>
+      );
+    }
+
+    if (!canRecommend) {
+      return (
+        <div className="flex min-h-[460px] flex-col items-center justify-center gap-4 px-6 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50">
+            <RiRobot2Line className="text-[38px] text-amber-600" />
+          </div>
+
+          <p className="text-[20px] font-semibold text-primary-900">
+            សូមចូលគណនី និងបង្កើតប្រវត្តិរូប
+          </p>
+
+          <p className="max-w-[350px] text-[16px] leading-7 text-gray-500">
+            ការណែនាំម្ហូបទាមទារឱ្យអ្នកចូលគណនី ដើម្បីត្រួតពិនិត្យសុវត្ថិភាពទៅតាមអាឡែហ្ស៊ី
+            និងលក្ខខណ្ឌសុខភាពរបស់អ្នក។
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = "/api/auth/login";
+            }}
+            className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
+          >
+            ចូលគណនី
+          </button>
+        </div>
+      );
+    }
+
+    if (isSessionLoading || isEnriching) {
       return (
         <div className="flex  min-h-[460px] flex-col items-center justify-center gap-5 px-5 text-center">
           <div className="relative flex h-20 w-20 items-center justify-center">
@@ -310,16 +287,16 @@ export default function Model() {
       );
     }
 
-    if (isError) {
+    if (sessionError) {
       return (
         <div className="flex min-h-[460px] flex-col items-center justify-center gap-5 px-6 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
-            <RiRobot2Line className="text-[38px] text-red-500" />
+            <IoAlertCircleOutline className="text-[38px] text-red-500" />
           </div>
 
           <div>
             <p className="text-[20px] font-semibold text-red-500">
-              AI មិនអាចទាញយកទិន្នន័យបានទេ
+              AI មិនអាចផ្ទុកការណែនាំបានទេ
             </p>
 
             <p className="mt-2 text-[16px] leading-7 text-gray-500">
@@ -329,27 +306,17 @@ export default function Model() {
 
           <button
             type="button"
-            onClick={() => refetch()}
+            onClick={() => runRecommendation(prompt.trim() || undefined)}
             className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
           >
             <IoRefresh className="text-[20px]" />
             ព្យាយាមម្តងទៀត
           </button>
-
-          <details className="max-w-full">
-            <summary className="cursor-pointer text-[16px] text-gray-400">
-              ព័ត៌មានបច្ចេកទេស
-            </summary>
-
-            <pre className="mt-3 max-w-full overflow-auto whitespace-pre-wrap rounded-xl bg-red-50 p-3 text-left text-[14px] text-red-500">
-              {JSON.stringify(error, null, 2)}
-            </pre>
-          </details>
         </div>
       );
     }
 
-    if (recommendedFoods.length === 0) {
+    if (session && enrichedSwipeFoods.length === 0) {
       return (
         <div className="flex min-h-[460px] flex-col items-center justify-center gap-4 px-6 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-50">
@@ -357,44 +324,61 @@ export default function Model() {
           </div>
 
           <p className="text-[20px] font-semibold text-primary-900">
-            មិនទាន់មានការណែនាំទេ
+            រកមិនឃើញម្ហូបដែលត្រូវគ្នាទេ
           </p>
 
           <p className="max-w-[350px] text-[16px] leading-7 text-gray-500">
-            AI នឹងបង្ហាញមុខម្ហូបនៅពេលមានទិន្នន័យសមស្របសម្រាប់អ្នក
+            គ្មានមុខម្ហូបណាត្រូវនឹងលក្ខខណ្ឌសុវត្ថិភាព អាឡែហ្ស៊ី ឬរបបអាហាររបស់អ្នកទេ។
+            សូមសាកល្បងកែប្រែពាក្យសុំ ថវិកា ឬពិនិត្យការកំណត់សុវត្ថិភាពប្រវត្តិរូប។
           </p>
+
+          <button
+            type="button"
+            onClick={() => runRecommendation(prompt.trim() || undefined)}
+            className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
+          >
+            <IoRefresh className="text-[20px]" />
+            ព្យាយាមម្តងទៀត
+          </button>
         </div>
       );
     }
 
-    if (activeTab === "swipe") {
+    if (enrichedSwipeFoods.length === 0) {
+      // Session hasn't been created yet (e.g. the auto-trigger effect
+      // hasn't fired on this render). Keep this brief — the effect above
+      // runs immediately once canRecommend/targetProfiles are ready.
       return (
-        <div className="flex w-full flex-col">
-          <div className="flex w-full justify-center">
-            <SwipeCardTinderStyle foods={swipeFoods} />
-          </div>
-          {/* Same recommendation session feeds the deck above: submitting a
-              prompt here re-ranks the swipe cards too, not just this list. */}
-          <AiPromptRecommender
-            prompt={prompt}
-            onPromptChange={setPrompt}
-            onSubmit={handlePromptSubmit}
-            isLoading={isSessionLoading}
-            error={sessionError}
-            items={sessionItems}
-            canRecommend={canRecommend}
-            isLoadingProfiles={isLoadingProfiles}
-            profiles={activeProfiles}
-            targetProfiles={targetProfiles}
-            onToggleProfile={handleToggleProfile}
-            onSelectAllProfiles={handleSelectAllProfiles}
-            allProfilesSelected={allActiveProfilesSelected}
-          />
+        <div className="flex min-h-[460px] flex-col items-center justify-center gap-5 px-5 text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-100 border-t-primary-800" />
         </div>
       );
     }
 
-    return <SpinFood />;
+    return (
+      <div className="flex w-full flex-col">
+        <div className="flex w-full justify-center">
+          <SwipeCardTinderStyle foods={enrichedSwipeFoods} />
+        </div>
+        {/* Same recommendation session feeds the deck above: submitting a
+            prompt here re-ranks the swipe cards too, not just this list. */}
+        <AiPromptRecommender
+          prompt={prompt}
+          onPromptChange={setPrompt}
+          onSubmit={handlePromptSubmit}
+          isLoading={isSessionLoading}
+          error={sessionError}
+          items={sessionItems}
+          canRecommend={canRecommend}
+          isLoadingProfiles={isLoadingProfiles}
+          profiles={activeProfiles}
+          targetProfiles={targetProfiles}
+          onToggleProfile={handleToggleProfile}
+          onSelectAllProfiles={handleSelectAllProfiles}
+          allProfilesSelected={allActiveProfilesSelected}
+        />
+      </div>
+    );
   };
 
   return (
