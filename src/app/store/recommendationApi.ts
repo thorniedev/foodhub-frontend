@@ -2,43 +2,86 @@ import { baseApi } from "./baseApi";
 
 import type {
   CreateRecommendationSessionRequest,
+  RecommendationItem,
   RecommendationSession,
 } from "@/types/recommendation";
 
 /**
  * Recommendation session API. Goes through the Next BFF proxy
  * (`/recommendations/*` -> `<backend>/api/v1/recommendations/*`), which
- * attaches the access token server-side. The browser never holds the backend
- * origin or token, and never calls the recommendation engine directly.
+ * attaches the access token server-side.
+ *
+ * Implements the 2-step recommendation flow:
+ *   1. POST /api/v1/recommendations/sessions -> creates session (items: null)
+ *   2. GET /api/v1/recommendations/sessions/{uuid}/items -> retrieves ranked items
  */
 export const recommendationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    /**
-     * POST /api/v1/recommendations/sessions
-     * Creates a session (safety-filtered, ranked) and returns it with `items`.
-     * The user prompt travels in `contextData.userPrompt`.
-     */
     createRecommendationSession: builder.mutation<
       RecommendationSession,
       CreateRecommendationSessionRequest
     >({
-      query: (body) => ({
-        url: "/recommendations/sessions",
-        method: "POST",
-        body,
-      }),
-      transformResponse: (response: unknown): RecommendationSession => {
-        // Tolerate both the raw DTO and an `{ payload }` envelope.
-        if (
-          response &&
-          typeof response === "object" &&
-          "payload" in response &&
-          (response as { payload?: unknown }).payload &&
-          typeof (response as { payload?: unknown }).payload === "object"
-        ) {
-          return (response as { payload: RecommendationSession }).payload;
+      async queryFn(body, _queryApi, _extraOptions, fetchWithBQ) {
+        // Step 1: Create session
+        const createResult = await fetchWithBQ({
+          url: "/recommendations/sessions",
+          method: "POST",
+          body,
+        });
+
+        if (createResult.error) {
+          return { error: createResult.error };
         }
-        return response as RecommendationSession;
+
+        const rawSession = createResult.data as any;
+        const session: RecommendationSession =
+          rawSession?.payload ?? rawSession;
+
+        if (!session || !session.uuid) {
+          return { data: session };
+        }
+
+        // If items are already populated, return directly
+        if (Array.isArray(session.items) && session.items.length > 0) {
+          return { data: session };
+        }
+
+        // Step 2: Fetch ranked recommendation items for this session
+        const limit = body.requestedLimit || 20;
+        const itemsResult = await fetchWithBQ({
+          url: `/recommendations/sessions/${encodeURIComponent(session.uuid)}/items?limit=${limit}`,
+          method: "GET",
+        });
+
+        if (itemsResult.error) {
+          return {
+            data: {
+              ...session,
+              items: [],
+            },
+          };
+        }
+
+        const rawItems = itemsResult.data as any;
+        const items: RecommendationItem[] = Array.isArray(rawItems)
+          ? rawItems
+          : rawItems?.payload?.content ??
+            rawItems?.payload ??
+            rawItems?.content ??
+            rawItems?.items ??
+            [];
+
+        const normalizedItems: RecommendationItem[] = items.map((it: any) => ({
+          ...it,
+          isExploration: it.isExploration ?? it.exploration ?? false,
+        }));
+
+        return {
+          data: {
+            ...session,
+            items: normalizedItems,
+          },
+        };
       },
     }),
   }),
@@ -47,3 +90,4 @@ export const recommendationApi = baseApi.injectEndpoints({
 });
 
 export const { useCreateRecommendationSessionMutation } = recommendationApi;
+

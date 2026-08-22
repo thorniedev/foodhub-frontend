@@ -90,7 +90,9 @@ export interface CreateRecommendationSessionRequest {
 
 export interface RecommendationItem {
   uuid: string;
+  menuItemId?: number;
   menuItemName: string | null;
+  storeId?: number;
   storeName: string | null;
   rankPosition: number | null;
   finalScore: number | null;
@@ -105,6 +107,7 @@ export interface RecommendationItem {
   /** Per-strategy contributions, e.g. { AI_JUDGMENT: 0.9, CONTENT_BASED: 0.8 }. */
   scoreBreakdown: Record<string, number> | null;
   isExploration: boolean;
+  exploration?: boolean;
 }
 
 export interface RecommendationSession {
