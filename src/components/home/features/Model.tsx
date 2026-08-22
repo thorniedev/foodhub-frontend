@@ -255,113 +255,125 @@ export default function Model() {
       );
     }
 
-    if (isSessionLoading || isEnriching) {
-      return (
-        <div className="flex  min-h-[460px] flex-col items-center justify-center gap-5 px-5 text-center">
-          <div className="relative flex h-20 w-20 items-center justify-center">
-            <motion.div
-              className="absolute inset-0 rounded-full border-4 border-primary-100 border-t-primary-800"
-              animate={{
-                rotate: 360,
-              }}
-              transition={{
-                duration: 0.9,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
+    // From here on the user has an account and at least one profile, so
+    // AiPromptRecommender (which owns the profile-switcher badge) stays
+    // mounted no matter what the deck area below shows — loading, error, or
+    // "no matches for this profile combination". Otherwise a bad result
+    // (e.g. "all profiles" selected with no shared-safe item) would trap the
+    // user on a dead end with no visible way to switch to just one profile.
+    const deckArea = (() => {
+      if (isSessionLoading || isEnriching) {
+        return (
+          <div className="flex min-h-[320px] flex-col items-center justify-center gap-5 px-5 text-center">
+            <div className="relative flex h-20 w-20 items-center justify-center">
+              <motion.div
+                className="absolute inset-0 rounded-full border-4 border-primary-100 border-t-primary-800"
+                animate={{
+                  rotate: 360,
+                }}
+                transition={{
+                  duration: 0.9,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
 
-            <RiRobot2Line className="text-[34px] text-primary-800 dark:text-primary-dark" />
+              <RiRobot2Line className="text-[34px] text-primary-800 dark:text-primary-dark" />
+            </div>
+
+            <div>
+              <p className="text-[18px] font-semibold text-primary-900">
+                AI កំពុងវិភាគចំណូលចិត្តរបស់អ្នក
+              </p>
+
+              <p className="mt-2 text-[16px] leading-7 text-gray-500">
+                កំពុងរៀបចំមុខម្ហូបដែលសមស្រប និងមានសុវត្ថិភាពសម្រាប់អ្នក
+              </p>
+            </div>
           </div>
+        );
+      }
 
-          <div>
-            <p className="text-[18px] font-semibold text-primary-900">
-              AI កំពុងវិភាគចំណូលចិត្តរបស់អ្នក
+      if (sessionError) {
+        return (
+          <div className="flex min-h-[320px] flex-col items-center justify-center gap-5 px-6 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
+              <IoAlertCircleOutline className="text-[38px] text-red-500" />
+            </div>
+
+            <div>
+              <p className="text-[20px] font-semibold text-red-500">
+                AI មិនអាចផ្ទុកការណែនាំបានទេ
+              </p>
+
+              <p className="mt-2 text-[16px] leading-7 text-gray-500">
+                សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្តងទៀត
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => runRecommendation(prompt.trim() || undefined)}
+              className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
+            >
+              <IoRefresh className="text-[20px]" />
+              ព្យាយាមម្តងទៀត
+            </button>
+          </div>
+        );
+      }
+
+      if (session && enrichedSwipeFoods.length === 0) {
+        return (
+          <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 px-6 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-50">
+              <HiOutlineLightBulb className="text-[38px] text-primary-700" />
+            </div>
+
+            <p className="text-[20px] font-semibold text-primary-900">
+              រកមិនឃើញម្ហូបដែលត្រូវគ្នាទេ
             </p>
 
-            <p className="mt-2 text-[16px] leading-7 text-gray-500">
-              កំពុងរៀបចំមុខម្ហូបដែលសមស្រប និងមានសុវត្ថិភាពសម្រាប់អ្នក
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    if (sessionError) {
-      return (
-        <div className="flex min-h-[460px] flex-col items-center justify-center gap-5 px-6 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
-            <IoAlertCircleOutline className="text-[38px] text-red-500" />
-          </div>
-
-          <div>
-            <p className="text-[20px] font-semibold text-red-500">
-              AI មិនអាចផ្ទុកការណែនាំបានទេ
+            <p className="max-w-[350px] text-[16px] leading-7 text-gray-500">
+              គ្មានមុខម្ហូបណាត្រូវនឹងលក្ខខណ្ឌសុវត្ថិភាព អាឡែហ្ស៊ី ឬរបបអាហាររបស់អ្នកទេ។
+              សូមសាកល្បងជ្រើសរើសប្រវត្តិរូបតែម្នាក់ជំនួសឱ្យទាំងអស់គ្នា ឬកែប្រែពាក្យសុំ
+              និងការកំណត់សុវត្ថិភាពប្រវត្តិរូប។
             </p>
 
-            <p className="mt-2 text-[16px] leading-7 text-gray-500">
-              សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្តងទៀត
-            </p>
+            <button
+              type="button"
+              onClick={() => runRecommendation(prompt.trim() || undefined)}
+              className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
+            >
+              <IoRefresh className="text-[20px]" />
+              ព្យាយាមម្តងទៀត
+            </button>
           </div>
+        );
+      }
 
-          <button
-            type="button"
-            onClick={() => runRecommendation(prompt.trim() || undefined)}
-            className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
-          >
-            <IoRefresh className="text-[20px]" />
-            ព្យាយាមម្តងទៀត
-          </button>
-        </div>
-      );
-    }
-
-    if (session && enrichedSwipeFoods.length === 0) {
-      return (
-        <div className="flex min-h-[460px] flex-col items-center justify-center gap-4 px-6 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-50">
-            <HiOutlineLightBulb className="text-[38px] text-primary-700" />
+      if (enrichedSwipeFoods.length === 0) {
+        // Session hasn't been created yet (e.g. the auto-trigger effect
+        // hasn't fired on this render). Keep this brief — the effect above
+        // runs immediately once canRecommend/targetProfiles are ready.
+        return (
+          <div className="flex min-h-[320px] flex-col items-center justify-center gap-5 px-5 text-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-100 border-t-primary-800" />
           </div>
+        );
+      }
 
-          <p className="text-[20px] font-semibold text-primary-900">
-            រកមិនឃើញម្ហូបដែលត្រូវគ្នាទេ
-          </p>
-
-          <p className="max-w-[350px] text-[16px] leading-7 text-gray-500">
-            គ្មានមុខម្ហូបណាត្រូវនឹងលក្ខខណ្ឌសុវត្ថិភាព អាឡែហ្ស៊ី ឬរបបអាហាររបស់អ្នកទេ។
-            សូមសាកល្បងកែប្រែពាក្យសុំ ថវិកា ឬពិនិត្យការកំណត់សុវត្ថិភាពប្រវត្តិរូប។
-          </p>
-
-          <button
-            type="button"
-            onClick={() => runRecommendation(prompt.trim() || undefined)}
-            className="flex items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-[16px] font-semibold text-white transition hover:bg-primary-700 active:scale-95"
-          >
-            <IoRefresh className="text-[20px]" />
-            ព្យាយាមម្តងទៀត
-          </button>
-        </div>
-      );
-    }
-
-    if (enrichedSwipeFoods.length === 0) {
-      // Session hasn't been created yet (e.g. the auto-trigger effect
-      // hasn't fired on this render). Keep this brief — the effect above
-      // runs immediately once canRecommend/targetProfiles are ready.
-      return (
-        <div className="flex min-h-[460px] flex-col items-center justify-center gap-5 px-5 text-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-100 border-t-primary-800" />
-        </div>
-      );
-    }
+      return <SwipeCardTinderStyle foods={enrichedSwipeFoods} />;
+    })();
 
     return (
       <div className="flex w-full flex-col">
-        <div className="flex w-full justify-center">
-          <SwipeCardTinderStyle foods={enrichedSwipeFoods} />
-        </div>
+        <div className="flex w-full justify-center">{deckArea}</div>
         {/* Same recommendation session feeds the deck above: submitting a
-            prompt here re-ranks the swipe cards too, not just this list. */}
+            prompt here re-ranks the swipe cards too, not just this list.
+            Always mounted once canRecommend is true so the profile switcher
+            stays reachable even when the deck area shows an error/empty
+            state. */}
         <AiPromptRecommender
           prompt={prompt}
           onPromptChange={setPrompt}
