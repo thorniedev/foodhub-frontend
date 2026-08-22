@@ -8,6 +8,7 @@ import { IoMdArrowBack, IoMdArrowForward, IoMdTime } from "react-icons/io";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart, FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining, MdSwipe } from "react-icons/md";
+import { Compass, Sparkles } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperInstance } from "swiper";
@@ -22,13 +23,14 @@ import type {
   CatalogDietaryType,
   CatalogMenuItem,
 } from "@/types/catalog-menu-item";
+import type { EnrichedRecommendationItem } from "@/hooks/useEnrichedRecommendationItems";
 
 type SwipeCardTinderStyleProps = {
-  foods?: CatalogMenuItem[];
+  foods?: EnrichedRecommendationItem[];
 };
 
 type SwipeFoodCardProps = {
-  food: CatalogMenuItem;
+  food: EnrichedRecommendationItem;
 };
 
 const FAVORITES_STORAGE_KEY = "foodhub-favorite-menu-items";
@@ -271,6 +273,14 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
 
   const displayedDistance = formatDistance(food.distanceKm);
 
+  const matchScore =
+    food.recommendation?.finalScore != null
+      ? Math.round(food.recommendation.finalScore * 100)
+      : null;
+
+  const reasonText = food.recommendation?.reasonText?.trim() || null;
+  const isExploration = food.isExploration === true;
+
   return (
     <Link
       href={`/menu-items/${food.uuid}`}
@@ -295,6 +305,26 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           }}
           className="pointer-events-none h-full w-full object-cover"
         />
+
+        {(matchScore != null || isExploration) && (
+          <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
+            {matchScore != null && (
+              <span
+                title={reasonText ?? undefined}
+                className="rounded-full bg-emerald-500/95 px-2.5 py-1 text-sm font-bold text-white shadow-sm"
+              >
+                {matchScore}% Match
+              </span>
+            )}
+
+            {isExploration && (
+              <span className="flex items-center gap-1 rounded-full bg-amber-500/95 px-2.5 py-1 text-sm font-bold text-white shadow-sm">
+                <Compass className="h-3.5 w-3.5" />
+                ស្វែងរកថ្មី
+              </span>
+            )}
+          </div>
+        )}
 
         <button
           type="button"
@@ -354,6 +384,13 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
             <span>{displayedDistance}</span>
           </div>
         </div>
+
+        {reasonText && (
+          <p className="line-clamp-1 flex items-center gap-1.5 text-sm text-amber-700">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            {reasonText}
+          </p>
+        )}
 
         {dietaryTypes.length > 0 && (
           <div className="flex items-center gap-2 overflow-hidden">

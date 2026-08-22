@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Send, Loader2, ShieldCheck } from "lucide-react";
+import { Compass, Sparkles, Send, Loader2, ShieldCheck } from "lucide-react";
 
 import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
 
@@ -194,6 +194,12 @@ export default function AiPromptRecommender({
                     <p className="mt-0.5 line-clamp-1 text-[13px] text-gray-600">
                       {item.reasonText}
                     </p>
+                  )}
+                  {item.isExploration && (
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                      <Compass className="h-3 w-3" />
+                      ស្វែងរកថ្មី
+                    </span>
                   )}
                 </div>
                 <div className="shrink-0 text-right">

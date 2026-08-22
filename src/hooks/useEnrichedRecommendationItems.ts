@@ -13,6 +13,17 @@ import type {
 } from "@/types/recommendation";
 
 /**
+ * Enriched catalog item plus the session-item fields the detail endpoint's
+ * own `recommendation` sub-object doesn't carry (it has finalScore/
+ * reasonText/reasonCodes/scoreBreakdown, but not isExploration or the
+ * session's rankPosition).
+ */
+export type EnrichedRecommendationItem = CatalogMenuItem & {
+  isExploration?: boolean;
+  rankPosition?: number | null;
+};
+
+/**
  * Enriches a recommendation session's thin ranked items (uuid, score,
  * reasonText...) with full catalog detail (image, store, price, location...)
  * needed for card/map rendering. The detail endpoint accepts the session
@@ -26,7 +37,9 @@ export function useEnrichedRecommendationItems(
   sessionItems: RecommendationItem[],
 ) {
   const dispatch = useDispatch<AppDispatch>();
-  const [enrichedItems, setEnrichedItems] = useState<CatalogMenuItem[]>([]);
+  const [enrichedItems, setEnrichedItems] = useState<
+    EnrichedRecommendationItem[]
+  >([]);
   const [isEnriching, setIsEnriching] = useState(false);
 
   useEffect(() => {
@@ -42,6 +55,10 @@ export function useEnrichedRecommendationItems(
 
       setIsEnriching(true);
 
+      const itemsByUuid = new Map(
+        sessionItems.map((item) => [item.uuid, item]),
+      );
+
       const results = await Promise.all(
         sessionItems.map((item) =>
           dispatch(
@@ -51,13 +68,23 @@ export function useEnrichedRecommendationItems(
             }),
           )
             .unwrap()
+            .then((food): EnrichedRecommendationItem => {
+              const sourceItem = itemsByUuid.get(food.uuid);
+              return {
+                ...food,
+                isExploration: sourceItem?.isExploration,
+                rankPosition: sourceItem?.rankPosition,
+              };
+            })
             .catch(() => null),
         ),
       );
 
       if (!cancelled) {
         setEnrichedItems(
-          results.filter((food): food is CatalogMenuItem => food !== null),
+          results.filter(
+            (food): food is EnrichedRecommendationItem => food !== null,
+          ),
         );
         setIsEnriching(false);
       }
