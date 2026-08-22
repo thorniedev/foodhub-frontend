@@ -130,52 +130,16 @@ export default function LocationHeader({
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto">
           <RecommendationModeSwitch mode={mode} onChange={onModeChange} />
 
-          <div className="grid grid-cols-2 gap-2 sm:flex">
-            {onOpenFilters && (
-              <button
-                type="button"
-                onClick={onOpenFilters}
-                className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
-              >
-                <IoOptionsOutline className="text-[22px]" />
-                តម្រង
-              </button>
-            )}
-
+          {onOpenFilters && (
             <button
               type="button"
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-400"
+              onClick={onOpenFilters}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
             >
-              <motion.span
-                animate={
-                  isRefreshing
-                    ? {
-                        rotate: 360,
-                      }
-                    : {
-                        rotate: 0,
-                      }
-                }
-                transition={
-                  isRefreshing
-                    ? {
-                        duration: 0.8,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }
-                    : {
-                        duration: 0.2,
-                      }
-                }
-              >
-                <IoRefreshOutline className="text-[22px]" />
-              </motion.span>
-
-              <span>{isRefreshing ? "កំពុងផ្ទុក" : "Refresh"}</span>
+              <IoOptionsOutline className="text-[22px]" />
+              តម្រង
             </button>
-          </div>
+          )}
         </div>
       </div>
 

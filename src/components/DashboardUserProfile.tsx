@@ -363,20 +363,6 @@ export default function DashboardUserProfile({
               <LuLayoutDashboard className="h-5 w-5" />
               <span className="flex-1">ផ្ទាំងគ្រប់គ្រង (Dashboard)</span>
             </Link>
-            <Link
-              href="/friends"
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-base font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-[#136C34] dark:text-slate-200 dark:hover:bg-emerald-950/40"
-            >
-              <UserRound className="h-5 w-5" />
-              <span className="flex-1">មិត្តភក្តិ (Friends)</span>
-            </Link>
-            <Link
-              href="/meetup/create"
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-base font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-[#136C34] dark:text-slate-200 dark:hover:bg-emerald-950/40"
-            >
-              <ShieldCheck className="h-5 w-5" />
-              <span className="flex-1">បង្កើត Meetup ញ៉ាំអាហារ</span>
-            </Link>
             <button
               type="button"
               onClick={handleLogout}
