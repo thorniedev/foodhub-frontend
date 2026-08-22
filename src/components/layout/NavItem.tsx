@@ -18,17 +18,21 @@ export const navItems: NavItem[] = [
     label: "គណនីសមាជិកគ្រួសារ",
     icon: <LuUsersRound />,
   },
-  // {
-  //   href: "/dashboard/review",
-  //   label: "ប្រវត្តិការវាយតម្លៃអាហារ",
-  //   icon: <FaHistory />,
-  // },
+  {
+    href: "/dashboard/friends",
+    label: "មិត្តភក្តិ",
+    icon: <LuUsersRound />,
+  },
+  {
+    href: "/dashboard/meetup",
+    label: "ការណាត់ញ៉ាំអាហារ (Meetup)",
+    icon: <FaHistory />,
+  },
   {
     href: "/dashboard/history",
     label: "ប្រវត្តិដែលបានមើលអាហារ",
     icon: <FaHistory />,
   },
-
   { href: "/dashboard/favorites", label: "ចំណូលចិត្ត", icon: <FaRegHeart /> },
   {
     href: "/dashboard/notifications",
