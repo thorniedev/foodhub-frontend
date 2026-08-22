@@ -964,19 +964,20 @@ export default function LocationContent({
                     onAction={() => setFiltersOpen(true)}
                   />
                 ) : (
-                  <SingleRecommendation
-                    menuItems={matchingFoods}
-                    stores={foodStores}
+                  <GroupRecommendation
+                    meetupMode="friends"
+                    menuItems={menuItems}
+                    stores={groupFilteredStores}
                     userLocation={coordinates}
-                    filters={singleLocationFilters}
-                    foodSort={effectiveFoodFilters.sortBy}
-                    searchQuery=""
+                    filters={groupLocationFilters}
+                    searchQuery={searchQuery}
                     onOpenFilters={() => setFiltersOpen(true)}
                     onResultCountChange={setResultCount}
                   />
                 )
               ) : (
                 <GroupRecommendation
+                  meetupMode="guest"
                   menuItems={menuItems}
                   stores={groupFilteredStores}
                   userLocation={coordinates}
