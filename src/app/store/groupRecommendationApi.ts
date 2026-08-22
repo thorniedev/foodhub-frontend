@@ -23,6 +23,7 @@ import type {
   SubmitMeetupVoteRequest,
   UpdateMeetupGroupArgs,
   UpdateMeetupParticipantLocationArgs,
+  MeetupWinningCardResponse,
 } from "@/types/meetup-api";
 
 export const groupRecommendationApi = baseApi.injectEndpoints({
@@ -293,6 +294,96 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
         { type: "GroupVoting", id: `MEETUP-${meetupUuid}` },
       ],
     }),
+    /** POST /api/v1/meetup/groups/{uuid}/complete-voting */
+    completeMeetupVoting: builder.mutation<MeetupWinningCardResponse, string>({
+      query: (meetupUuid) => ({
+        url: `/meetup/groups/${encodeURIComponent(meetupUuid)}/complete-voting`,
+        method: "POST",
+      }),
+      transformResponse: (response: unknown): MeetupWinningCardResponse => {
+        if (typeof response === "object" && response !== null) {
+          const raw = response as Record<string, unknown>;
+          const target = (raw.payload || raw.data || raw) as Record<string, unknown>;
+          return {
+            meetupUuid: typeof target.meetupUuid === "string" ? target.meetupUuid : "",
+            title: typeof target.title === "string" ? target.title : "",
+            winningCandidateId: typeof target.winningCandidateId === "number" ? target.winningCandidateId : 0,
+            winningCandidateName: typeof target.winningCandidateName === "string" ? target.winningCandidateName : "Winner Choice",
+            totalVotes: typeof target.totalVotes === "number" ? target.totalVotes : 0,
+            meetingPointLat: typeof target.meetingPointLat === "number" ? target.meetingPointLat : 0,
+            meetingPointLng: typeof target.meetingPointLng === "number" ? target.meetingPointLng : 0,
+            mapsDirectionsUrl: typeof target.mapsDirectionsUrl === "string" ? target.mapsDirectionsUrl : "",
+            decidedAt: typeof target.decidedAt === "string" ? target.decidedAt : new Date().toISOString(),
+            storeName: typeof target.storeName === "string" ? target.storeName : undefined,
+            foodName: typeof target.foodName === "string" ? target.foodName : undefined,
+            foodPhotoUrl: typeof target.foodPhotoUrl === "string" ? target.foodPhotoUrl : undefined,
+            rating: typeof target.rating === "number" ? target.rating : undefined,
+            price: typeof target.price === "number" ? target.price : undefined,
+            distanceKm: typeof target.distanceKm === "number" ? target.distanceKm : undefined,
+          };
+        }
+        return {
+          meetupUuid: "",
+          title: "",
+          winningCandidateId: 0,
+          winningCandidateName: "",
+          totalVotes: 0,
+          meetingPointLat: 0,
+          meetingPointLng: 0,
+          mapsDirectionsUrl: "",
+          decidedAt: new Date().toISOString(),
+        };
+      },
+      invalidatesTags: (_result, _error, meetupUuid) => [
+        { type: "GroupRecommendation", id: `MEETUP-${meetupUuid}` },
+        { type: "GroupVoting", id: `MEETUP-${meetupUuid}` },
+      ],
+    }),
+
+    /** GET /api/v1/meetup/groups/{uuid}/winning-card */
+    getMeetupWinningCard: builder.query<MeetupWinningCardResponse, string>({
+      query: (meetupUuid) => ({
+        url: `/meetup/groups/${encodeURIComponent(meetupUuid)}/winning-card`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown): MeetupWinningCardResponse => {
+        if (typeof response === "object" && response !== null) {
+          const raw = response as Record<string, unknown>;
+          const target = (raw.payload || raw.data || raw) as Record<string, unknown>;
+          return {
+            meetupUuid: typeof target.meetupUuid === "string" ? target.meetupUuid : "",
+            title: typeof target.title === "string" ? target.title : "",
+            winningCandidateId: typeof target.winningCandidateId === "number" ? target.winningCandidateId : 0,
+            winningCandidateName: typeof target.winningCandidateName === "string" ? target.winningCandidateName : "Winner Choice",
+            totalVotes: typeof target.totalVotes === "number" ? target.totalVotes : 0,
+            meetingPointLat: typeof target.meetingPointLat === "number" ? target.meetingPointLat : 0,
+            meetingPointLng: typeof target.meetingPointLng === "number" ? target.meetingPointLng : 0,
+            mapsDirectionsUrl: typeof target.mapsDirectionsUrl === "string" ? target.mapsDirectionsUrl : "",
+            decidedAt: typeof target.decidedAt === "string" ? target.decidedAt : new Date().toISOString(),
+            storeName: typeof target.storeName === "string" ? target.storeName : undefined,
+            foodName: typeof target.foodName === "string" ? target.foodName : undefined,
+            foodPhotoUrl: typeof target.foodPhotoUrl === "string" ? target.foodPhotoUrl : undefined,
+            rating: typeof target.rating === "number" ? target.rating : undefined,
+            price: typeof target.price === "number" ? target.price : undefined,
+            distanceKm: typeof target.distanceKm === "number" ? target.distanceKm : undefined,
+          };
+        }
+        return {
+          meetupUuid: "",
+          title: "",
+          winningCandidateId: 0,
+          winningCandidateName: "",
+          totalVotes: 0,
+          meetingPointLat: 0,
+          meetingPointLng: 0,
+          mapsDirectionsUrl: "",
+          decidedAt: new Date().toISOString(),
+        };
+      },
+      providesTags: (_result, _error, meetupUuid) => [
+        { type: "GroupVoting", id: `MEETUP-${meetupUuid}` },
+      ],
+    }),
   }),
 
   overrideExisting: true,
@@ -305,6 +396,8 @@ export const {
   useResolveMeetupShareTokenQuery,
   useUpdateMeetupGroupMutation,
   useDeleteMeetupGroupMutation,
+  useCompleteMeetupVotingMutation,
+  useGetMeetupWinningCardQuery,
   // Participants
   useJoinMeetupParticipantMutation,
   useUpdateMeetupParticipantLocationMutation,
