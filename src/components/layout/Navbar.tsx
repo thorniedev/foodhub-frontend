@@ -155,10 +155,10 @@ export default function Navbar() {
           <Image
             src="/Image/foodHub-logo.png"
             alt="FoodHub logo"
-            width={160}
-            height={65}
+            width={198}
+            height={100}
             priority
-            className="block h-[40px] py-1 sm:h-[45px] md:h-[65px]"
+            className="block h-[40px] w-auto object-contain py-1 sm:h-[45px] md:h-[65px]"
           />
         </Link>
 

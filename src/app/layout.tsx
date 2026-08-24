@@ -1,12 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AOSInit } from "@/components/AOSInit";
-import { DrawCircleText } from "@/components/ui/DrawCircleText";
 
 import Providers from "@/app/store/Providers";
-import Footer from "@/components/layout/Footer";
-import Navbar from "@/components/layout/Navbar";
 import Preloader from "@/components/ui/Preloader";
 import PWARegister from "@/components/providers/PWARegister";
 const geistSans = Geist({
@@ -78,7 +74,7 @@ export const metadata: Metadata = {
   creator: "FoodHub Team",
   publisher: "FoodHub",
 
-  applicationName: "FoodHub",
+  applicationName: "ម្ហូបអាហារ",
   category: "Food & Drink",
 
   openGraph: {
@@ -113,7 +109,7 @@ export const metadata: Metadata = {
 
   appleWebApp: {
     capable: true,
-    title: "FoodHub",
+    title: "ម្ហូបអាហារ",
     statusBarStyle: "default",
   },
 

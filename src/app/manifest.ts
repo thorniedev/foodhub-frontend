@@ -3,10 +3,10 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     lang: "km",
-    name: "ម្ហូបហារ",
-    short_name: "Mhoubahar",
+    name: "ម្ហូបអាហារ",
+    short_name: "ម្ហូបអាហារ",
     description:
-      "Discover food, restaurants, and personalized food recommendations with Mhoubahar.",
+      "Discover food, restaurants, and personalized food recommendations with ម្ហូបអាហារ.",
 
     start_url: "/",
     scope: "/",
