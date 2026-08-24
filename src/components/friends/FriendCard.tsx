@@ -8,7 +8,6 @@ import {
   Shield,
   Utensils,
   UserMinus,
-  MoreVertical,
   Calendar,
   Loader2,
   AlertTriangle,
@@ -27,16 +26,16 @@ interface FriendCardProps {
 }
 
 function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return "Recently";
+  if (!dateStr) return "ថ្មីៗនេះ";
   try {
     const d = new Date(dateStr);
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("km-KH", {
       month: "short",
       day: "numeric",
       year: "numeric",
     }).format(d);
   } catch {
-    return "Recently";
+    return "ថ្មីៗនេះ";
   }
 }
 
@@ -61,17 +60,17 @@ export default function FriendCard({ friend }: FriendCardProps) {
         <div>
           {/* Header row: Avatar + Names + Options */}
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3.5">
+            <div className="flex min-w-0 flex-1 items-center gap-3.5">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-500 to-teal-700 text-lg font-bold text-white shadow-xs">
                 {initial}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h3 className="truncate text-base font-bold text-slate-900 dark:text-white">
                   {friend.username}
                 </h3>
                 <div className="flex items-center gap-1.5 text-xs text-slate-400">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Connected {formatDate(friend.connectedAt)}</span>
+                  <span>បានភ្ជាប់ {formatDate(friend.connectedAt)}</span>
                 </div>
               </div>
             </div>
@@ -79,7 +78,7 @@ export default function FriendCard({ friend }: FriendCardProps) {
             <button
               type="button"
               onClick={() => setShowRemoveDialog(true)}
-              title="Remove friend"
+              title="ដកមិត្តភក្តិ"
               className="rounded-full p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
             >
               <UserMinus className="h-4 w-4" />
@@ -91,7 +90,7 @@ export default function FriendCard({ friend }: FriendCardProps) {
             <div className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 border border-emerald-200/60 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/40">
               <Shield className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               <span className="truncate">
-                {friend.defaultProfileName || "Standard Dietary Profile"}
+                {friend.defaultProfileName || "ប្រវត្តិរូបរបបអាហារ"}
               </span>
             </div>
           </div>
@@ -104,7 +103,7 @@ export default function FriendCard({ friend }: FriendCardProps) {
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600/10 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white"
           >
             <Utensils className="h-3.5 w-3.5" />
-            Invite to Lunch / Meetup
+            ណាត់ញ៉ាំអាហារ
           </Link>
         </div>
       </div>
@@ -117,10 +116,10 @@ export default function FriendCard({ friend }: FriendCardProps) {
               <AlertTriangle className="h-6 w-6" />
             </div>
             <DialogTitle className="text-center text-xl font-bold text-slate-900 dark:text-white">
-              Remove Friend?
+              ដកមិត្តភក្តិ?
             </DialogTitle>
             <DialogDescription className="text-center text-sm text-slate-500 dark:text-slate-400">
-              Are you sure you want to remove <span className="font-semibold text-slate-800 dark:text-slate-200">@{friend.username}</span> from your friends list? You can reconnect anytime.
+              តើអ្នកប្រាកដថាចង់ដក <span className="font-semibold text-slate-800 dark:text-slate-200">@{friend.username}</span> ចេញពីបញ្ជីមិត្តភក្តិមែនទេ?
             </DialogDescription>
           </DialogHeader>
 
@@ -130,7 +129,7 @@ export default function FriendCard({ friend }: FriendCardProps) {
               onClick={() => setShowRemoveDialog(false)}
               className="rounded-2xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
             >
-              Cancel
+              បោះបង់
             </button>
             <button
               type="button"
@@ -138,7 +137,7 @@ export default function FriendCard({ friend }: FriendCardProps) {
               disabled={isDeleting}
               className="flex items-center justify-center gap-2 rounded-2xl bg-red-600 py-2.5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
             >
-              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Yes, Remove"}
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "ដកចេញ"}
             </button>
           </DialogFooter>
         </DialogContent>

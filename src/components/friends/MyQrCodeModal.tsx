@@ -14,7 +14,7 @@ import {
   useRefreshQrCodeMutation,
 } from "@/app/store/friendsApi";
 import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
-import { QrCode, RefreshCw, Share2, Check, Copy, User } from "lucide-react";
+import { QrCode, RefreshCw, Share2, Check, User } from "lucide-react";
 
 interface MyQrCodeModalProps {
   isOpen: boolean;
@@ -43,12 +43,12 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
     qrData?.username ||
     user?.username ||
     user?.firstName ||
-    "FoodHub Friend";
+    "មិត្តភក្តិ";
 
   const handleRefresh = async () => {
     try {
       await refreshQrCode().unwrap();
-      setRefreshMessage("QR Code refreshed!");
+      setRefreshMessage("បានបង្កើត QR ថ្មីរួចរាល់។");
       setTimeout(() => setRefreshMessage(null), 3000);
     } catch {
       // refetch query if mutation fails
@@ -60,8 +60,8 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Add ${displayName} on FoodHub`,
-          text: `Scan my FoodHub QR code or click to connect with @${displayName}!`,
+          title: `បន្ថែម ${displayName} នៅម្ហូបអាហារ`,
+          text: `ស្កេន QR របស់ខ្ញុំ ឬចុចតំណ ដើម្បីភ្ជាប់ជាមួយ @${displayName}`,
           url: qrValue,
         });
         return;
@@ -82,10 +82,10 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
             <QrCode className="h-6 w-6" />
           </div>
           <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
-            My Friend QR Code
+            QR មិត្តភក្តិរបស់ខ្ញុំ
           </DialogTitle>
           <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">
-            Let friends scan this code to connect instantly on FoodHub.
+            ឱ្យមិត្តភក្តិស្កេនកូដនេះ ដើម្បីភ្ជាប់គ្នាបានភ្លាមៗ។
           </DialogDescription>
         </DialogHeader>
 
@@ -139,7 +139,7 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
             <RefreshCw
               className={`h-4 w-4 ${isRefreshing ? "animate-spin text-emerald-600" : ""}`}
             />
-            Refresh QR
+            បង្កើត QR ថ្មី
           </button>
 
           <button
@@ -150,12 +150,12 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
             {copied ? (
               <>
                 <Check className="h-4 w-4" />
-                Copied!
+                បានចម្លង
               </>
             ) : (
               <>
                 <Share2 className="h-4 w-4" />
-                Share QR
+                ចែករំលែក QR
               </>
             )}
           </button>

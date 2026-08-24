@@ -5,11 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Clock,
-  Utensils,
   Store,
-  Calendar,
   Loader2,
-  ExternalLink,
 } from "lucide-react";
 import { useGetInteractionHistoryQuery } from "@/app/store/interactionApi";
 import { useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
@@ -24,7 +21,7 @@ function getMediaUrl(value: string | null | undefined): string {
 }
 
 function formatRelativeTime(dateStr?: string | null): string {
-  if (!dateStr) return "Recently";
+  if (!dateStr) return "ថ្មីៗនេះ";
   try {
     const d = new Date(dateStr);
     const now = new Date();
@@ -33,18 +30,18 @@ function formatRelativeTime(dateStr?: string | null): string {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMins < 2) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 2) return "ឥឡូវនេះ";
+    if (diffMins < 60) return `${diffMins} នាទីមុន`;
+    if (diffHours < 24) return `${diffHours} ម៉ោងមុន`;
+    if (diffDays < 7) return `${diffDays} ថ្ងៃមុន`;
 
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("km-KH", {
       month: "short",
       day: "numeric",
       year: "numeric",
     }).format(d);
   } catch {
-    return "Recently";
+    return "ថ្មីៗនេះ";
   }
 }
 
@@ -55,7 +52,7 @@ function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
   });
 
   const title =
-    itemDetail?.localName || itemDetail?.name || `Dish (${menuItemUuid.slice(0, 8)})`;
+    itemDetail?.localName || itemDetail?.name || "មុខម្ហូប";
   const price = itemDetail?.price != null ? `$${Number(itemDetail.price).toFixed(2)}` : null;
   const storeName = itemDetail?.store?.name || null;
   const thumbnail = itemDetail?.thumbnail || "/Image/default-food.png";
@@ -74,11 +71,11 @@ function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 text-xs text-slate-400">
               <Clock className="h-3.5 w-3.5" />
-              <span>Viewed {formatRelativeTime(event.occurredAt)}</span>
+              <span>បានមើល {formatRelativeTime(event.occurredAt)}</span>
             </div>
 
             <h4 className="mt-1 truncate text-base font-bold text-slate-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400">
-              Store ({event.storeUuid.slice(0, 8)})
+              ហាង
             </h4>
           </div>
         </div>
@@ -107,12 +104,12 @@ function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
 
       <div className="p-4">
         <h4 className="truncate text-base font-bold text-slate-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400">
-          {isLoading ? "Loading dish..." : title}
+          {isLoading ? "កំពុងផ្ទុកមុខម្ហូប..." : title}
         </h4>
 
         <div className="mt-2 flex items-center justify-between gap-2 text-xs">
           <span className="truncate text-slate-500 dark:text-slate-400">
-            {storeName || "FoodHub Dish"}
+            {storeName || "មុខម្ហូប"}
           </span>
 
           {price && (
@@ -143,11 +140,11 @@ function HistoryContent() {
           <div className="flex items-center gap-2">
             <Clock className="h-6 w-6" />
             <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
-              ប្រវត្តិដែលបានមើល (Recently Viewed)
+              ប្រវត្តិដែលបានមើល
             </h2>
           </div>
           <p className="text-sm text-emerald-100/90">
-            Timeline of dishes and restaurants you explored recently on FoodHub.
+            មុខម្ហូប និងហាងដែលអ្នកបានបើកមើលថ្មីៗនេះ។
           </p>
         </div>
       </div>
@@ -166,14 +163,14 @@ function HistoryContent() {
             មិនទាន់មានប្រវត្តិដែលបានមើលទេ
           </h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-            Dishes and stores you open or explore will automatically appear here.
+            មុខម្ហូប និងហាងដែលអ្នកបើកមើលនឹងបង្ហាញនៅទីនេះដោយស្វ័យប្រវត្តិ។
           </p>
           <div className="mt-6 flex gap-3">
             <Link
               href="/menu"
               className="rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition"
             >
-              Explore Menu
+              មើលមុខម្ហូប
             </Link>
           </div>
         </div>

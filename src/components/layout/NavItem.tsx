@@ -25,7 +25,7 @@ export const navItems: NavItem[] = [
   },
   {
     href: "/dashboard/meetup",
-    label: "ប្រវត្តិនៃការណាត់ញ៉ាំ (Meetup)",
+    label: "ប្រវត្តិនៃការណាត់ញ៉ាំ",
     icon: <FaHistory />,
   },
   {

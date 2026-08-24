@@ -55,6 +55,27 @@ function FriendUrlParamsHandler({
   return null;
 }
 
+type ApiErrorLike = {
+  status?: number;
+  originalStatus?: number;
+  data?: {
+    message?: string;
+    error?: string;
+  };
+  message?: string;
+};
+
+function getApiError(error: unknown): ApiErrorLike {
+  return typeof error === "object" && error !== null
+    ? (error as ApiErrorLike)
+    : {};
+}
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  const apiError = getApiError(error);
+  return apiError.data?.message || apiError.data?.error || apiError.message || fallback;
+}
+
 export default function FriendsTabs() {
   const [activeTab, setActiveTab] = useState<"friends" | "pending" | "add">("friends");
   const [pendingSubTab, setPendingSubTab] = useState<"incoming" | "outgoing">("incoming");
@@ -75,11 +96,9 @@ export default function FriendsTabs() {
 
   // Mutations
   const [sendFriendRequest, { isLoading: isSendingRequest }] = useSendFriendRequestMutation();
-  const [scanQrCode, { isLoading: isScanningQr }] = useScanQrCodeMutation();
+  const [scanQrCode] = useScanQrCodeMutation();
   const [acceptFriendRequest, { isLoading: isAccepting }] = useAcceptFriendRequestMutation();
   const [rejectFriendRequest, { isLoading: isRejecting }] = useRejectFriendRequestMutation();
-
-  const isSubmitting = isSendingRequest || isScanningQr;
 
   const handleUrlToken = useCallback(
     (token: string) => {
@@ -88,10 +107,13 @@ export default function FriendsTabs() {
       void (async () => {
         try {
           await scanQrCode({ qrCodeToken: token }).unwrap();
-          setSendSuccessMessage("Friend request sent successfully via scanned QR link!");
+          setSendSuccessMessage("បានផ្ញើសំណើមិត្តភក្តិតាមតំណ QR រួចរាល់។");
           setSearchFriendTerm("");
-        } catch (err: any) {
-          const msg = err?.data?.message || err?.message || "Could not process QR invitation.";
+        } catch (err: unknown) {
+          const msg = getApiErrorMessage(
+            err,
+            "មិនអាចដំណើរការការអញ្ជើញ QR បានទេ។",
+          );
           setSendErrorMessage(msg);
         }
       })();
@@ -126,12 +148,12 @@ export default function FriendsTabs() {
     if (cleanTerm.startsWith("fh_qr_") || cleanTerm.includes("qr_")) {
       try {
         await scanQrCode({ qrCodeToken: cleanTerm }).unwrap();
-        setSendSuccessMessage("Friend request sent successfully via QR token!");
+        setSendSuccessMessage("បានផ្ញើសំណើមិត្តភក្តិតាម QR រួចរាល់។");
         setSearchFriendTerm("");
         setTimeout(() => setSendSuccessMessage(null), 4000);
         return;
-      } catch (err: any) {
-        const msg = err?.data?.message || err?.message || "Invalid or expired QR token.";
+      } catch (err: unknown) {
+        const msg = getApiErrorMessage(err, "QR មិនត្រឹមត្រូវ ឬផុតកំណត់។");
         setSendErrorMessage(msg);
         return;
       }
@@ -149,22 +171,22 @@ export default function FriendsTabs() {
         ...(isUuid ? { friendUserUuid: cleanTerm } : { friendUsername: cleanTerm }),
       }).unwrap();
 
-      setSendSuccessMessage(`Friend request sent to "${cleanTerm}"! Once accepted, they will appear in your Friends List.`);
+      setSendSuccessMessage(`បានផ្ញើសំណើទៅ "${cleanTerm}" រួចរាល់។`);
       setSearchFriendTerm("");
       setTimeout(() => setSendSuccessMessage(null), 6000);
     } catch (err: unknown) {
-      const rawErr = err as any;
+      const rawErr = getApiError(err);
       const status = rawErr?.status || rawErr?.originalStatus;
       const serverMsg = rawErr?.data?.message || rawErr?.data?.error || rawErr?.message;
 
-      let errMsg = `Could not send friend request to "${cleanTerm}". Please check username.`;
+      let errMsg = `មិនអាចផ្ញើសំណើទៅ "${cleanTerm}" បានទេ។ សូមពិនិត្យឈ្មោះអ្នកប្រើ។`;
       if (serverMsg) {
         if (serverMsg.toLowerCase().includes("self") || serverMsg.toLowerCase().includes("same")) {
-          errMsg = "You cannot send a friend request to yourself.";
+          errMsg = "អ្នកមិនអាចផ្ញើសំណើទៅខ្លួនឯងបានទេ។";
         } else if (serverMsg.toLowerCase().includes("already") || serverMsg.toLowerCase().includes("exists") || status === 409) {
-          errMsg = "A friend request or friendship already exists with this user.";
+          errMsg = "មានសំណើ ឬមិត្តភាពជាមួយអ្នកប្រើនេះរួចហើយ។";
         } else if (serverMsg.toLowerCase().includes("not found") || status === 404) {
-          errMsg = `User "${cleanTerm}" was not found. Please check spelling or scan their QR code.`;
+          errMsg = `រកមិនឃើញអ្នកប្រើ "${cleanTerm}" ទេ។`;
         } else {
           errMsg = serverMsg;
         }
@@ -206,10 +228,10 @@ export default function FriendsTabs() {
       <div className="flex flex-col gap-4 rounded-3xl bg-linear-to-r from-emerald-800 to-teal-900 p-6 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div className="space-y-1">
           <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
-            FoodHub Friends & Social
+            មិត្តភក្តិ
           </h2>
           <p className="text-sm text-emerald-100/90">
-            Connect with friends, view dietary preferences, and plan group lunches effortlessly.
+            ភ្ជាប់ជាមួយមិត្តភក្តិ និងរៀបចំការណាត់ញ៉ាំជាក្រុមបានងាយស្រួល។
           </p>
         </div>
 
@@ -220,7 +242,7 @@ export default function FriendsTabs() {
             className="flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20 active:scale-95"
           >
             <QrCode className="h-4 w-4" />
-            My QR Code
+            QR របស់ខ្ញុំ
           </button>
 
           <button
@@ -229,7 +251,7 @@ export default function FriendsTabs() {
             className="flex items-center gap-2 rounded-2xl bg-emerald-400 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-md transition hover:bg-emerald-300 active:scale-95"
           >
             <Scan className="h-4 w-4" />
-            Scan QR
+            ស្កេន QR
           </button>
         </div>
       </div>
@@ -246,7 +268,7 @@ export default function FriendsTabs() {
           }`}
         >
           <Users className="h-4 w-4" />
-          <span>Friends List</span>
+          <span>បញ្ជីមិត្តភក្តិ</span>
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
             {friends.length}
           </span>
@@ -262,7 +284,7 @@ export default function FriendsTabs() {
           }`}
         >
           <Inbox className="h-4 w-4" />
-          <span>Pending Requests</span>
+          <span>សំណើកំពុងរង់ចាំ</span>
           {incoming.length > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-xs font-extrabold text-white animate-pulse">
               {incoming.length}
@@ -280,7 +302,7 @@ export default function FriendsTabs() {
           }`}
         >
           <UserPlus className="h-4 w-4" />
-          <span>Find Friends</span>
+          <span>ស្វែងរកមិត្តភក្តិ</span>
         </button>
       </div>
 
@@ -292,7 +314,7 @@ export default function FriendsTabs() {
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search friends by name..."
+              placeholder="ស្វែងរកមិត្តភក្តិតាមឈ្មោះ..."
               value={filterFriendTerm}
               onChange={(e) => setFilterFriendTerm(e.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-white"
@@ -309,12 +331,12 @@ export default function FriendsTabs() {
                 <Users className="h-8 w-8" />
               </div>
               <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">
-                {filterFriendTerm ? "No matching friends found" : "No friends added yet"}
+                {filterFriendTerm ? "រកមិនឃើញមិត្តភក្តិ" : "មិនទាន់មានមិត្តភក្តិ"}
               </h3>
               <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
                 {filterFriendTerm
-                  ? "Try searching for a different username or add them by QR code."
-                  : "Share your QR code or search by username to connect with your foodie squad!"}
+                  ? "សូមសាកល្បងឈ្មោះផ្សេង ឬបន្ថែមតាម QR។"
+                  : "ចែករំលែក QR ឬស្វែងរកតាមឈ្មោះអ្នកប្រើ ដើម្បីភ្ជាប់គ្នា។"}
               </p>
               <div className="mt-6 flex gap-3">
                 <button
@@ -322,14 +344,14 @@ export default function FriendsTabs() {
                   onClick={() => setIsQrModalOpen(true)}
                   className="rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700"
                 >
-                  Share My QR
+                  ចែករំលែក QR
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("add")}
                   className="rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
                 >
-                  Search Username
+                  ស្វែងរកឈ្មោះ
                 </button>
               </div>
             </div>
@@ -358,7 +380,7 @@ export default function FriendsTabs() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                 }`}
               >
-                Incoming Requests ({incoming.length})
+                សំណើចូល {incoming.length}
               </button>
               <button
                 type="button"
@@ -369,12 +391,12 @@ export default function FriendsTabs() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                 }`}
               >
-                Outgoing Sent ({outgoing.length})
+                សំណើបានផ្ញើ {outgoing.length}
               </button>
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Users become friends once the recipient clicks <strong>Accept</strong>.
+              អ្នកប្រើនឹងក្លាយជាមិត្តភក្តិ បន្ទាប់ពីអ្នកទទួលយល់ព្រម។
             </p>
           </div>
 
@@ -385,7 +407,7 @@ export default function FriendsTabs() {
               </div>
             ) : incoming.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                No pending incoming friend requests.
+                មិនមានសំណើចូលកំពុងរង់ចាំ។
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -397,14 +419,14 @@ export default function FriendsTabs() {
                     <div>
                       <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 font-bold text-white">
-                          {(req.senderUsername || "U").charAt(0).toUpperCase()}
+                          {(req.senderUsername || "អ").charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                            @{req.senderUsername || "User"}
+                            @{req.senderUsername || "អ្នកប្រើ"}
                           </h4>
                           <p className="text-xs text-slate-400">
-                            Sent a friend request
+                            បានផ្ញើសំណើមិត្តភក្តិ
                           </p>
                         </div>
                       </div>
@@ -425,7 +447,7 @@ export default function FriendsTabs() {
                         className="flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 disabled:opacity-50"
                       >
                         <Check className="h-3.5 w-3.5" />
-                        Accept
+                        យល់ព្រម
                       </button>
                       <button
                         type="button"
@@ -434,7 +456,7 @@ export default function FriendsTabs() {
                         className="flex items-center justify-center gap-1.5 rounded-2xl border border-slate-200 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300"
                       >
                         <X className="h-3.5 w-3.5" />
-                        Reject
+                        បដិសេធ
                       </button>
                     </div>
                   </div>
@@ -447,7 +469,7 @@ export default function FriendsTabs() {
             </div>
           ) : outgoing.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-              No pending outgoing friend requests.
+              មិនមានសំណើបានផ្ញើកំពុងរង់ចាំ។
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -458,15 +480,15 @@ export default function FriendsTabs() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-200 font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                      {(req.receiverUsername || "U").charAt(0).toUpperCase()}
+                      {(req.receiverUsername || "អ").charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                        @{req.receiverUsername || "User"}
+                        @{req.receiverUsername || "អ្នកប្រើ"}
                       </h4>
                       <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
                         <Clock className="h-3 w-3" />
-                        <span>Awaiting Acceptance</span>
+                        <span>កំពុងរង់ចាំការយល់ព្រម</span>
                       </div>
                     </div>
                   </div>
@@ -482,10 +504,10 @@ export default function FriendsTabs() {
         <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
           <div className="max-w-xl">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Search and Add Friends
+              ស្វែងរក និងបន្ថែមមិត្តភក្តិ
             </h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Enter a FoodHub username or user UUID to send an instant invitation.
+              បញ្ចូលឈ្មោះអ្នកប្រើ ឬលេខសម្គាល់ ដើម្បីផ្ញើការអញ្ជើញ។
             </p>
 
             <form onSubmit={handleSendRequest} className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -493,7 +515,7 @@ export default function FriendsTabs() {
                 <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Enter username (e.g. dara_foodie)..."
+                  placeholder="បញ្ចូលឈ្មោះអ្នកប្រើ..."
                   value={searchFriendTerm}
                   onChange={(e) => setSearchFriendTerm(e.target.value)}
                   className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
@@ -510,7 +532,7 @@ export default function FriendsTabs() {
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-                Send Request
+                ផ្ញើសំណើ
               </button>
             </form>
 
@@ -528,7 +550,7 @@ export default function FriendsTabs() {
                   }}
                   className="inline-flex shrink-0 items-center justify-center rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition"
                 >
-                  View Outgoing ({outgoing.length})
+                  មើលសំណើបានផ្ញើ {outgoing.length}
                 </button>
               </div>
             )}

@@ -7,15 +7,10 @@ import {
   Users,
   Link2,
   Calendar,
-  Clock,
   MapPin,
-  CheckCircle2,
   Vote,
-  ExternalLink,
   Plus,
   Utensils,
-  ArrowRight,
-  ShieldCheck,
   Trophy,
   Navigation,
 } from "lucide-react";
@@ -50,8 +45,8 @@ const DEFAULT_HISTORY_SESSIONS: MeetupHistoryItem[] = [
     locationName: "BKK1, Phnom Penh",
     radiusKm: 3,
     winnerStore: {
-      name: "Khmer Surin Restaurant",
-      foodTitle: "Fish Amok & Fresh Coconut",
+      name: "ភោជនីយដ្ឋានខ្មែរ សុរិន្ទ",
+      foodTitle: "អាម៉ុកត្រី និងដូងស្រស់",
       rating: 4.8,
       mapsDirectionsUrl: "https://www.google.com/maps/dir/?api=1&destination=11.5516,104.9250",
     },
@@ -59,7 +54,7 @@ const DEFAULT_HISTORY_SESSIONS: MeetupHistoryItem[] = [
   {
     uuid: "meetup-demo-2",
     shareToken: "fh_demo_guest",
-    title: "Weekend Team Dinner & Drinks",
+    title: "ញ៉ាំអាហារពេលល្ងាចជាមួយក្រុមការងារ",
     mode: "GUEST_LINK",
     status: "VOTING",
     createdAt: "2026-08-23T02:00:00Z",
@@ -69,52 +64,93 @@ const DEFAULT_HISTORY_SESSIONS: MeetupHistoryItem[] = [
   },
 ];
 
+function readSavedMeetupHistory(): MeetupHistoryItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const savedItems: MeetupHistoryItem[] = [];
+
+  try {
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key?.startsWith("foodhub-meetup-share-")) {
+        continue;
+      }
+
+      const raw = window.localStorage.getItem(key);
+      if (!raw) {
+        continue;
+      }
+
+      try {
+        const parsed = JSON.parse(raw) as Partial<MeetupHistoryItem> & {
+          inviteMode?: string;
+        };
+
+        if (typeof parsed.uuid !== "string" || !parsed.uuid) {
+          continue;
+        }
+
+        savedItems.push({
+          uuid: parsed.uuid,
+          shareToken:
+            typeof parsed.shareToken === "string" && parsed.shareToken
+              ? parsed.shareToken
+              : parsed.uuid,
+          title:
+            typeof parsed.title === "string" && parsed.title
+              ? parsed.title
+              : "ការណាត់ញ៉ាំអាហារ",
+          mode: parsed.inviteMode === "GUEST_LINK" ? "GUEST_LINK" : "FRIENDS",
+          status:
+            parsed.status === "DECIDED" ||
+            parsed.status === "COLLECTING" ||
+            parsed.status === "VOTING"
+              ? parsed.status
+              : "VOTING",
+          createdAt:
+            typeof parsed.createdAt === "string" && parsed.createdAt
+              ? parsed.createdAt
+              : new Date().toISOString(),
+          participantCount:
+            typeof parsed.participantCount === "number"
+              ? parsed.participantCount
+              : 2,
+          radiusKm: typeof parsed.radiusKm === "number" ? parsed.radiusKm : 3,
+          winnerStore: parsed.winnerStore,
+        });
+      } catch {
+        // ignore malformed items
+      }
+    }
+  } catch {
+    // localStorage unavailable or restricted
+  }
+
+  return savedItems;
+}
+
 export default function DashboardMeetupHistoryPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"FRIENDS" | "GUEST_LINK">("FRIENDS");
   const [historyList, setHistoryList] = useState<MeetupHistoryItem[]>(DEFAULT_HISTORY_SESSIONS);
 
   useEffect(() => {
-    // Load any saved meetup sessions created in the current browser
-    try {
-      const savedItems: MeetupHistoryItem[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("foodhub-meetup-share-")) {
-          const raw = localStorage.getItem(key);
-          if (raw) {
-            try {
-              const parsed = JSON.parse(raw);
-              if (parsed.uuid) {
-                savedItems.push({
-                  uuid: parsed.uuid,
-                  shareToken: parsed.shareToken || parsed.uuid,
-                  title: parsed.title || "FoodHub Dining Meetup",
-                  mode: parsed.inviteMode === "GUEST_LINK" ? "GUEST_LINK" : "FRIENDS",
-                  status: parsed.status || "VOTING",
-                  createdAt: parsed.createdAt || new Date().toISOString(),
-                  participantCount: parsed.participantCount || 2,
-                  radiusKm: parsed.radiusKm || 3,
-                });
-              }
-            } catch {
-              // ignore malformed items
-            }
-          }
-        }
-      }
-
-      if (savedItems.length > 0) {
-        // Merge with defaults avoiding duplicate UUIDs
-        setHistoryList((prev) => {
-          const existingUuids = new Set(prev.map((i) => i.uuid));
-          const newUnique = savedItems.filter((i) => !existingUuids.has(i.uuid));
-          return [...newUnique, ...prev];
-        });
-      }
-    } catch {
-      // localStorage unavailable or restricted
+    const savedItems = readSavedMeetupHistory();
+    if (savedItems.length === 0) {
+      return;
     }
+
+    const timeoutId = window.setTimeout(() => {
+      setHistoryList((prev) => {
+        const existingUuids = new Set(prev.map((i) => i.uuid));
+        const newUnique = savedItems.filter((i) => !existingUuids.has(i.uuid));
+        return [...newUnique, ...prev];
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const filteredList = historyList.filter((item) => item.mode === activeTab);
@@ -125,7 +161,7 @@ export default function DashboardMeetupHistoryPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-            ប្រវត្តិនៃការណាត់ញ៉ាំ (Meetup History)
+            ប្រវត្តិនៃការណាត់ញ៉ាំ
           </h1>
           <p className="mt-1 text-sm sm:text-base text-slate-500 dark:text-slate-400">
             ពិនិត្យមើលបន្ទប់បោះឆ្នោត និងលទ្ធផលហាងដែលបានសម្រេចពីមុន
@@ -137,7 +173,7 @@ export default function DashboardMeetupHistoryPage() {
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-800 active:scale-98 shrink-0"
         >
           <Plus className="h-4 w-4" />
-          បង្កើត Meetup ថ្មី (ទីតាំង)
+          បង្កើតការណាត់ញ៉ាំថ្មី
         </Link>
       </div>
 
@@ -153,7 +189,7 @@ export default function DashboardMeetupHistoryPage() {
           }`}
         >
           <Users className="h-4 w-4" />
-          <span>Friend Mode ({historyList.filter((i) => i.mode === "FRIENDS").length})</span>
+          <span>ជាមួយមិត្តភក្តិ {historyList.filter((i) => i.mode === "FRIENDS").length}</span>
         </button>
 
         <button
@@ -166,7 +202,7 @@ export default function DashboardMeetupHistoryPage() {
           }`}
         >
           <Link2 className="h-4 w-4" />
-          <span>Guest Link Mode ({historyList.filter((i) => i.mode === "GUEST_LINK").length})</span>
+          <span>តំណភ្ញៀវ {historyList.filter((i) => i.mode === "GUEST_LINK").length}</span>
         </button>
       </div>
 
@@ -177,7 +213,7 @@ export default function DashboardMeetupHistoryPage() {
             <Utensils className="h-6 w-6" />
           </div>
           <h3 className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-200">
-            មិនទាន់មានប្រវត្តិ Meetup ក្នុង Mode នេះនៅឡើយទេ
+            មិនទាន់មានប្រវត្តិក្នុងផ្ទាំងនេះនៅឡើយទេ
           </h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
             ចូលទៅកាន់ផ្ទាំងទីតាំង ដើម្បីចាប់ផ្តើមបង្កើតការណាត់ជួបញ៉ាំអាហារជាមួយមិត្តភក្តិ ឬផ្ញើតំណភ្ញៀវ!
@@ -209,11 +245,11 @@ export default function DashboardMeetupHistoryPage() {
                     >
                       {item.mode === "FRIENDS" ? (
                         <>
-                          <Users className="h-3 w-3" /> Friend Mode
+                          <Users className="h-3 w-3" /> ជាមួយមិត្តភក្តិ
                         </>
                       ) : (
                         <>
-                          <Link2 className="h-3 w-3" /> Guest Link
+                          <Link2 className="h-3 w-3" /> តំណភ្ញៀវ
                         </>
                       )}
                     </span>
@@ -227,11 +263,11 @@ export default function DashboardMeetupHistoryPage() {
                     >
                       {item.status === "DECIDED" ? (
                         <>
-                          <Trophy className="h-3 w-3" /> បានសម្រេច (Decided)
+                          <Trophy className="h-3 w-3" /> បានសម្រេច
                         </>
                       ) : (
                         <>
-                          <Vote className="h-3 w-3 animate-pulse" /> កំពុងបោះឆ្នោត (Voting)
+                          <Vote className="h-3 w-3 animate-pulse" /> កំពុងបោះឆ្នោត
                         </>
                       )}
                     </span>
@@ -239,7 +275,7 @@ export default function DashboardMeetupHistoryPage() {
 
                   <span className="text-xs text-slate-400 flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {new Date(item.createdAt).toLocaleDateString("km-KH")}
                   </span>
                 </div>
 
@@ -256,7 +292,7 @@ export default function DashboardMeetupHistoryPage() {
                   </span>
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                    កាំស្វែងរក {item.radiusKm} km
+                    កាំស្វែងរក {item.radiusKm} គ.ម.
                   </span>
                 </div>
 
@@ -265,7 +301,7 @@ export default function DashboardMeetupHistoryPage() {
                   <div className="mt-4 rounded-2xl border border-amber-200/80 bg-amber-50/50 p-3.5 dark:border-amber-900/50 dark:bg-amber-950/20">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1">
-                        🏆 ហាងដែលឈ្នះឆ្នោត (Winner)
+                        🏆 ហាងដែលឈ្នះឆ្នោត
                       </span>
                       <span className="text-xs font-bold text-amber-700">
                         ⭐ {item.winnerStore.rating}
@@ -285,7 +321,7 @@ export default function DashboardMeetupHistoryPage() {
                       rel="noopener noreferrer"
                       className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline dark:text-emerald-400"
                     >
-                      <Navigation className="h-3.5 w-3.5" /> បើកមើលក្នុង Google Maps &rarr;
+                      <Navigation className="h-3.5 w-3.5" /> បើកផែនទី &rarr;
                     </a>
                   </div>
                 )}
@@ -299,7 +335,7 @@ export default function DashboardMeetupHistoryPage() {
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 active:scale-98 dark:bg-slate-800 dark:hover:bg-emerald-600"
                 >
                   <Vote className="h-3.5 w-3.5" />
-                  ចូលបន្ទប់បោះឆ្នោត (Enter Room)
+                  ចូលបន្ទប់បោះឆ្នោត
                 </button>
 
                 <button
@@ -310,7 +346,7 @@ export default function DashboardMeetupHistoryPage() {
                     alert("បានចម្លងតំណភ្ជាប់!");
                   }}
                   className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-                  title="Copy Link"
+                  title="ចម្លងតំណ"
                 >
                   <Link2 className="h-4 w-4" />
                 </button>

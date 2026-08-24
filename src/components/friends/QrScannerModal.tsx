@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,13 +20,29 @@ import {
   Keyboard,
   Scan,
   Upload,
-  Image as ImageIcon,
 } from "lucide-react";
 
 interface QrScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (username?: string) => void;
+}
+
+type ApiErrorLike = {
+  data?: {
+    message?: string;
+    error?: string;
+  };
+  message?: string;
+};
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error !== "object" || error === null) {
+    return fallback;
+  }
+
+  const apiError = error as ApiErrorLike;
+  return apiError.data?.message || apiError.data?.error || apiError.message || fallback;
 }
 
 export default function QrScannerModal({
@@ -49,95 +65,96 @@ export default function QrScannerModal({
   const isProcessing = isScanningQr || isSendingRequest;
 
   // Process a found QR token string or username
-  const handleProcessToken = async (rawCode: string) => {
-    let token = rawCode.trim();
-    if (!token) {
-      setErrorText("Invalid or empty QR code. Please try again.");
-      return;
-    }
+  const handleProcessToken = useCallback(
+    async (rawCode: string) => {
+      let token = rawCode.trim();
+      if (!token) {
+        setErrorText("កូដ QR មិនត្រឹមត្រូវ ឬទទេ។ សូមសាកល្បងម្តងទៀត។");
+        return;
+      }
 
-    // Handle JSON payload if code contains JSON
-    if (token.startsWith("{") && token.endsWith("}")) {
+      // Handle JSON payload if code contains JSON
+      if (token.startsWith("{") && token.endsWith("}")) {
+        try {
+          const parsed = JSON.parse(token);
+          token =
+            parsed.qrCodeToken ||
+            parsed.token ||
+            parsed.username ||
+            parsed.userUuid ||
+            token;
+        } catch {
+          // continue
+        }
+      }
+
+      // Extract token if embedded in URL or query parameter
+      if (token.includes("token=")) {
+        const match = token.match(/token=([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+          token = match[1];
+        }
+      } else if (token.includes("/friends?add=") || token.includes("/u/")) {
+        const match = token.match(/(?:\/friends\?add=|\/u\/)([a-zA-Z0-9_.-]+)/);
+        if (match && match[1]) {
+          token = match[1];
+        }
+      }
+
+      // Strip leading '@' if someone shared username
+      if (token.startsWith("@")) {
+        token = token.slice(1);
+      }
+
+      setErrorText(null);
+
+      // If it looks like a QR token (fh_qr_... or qr_...)
+      if (token.startsWith("fh_qr_") || token.includes("qr_")) {
+        try {
+          const res = await scanQrCode({ qrCodeToken: token }).unwrap();
+          const message =
+            (res as { message?: string })?.message ||
+            "បានផ្ញើសំណើមិត្តភក្តិរួចរាល់។ កំពុងរង់ចាំការយល់ព្រម។";
+          setSuccessText(message);
+          if (onSuccess) onSuccess();
+          setTimeout(() => {
+            setSuccessText(null);
+            onClose();
+          }, 2500);
+          return;
+        } catch (err: unknown) {
+          const errMsg = getApiErrorMessage(
+            err,
+            "មិនអាចដំណើរការ QR មិត្តភក្តិនេះបានទេ។",
+          );
+          setErrorText(errMsg);
+          return;
+        }
+      }
+
+      // Fallback: It might be a direct username or user UUID
+      const isUuid = token.length > 20 && token.includes("-");
       try {
-        const parsed = JSON.parse(token);
-        token =
-          parsed.qrCodeToken ||
-          parsed.token ||
-          parsed.username ||
-          parsed.userUuid ||
-          token;
-      } catch {
-        // continue
-      }
-    }
+        await sendFriendRequest({
+          ...(isUuid ? { friendUserUuid: token } : { friendUsername: token }),
+        }).unwrap();
 
-    // Extract token if embedded in URL or query parameter
-    if (token.includes("token=")) {
-      const match = token.match(/token=([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) {
-        token = match[1];
-      }
-    } else if (token.includes("/friends?add=") || token.includes("/u/")) {
-      const match = token.match(/(?:\/friends\?add=|\/u\/)([a-zA-Z0-9_.-]+)/);
-      if (match && match[1]) {
-        token = match[1];
-      }
-    }
-
-    // Strip leading '@' if someone shared username
-    if (token.startsWith("@")) {
-      token = token.slice(1);
-    }
-
-    setErrorText(null);
-
-    // If it looks like a QR token (fh_qr_... or qr_...)
-    if (token.startsWith("fh_qr_") || token.includes("qr_")) {
-      try {
-        const res = await scanQrCode({ qrCodeToken: token }).unwrap();
-        const message =
-          (res as { message?: string })?.message ||
-          "Friend request sent! Waiting for acceptance.";
-        setSuccessText(message);
-        if (onSuccess) onSuccess();
+        setSuccessText(`បានផ្ញើសំណើទៅ "${token}" រួចរាល់។ កំពុងរង់ចាំការយល់ព្រម។`);
+        if (onSuccess) onSuccess(token);
         setTimeout(() => {
           setSuccessText(null);
           onClose();
         }, 2500);
-        return;
       } catch (err: unknown) {
-        const rawErr = err as any;
-        const errMsg =
-          rawErr?.data?.message ||
-          rawErr?.message ||
-          "Could not process friend QR code token.";
+        const errMsg = getApiErrorMessage(
+          err,
+          `មិនអាចផ្ញើសំណើទៅ "${token}" បានទេ។ សូមពិនិត្យកូដម្តងទៀត។`,
+        );
         setErrorText(errMsg);
-        return;
       }
-    }
-
-    // Fallback: It might be a direct username or user UUID
-    const isUuid = token.length > 20 && token.includes("-");
-    try {
-      await sendFriendRequest({
-        ...(isUuid ? { friendUserUuid: token } : { friendUsername: token }),
-      }).unwrap();
-
-      setSuccessText(`Friend request sent to "${token}"! Waiting for acceptance.`);
-      if (onSuccess) onSuccess(token);
-      setTimeout(() => {
-        setSuccessText(null);
-        onClose();
-      }, 2500);
-    } catch (err: unknown) {
-      const rawErr = err as any;
-      const errMsg =
-        rawErr?.data?.message ||
-        rawErr?.message ||
-        `Could not send friend request for "${token}". Please check the code.`;
-      setErrorText(errMsg);
-    }
-  };
+    },
+    [onClose, onSuccess, scanQrCode, sendFriendRequest],
+  );
 
   // Setup camera stream when modal opens in camera mode
   useEffect(() => {
@@ -201,7 +218,7 @@ export default function QrScannerModal({
       } catch (err) {
         console.warn("[QR Scanner] Camera access error:", err);
         setCameraError(
-          "Camera access is not available on this device or permission was denied. You can upload a QR image or enter the token manually."
+          "មិនអាចប្រើកាមេរ៉ានៅលើឧបករណ៍នេះ ឬការអនុញ្ញាតត្រូវបានបដិសេធ។ អ្នកអាចបង្ហោះរូប QR ឬបញ្ចូលកូដដោយដៃ។"
         );
       }
     };
@@ -215,7 +232,7 @@ export default function QrScannerModal({
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [isOpen, useManual]);
+  }, [handleProcessToken, isOpen, useManual]);
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,15 +258,15 @@ export default function QrScannerModal({
           handleProcessToken(barcodes[0].rawValue);
           return;
         } else {
-          setErrorText("Could not find a valid QR code in this image. Please try another image or enter manually.");
+          setErrorText("រកមិនឃើញ QR ត្រឹមត្រូវក្នុងរូបនេះទេ។ សូមសាកល្បងរូបផ្សេង ឬបញ្ចូលដោយដៃ។");
         }
       } catch (err) {
         console.error("Failed to decode QR image:", err);
-        setErrorText("Could not scan QR image. Please enter the token or username manually.");
+        setErrorText("មិនអាចស្កេនរូប QR បានទេ។ សូមបញ្ចូលកូដ ឬឈ្មោះអ្នកប្រើដោយដៃ។");
       }
     } else {
       setUseManual(true);
-      setErrorText("Direct image scanning is not supported on this browser. Please enter the token or username below.");
+      setErrorText("កម្មវិធីរុករកនេះមិនគាំទ្រការស្កេនរូបដោយផ្ទាល់ទេ។ សូមបញ្ចូលកូដ ឬឈ្មោះអ្នកប្រើខាងក្រោម។");
     }
   };
 
@@ -261,10 +278,10 @@ export default function QrScannerModal({
             <Scan className="h-6 w-6" />
           </div>
           <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
-            Scan Friend QR Code
+            ស្កេន QR មិត្តភក្តិ
           </DialogTitle>
           <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">
-            Point your camera at a FoodHub friend&apos;s QR code or upload an image to connect.
+            ដាក់កាមេរ៉ាទៅលើ QR របស់មិត្តភក្តិ ឬបង្ហោះរូប ដើម្បីភ្ជាប់គ្នា។
           </DialogDescription>
         </DialogHeader>
 
@@ -310,12 +327,12 @@ export default function QrScannerModal({
                     htmlFor="qrTokenInput"
                     className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                   >
-                    Friend QR Token, URL, or Username
+                    កូដ QR តំណ ឬឈ្មោះអ្នកប្រើ
                   </label>
                   <input
                     id="qrTokenInput"
                     type="text"
-                    placeholder="e.g. fh_qr_xxx, @dara, or paste link"
+                    placeholder="បិទភ្ជាប់កូដ ឈ្មោះអ្នកប្រើ ឬតំណ"
                     value={manualInput}
                     onChange={(e) => setManualInput(e.target.value)}
                     className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
@@ -328,10 +345,10 @@ export default function QrScannerModal({
                 >
                   {isProcessing ? (
                     <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Sending Request...
+                      <Loader2 className="h-4 w-4 animate-spin" /> កំពុងផ្ញើសំណើ...
                     </span>
                   ) : (
-                    "Send Friend Request"
+                    "ផ្ញើសំណើមិត្តភក្តិ"
                   )}
                 </button>
               </form>
@@ -358,7 +375,7 @@ export default function QrScannerModal({
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
               >
-                <Upload className="h-4 w-4" /> Upload QR Image
+                <Upload className="h-4 w-4" /> បង្ហោះរូប QR
               </button>
 
               <button
@@ -371,11 +388,11 @@ export default function QrScannerModal({
               >
                 {useManual ? (
                   <>
-                    <Camera className="h-4 w-4" /> Camera Scanner
+                    <Camera className="h-4 w-4" /> ស្កេនដោយកាមេរ៉ា
                   </>
                 ) : (
                   <>
-                    <Keyboard className="h-4 w-4" /> Enter Manually
+                    <Keyboard className="h-4 w-4" /> បញ្ចូលដោយដៃ
                   </>
                 )}
               </button>

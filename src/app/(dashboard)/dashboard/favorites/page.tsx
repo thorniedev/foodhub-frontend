@@ -3,7 +3,6 @@
 import React, { useState, useMemo, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Bookmark,
   Utensils,
@@ -28,16 +27,16 @@ function getMediaUrl(value: string | null | undefined): string {
 }
 
 function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return "Recently";
+  if (!dateStr) return "ថ្មីៗនេះ";
   try {
     const d = new Date(dateStr);
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("km-KH", {
       month: "short",
       day: "numeric",
       year: "numeric",
     }).format(d);
   } catch {
-    return "Recently";
+    return "ថ្មីៗនេះ";
   }
 }
 
@@ -48,14 +47,13 @@ function DishBookmarkCard({
   bookmark: BookmarkResponse;
   onRemove: (uuid: string) => void;
 }) {
-  const router = useRouter();
   const menuItemUuid = bookmark.menuItemUuid || bookmark.foodUuid || "";
   const { data: itemDetail, isLoading } = useGetMenuItemByUuidQuery(menuItemUuid, {
     skip: !menuItemUuid,
   });
 
   const title =
-    itemDetail?.localName || itemDetail?.name || `Dish (${menuItemUuid.slice(0, 8)})`;
+    itemDetail?.localName || itemDetail?.name || "មុខម្ហូប";
   const price = itemDetail?.price != null ? `$${Number(itemDetail.price).toFixed(2)}` : null;
   const storeName = itemDetail?.store?.name || null;
   const thumbnail = itemDetail?.thumbnail || "/Image/default-food.png";
@@ -76,7 +74,7 @@ function DishBookmarkCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-              <Utensils className="h-3 w-3" /> Dish
+              <Utensils className="h-3 w-3" /> មុខម្ហូប
             </span>
             <span className="flex items-center gap-1 text-xs text-slate-400">
               <Calendar className="h-3 w-3" /> {formatDate(bookmark.createdAt)}
@@ -84,7 +82,7 @@ function DishBookmarkCard({
           </div>
 
           <h3 className="mt-1 truncate text-base font-bold text-slate-900 dark:text-white">
-            {isLoading ? "Loading dish..." : title}
+            {isLoading ? "កំពុងផ្ទុកមុខម្ហូប..." : title}
           </h3>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
@@ -107,14 +105,14 @@ function DishBookmarkCard({
             href={`/menu-items/${menuItemUuid}`}
             className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white"
           >
-            <ExternalLink className="h-3.5 w-3.5" /> View
+            <ExternalLink className="h-3.5 w-3.5" /> មើល
           </Link>
         )}
 
         <button
           type="button"
           onClick={() => onRemove(bookmark.uuid)}
-          title="Remove bookmark"
+          title="ដកចេញពីចំណូលចិត្ត"
           className="rounded-2xl border border-slate-200 p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:hover:bg-rose-950/40"
         >
           <Trash2 className="h-4 w-4" />
@@ -143,7 +141,7 @@ function StoreBookmarkCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-              <Store className="h-3 w-3" /> Store
+              <Store className="h-3 w-3" /> ហាង
             </span>
             <span className="flex items-center gap-1 text-xs text-slate-400">
               <Calendar className="h-3 w-3" /> {formatDate(bookmark.createdAt)}
@@ -151,7 +149,7 @@ function StoreBookmarkCard({
           </div>
 
           <h3 className="mt-1 truncate text-base font-bold text-slate-900 dark:text-white">
-            Store ({storeUuid.slice(0, 8)})
+            ហាង
           </h3>
 
           {bookmark.notes && (
@@ -168,14 +166,14 @@ function StoreBookmarkCard({
             href={`/stores/${storeUuid}`}
             className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white"
           >
-            <ExternalLink className="h-3.5 w-3.5" /> View Store
+            <ExternalLink className="h-3.5 w-3.5" /> មើលហាង
           </Link>
         )}
 
         <button
           type="button"
           onClick={() => onRemove(bookmark.uuid)}
-          title="Remove bookmark"
+          title="ដកចេញពីចំណូលចិត្ត"
           className="rounded-2xl border border-slate-200 p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:hover:bg-rose-950/40"
         >
           <Trash2 className="h-4 w-4" />
@@ -217,18 +215,18 @@ function FavoritesContent() {
           <div className="flex items-center gap-2">
             <Bookmark className="h-6 w-6 fill-current text-emerald-300" />
             <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
-              ចំណីអាហារចំណូលចិត្ត (Bookmarks)
+              ចំណូលចិត្ត
             </h2>
           </div>
           <p className="text-sm text-emerald-100/90">
-            Your saved dishes and stores collection, personalized for your dining profile.
+            មុខម្ហូប និងហាងដែលអ្នកបានរក្សាទុកសម្រាប់ប្រវត្តិរូបរបស់អ្នក។
           </p>
         </div>
 
         {activeProfile && (
           <div className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-xs font-semibold text-white backdrop-blur-sm">
             <Shield className="h-4 w-4 text-emerald-300" />
-            <span>Profile: <strong>{activeProfile.profileName}</strong></span>
+            <span>ប្រវត្តិរូប៖ <strong>{activeProfile.profileName}</strong></span>
           </div>
         )}
       </div>
@@ -245,7 +243,7 @@ function FavoritesContent() {
           }`}
         >
           <Layers className="h-4 w-4" />
-          <span>All Saved</span>
+          <span>ទាំងអស់</span>
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
             {bookmarks.length}
           </span>
@@ -261,7 +259,7 @@ function FavoritesContent() {
           }`}
         >
           <Utensils className="h-4 w-4" />
-          <span>Dishes</span>
+          <span>មុខម្ហូប</span>
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
             {dishes.length}
           </span>
@@ -277,7 +275,7 @@ function FavoritesContent() {
           }`}
         >
           <Store className="h-4 w-4" />
-          <span>Stores</span>
+          <span>ហាង</span>
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
             {stores.length}
           </span>
@@ -296,20 +294,20 @@ function FavoritesContent() {
           </div>
           <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">
             {filterTab === "all"
-              ? "No bookmarks saved yet"
+              ? "មិនទាន់មានចំណូលចិត្ត"
               : filterTab === "dishes"
-              ? "No saved dishes yet"
-              : "No saved stores yet"}
+              ? "មិនទាន់មានមុខម្ហូបចំណូលចិត្ត"
+              : "មិនទាន់មានហាងចំណូលចិត្ត"}
           </h3>
           <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-            Tap the bookmark icon on any dish or store preview to save it to your personal collection.
+            ចុចរូបបេះដូងលើមុខម្ហូប ឬហាង ដើម្បីរក្សាទុកនៅទីនេះ។
           </p>
           <div className="mt-6 flex gap-3">
             <Link
               href="/menu"
               className="rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition"
             >
-              Explore Menu
+              មើលមុខម្ហូប
             </Link>
           </div>
         </div>
