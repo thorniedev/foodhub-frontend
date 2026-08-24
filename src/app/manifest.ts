@@ -2,10 +2,11 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FoodHub",
-    short_name: "FoodHub",
+    lang: "km",
+    name: "ម្ហូបហារ",
+    short_name: "Mhoubahar",
     description:
-      "Discover food, restaurants, and personalized food recommendations with FoodHub.",
+      "Discover food, restaurants, and personalized food recommendations with Mhoubahar.",
 
     start_url: "/",
     scope: "/",

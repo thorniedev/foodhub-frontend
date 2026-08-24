@@ -1,26 +1,11 @@
 import { baseApi } from "./baseApi";
+import { normalizePageResponse, normalizePayload } from "./utils/normalize";
 import type {
   InteractionEventResponse,
   InteractionEventType,
   PageResponse,
   RecordInteractionRequest,
 } from "@/types/interaction";
-
-function normalizePayload<T>(response: unknown, fallback: T): T {
-  if (response === null || response === undefined) {
-    return fallback;
-  }
-  if (typeof response === "object") {
-    const raw = response as Record<string, unknown>;
-    if (raw.payload !== undefined) {
-      return raw.payload as T;
-    }
-    if (raw.data !== undefined) {
-      return raw.data as T;
-    }
-  }
-  return response as T;
-}
 
 export interface GetInteractionHistoryParams {
   eventType?: InteractionEventType;
@@ -58,22 +43,7 @@ export const interactionApi = baseApi.injectEndpoints({
         },
       }),
       transformResponse: (response: unknown): PageResponse<InteractionEventResponse> => {
-        const raw = normalizePayload(response, {} as PageResponse<InteractionEventResponse>);
-        return {
-          contents: Array.isArray(raw.contents)
-            ? raw.contents
-            : Array.isArray((raw as any).content)
-            ? (raw as any).content
-            : Array.isArray(raw)
-            ? raw
-            : [],
-          pageNumber: raw.pageNumber ?? (raw as any).number ?? 0,
-          pageSize: raw.pageSize ?? (raw as any).size ?? 20,
-          totalElements: raw.totalElements ?? (raw as any).total ?? 0,
-          totalPages: raw.totalPages ?? 1,
-          first: raw.first ?? true,
-          last: raw.last ?? true,
-        };
+        return normalizePageResponse<InteractionEventResponse>(response);
       },
       providesTags: ["InteractionHistory"],
     }),

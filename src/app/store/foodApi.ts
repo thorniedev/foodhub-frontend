@@ -1,5 +1,6 @@
 import { FoodItem } from "@/types/food";
 import { baseApi } from "./baseApi";
+import { normalizeArrayPayload, normalizePayload } from "./utils/normalize";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 export const foodApi = baseApi.injectEndpoints({
@@ -11,10 +12,8 @@ export const foodApi = baseApi.injectEndpoints({
         params: { page: 0, size: 100 },
       }),
       providesTags: ["Food"],
-      transformResponse: (response: { payload?: { content?: CatalogMenuItem[] } } | CatalogMenuItem[]) => {
-        const items = Array.isArray(response)
-          ? response
-          : response.payload?.content ?? [];
+      transformResponse: (response: unknown) => {
+        const items = normalizeArrayPayload<CatalogMenuItem>(response);
         return items.map((item, index) => ({
           id: item.legacyId || index + 1,
           mealTime: (item.food?.mealTypes?.[0]?.code?.toLowerCase() as any) || "lunch",
@@ -36,8 +35,8 @@ export const foodApi = baseApi.injectEndpoints({
     }),
     getFoodById: builder.query<FoodItem | undefined, number | string>({
       query: (uuid) => `/catalog/menu-items/${encodeURIComponent(String(uuid))}/detail`,
-      transformResponse: (response: { payload?: CatalogMenuItem } | CatalogMenuItem) => {
-        const item = ("payload" in response && response.payload) ? response.payload : response as CatalogMenuItem;
+      transformResponse: (response: unknown) => {
+        const item = normalizePayload<CatalogMenuItem | null>(response, null);
         if (!item) return undefined;
         return {
           id: item.legacyId || 1,

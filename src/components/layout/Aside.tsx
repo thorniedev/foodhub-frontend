@@ -3,17 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IoSettingsOutline } from "react-icons/io5";
-import { FiLogOut } from "react-icons/fi";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { navItems } from "./NavItem";
 import { useSidebar } from "./SidebarContext";
 import LogoutButton from "../LogOutButton";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useGetUnreadCountQuery } from "@/app/store/notificationApi";
 
 export default function Aside() {
   const pathname = usePathname();
   const { isOpen, close } = useSidebar();
+  const { totalElements: bookmarkCount } = useBookmarks();
+  const { data: unreadNotificationCount = 0 } = useGetUnreadCountQuery(
+    undefined,
+    {
+      pollingInterval: 60_000,
+      skipPollingIfUnfocused: true,
+    },
+  );
 
   return (
     <>
@@ -53,6 +62,16 @@ export default function Aside() {
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname.startsWith(item.href);
+
+            const dynamicBadge =
+              item.href === "/dashboard/favorites"
+                ? (bookmarkCount > 0 ? bookmarkCount : undefined)
+                : item.href === "/dashboard/notifications"
+                  ? (unreadNotificationCount > 0
+                      ? unreadNotificationCount
+                      : undefined)
+                : item.badge;
+
             return (
               <Link
                 key={item.href}
@@ -68,16 +87,16 @@ export default function Aside() {
                   <span className="text-xl">{item.icon}</span>
                   {item.label}
                 </span>
-                {item.badge ? (
+                {dynamicBadge !== undefined ? (
                   <span
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full text-base font-semibold",
+                      "flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold",
                       active
                         ? "bg-white/20 text-white"
                         : "bg-emerald-100 text-[#136C34]",
                     )}
                   >
-                    {item.badge}
+                    {dynamicBadge}
                   </span>
                 ) : null}
               </Link>

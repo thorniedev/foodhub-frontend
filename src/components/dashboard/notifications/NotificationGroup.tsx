@@ -8,9 +8,20 @@ import type { AppNotification } from "@/types/notifications";
 interface Props {
   group: "today" | "yesterday" | "earlier";
   notifications: AppNotification[];
+  openingNotificationId?: string | null;
+  dismissingNotificationId?: string | null;
+  onOpen: (notification: AppNotification) => void;
+  onDismiss: (notification: AppNotification) => void;
 }
 
-export default function NotificationGroup({ group, notifications }: Props) {
+export default function NotificationGroup({
+  group,
+  notifications,
+  openingNotificationId,
+  dismissingNotificationId,
+  onOpen,
+  onDismiss,
+}: Props) {
   if (notifications.length === 0) return null;
 
   return (
@@ -24,7 +35,14 @@ export default function NotificationGroup({ group, notifications }: Props) {
 
       <div className="space-y-3">
         {notifications.map((n) => (
-          <NotificationCard key={n.id} notification={n} />
+          <NotificationCard
+            key={n.id}
+            notification={n}
+            isOpening={openingNotificationId === n.id}
+            isDismissing={dismissingNotificationId === n.id}
+            onOpen={onOpen}
+            onDismiss={onDismiss}
+          />
         ))}
       </div>
     </section>

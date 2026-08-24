@@ -10,6 +10,7 @@ import type {
 } from "@/types/catalog-menu-item-detail";
 
 import { baseApi } from "./baseApi";
+import { normalizeArrayPayload, normalizePayload } from "./utils/normalize";
 
 type MenuItemDetailQueryArg = string | GetCatalogMenuItemDetailParams;
 
@@ -30,9 +31,9 @@ export const menuApi = baseApi.injectEndpoints({
       }),
 
       transformResponse: (
-        response: CatalogMenuItemsResponse,
+        response: unknown,
       ): CatalogMenuItem[] => {
-        return response.payload?.content ?? [];
+        return normalizeArrayPayload<CatalogMenuItem>(response);
       },
 
       providesTags: (result) =>
@@ -86,9 +87,9 @@ export const menuApi = baseApi.injectEndpoints({
       },
 
       transformResponse: (
-        response: CatalogMenuItemDetailResponse,
+        response: unknown,
       ): CatalogMenuItemDetail => {
-        return response.payload;
+        return normalizePayload<CatalogMenuItemDetail>(response, {} as CatalogMenuItemDetail);
       },
 
       providesTags: (_result, _error, arg) => {

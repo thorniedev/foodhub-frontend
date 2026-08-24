@@ -247,11 +247,13 @@ function extractStorePage(response: unknown): StoreListResponse {
     };
   }
 
-  const rawContents = Array.isArray(unwrapped.contents)
-    ? unwrapped.contents
-    : Array.isArray(unwrapped.content)
-      ? unwrapped.content
-      : [];
+  const rawContents = Array.isArray(unwrapped.items)
+    ? unwrapped.items
+    : Array.isArray(unwrapped.contents)
+      ? unwrapped.contents
+      : Array.isArray(unwrapped.content)
+        ? unwrapped.content
+        : [];
 
   const contents = rawContents
     .map(normalizeStoreListItem)

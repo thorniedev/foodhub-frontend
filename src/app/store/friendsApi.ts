@@ -1,4 +1,5 @@
 import { baseApi } from "./baseApi";
+import { normalizeArrayPayload, normalizePayload } from "./utils/normalize";
 import type {
   FriendDto,
   FriendRequestDto,
@@ -7,57 +8,6 @@ import type {
   ScanFriendQrPayload,
   FriendActionResponse,
 } from "@/types/friends";
-
-function normalizePayload<T>(response: unknown, fallback: T): T {
-  if (response === null || response === undefined) {
-    return fallback;
-  }
-  if (typeof response === "object") {
-    const raw = response as Record<string, unknown>;
-    if (raw.payload !== undefined) {
-      return raw.payload as T;
-    }
-    if (raw.data !== undefined) {
-      return raw.data as T;
-    }
-  }
-  return response as T;
-}
-
-function normalizeArrayPayload<T>(response: unknown): T[] {
-  if (!response) return [];
-  if (Array.isArray(response)) return response as T[];
-
-  if (typeof response === "object") {
-    const raw = response as Record<string, unknown>;
-
-    // Case 1: response.payload is array or object with content
-    if (raw.payload) {
-      if (Array.isArray(raw.payload)) return raw.payload as T[];
-      if (typeof raw.payload === "object") {
-        const pObj = raw.payload as Record<string, unknown>;
-        if (Array.isArray(pObj.content)) return pObj.content as T[];
-        if (Array.isArray(pObj.contents)) return pObj.contents as T[];
-      }
-    }
-
-    // Case 2: response.content or response.contents
-    if (Array.isArray(raw.content)) return raw.content as T[];
-    if (Array.isArray(raw.contents)) return raw.contents as T[];
-
-    // Case 3: response.data
-    if (raw.data) {
-      if (Array.isArray(raw.data)) return raw.data as T[];
-      if (typeof raw.data === "object") {
-        const dObj = raw.data as Record<string, unknown>;
-        if (Array.isArray(dObj.content)) return dObj.content as T[];
-        if (Array.isArray(dObj.contents)) return dObj.contents as T[];
-      }
-    }
-  }
-
-  return [];
-}
 
 export interface GetFriendsParams {
   page?: number;

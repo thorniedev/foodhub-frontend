@@ -3,19 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 
 import { getActiveLabel } from "@/components/layout/NavItem";
 import { useSidebar } from "@/components/layout/SidebarContext";
 import DashboardUserProfile from "../DashboardUserProfile";
+import NotificationBellLink from "@/components/notifications/NotificationBellLink";
 
 interface DashboardHeaderProps {
-  notificationCount?: number;
   onSearch?: (value: string) => void;
 }
 
 export default function DashboardHeader({
-  notificationCount = 0,
   onSearch,
 }: DashboardHeaderProps) {
   const pathname = usePathname();
@@ -76,19 +75,7 @@ export default function DashboardHeader({
 
       {/* Notifications and user */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-        <button
-          type="button"
-          aria-label="ការជូនដំណឹង"
-          className="relative rounded-full p-1.5 text-[#136C34] transition hover:bg-emerald-50"
-        >
-          <Bell className="h-6 w-6" />
-
-          {notificationCount > 0 && (
-            <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E36914] px-1 text-[10px] font-bold text-white">
-              {notificationCount > 9 ? "9+" : notificationCount}
-            </span>
-          )}
-        </button>
+        <NotificationBellLink href="/dashboard/notifications" />
 
         <DashboardUserProfile />
       </div>

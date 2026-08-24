@@ -15,6 +15,7 @@ export default function PWARegister() {
       try {
         const registration = await navigator.serviceWorker.register("/sw.js", {
           scope: "/",
+          updateViaCache: "none",
         });
 
         console.log(

@@ -31,7 +31,11 @@ export function useBookmarks(page = 0, size = 50) {
     useDeleteBookmarkMutation();
 
   const bookmarks: BookmarkResponse[] = useMemo(() => {
-    return pageData?.contents ?? [];
+    if (!pageData) return [];
+    if (Array.isArray((pageData as any).items)) return (pageData as any).items;
+    if (Array.isArray(pageData.contents)) return pageData.contents;
+    if (Array.isArray(pageData)) return pageData as BookmarkResponse[];
+    return [];
   }, [pageData]);
 
   const totalElements = pageData?.totalElements ?? bookmarks.length;

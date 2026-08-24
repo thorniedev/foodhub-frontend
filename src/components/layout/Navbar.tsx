@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, LogIn, LogOut, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +11,7 @@ import ThemeToggle from "../theme-toggle";
 import DashboardUserProfile from "../DashboardUserProfile";
 import GlobalSearchModal from "../search/GlobalSearchModal";
 import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+import NotificationBellLink from "@/components/notifications/NotificationBellLink";
 
 const NAV_LINKS = [
   {
@@ -76,7 +78,9 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    setOpen(false);
+    queueMicrotask(() => {
+      setOpen(false);
+    });
   }, [pathname]);
 
   useEffect(() => {
@@ -148,9 +152,12 @@ export default function Navbar() {
       <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-3 sm:px-2">
         {/* Logo */}
         <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0">
-          <img
+          <Image
             src="/Image/foodHub-logo.png"
             alt="FoodHub logo"
+            width={160}
+            height={65}
+            priority
             className="block h-[40px] py-1 sm:h-[45px] md:h-[65px]"
           />
         </Link>
@@ -185,7 +192,10 @@ export default function Navbar() {
               </div>
             </div>
           ) : isAuthenticated ? (
-            <DashboardUserProfile />
+            <>
+              <NotificationBellLink href="/notifications" />
+              <DashboardUserProfile />
+            </>
           ) : (
             <>
               <Link
@@ -300,6 +310,17 @@ export default function Navbar() {
               {isAuthenticated ? (
                 <>
                   <li className="mt-2">
+                    <Link
+                      href="/notifications"
+                      tabIndex={open ? 0 : -1}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center justify-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-3 text-[16px] font-semibold text-primary-900 transition active:scale-[0.98]"
+                    >
+                      ការជូនដំណឹង
+                    </Link>
+                  </li>
+
+                  <li>
                     <Link
                       href="/dashboard"
                       tabIndex={open ? 0 : -1}

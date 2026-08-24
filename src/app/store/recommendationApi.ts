@@ -1,4 +1,5 @@
 import { baseApi } from "./baseApi";
+import { normalizeArrayPayload, normalizePayload } from "./utils/normalize";
 
 import type {
   CreateRecommendationSessionRequest,
@@ -33,9 +34,10 @@ export const recommendationApi = baseApi.injectEndpoints({
           return { error: createResult.error };
         }
 
-        const rawSession = createResult.data as any;
-        const session: RecommendationSession =
-          rawSession?.payload ?? rawSession;
+        const session = normalizePayload<RecommendationSession>(
+          createResult.data,
+          {} as RecommendationSession,
+        );
 
         if (!session || !session.uuid) {
           return { data: session };
@@ -62,14 +64,7 @@ export const recommendationApi = baseApi.injectEndpoints({
           };
         }
 
-        const rawItems = itemsResult.data as any;
-        const items: RecommendationItem[] = Array.isArray(rawItems)
-          ? rawItems
-          : rawItems?.payload?.content ??
-            rawItems?.payload ??
-            rawItems?.content ??
-            rawItems?.items ??
-            [];
+        const items = normalizeArrayPayload<RecommendationItem>(itemsResult.data);
 
         const normalizedItems: RecommendationItem[] = items.map((it: any) => ({
           ...it,

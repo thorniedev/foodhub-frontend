@@ -120,6 +120,9 @@ export const baseApi = createApi({
     "Friends",
     "Bookmark",
     "InteractionHistory",
+    "Notification",
+    "PushSubscription",
+    "ProximityNotification",
   ],
 
   endpoints: () => ({}),

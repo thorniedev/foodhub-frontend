@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
+import { normalizeArrayPayload } from "@/app/store/utils/normalize";
 import { useRecommendationProfileSelection } from "@/hooks/useRecommendationProfileSelection";
 import type { MemberProfile } from "@/types/member-profile/member-profile";
 
@@ -11,10 +12,7 @@ export function useActiveProfile() {
     useRecommendationProfileSelection();
 
   const profiles: MemberProfile[] = useMemo(() => {
-    if (!profileResponse) return [];
-    if (Array.isArray(profileResponse)) return profileResponse;
-    if (Array.isArray(profileResponse.contents)) return profileResponse.contents;
-    return [];
+    return normalizeArrayPayload<MemberProfile>(profileResponse);
   }, [profileResponse]);
 
   const activeProfile = useMemo(() => {

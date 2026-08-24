@@ -1,4 +1,5 @@
 import { baseApi } from "./baseApi";
+import { normalizePayload } from "./utils/normalize";
 import type {
   PublicSearchParams,
   PublicSearchResponse,
@@ -36,7 +37,7 @@ export const searchApi = baseApi.injectEndpoints({
         },
       }),
       transformResponse: (res: any) => {
-        return res?.payload ?? res;
+        return normalizePayload<PublicSearchResponse>(res, res);
       },
       providesTags: ["MenuItem", "Food"],
     }),
@@ -52,7 +53,7 @@ export const searchApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (res: any) => {
-        return res?.payload ?? res;
+        return normalizePayload<DiscoveryFilterOptionsResponse>(res, res);
       },
     }),
 
@@ -76,7 +77,7 @@ export const searchApi = baseApi.injectEndpoints({
         body: request,
       }),
       transformResponse: (res: any) => {
-        return res?.payload ?? res;
+        return normalizePayload(res, res);
       },
       invalidatesTags: ["MenuItem"],
     }),
@@ -97,14 +98,14 @@ export const searchApi = baseApi.injectEndpoints({
         },
       }),
       transformResponse: (res: any) => {
-        return res?.payload ?? res;
+        return normalizePayload<AdminSearchResponse>(res, res);
       },
     }),
 
     /**
-     * Admin Re-index Search
+     * Trigger Catalog Reindex
      * POST /api/v1/admin/search/reindex
-     * Requires ADMIN role. Manually triggers Meilisearch re-indexing.
+     * Requires ADMIN role.
      */
     reindexSearch: builder.mutation<ReindexResponse, void>({
       query: () => ({
@@ -112,7 +113,7 @@ export const searchApi = baseApi.injectEndpoints({
         method: "POST",
       }),
       transformResponse: (res: any) => {
-        return res?.payload ?? res;
+        return normalizePayload<ReindexResponse>(res, res);
       },
     }),
   }),

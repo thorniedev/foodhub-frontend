@@ -11,6 +11,8 @@ import { IoMdTime } from "react-icons/io";
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
 import SafetyStatusBadge from "@/components/discovery/SafetyStatusBadge";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useTrackInteraction } from "@/hooks/useTrackInteraction";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import type { SafetyStatusType } from "@/types/search";
 
@@ -71,6 +73,9 @@ function cleanKhmerLabel(label: string): string {
 ========================================================= */
 
 export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: FoodCardProps) {
+  const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
+  const { track } = useTrackInteraction();
+
   const [isFavorite, setIsFavorite] = useState(false);
 
   const effectiveThumbnail =
@@ -88,9 +93,13 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
 
   useEffect(() => {
     const favoriteIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
 
-    setIsFavorite(favoriteIds.includes(food.uuid));
-  }, [food.uuid]);
+    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(food.uuid));
+  }, [food.uuid, food.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
      THUMBNAIL
@@ -109,28 +118,66 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
      FAVORITE TOGGLE
   ======================================================= */
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     const currentIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
 
-    const isAlreadyFavorite = currentIds.includes(food.uuid);
+    const isCurrentlyFavorite = isFavorite || Boolean(serverBookmark) || currentIds.includes(food.uuid);
 
-    const nextIds = isAlreadyFavorite
-      ? currentIds.filter((id) => id !== food.uuid)
-      : [...currentIds, food.uuid];
+    if (isCurrentlyFavorite) {
+      // Unfavorite
+      const nextIds = currentIds.filter((id) => id !== food.uuid);
+      try {
+        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
+      } catch {}
 
-    try {
-      window.localStorage.setItem(
-        FAVORITES_STORAGE_KEY,
-        JSON.stringify(nextIds),
-      );
-    } catch (error) {
-      console.warn(
-        "[FOOD FAVORITE STORAGE]",
-        error instanceof Error ? error.message : String(error),
-      );
+      setIsFavorite(false);
+
+      if (serverBookmark) {
+        try {
+          await removeBookmark(serverBookmark.uuid);
+        } catch (err) {
+          console.warn("[BOOKMARK REMOVE ERROR]", err);
+        }
+      }
+
+      track({
+        eventType: "UNBOOKMARK",
+        menuItemUuid: food.uuid,
+        foodUuid: food.food?.uuid,
+        storeUuid: food.store?.uuid,
+      });
+    } else {
+      // Favorite
+      const nextIds = [...currentIds.filter((id) => id !== food.uuid), food.uuid];
+      try {
+        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
+      } catch {}
+
+      setIsFavorite(true);
+
+      if (activeProfileUuid) {
+        try {
+          await addBookmark({
+            menuItemUuid: food.uuid,
+            foodUuid: food.food?.uuid,
+            storeUuid: food.store?.uuid,
+          });
+        } catch (err) {
+          console.warn("[BOOKMARK ADD ERROR]", err);
+        }
+      }
+
+      track({
+        eventType: "BOOKMARK",
+        menuItemUuid: food.uuid,
+        foodUuid: food.food?.uuid,
+        storeUuid: food.store?.uuid,
+      });
     }
-
-    setIsFavorite(nextIds.includes(food.uuid));
 
     window.dispatchEvent(new Event("foodhub-favorites-updated"));
   };

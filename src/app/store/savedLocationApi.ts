@@ -85,11 +85,13 @@ export const savedLocationApi = baseApi.injectEndpoints({
         const unwrapped = unwrapPayload(response);
         const list = Array.isArray(unwrapped)
           ? unwrapped
-          : isRecord(unwrapped) && Array.isArray(unwrapped.contents)
-            ? unwrapped.contents
-            : isRecord(unwrapped) && Array.isArray(unwrapped.content)
-              ? unwrapped.content
-              : [];
+          : isRecord(unwrapped) && Array.isArray(unwrapped.items)
+            ? unwrapped.items
+            : isRecord(unwrapped) && Array.isArray(unwrapped.contents)
+              ? unwrapped.contents
+              : isRecord(unwrapped) && Array.isArray(unwrapped.content)
+                ? unwrapped.content
+                : [];
 
         return list
           .map(normalizeSavedLocation)

@@ -1440,6 +1440,8 @@ import {
   useGetMenuItemByUuidQuery,
   useGetMenuItemsQuery,
 } from "@/app/store/menuApi";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useTrackInteraction } from "@/hooks/useTrackInteraction";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
@@ -1846,6 +1848,9 @@ function RecommendationScoreList({
 export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   const router = useRouter();
 
+  const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
+  const { track } = useTrackInteraction();
+
   const [activeImage, setActiveImage] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
@@ -1856,6 +1861,14 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     isError,
     refetch,
   } = useGetMenuItemByUuidQuery(uuid);
+
+  useEffect(() => {
+    const serverBookmark = findBookmark({
+      menuItemUuid: uuid,
+      foodUuid: foodDetail?.food?.uuid,
+    });
+    setIsBookmarked(Boolean(serverBookmark));
+  }, [uuid, foodDetail?.food?.uuid, findBookmark, bookmarks]);
 
   const { data: allMenuItems = [] } = useGetMenuItemsQuery();
 
@@ -2191,7 +2204,49 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:mt-auto lg:pt-8">
               <button
                 type="button"
-                onClick={() => setIsBookmarked((previous) => !previous)}
+                onClick={async () => {
+                  const serverBookmark = findBookmark({
+                    menuItemUuid: uuid,
+                    foodUuid: food?.food?.uuid,
+                  });
+
+                  if (isBookmarked || serverBookmark) {
+                    setIsBookmarked(false);
+                    if (serverBookmark) {
+                      try {
+                        await removeBookmark(serverBookmark.uuid);
+                      } catch (err) {
+                        console.warn("[FOOD DETAIL UNBOOKMARK ERROR]", err);
+                      }
+                    }
+                    track({
+                      eventType: "UNBOOKMARK",
+                      menuItemUuid: uuid,
+                      foodUuid: food?.food?.uuid,
+                      storeUuid: food?.store?.uuid,
+                    });
+                  } else {
+                    setIsBookmarked(true);
+                    if (activeProfileUuid) {
+                      try {
+                        await addBookmark({
+                          menuItemUuid: uuid,
+                          foodUuid: food?.food?.uuid,
+                          storeUuid: food?.store?.uuid,
+                        });
+                      } catch (err) {
+                        console.warn("[FOOD DETAIL BOOKMARK ERROR]", err);
+                      }
+                    }
+                    track({
+                      eventType: "BOOKMARK",
+                      menuItemUuid: uuid,
+                      foodUuid: food?.food?.uuid,
+                      storeUuid: food?.store?.uuid,
+                    });
+                  }
+                  window.dispatchEvent(new Event("foodhub-favorites-updated"));
+                }}
                 className={`flex items-center justify-center gap-2 rounded-full px-6 py-3.5 font-semibold transition active:scale-95 ${TEXT_BODY} ${
                   isBookmarked
                     ? "bg-secondary-500 text-white hover:bg-secondary-400"

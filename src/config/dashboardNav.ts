@@ -41,12 +41,10 @@ export const dashboardNavItems: DashboardNavItem[] = [
     href: "/dashboard/notifications",
     label: "ការជូនដំណឹង",
     icon: createElement(Bell, { className: "h-5 w-5" }),
-    badge: 2,
   },
   {
     href: "/dashboard/settings",
     label: "ការកំណត់",
     icon: createElement(Settings, { className: "h-5 w-5" }),
-    badge: 2,
   },
 ];

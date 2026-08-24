@@ -1,17 +1,26 @@
-// components/dashboard/notifications/NotificationCard.tsx
 "use client";
 
-import Link from "next/link";
-import { AlertTriangle, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { AlertTriangle, ChevronRight, Loader2, Trash2 } from "lucide-react";
 import { categoryStyles } from "@/lib/notifications/category-styles";
-import { timeAgo } from "@/lib/notifications/mock-data";
+import { timeAgo } from "@/lib/notifications/notification-mappers";
 import type { AppNotification } from "@/types/notifications";
 
 interface Props {
   notification: AppNotification;
+  isDismissing?: boolean;
+  isOpening?: boolean;
+  onOpen: (notification: AppNotification) => void;
+  onDismiss: (notification: AppNotification) => void;
 }
 
-export default function NotificationCard({ notification }: Props) {
+export default function NotificationCard({
+  notification,
+  isDismissing = false,
+  isOpening = false,
+  onOpen,
+  onDismiss,
+}: Props) {
   const style = categoryStyles[notification.category];
   const Icon = style.icon;
 
@@ -44,22 +53,41 @@ export default function NotificationCard({ notification }: Props) {
         </span>
       )}
 
-      <div className="flex-1 space-y-1.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-xl font-semibold text-slate-900">
-            {notification.title}
-          </p>
-          {notification.isUrgent && (
-            <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-base font-medium text-rose-600">
-              <AlertTriangle className="h-3 w-3" />
-              បន្ទាន់
-            </span>
-          )}
-        </div>
+      <div className="min-w-0 flex-1 space-y-3">
+        <button
+          type="button"
+          onClick={() => onOpen(notification)}
+          disabled={isOpening}
+          className="block w-full rounded-xl text-left outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-wait"
+        >
+          <div className="flex flex-wrap items-center gap-2 pr-6">
+            <p className="text-xl font-semibold text-slate-900">
+              {notification.title}
+            </p>
+            {notification.isUrgent && (
+              <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-base font-medium text-rose-600">
+                <AlertTriangle className="h-3 w-3" />
+                បន្ទាន់
+              </span>
+            )}
+          </div>
 
-        <p className="text-sm leading-relaxed text-slate-500">
-          {notification.message}
-        </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+            {notification.message}
+          </p>
+        </button>
+
+        {notification.imageUrl && (
+          <div className="relative h-40 w-full overflow-hidden rounded-xl">
+            <Image
+              src={notification.imageUrl}
+              alt=""
+              fill
+              sizes="(max-width: 768px) 100vw, 720px"
+              className="object-cover"
+            />
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -79,13 +107,29 @@ export default function NotificationCard({ notification }: Props) {
 
           <div className="flex items-center gap-3 text-base text-slate-400">
             <span>{timeAgo(notification.createdAt)}</span>
-            <Link
-              href={notification.action.href}
-              className="flex items-center gap-0.5 font-medium text-emerald-600 hover:text-emerald-700"
+            <button
+              type="button"
+              onClick={() => onOpen(notification)}
+              disabled={isOpening}
+              className="flex items-center gap-0.5 font-medium text-emerald-600 transition hover:text-emerald-700 disabled:cursor-wait disabled:opacity-60"
             >
+              {isOpening && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {notification.action.label}
               <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
+            </button>
+            <button
+              type="button"
+              onClick={() => onDismiss(notification)}
+              disabled={isDismissing}
+              className="flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-wait disabled:opacity-60"
+            >
+              {isDismissing ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="h-3.5 w-3.5" />
+              )}
+              Dismiss
+            </button>
           </div>
         </div>
       </div>

@@ -38,7 +38,6 @@ export const navItems: NavItem[] = [
     href: "/dashboard/notifications",
     label: "ការជូនដំណឹង",
     icon: <FaRegBell />,
-    badge: 2,
   },
 ];
 

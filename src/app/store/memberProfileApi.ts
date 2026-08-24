@@ -1,4 +1,5 @@
 import { baseApi } from "@/app/store/baseApi";
+import { normalizePageResponse, normalizePayload } from "@/app/store/utils/normalize";
 
 import type {
   CreateMemberProfileRequest,
@@ -11,6 +12,7 @@ import type {
   MemberProfile,
   MemberProfileResponse,
   MemberRelationship,
+  SafetyOption,
   SafetyOptionResponse,
 } from "@/types/member-profile/member-profile";
 
@@ -119,6 +121,10 @@ export const memberProfileApi = baseApi.injectEndpoints({
         },
       }),
 
+      transformResponse: (response: unknown): MemberProfileResponse => {
+        return normalizePageResponse<MemberProfile>(response);
+      },
+
       providesTags: ["MemberProfile"],
     }),
 
@@ -131,6 +137,10 @@ export const memberProfileApi = baseApi.injectEndpoints({
         url: `/profiles/${encodeURIComponent(uuid)}`,
         method: "GET",
       }),
+
+      transformResponse: (response: unknown): MemberProfile => {
+        return normalizePayload<MemberProfile>(response, {} as MemberProfile);
+      },
 
       providesTags: ["MemberProfile"],
     }),
@@ -149,6 +159,10 @@ export const memberProfileApi = baseApi.injectEndpoints({
         body,
       }),
 
+      transformResponse: (response: unknown): MemberProfile => {
+        return normalizePayload<MemberProfile>(response, {} as MemberProfile);
+      },
+
       invalidatesTags: ["MemberProfile"],
     }),
 
@@ -165,6 +179,10 @@ export const memberProfileApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
+
+      transformResponse: (response: unknown): MemberProfile => {
+        return normalizePayload<MemberProfile>(response, {} as MemberProfile);
+      },
 
       invalidatesTags: ["MemberProfile"],
     }),
@@ -197,6 +215,9 @@ export const memberProfileApi = baseApi.injectEndpoints({
           body: formData,
         };
       },
+      transformResponse: (response: unknown): MediaUploadResponse => {
+        return normalizePayload<MediaUploadResponse>(response, {} as MediaUploadResponse);
+      },
     }),
 
     /* ---------------------------------------------------------------------- */
@@ -208,6 +229,9 @@ export const memberProfileApi = baseApi.injectEndpoints({
         url: `/media/${encodeURIComponent(mediaUuid)}/access-url`,
         method: "GET",
       }),
+      transformResponse: (response: unknown): GetMediaAccessUrlResponse => {
+        return normalizePayload<GetMediaAccessUrlResponse>(response, {} as GetMediaAccessUrlResponse);
+      },
     }),
 
     /* ====================================================================== */
@@ -228,6 +252,9 @@ export const memberProfileApi = baseApi.injectEndpoints({
           size: 100,
         },
       }),
+      transformResponse: (response: unknown): SafetyOptionResponse => {
+        return normalizePageResponse<SafetyOption>(response, 100);
+      },
     }),
 
     /* ---------------------------------------------------------------------- */
@@ -244,6 +271,9 @@ export const memberProfileApi = baseApi.injectEndpoints({
           size: 100,
         },
       }),
+      transformResponse: (response: unknown): SafetyOptionResponse => {
+        return normalizePageResponse<SafetyOption>(response, 100);
+      },
     }),
 
     /* ---------------------------------------------------------------------- */
@@ -260,6 +290,9 @@ export const memberProfileApi = baseApi.injectEndpoints({
           size: 100,
         },
       }),
+      transformResponse: (response: unknown): SafetyOptionResponse => {
+        return normalizePageResponse<SafetyOption>(response, 100);
+      },
     }),
 
     /* ====================================================================== */

@@ -1,4 +1,7 @@
 const CACHE_VERSION = "foodhub-v1";
+const DEFAULT_NOTIFICATION_URL = "/notifications";
+const DEFAULT_NOTIFICATION_ICON = "/icons/pwa-192x192.png";
+const DEFAULT_NOTIFICATION_BADGE = "/icons/pwa-192x192.png";
 
 self.addEventListener("install", () => {
   console.log("[FoodHub PWA] Service Worker installed");
@@ -34,50 +37,73 @@ self.addEventListener("activate", (event) => {
  * Receive Web Push messages.
  */
 self.addEventListener("push", (event) => {
-  console.log("[FoodHub Push] Push received");
-
-  let data = {
+  let payload = {
     title: "FoodHub",
     body: "You have a new notification.",
-    url: "/dashboard/notifications",
-    icon: "/icons/pwa-192x192.png",
-    badge: "/icons/pwa-192x192.png",
+    icon: DEFAULT_NOTIFICATION_ICON,
+    badge: DEFAULT_NOTIFICATION_BADGE,
     tag: "foodhub-notification",
+    image: undefined,
+    data: {
+      url: DEFAULT_NOTIFICATION_URL,
+    },
   };
 
   if (event.data) {
     try {
-      const payload = event.data.json();
+      const parsedPayload = event.data.json();
 
-      data = {
-        ...data,
+      payload = {
         ...payload,
+        ...parsedPayload,
+        data: {
+          ...payload.data,
+          ...(parsedPayload.data || {}),
+          url:
+            parsedPayload.data?.url ||
+            parsedPayload.url ||
+            DEFAULT_NOTIFICATION_URL,
+        },
       };
     } catch (error) {
       console.error("[FoodHub Push] Failed to parse push payload:", error);
 
-      data.body = event.data.text();
+      payload.body = event.data.text();
     }
   }
 
   const options = {
-    body: data.body,
+    body: payload.body,
 
-    icon: data.icon || "/icons/pwa-192x192.png",
+    icon: payload.icon || DEFAULT_NOTIFICATION_ICON,
 
-    badge: data.badge || "/icons/pwa-192x192.png",
+    badge: payload.badge || DEFAULT_NOTIFICATION_BADGE,
 
-    tag: data.tag || "foodhub-notification",
+    tag: payload.tag || payload.data?.notificationUuid || "foodhub-notification",
+
+    image: payload.image,
 
     data: {
-      url: data.url || "/dashboard/notifications",
+      ...payload.data,
+      url: payload.data?.url || DEFAULT_NOTIFICATION_URL,
     },
+
+    actions: [
+      {
+        action: "view",
+        title: "View",
+      },
+      {
+        action: "dismiss",
+        title: "Dismiss",
+      },
+    ],
 
     vibrate: [200, 100, 200],
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "FoodHub", options),
+    self.registration.showNotification(payload.title || "FoodHub", options),
   );
 });
 
@@ -85,11 +111,13 @@ self.addEventListener("push", (event) => {
  * Handle notification clicks.
  */
 self.addEventListener("notificationclick", (event) => {
-  console.log("[FoodHub Push] Notification clicked");
-
   event.notification.close();
 
-  const targetPath = event.notification.data?.url || "/dashboard/notifications";
+  if (event.action === "dismiss") {
+    return;
+  }
+
+  const targetPath = event.notification.data?.url || DEFAULT_NOTIFICATION_URL;
 
   const targetUrl = new URL(targetPath, self.location.origin).href;
 

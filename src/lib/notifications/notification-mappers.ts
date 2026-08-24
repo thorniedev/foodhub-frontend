@@ -1,0 +1,293 @@
+import type {
+  AppNotification,
+  FoodHubNotification,
+  NotificationCategory,
+  NotificationFilterTab,
+  NotificationSummaryCard,
+} from "@/types/notifications";
+
+const CATEGORY_ORDER: NotificationCategory[] = [
+  "recommendations",
+  "health",
+  "meal",
+  "favorites",
+  "family",
+  "account",
+];
+
+const CATEGORY_LABELS: Record<NotificationCategory, string> = {
+  recommendations: "ការណែនាំ",
+  health: "សុខភាព",
+  meal: "អាហារ",
+  favorites: "ចំណូលចិត្ត",
+  family: "គ្រួសារ",
+  account: "គណនី",
+};
+
+const CATEGORY_ICON: Record<NotificationCategory, NotificationSummaryCard["icon"]> = {
+  recommendations: "sparkles",
+  health: "heart",
+  meal: "utensils",
+  favorites: "star",
+  family: "users",
+  account: "settings",
+};
+
+const CATEGORY_ACCENT: Record<NotificationCategory, string> = {
+  recommendations: "emerald",
+  health: "rose",
+  meal: "amber",
+  favorites: "yellow",
+  family: "violet",
+  account: "slate",
+};
+
+const CATEGORY_DOT: Record<NotificationCategory, string> = {
+  recommendations: "bg-emerald-500",
+  health: "bg-rose-500",
+  meal: "bg-orange-500",
+  favorites: "bg-yellow-500",
+  family: "bg-violet-500",
+  account: "bg-slate-400",
+};
+
+function normalizeSearchText(notification: FoodHubNotification): string {
+  return [
+    notification.typeCode,
+    notification.typeName,
+    notification.title,
+    notification.body,
+    notification.priority,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+export function getNotificationCategory(
+  notification: FoodHubNotification,
+): NotificationCategory {
+  const text = normalizeSearchText(notification);
+
+  if (
+    text.includes("health") ||
+    text.includes("safety") ||
+    text.includes("allerg") ||
+    text.includes("diet") ||
+    text.includes("medical")
+  ) {
+    return "health";
+  }
+
+  if (
+    text.includes("meal") ||
+    text.includes("reminder") ||
+    text.includes("breakfast") ||
+    text.includes("lunch") ||
+    text.includes("dinner")
+  ) {
+    return "meal";
+  }
+
+  if (
+    text.includes("favorite") ||
+    text.includes("bookmark") ||
+    text.includes("saved")
+  ) {
+    return "favorites";
+  }
+
+  if (
+    text.includes("family") ||
+    text.includes("profile") ||
+    text.includes("member")
+  ) {
+    return "family";
+  }
+
+  if (
+    text.includes("account") ||
+    text.includes("system") ||
+    text.includes("security") ||
+    text.includes("password") ||
+    text.includes("billing")
+  ) {
+    return "account";
+  }
+
+  return "recommendations";
+}
+
+function getNotificationGroup(
+  createdAt: string,
+): AppNotification["group"] {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "earlier";
+  }
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round(
+    (today.getTime() - target.getTime()) / 86_400_000,
+  );
+
+  if (diffDays <= 0) {
+    return "today";
+  }
+
+  if (diffDays === 1) {
+    return "yesterday";
+  }
+
+  return "earlier";
+}
+
+function getDataUrl(data: Record<string, unknown> | null): string | null {
+  const value = data?.url;
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function getActionUrl(notification: FoodHubNotification): string {
+  return (
+    notification.actionUrl?.trim() ||
+    getDataUrl(notification.data) ||
+    "/notifications"
+  );
+}
+
+export function toAppNotification(
+  notification: FoodHubNotification,
+): AppNotification {
+  const category = getNotificationCategory(notification);
+  const typeLabel =
+    notification.typeName?.trim() ||
+    notification.typeCode?.replaceAll("_", " ") ||
+    CATEGORY_LABELS[category];
+
+  return {
+    id: notification.uuid,
+    uuid: notification.uuid,
+    category,
+    typeCode: notification.typeCode,
+    typeName: notification.typeName,
+    title: notification.title || "FoodHub",
+    message: notification.body || "You have a new FoodHub notification.",
+    imageUrl: notification.imageUrl,
+    priority: notification.priority,
+    status: notification.status,
+    data: notification.data,
+    actionUrl: getActionUrl(notification),
+    tags: [
+      { label: typeLabel },
+      ...(notification.priority === "URGENT" || notification.priority === "HIGH"
+        ? [{ label: notification.priority, tone: "urgent" as const }]
+        : []),
+    ],
+    createdAt: notification.createdAt,
+    isUnread: !notification.isRead,
+    isUrgent: notification.priority === "URGENT" || notification.priority === "HIGH",
+    action: {
+      label: "មើល",
+      href: getActionUrl(notification),
+    },
+    group: getNotificationGroup(notification.createdAt),
+  };
+}
+
+export function createSummaryCards(
+  notifications: AppNotification[],
+): NotificationSummaryCard[] {
+  return CATEGORY_ORDER.map((category) => ({
+    category,
+    label: CATEGORY_LABELS[category],
+    count: notifications.filter((item) => item.category === category).length,
+    icon: CATEGORY_ICON[category],
+    accent: CATEGORY_ACCENT[category],
+  }));
+}
+
+export function createFilterTabs(
+  notifications: AppNotification[],
+): NotificationFilterTab[] {
+  const countByCategory = (category: NotificationCategory) =>
+    notifications.filter((item) => item.category === category).length;
+
+  const reminderCount = notifications.filter(
+    (item) =>
+      item.category === "meal" ||
+      item.typeCode?.toLowerCase().includes("reminder") ||
+      item.typeName?.toLowerCase().includes("reminder"),
+  ).length;
+
+  return [
+    { key: "all", label: "ទាំងអស់", count: notifications.length },
+    {
+      key: "recommendations",
+      label: "ការជ្រើសរើសដោយ AI",
+      count: countByCategory("recommendations"),
+      dotColor: CATEGORY_DOT.recommendations,
+    },
+    {
+      key: "health",
+      label: "សុខភាព",
+      count: countByCategory("health"),
+      dotColor: CATEGORY_DOT.health,
+    },
+    {
+      key: "reminders",
+      label: "ការរំលឹក",
+      count: reminderCount,
+      dotColor: CATEGORY_DOT.meal,
+    },
+    {
+      key: "favorites",
+      label: "ចំណូលចិត្ត",
+      count: countByCategory("favorites"),
+      dotColor: CATEGORY_DOT.favorites,
+    },
+    {
+      key: "family",
+      label: "គ្រួសារ",
+      count: countByCategory("family"),
+      dotColor: CATEGORY_DOT.family,
+    },
+    {
+      key: "account",
+      label: "ប្រព័ន្ធ",
+      count: countByCategory("account"),
+      dotColor: CATEGORY_DOT.account,
+    },
+  ];
+}
+
+export function timeAgo(iso: string, now: Date = new Date()): string {
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const diffMs = Math.max(0, now.getTime() - date.getTime());
+  const minutes = Math.floor(diffMs / 60_000);
+
+  if (minutes < 1) {
+    return "ទើបតែឥឡូវនេះ";
+  }
+
+  if (minutes < 60) {
+    return `${minutes} នាទីមុន`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `${hours} ម៉ោងមុន`;
+  }
+
+  const days = Math.floor(hours / 24);
+
+  return `${days} ថ្ងៃមុន`;
+}

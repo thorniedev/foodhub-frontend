@@ -1,25 +1,10 @@
 import { baseApi } from "./baseApi";
+import { normalizePageResponse, normalizePayload } from "./utils/normalize";
 import type {
   BookmarkResponse,
   CreateBookmarkRequest,
   PageResponse,
 } from "@/types/interaction";
-
-function normalizePayload<T>(response: unknown, fallback: T): T {
-  if (response === null || response === undefined) {
-    return fallback;
-  }
-  if (typeof response === "object") {
-    const raw = response as Record<string, unknown>;
-    if (raw.payload !== undefined) {
-      return raw.payload as T;
-    }
-    if (raw.data !== undefined) {
-      return raw.data as T;
-    }
-  }
-  return response as T;
-}
 
 export interface GetBookmarksParams {
   profileUuid: string;
@@ -46,22 +31,7 @@ export const bookmarkApi = baseApi.injectEndpoints({
         params: { page, size },
       }),
       transformResponse: (response: unknown): PageResponse<BookmarkResponse> => {
-        const raw = normalizePayload(response, {} as PageResponse<BookmarkResponse>);
-        return {
-          contents: Array.isArray(raw.contents)
-            ? raw.contents
-            : Array.isArray((raw as any).content)
-            ? (raw as any).content
-            : Array.isArray(raw)
-            ? raw
-            : [],
-          pageNumber: raw.pageNumber ?? (raw as any).number ?? 0,
-          pageSize: raw.pageSize ?? (raw as any).size ?? 20,
-          totalElements: raw.totalElements ?? (raw as any).total ?? 0,
-          totalPages: raw.totalPages ?? 1,
-          first: raw.first ?? true,
-          last: raw.last ?? true,
-        };
+        return normalizePageResponse<BookmarkResponse>(response);
       },
       providesTags: (_result, _error, { profileUuid }) => [
         { type: "Bookmark", id: profileUuid },
