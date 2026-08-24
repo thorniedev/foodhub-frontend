@@ -120,20 +120,20 @@ export default function Footer() {
 
               <div className="mt-6 flex flex-col gap-6">
                 {/* long sponsor logo */}
-                <div className="relative h-[70px]  min-w-[600px] ">
+                <div className="relative h-[55px] sm:h-[65px] md:h-[70px] w-full max-w-[600px]">
                   <Image
                     src="/sponsors.png"
                     alt="Ministry  of Post and Telecommunications"
                     fill
                     className="object-contain block dark:hidden object-left"
-                    sizes="(max-width: 768px) 100vw, 389px"
+                    sizes="(max-width: 768px) 100vw, 600px"
                   />
                   <Image
                     src="/sponsors-dark.png"
                     alt="Ministry  of Post and Telecommunications"
                     fill
                     className="object-contain hidden dark:block object-left"
-                    sizes="(max-width: 768px) 100vw, 389px"
+                    sizes="(max-width: 768px) 100vw, 600px"
                   />
                 </div>
               </div>

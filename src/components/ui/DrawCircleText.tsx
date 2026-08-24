@@ -4,8 +4,8 @@ import { motion } from "motion/react";
 
 export const DrawCircleText = () => {
   return (
-    <div className="grid place-content-center bg-primary-800     px-4 py-8 text-yellow-50">
-      <p className="max-w-2xl font-bold text-center text-5xl leading-snug">
+    <div className="grid place-content-center bg-primary-800 px-4 py-8 text-yellow-50 overflow-hidden">
+      <p className="max-w-2xl font-bold text-center text-2xl sm:text-3xl md:text-5xl leading-snug">
         បទពិសោធន៍ថ្មីក្នុងការ
         <span className="relative text-accent-00">
           ស្វែងរកអាហារ

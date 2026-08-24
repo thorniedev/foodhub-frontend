@@ -2211,8 +2211,8 @@ export default function Hero() {
   }, [heroImageLoaded, reduceMotion]);
 
   return (
-    <section className="relative overflow-visible">
-      <section className="relative overflow-visible container max-w-7xl mx-auto">
+    <section className="relative w-full max-w-full overflow-x-clip">
+      <section className="relative overflow-x-clip container max-w-7xl mx-auto px-4 sm:px-6">
         <div
           className="
           container relative mx-auto

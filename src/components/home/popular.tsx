@@ -207,7 +207,7 @@ export default function PopularSection() {
         whileInView="show"
         viewport={VIEWPORT}
         variants={group(0.09, 0.06)}
-        className="flex  pt-20 justify-center lg:max-w-7xl  mx-auto"
+        className="flex pt-12 md:pt-20 justify-center lg:max-w-7xl mx-auto overflow-hidden px-2 sm:px-4"
       >
         {CARDS.map((card, index) => (
           <motion.div
@@ -229,7 +229,7 @@ export default function PopularSection() {
             <Image
               width={235}
               height={285}
-              className={`border-6 ${card.fit} lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[130px] max-md:w-[100px] border-white shadow-md rounded-[24px]`}
+              className={`border-4 sm:border-6 ${card.fit} lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[110px] max-md:w-[78px] sm:max-md:h-[130px] sm:max-md:w-[100px] border-white shadow-md rounded-[16px] sm:rounded-[24px]`}
               src={card.src}
               alt="Popular"
             />

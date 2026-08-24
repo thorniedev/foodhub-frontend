@@ -77,7 +77,7 @@ export default function SortDropdown({ value, onChange }: SortDropdownProps) {
   }, []);
 
   return (
-    <div ref={dropdownRef} className="relative min-w-[270px] flex-none">
+    <div ref={dropdownRef} className="relative w-full min-w-0 sm:w-auto sm:min-w-[270px] flex-1 sm:flex-none">
       {/* TRIGGER */}
       <button
         type="button"

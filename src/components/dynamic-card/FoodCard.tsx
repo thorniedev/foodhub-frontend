@@ -177,7 +177,8 @@ export default function FoodCard({ food, safetyStatus, safetyReasonCodes }: Food
         className="
           flex
           h-full
-          min-w-[300px]
+          w-full
+          min-w-0
           flex-col
           rounded-[24px]
           border

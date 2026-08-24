@@ -136,13 +136,13 @@ function StoreBookmarkCard({
   return (
     <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
       <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
           <Store className="h-8 w-8" />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
               <Store className="h-3 w-3" /> Store
             </span>
             <span className="flex items-center gap-1 text-xs text-slate-400">
@@ -166,7 +166,7 @@ function StoreBookmarkCard({
         {storeUuid && (
           <Link
             href={`/stores/${storeUuid}`}
-            className="inline-flex items-center gap-1.5 rounded-2xl bg-amber-50 px-4 py-2 text-xs font-bold text-amber-700 transition hover:bg-amber-600 hover:text-white dark:bg-amber-950/60 dark:text-amber-400 dark:hover:bg-amber-600 dark:hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white"
           >
             <ExternalLink className="h-3.5 w-3.5" /> View Store
           </Link>
@@ -212,22 +212,22 @@ function FavoritesContent() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Top Banner Header */}
-      <div className="flex flex-col gap-4 rounded-3xl bg-linear-to-r from-amber-600 to-orange-700 p-6 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <div className="flex flex-col gap-4 rounded-3xl bg-linear-to-r from-emerald-800 to-teal-950 p-6 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Bookmark className="h-6 w-6 fill-current" />
+            <Bookmark className="h-6 w-6 fill-current text-emerald-300" />
             <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
               ចំណីអាហារចំណូលចិត្ត (Bookmarks)
             </h2>
           </div>
-          <p className="text-sm text-amber-100/90">
+          <p className="text-sm text-emerald-100/90">
             Your saved dishes and stores collection, personalized for your dining profile.
           </p>
         </div>
 
         {activeProfile && (
           <div className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-xs font-semibold text-white backdrop-blur-sm">
-            <Shield className="h-4 w-4 text-amber-200" />
+            <Shield className="h-4 w-4 text-emerald-300" />
             <span>Profile: <strong>{activeProfile.profileName}</strong></span>
           </div>
         )}
@@ -240,13 +240,13 @@ function FavoritesContent() {
           onClick={() => setFilterTab("all")}
           className={`flex items-center gap-2 border-b-2 px-5 py-3.5 text-sm font-bold transition ${
             filterTab === "all"
-              ? "border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-400"
+              ? "border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           }`}
         >
           <Layers className="h-4 w-4" />
           <span>All Saved</span>
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
             {bookmarks.length}
           </span>
         </button>
@@ -256,7 +256,7 @@ function FavoritesContent() {
           onClick={() => setFilterTab("dishes")}
           className={`flex items-center gap-2 border-b-2 px-5 py-3.5 text-sm font-bold transition ${
             filterTab === "dishes"
-              ? "border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-400"
+              ? "border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           }`}
         >
@@ -272,13 +272,13 @@ function FavoritesContent() {
           onClick={() => setFilterTab("stores")}
           className={`flex items-center gap-2 border-b-2 px-5 py-3.5 text-sm font-bold transition ${
             filterTab === "stores"
-              ? "border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-400"
+              ? "border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400"
               : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           }`}
         >
           <Store className="h-4 w-4" />
           <span>Stores</span>
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
             {stores.length}
           </span>
         </button>
@@ -287,11 +287,11 @@ function FavoritesContent() {
       {/* Bookmarks List */}
       {loading && bookmarks.length === 0 ? (
         <div className="flex h-56 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
       ) : displayedBookmarks.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-800">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50">
             <Bookmark className="h-8 w-8" />
           </div>
           <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">
@@ -307,7 +307,7 @@ function FavoritesContent() {
           <div className="mt-6 flex gap-3">
             <Link
               href="/menu"
-              className="rounded-2xl bg-amber-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-amber-700 transition"
+              className="rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition"
             >
               Explore Menu
             </Link>
@@ -341,7 +341,7 @@ export default function FavoritesPage() {
     <Suspense
       fallback={
         <div className="mx-auto flex h-64 max-w-5xl items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
       }
     >

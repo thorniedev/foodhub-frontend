@@ -42,25 +42,25 @@ export const CircularBadge = () => (
 );
 export default function LocationSection() {
   return (
-    <section className="container md:pb-30 max-md:pb-60 flex  max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center lg:pt-6 mx-auto max-w-7xl">
-      <div className="flex  relative  flex-col gap-12.5">
-        <p className="lg:text-7xl md:text-[38px] max-md:text-[30px] font-bold  text-primary-800 dark:text-primary-dark">
+    <section className="container md:pb-30 max-md:pb-28 flex max-md:flex-col max-md:gap-y-20 md:justify-between md:items-center lg:pt-6 mx-auto max-w-7xl px-4 sm:px-6 overflow-hidden">
+      <div className="flex relative flex-col gap-6 md:gap-12.5 max-w-xl">
+        <p className="lg:text-7xl md:text-[38px] max-md:text-[30px] font-bold text-primary-800 dark:text-primary-dark">
           ស្វែងរកមុខម្ហូបនៅ
           <span className="text-secondary-400">ជិតអ្នកបំផុត</span>
         </p>
-        <p className="md:text-[24px]  text-gray-700 dark:text-gray-100">
+        <p className="text-base sm:text-lg md:text-[24px] text-gray-700 dark:text-gray-100">
           ទទួលបានការណែនាំអំពីមុខម្ហូប និងហាងអាហារនៅជិតទីតាំងរបស់អ្នក
           <br className="md:block max-md:hidden" />
           ដើម្បីសន្សំពេលវេលា និងរីករាយជាមួយអាហារដែលអ្នកចូលចិត្ត។
         </p>
         <Link
           href={"/food"}
-          className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full texxt-[20px]"
+          className="bg-primary-800 w-fit text-accent-400 px-8 py-3 rounded-full text-base sm:text-[20px]"
         >
           ទីតាំងនៅជិតនេះ
         </Link>
         <motion.div
-          className="absolute md:-right-45 max-md:rotate-90 max-md:-bottom-10 max-md:self-end  md:top-35"
+          className="absolute md:-right-45 max-md:rotate-90 max-md:-bottom-6 max-md:right-0 md:top-35 pointer-events-none"
           animate={{
             y: [0, -10, 0],
             rotate: [5, -5, 5],
@@ -72,12 +72,12 @@ export default function LocationSection() {
             ease: "easeInOut",
           }}
         >
-          <img src="/Image/location-vector.png" alt="Location" />
+          <img src="/Image/location-vector.png" alt="Location" className="max-w-[120px] md:max-w-none" />
         </motion.div>
       </div>
 
-      <div className="relative max-md:self-center  ">
-        <div className="absolute -top-30 -left-10 md:right-[10%] z-40 pointer-events-auto">
+      <div className="relative max-md:self-center mt-10 md:mt-0">
+        <div className="absolute -top-20 -left-6 md:-top-30 md:-left-10 md:right-[10%] z-40 pointer-events-auto">
           <CircularBadge />
         </div>
         <motion.div
@@ -88,10 +88,10 @@ export default function LocationSection() {
             ease: "easeInOut",
             delay: 1,
           }}
-          className=" -mb-50  self-end pointer-events-auto"
+          className="self-end pointer-events-auto"
         >
-          <div className="w-40 md:w-52  ab aspect-3/3.5 bg-white lg:backdrop-blur-xs  rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[12deg] shadow-md border border-gray-100 hover:rotate-0 transition-transform duration-500">
-            <div className="w-16 h-16  md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
+          <div className="w-40 md:w-52 aspect-3/3.5 bg-white lg:backdrop-blur-xs rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[12deg] shadow-md border border-gray-100 hover:rotate-0 transition-transform duration-500">
+            <div className="w-16 h-16 md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
               <img
                 src="/Image/icon map.png"
                 alt="Avatar"
@@ -99,10 +99,10 @@ export default function LocationSection() {
               />
             </div>
             <div className="text-center text-primary-500 mt-2">
-              <p className="font-bold text-sm md:text-lg  ">
+              <p className="font-bold text-sm md:text-lg">
                 1.ម្ហូបគ្រប់ប្រភេទ
               </p>
-              <p className="text-[10px] md:text-base  /80 mt-1">
+              <p className="text-[10px] md:text-base text-gray-500 mt-1">
                 23 422 មុខសម្រាប់ជ្រើសរើស
               </p>
             </div>

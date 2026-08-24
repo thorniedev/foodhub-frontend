@@ -208,7 +208,7 @@ export default function FooodCard({
         relative
         flex
         h-full
-        min-w-[300px]
+        min-w-0
         w-full
         flex-col
         rounded-[24px]

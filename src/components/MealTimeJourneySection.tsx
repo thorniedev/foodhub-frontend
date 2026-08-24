@@ -1715,9 +1715,13 @@ export default function MealTimeJourneySection() {
   const coopLight = useTransform(progress, [0.64, 0.8, 1], [0, 0.85, 1]);
 
   return (
-    <div ref={ref} style={{ height: `${(MEALS.length + 0.5) * 100}vh` }}>
+    <div
+      ref={ref}
+      className="relative w-full max-w-full overflow-x-clip"
+      style={{ height: `${(MEALS.length + 0.5) * 100}vh` }}
+    >
       <motion.section
-        className="sticky top-0 h-screen overflow-hidden"
+        className="sticky top-0 h-screen w-full max-w-full overflow-hidden"
         style={{
           backgroundImage: reduce ? "linear-gradient(#052e16,#0d2f1a)" : sky,
         }}

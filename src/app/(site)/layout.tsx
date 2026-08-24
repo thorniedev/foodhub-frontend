@@ -9,16 +9,18 @@ export default function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <>
+    <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-clip">
       {/* <AOSInit /> */}
       <Navbar />
-      {children}
-      <footer>
+      <main className="w-full max-w-full flex-1 overflow-x-clip">
+        {children}
+      </main>
+      <footer className="w-full max-w-full overflow-x-clip">
         <MarqueeSection />
         <DrawCircleText />
         <Footer />
       </footer>
       <Model />
-    </>
+    </div>
   );
 }

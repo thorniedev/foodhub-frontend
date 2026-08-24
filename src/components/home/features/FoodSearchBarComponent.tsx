@@ -806,7 +806,7 @@ export default function FoodSearchBar() {
       <div className="sticky top-18 z-50 mx-auto flex w-full max-w-7xl flex-wrap items-stretch gap-3.5 px-4 pb-6">
         {/* SEARCH */}
 
-        <div className="flex min-h-[60px] min-w-[280px] flex-1 items-center gap-3 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec]">
+        <div className="flex min-h-[56px] w-full min-w-0 sm:min-h-[60px] sm:min-w-[280px] sm:flex-1 items-center gap-3 rounded-full border border-[#e7e6e1] bg-white px-[22px] shadow-sm transition focus-within:border-[#1c6b45] focus-within:ring-4 focus-within:ring-[#e8f3ec]">
           <IoSearchOutline className="shrink-0 text-[22px] text-[#1c6b45]" />
 
           <input
@@ -834,7 +834,7 @@ export default function FoodSearchBar() {
         <SortDropdown value={sortBy} onChange={setSortBy} />
         {/* FILTER */}
 
-        <div ref={wrapRef} className="relative z-50 min-w-[220px] flex-none">
+        <div ref={wrapRef} className="relative z-50 w-full min-w-0 sm:w-auto sm:min-w-[220px] flex-1 sm:flex-none">
           <button
             type="button"
             onClick={() => setIsOpen((previous) => !previous)}

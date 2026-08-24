@@ -77,9 +77,9 @@ export default function FavoriteFoodRow({
           type="button"
           onClick={handleToggleSaved}
           aria-label="ដកចេញពីចំណូលចិត្ត"
-          className="text-orange-500"
+          className="text-emerald-600"
         >
-          <Bookmark className={cn("h-5 w-5", saved && "fill-orange-500")} />
+          <Bookmark className={cn("h-5 w-5", saved && "fill-emerald-600")} />
         </button>
         <button
           type="button"
