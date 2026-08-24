@@ -6,15 +6,6 @@ import type {
   NotificationSummaryCard,
 } from "@/types/notifications";
 
-const CATEGORY_ORDER: NotificationCategory[] = [
-  "recommendations",
-  "health",
-  "meal",
-  "favorites",
-  "family",
-  "account",
-];
-
 const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   recommendations: "ការណែនាំ",
   health: "សុខភាព",
@@ -50,6 +41,18 @@ const CATEGORY_DOT: Record<NotificationCategory, string> = {
   family: "bg-violet-500",
   account: "bg-slate-400",
 };
+
+function formatApiTypeLabel(value?: string | null): string {
+  if (!value?.trim()) {
+    return "";
+  }
+
+  return value
+    .trim()
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 function normalizeSearchText(notification: FoodHubNotification): string {
   return [
@@ -118,6 +121,12 @@ export function getNotificationCategory(
   return "recommendations";
 }
 
+export function getNotificationFeatureKey(
+  notification: AppNotification,
+): string {
+  return notification.typeCode?.trim() || notification.category;
+}
+
 function getNotificationGroup(
   createdAt: string,
 ): AppNotification["group"] {
@@ -164,7 +173,7 @@ export function toAppNotification(
   const category = getNotificationCategory(notification);
   const typeLabel =
     notification.typeName?.trim() ||
-    notification.typeCode?.replaceAll("_", " ") ||
+    formatApiTypeLabel(notification.typeCode) ||
     CATEGORY_LABELS[category];
 
   return {
@@ -200,66 +209,63 @@ export function toAppNotification(
 export function createSummaryCards(
   notifications: AppNotification[],
 ): NotificationSummaryCard[] {
-  return CATEGORY_ORDER.map((category) => ({
-    category,
-    label: CATEGORY_LABELS[category],
-    count: notifications.filter((item) => item.category === category).length,
-    icon: CATEGORY_ICON[category],
-    accent: CATEGORY_ACCENT[category],
-  }));
+  const typeMap = new Map<
+    string,
+    {
+      category: NotificationCategory;
+      count: number;
+      label: string;
+      typeCode: string | null;
+    }
+  >();
+
+  notifications.forEach((notification) => {
+    const typeCode = notification.typeCode?.trim() || null;
+    const key = getNotificationFeatureKey(notification);
+    const existing = typeMap.get(key);
+
+    if (existing) {
+      existing.count += 1;
+      return;
+    }
+
+    typeMap.set(key, {
+      category: notification.category,
+      count: 1,
+      label:
+        notification.typeName?.trim() ||
+        formatApiTypeLabel(typeCode) ||
+        CATEGORY_LABELS[notification.category],
+      typeCode,
+    });
+  });
+
+  return [...typeMap.entries()]
+    .sort(([, a], [, b]) => b.count - a.count || a.label.localeCompare(b.label))
+    .map(([key, value]) => ({
+      key,
+      category: value.category,
+      typeCode: value.typeCode,
+      label: value.label,
+      count: value.count,
+      icon: CATEGORY_ICON[value.category],
+      accent: CATEGORY_ACCENT[value.category],
+    }));
 }
 
 export function createFilterTabs(
   notifications: AppNotification[],
 ): NotificationFilterTab[] {
-  const countByCategory = (category: NotificationCategory) =>
-    notifications.filter((item) => item.category === category).length;
-
-  const reminderCount = notifications.filter(
-    (item) =>
-      item.category === "meal" ||
-      item.typeCode?.toLowerCase().includes("reminder") ||
-      item.typeName?.toLowerCase().includes("reminder"),
-  ).length;
+  const typeTabs = createSummaryCards(notifications).map((card) => ({
+    key: card.key,
+    label: card.label,
+    count: card.count,
+    dotColor: CATEGORY_DOT[card.category],
+  }));
 
   return [
     { key: "all", label: "ទាំងអស់", count: notifications.length },
-    {
-      key: "recommendations",
-      label: "ការជ្រើសរើសដោយ AI",
-      count: countByCategory("recommendations"),
-      dotColor: CATEGORY_DOT.recommendations,
-    },
-    {
-      key: "health",
-      label: "សុខភាព",
-      count: countByCategory("health"),
-      dotColor: CATEGORY_DOT.health,
-    },
-    {
-      key: "reminders",
-      label: "ការរំលឹក",
-      count: reminderCount,
-      dotColor: CATEGORY_DOT.meal,
-    },
-    {
-      key: "favorites",
-      label: "ចំណូលចិត្ត",
-      count: countByCategory("favorites"),
-      dotColor: CATEGORY_DOT.favorites,
-    },
-    {
-      key: "family",
-      label: "គ្រួសារ",
-      count: countByCategory("family"),
-      dotColor: CATEGORY_DOT.family,
-    },
-    {
-      key: "account",
-      label: "ប្រព័ន្ធ",
-      count: countByCategory("account"),
-      dotColor: CATEGORY_DOT.account,
-    },
+    ...typeTabs,
   ];
 }
 

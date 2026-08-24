@@ -8,6 +8,7 @@ import type {
 /** ស្លាកសង្ខេបខាងលើ (Recommendations / Health / Meal / Favorites / Family / Account) */
 export const summaryCards: NotificationSummaryCard[] = [
   {
+    key: "recommendations",
     category: "recommendations",
     label: "ការណែនាំ",
     count: 3,
@@ -15,6 +16,7 @@ export const summaryCards: NotificationSummaryCard[] = [
     accent: "emerald",
   },
   {
+    key: "health",
     category: "health",
     label: "សុខភាព",
     count: 3,
@@ -22,6 +24,7 @@ export const summaryCards: NotificationSummaryCard[] = [
     accent: "rose",
   },
   {
+    key: "meal",
     category: "meal",
     label: "អាហារ",
     count: 3,
@@ -29,6 +32,7 @@ export const summaryCards: NotificationSummaryCard[] = [
     accent: "amber",
   },
   {
+    key: "favorites",
     category: "favorites",
     label: "ចំណូលចិត្ត",
     count: 3,
@@ -36,6 +40,7 @@ export const summaryCards: NotificationSummaryCard[] = [
     accent: "yellow",
   },
   {
+    key: "family",
     category: "family",
     label: "គ្រួសារ",
     count: 3,
@@ -43,6 +48,7 @@ export const summaryCards: NotificationSummaryCard[] = [
     accent: "violet",
   },
   {
+    key: "account",
     category: "account",
     label: "គណនី",
     count: 3,

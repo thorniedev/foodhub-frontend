@@ -268,17 +268,19 @@ export default function PushNotificationManager() {
         return;
       }
 
+      const vapidPublicKey = await fetchVapidPublicKey().unwrap();
+
+      if (!vapidPublicKey) {
+        throw new Error(
+          "Web Push is not configured on the backend. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in production, redeploy the backend, then enable push again.",
+        );
+      }
+
       const nextPermission = await Notification.requestPermission();
       setPermission(nextPermission);
 
       if (nextPermission !== "granted") {
         return;
-      }
-
-      const vapidPublicKey = await fetchVapidPublicKey().unwrap();
-
-      if (!vapidPublicKey) {
-        throw new Error("FoodHub push notifications are not configured yet.");
       }
 
       const registration = await getFoodHubServiceWorkerRegistration();

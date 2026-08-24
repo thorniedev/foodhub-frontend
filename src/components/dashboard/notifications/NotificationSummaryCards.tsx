@@ -7,7 +7,7 @@ import type { NotificationSummaryCard } from "@/types/notifications";
 interface Props {
   cards: NotificationSummaryCard[];
   activeCategory?: string;
-  onSelect?: (category: NotificationSummaryCard["category"]) => void;
+  onSelect?: (key: NotificationSummaryCard["key"]) => void;
 }
 
 export default function NotificationSummaryCards({
@@ -16,18 +16,18 @@ export default function NotificationSummaryCards({
   onSelect,
 }: Props) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {cards.map((card) => {
         const style = categoryStyles[card.category];
         const Icon = style.icon;
-        const isActive = activeCategory === card.category;
+        const isActive = activeCategory === card.key;
 
         return (
           <button
-            key={card.category}
+            key={card.key}
             type="button"
-            onClick={() => onSelect?.(card.category)}
-            className={`flex flex-col items-start gap-3 rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:shadow-md ${
+            onClick={() => onSelect?.(card.key)}
+            className={`flex min-h-28 flex-col items-start gap-3 rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:shadow-md ${
               isActive
                 ? "border-emerald-400 ring-1 ring-emerald-400"
                 : "border-slate-100"
@@ -50,7 +50,7 @@ export default function NotificationSummaryCards({
                 </span>
               )}
             </div>
-            <span className="text-sm font-medium text-slate-700">
+            <span className="text-sm font-medium leading-5 text-slate-700 break-words">
               {card.label}
             </span>
           </button>

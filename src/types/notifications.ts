@@ -149,7 +149,9 @@ export interface AppNotification {
 
 /** សង្ខេបចំនួននីមួយៗសម្រាប់ស្លាកខាងលើទំព័រ (Recommendations, Health...) */
 export interface NotificationSummaryCard {
+  key: string;
   category: NotificationCategory;
+  typeCode?: string | null;
   label: string;
   count: number;
   icon: "sparkles" | "heart" | "utensils" | "star" | "users" | "settings";
@@ -158,7 +160,7 @@ export interface NotificationSummaryCard {
 
 /** តម្រង tab នៅជួរទី ២ */
 export interface NotificationFilterTab {
-  key: "all" | NotificationCategory | "reminders" | "system";
+  key: string;
   label: string;
   count?: number;
   dotColor?: string;

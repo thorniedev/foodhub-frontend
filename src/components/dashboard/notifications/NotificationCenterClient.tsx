@@ -21,6 +21,7 @@ import PushNotificationManager from "@/components/dashboard/notifications/PushNo
 import {
   createFilterTabs,
   createSummaryCards,
+  getNotificationFeatureKey,
   toAppNotification,
 } from "@/lib/notifications/notification-mappers";
 import type {
@@ -139,31 +140,24 @@ export default function NotificationCenterClient() {
     [notifications],
   );
 
+  const selectedTab =
+    activeTab === "all" || filterTabs.some((tab) => tab.key === activeTab)
+      ? activeTab
+      : "all";
+
   const filtered = useMemo(() => {
     return notifications.filter((notification) => {
       if (unreadOnly && !notification.isUnread) {
         return false;
       }
 
-      if (activeTab === "all") {
+      if (selectedTab === "all") {
         return true;
       }
 
-      if (activeTab === "reminders") {
-        return (
-          notification.category === "meal" ||
-          notification.typeCode?.toLowerCase().includes("reminder") ||
-          notification.typeName?.toLowerCase().includes("reminder")
-        );
-      }
-
-      if (activeTab === "system") {
-        return notification.category === "account";
-      }
-
-      return notification.category === activeTab;
+      return getNotificationFeatureKey(notification) === selectedTab;
     });
-  }, [activeTab, notifications, unreadOnly]);
+  }, [notifications, selectedTab, unreadOnly]);
 
   const grouped = useMemo(() => {
     return GROUP_ORDER.map((group) => ({
@@ -244,9 +238,9 @@ export default function NotificationCenterClient() {
     }
   };
 
-  const handleSelectSummaryCard = (category: NotificationFilterTab["key"]) => {
+  const handleSelectSummaryCard = (key: NotificationFilterTab["key"]) => {
     setActiveTab((current) =>
-      current === category ? "all" : (category as NotificationFilterTab["key"]),
+      current === key ? "all" : key,
     );
   };
 
@@ -277,15 +271,17 @@ export default function NotificationCenterClient() {
         onRefresh={handleRefresh}
       />
 
-      <NotificationSummaryCards
-        cards={summaryCards}
-        activeCategory={activeTab}
-        onSelect={handleSelectSummaryCard}
-      />
+      {summaryCards.length > 0 && (
+        <NotificationSummaryCards
+          cards={summaryCards}
+          activeCategory={selectedTab}
+          onSelect={handleSelectSummaryCard}
+        />
+      )}
 
       <NotificationFilters
         tabs={filterTabs}
-        activeTab={activeTab}
+        activeTab={selectedTab}
         onChangeTab={setActiveTab}
         unreadOnly={unreadOnly}
         onToggleUnreadOnly={() => setUnreadOnly((value) => !value)}
