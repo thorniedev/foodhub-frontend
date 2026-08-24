@@ -87,6 +87,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   search: new Set(["GET"]),
   discovery: new Set(["GET", "POST"]),
   recommendations: new Set(["GET", "POST", "PATCH"]),
+  interactions: new Set(["GET", "POST"]),
   admin: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 };
 
@@ -104,6 +105,7 @@ const nestedRoutePrefixes = new Set([
   "saved-locations",
   "discovery",
   "recommendations",
+  "interactions",
   "admin",
 ]);
 
@@ -143,6 +145,13 @@ function requiresAuthentication(backendPath: string, method: string) {
   }
 
   if (backendPath === "friends" || backendPath.startsWith("friends/")) {
+    return true;
+  }
+
+  if (
+    backendPath === "interactions" ||
+    backendPath.startsWith("interactions/")
+  ) {
     return true;
   }
 

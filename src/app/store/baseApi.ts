@@ -118,6 +118,8 @@ export const baseApi = createApi({
     "MemberProfile",
     "SavedLocation",
     "Friends",
+    "Bookmark",
+    "InteractionHistory",
   ],
 
   endpoints: () => ({}),

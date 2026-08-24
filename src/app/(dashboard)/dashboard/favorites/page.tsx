@@ -1,104 +1,351 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bookmark } from "lucide-react";
+import React, { useState, useMemo, Suspense } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import FavoriteFoodRow from "@/components/dashboard/favorites/FavoriteFoodRow";
-
 import {
-  clearFavorites,
-  FAVORITES_UPDATED_EVENT,
-  getFavorites,
-  removeFavorite,
-  type StoredFavoriteFood,
-} from "@/lib/favorites/favorites";
+  Bookmark,
+  Utensils,
+  Store,
+  Trash2,
+  ExternalLink,
+  Shield,
+  Loader2,
+  Calendar,
+  Layers,
+} from "lucide-react";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import type { BookmarkResponse } from "@/types/interaction";
 
-export default function FavoritesPage() {
+function getMediaUrl(value: string | null | undefined): string {
+  if (!value) return "/Image/default-food.png";
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  if (value.startsWith("/api/v1/")) return `/api/${value.slice("/api/v1/".length)}`;
+  if (value.startsWith("/")) return value;
+  return `/${value}`;
+}
+
+function formatDate(dateStr?: string | null): string {
+  if (!dateStr) return "Recently";
+  try {
+    const d = new Date(dateStr);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(d);
+  } catch {
+    return "Recently";
+  }
+}
+
+function DishBookmarkCard({
+  bookmark,
+  onRemove,
+}: {
+  bookmark: BookmarkResponse;
+  onRemove: (uuid: string) => void;
+}) {
   const router = useRouter();
+  const menuItemUuid = bookmark.menuItemUuid || bookmark.foodUuid || "";
+  const { data: itemDetail, isLoading } = useGetMenuItemByUuidQuery(menuItemUuid, {
+    skip: !menuItemUuid,
+  });
 
-  const [favorites, setFavorites] = useState<StoredFavoriteFood[]>([]);
+  const title =
+    itemDetail?.localName || itemDetail?.name || `Dish (${menuItemUuid.slice(0, 8)})`;
+  const price = itemDetail?.price != null ? `$${Number(itemDetail.price).toFixed(2)}` : null;
+  const storeName = itemDetail?.store?.name || null;
+  const thumbnail = itemDetail?.thumbnail || "/Image/default-food.png";
 
-  useEffect(() => {
-    const updateFavorites = () => {
-      const storedFavorites = getFavorites();
+  return (
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+      <div className="flex items-center gap-4">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
+          <Image
+            src={getMediaUrl(thumbnail)}
+            alt={title}
+            fill
+            sizes="80px"
+            className="object-cover transition duration-300 group-hover:scale-105"
+          />
+        </div>
 
-      console.log("FAVORITES:", storedFavorites);
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+              <Utensils className="h-3 w-3" /> Dish
+            </span>
+            <span className="flex items-center gap-1 text-xs text-slate-400">
+              <Calendar className="h-3 w-3" /> {formatDate(bookmark.createdAt)}
+            </span>
+          </div>
 
-      setFavorites(storedFavorites);
-    };
+          <h3 className="mt-1 truncate text-base font-bold text-slate-900 dark:text-white">
+            {isLoading ? "Loading dish..." : title}
+          </h3>
 
-    // Load localStorage when page opens
-    updateFavorites();
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+            {storeName && <span>📍 {storeName}</span>}
+            {price && (
+              <span className="font-extrabold text-emerald-700 dark:text-emerald-400">
+                {price}
+              </span>
+            )}
+            {bookmark.notes && (
+              <span className="italic text-slate-400">📝 {bookmark.notes}</span>
+            )}
+          </div>
+        </div>
+      </div>
 
-    // Listen when user adds/removes favorite
-    window.addEventListener(FAVORITES_UPDATED_EVENT, updateFavorites);
+      <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800 sm:mt-0 sm:border-0 sm:pt-0">
+        {menuItemUuid && (
+          <Link
+            href={`/menu-items/${menuItemUuid}`}
+            className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> View
+          </Link>
+        )}
 
-    return () => {
-      window.removeEventListener(FAVORITES_UPDATED_EVENT, updateFavorites);
-    };
-  }, []);
+        <button
+          type="button"
+          onClick={() => onRemove(bookmark.uuid)}
+          title="Remove bookmark"
+          className="rounded-2xl border border-slate-200 p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:hover:bg-rose-950/40"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
-  const handleRemove = (id: string) => {
-    removeFavorite(id);
-  };
+function StoreBookmarkCard({
+  bookmark,
+  onRemove,
+}: {
+  bookmark: BookmarkResponse;
+  onRemove: (uuid: string) => void;
+}) {
+  const storeUuid = bookmark.storeUuid || "";
 
-  const handleClearAll = () => {
-    clearFavorites();
-  };
+  return (
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+      <div className="flex items-center gap-4">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+          <Store className="h-8 w-8" />
+        </div>
 
-  const handleViewMore = (id: string) => {
-    router.push(`/menu-items/${id}`);
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+              <Store className="h-3 w-3" /> Store
+            </span>
+            <span className="flex items-center gap-1 text-xs text-slate-400">
+              <Calendar className="h-3 w-3" /> {formatDate(bookmark.createdAt)}
+            </span>
+          </div>
+
+          <h3 className="mt-1 truncate text-base font-bold text-slate-900 dark:text-white">
+            Store ({storeUuid.slice(0, 8)})
+          </h3>
+
+          {bookmark.notes && (
+            <p className="mt-1 text-xs italic text-slate-400">
+              📝 {bookmark.notes}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800 sm:mt-0 sm:border-0 sm:pt-0">
+        {storeUuid && (
+          <Link
+            href={`/stores/${storeUuid}`}
+            className="inline-flex items-center gap-1.5 rounded-2xl bg-amber-50 px-4 py-2 text-xs font-bold text-amber-700 transition hover:bg-amber-600 hover:text-white dark:bg-amber-950/60 dark:text-amber-400 dark:hover:bg-amber-600 dark:hover:text-white"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> View Store
+          </Link>
+        )}
+
+        <button
+          type="button"
+          onClick={() => onRemove(bookmark.uuid)}
+          title="Remove bookmark"
+          className="rounded-2xl border border-slate-200 p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:hover:bg-rose-950/40"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FavoritesContent() {
+  const [filterTab, setFilterTab] = useState<"all" | "dishes" | "stores">("all");
+  const { bookmarks, loading, activeProfile, removeBookmark } = useBookmarks();
+
+  const dishes = useMemo(
+    () => bookmarks.filter((b) => b.menuItemUuid || b.foodUuid),
+    [bookmarks]
+  );
+  const stores = useMemo(() => bookmarks.filter((b) => b.storeUuid), [bookmarks]);
+
+  const displayedBookmarks = useMemo(() => {
+    if (filterTab === "dishes") return dishes;
+    if (filterTab === "stores") return stores;
+    return bookmarks;
+  }, [filterTab, dishes, stores, bookmarks]);
+
+  const handleRemove = async (bookmarkUuid: string) => {
+    try {
+      await removeBookmark(bookmarkUuid);
+    } catch (err) {
+      console.error("Failed to remove bookmark:", err);
+    }
   };
 
   return (
-    <div className="mx-auto max-w-6xl ">
-      {/* Title */}
-      <h4 className="text-[28px] font-bold text-slate-900">
-        ចំណីអាហារចំណូលចិត្ត
-      </h4>
+    <div className="mx-auto max-w-5xl space-y-6">
+      {/* Top Banner Header */}
+      <div className="flex flex-col gap-4 rounded-3xl bg-linear-to-r from-amber-600 to-orange-700 p-6 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Bookmark className="h-6 w-6 fill-current" />
+            <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+              ចំណីអាហារចំណូលចិត្ត (Bookmarks)
+            </h2>
+          </div>
+          <p className="text-sm text-amber-100/90">
+            Your saved dishes and stores collection, personalized for your dining profile.
+          </p>
+        </div>
 
-      {/* Count + Clear all */}
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-2 text-[17px] text-[#F97316]">
-          <Bookmark className="h-5 w-5 shrink-0" />
-          មុខម្ហូបចំនួន {favorites.length} ត្រូវបានរក្សាទុក
-        </p>
-
-        {favorites.length > 0 && (
-          <button
-            type="button"
-            onClick={handleClearAll}
-            className="cursor-pointer text-[17px] font-medium text-red-600 transition hover:underline"
-          >
-            លុបទាំងអស់
-          </button>
+        {activeProfile && (
+          <div className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-xs font-semibold text-white backdrop-blur-sm">
+            <Shield className="h-4 w-4 text-amber-200" />
+            <span>Profile: <strong>{activeProfile.profileName}</strong></span>
+          </div>
         )}
       </div>
 
-      {/* Favorites */}
-      {favorites.length > 0 ? (
-        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {favorites.map((item) => (
-            <FavoriteFoodRow
-              key={item.id}
-              item={item}
-              onRemove={handleRemove}
-              onViewMore={handleViewMore}
-            />
-          ))}
+      {/* Filter Tabs */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800">
+        <button
+          type="button"
+          onClick={() => setFilterTab("all")}
+          className={`flex items-center gap-2 border-b-2 px-5 py-3.5 text-sm font-bold transition ${
+            filterTab === "all"
+              ? "border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-400"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          }`}
+        >
+          <Layers className="h-4 w-4" />
+          <span>All Saved</span>
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+            {bookmarks.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFilterTab("dishes")}
+          className={`flex items-center gap-2 border-b-2 px-5 py-3.5 text-sm font-bold transition ${
+            filterTab === "dishes"
+              ? "border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-400"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          }`}
+        >
+          <Utensils className="h-4 w-4" />
+          <span>Dishes</span>
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+            {dishes.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFilterTab("stores")}
+          className={`flex items-center gap-2 border-b-2 px-5 py-3.5 text-sm font-bold transition ${
+            filterTab === "stores"
+              ? "border-amber-600 text-amber-700 dark:border-amber-400 dark:text-amber-400"
+              : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          }`}
+        >
+          <Store className="h-4 w-4" />
+          <span>Stores</span>
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+            {stores.length}
+          </span>
+        </button>
+      </div>
+
+      {/* Bookmarks List */}
+      {loading && bookmarks.length === 0 ? (
+        <div className="flex h-56 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+        </div>
+      ) : displayedBookmarks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-800">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/50">
+            <Bookmark className="h-8 w-8" />
+          </div>
+          <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">
+            {filterTab === "all"
+              ? "No bookmarks saved yet"
+              : filterTab === "dishes"
+              ? "No saved dishes yet"
+              : "No saved stores yet"}
+          </h3>
+          <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+            Tap the bookmark icon on any dish or store preview to save it to your personal collection.
+          </p>
+          <div className="mt-6 flex gap-3">
+            <Link
+              href="/menu"
+              className="rounded-2xl bg-amber-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-amber-700 transition"
+            >
+              Explore Menu
+            </Link>
+          </div>
         </div>
       ) : (
-        <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
-          <p className="text-[18px] font-semibold text-slate-600">
-            អ្នកមិនទាន់មានមុខម្ហូបចំណូលចិត្តទេ
-          </p>
-
-          <p className="mt-2 text-[17px] text-slate-400">
-            ចុចលើរូបបេះដូងនៅលើមុខម្ហូប ដើម្បីរក្សាទុកជាចំណូលចិត្ត។
-          </p>
+        <div className="grid grid-cols-1 gap-4">
+          {displayedBookmarks.map((bookmark) =>
+            bookmark.storeUuid && !bookmark.menuItemUuid ? (
+              <StoreBookmarkCard
+                key={bookmark.uuid}
+                bookmark={bookmark}
+                onRemove={handleRemove}
+              />
+            ) : (
+              <DishBookmarkCard
+                key={bookmark.uuid}
+                bookmark={bookmark}
+                onRemove={handleRemove}
+              />
+            )
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+export default function FavoritesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto flex h-64 max-w-5xl items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+        </div>
+      }
+    >
+      <FavoritesContent />
+    </Suspense>
   );
 }

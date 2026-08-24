@@ -1,60 +1,186 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
 import {
-  getHistory,
-  HISTORY_UPDATED_EVENT,
-  type HistoryItem,
-} from "@/lib/history/recentlyViewed";
+  Clock,
+  Utensils,
+  Store,
+  Calendar,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
+import { useGetInteractionHistoryQuery } from "@/app/store/interactionApi";
+import { useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import type { InteractionEventResponse } from "@/types/interaction";
 
-export default function HistoryPage() {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+function getMediaUrl(value: string | null | undefined): string {
+  if (!value) return "/Image/default-food.png";
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  if (value.startsWith("/api/v1/")) return `/api/${value.slice("/api/v1/".length)}`;
+  if (value.startsWith("/")) return value;
+  return `/${value}`;
+}
 
-  useEffect(() => {
-    const updateHistory = () => {
-      setHistory(getHistory());
-    };
+function formatRelativeTime(dateStr?: string | null): string {
+  if (!dateStr) return "Recently";
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    updateHistory();
+    if (diffMins < 2) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
 
-    window.addEventListener(HISTORY_UPDATED_EVENT, updateHistory);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(d);
+  } catch {
+    return "Recently";
+  }
+}
 
-    return () => {
-      window.removeEventListener(HISTORY_UPDATED_EVENT, updateHistory);
-    };
-  }, []);
+function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
+  const menuItemUuid = event.menuItemUuid || event.foodUuid || "";
+  const { data: itemDetail, isLoading } = useGetMenuItemByUuidQuery(menuItemUuid, {
+    skip: !menuItemUuid,
+  });
+
+  const title =
+    itemDetail?.localName || itemDetail?.name || `Dish (${menuItemUuid.slice(0, 8)})`;
+  const price = itemDetail?.price != null ? `$${Number(itemDetail.price).toFixed(2)}` : null;
+  const storeName = itemDetail?.store?.name || null;
+  const thumbnail = itemDetail?.thumbnail || "/Image/default-food.png";
+
+  if (event.storeUuid && !event.menuItemUuid) {
+    return (
+      <Link
+        href={`/stores/${event.storeUuid}`}
+        className="group block overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+            <Store className="h-7 w-7" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Viewed {formatRelativeTime(event.occurredAt)}</span>
+            </div>
+
+            <h4 className="mt-1 truncate text-base font-bold text-slate-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400">
+              Store ({event.storeUuid.slice(0, 8)})
+            </h4>
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div>
-        <p className="text-[28px] font-bold text-slate-900">
-          ប្រវត្តិដែលបានមើល
-        </p>
+    <Link
+      href={`/menu-items/${menuItemUuid}`}
+      className="group block overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+        <Image
+          src={getMediaUrl(thumbnail)}
+          alt={title}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover transition duration-300 group-hover:scale-105"
+        />
 
-        <p className="mt-1 text-[17px] text-slate-500">
-          មុខម្ហូបដែលអ្នកបានមើលថ្មីៗ
-        </p>
+        <div className="absolute top-3 left-3 rounded-xl bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-xs">
+          {formatRelativeTime(event.occurredAt)}
+        </div>
       </div>
 
-      {/* Empty state */}
-      {history.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-          <p className="text-[18px] font-semibold text-slate-600">
-            មិនទាន់មានមុខម្ហូបដែលបានមើលទេ
-          </p>
+      <div className="p-4">
+        <h4 className="truncate text-base font-bold text-slate-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400">
+          {isLoading ? "Loading dish..." : title}
+        </h4>
 
-          <p className="mt-2 text-[17px] text-slate-400">
-            ចុចលើមុខម្ហូបណាមួយ ដើម្បីបន្ថែមទៅក្នុងប្រវត្តិ។
+        <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+          <span className="truncate text-slate-500 dark:text-slate-400">
+            {storeName || "FoodHub Dish"}
+          </span>
+
+          {price && (
+            <span className="font-extrabold text-emerald-700 dark:text-emerald-400">
+              {price}
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function HistoryContent() {
+  const { data: pageData, isLoading } = useGetInteractionHistoryQuery({
+    eventType: "VIEW",
+    page: 0,
+    size: 30,
+  });
+
+  const history = pageData?.contents ?? [];
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-6">
+      {/* Top Banner Header */}
+      <div className="flex flex-col gap-4 rounded-3xl bg-linear-to-r from-teal-800 to-emerald-950 p-6 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Clock className="h-6 w-6" />
+            <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+              ប្រវត្តិដែលបានមើល (Recently Viewed)
+            </h2>
+          </div>
+          <p className="text-sm text-emerald-100/90">
+            Timeline of dishes and restaurants you explored recently on FoodHub.
           </p>
         </div>
+      </div>
+
+      {/* History Items Grid */}
+      {isLoading ? (
+        <div className="flex h-56 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        </div>
+      ) : history.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-800">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50">
+            <Clock className="h-8 w-8" />
+          </div>
+          <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">
+            មិនទាន់មានប្រវត្តិដែលបានមើលទេ
+          </h3>
+          <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+            Dishes and stores you open or explore will automatically appear here.
+          </p>
+          <div className="mt-6 flex gap-3">
+            <Link
+              href="/menu"
+              className="rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700 transition"
+            >
+              Explore Menu
+            </Link>
+          </div>
+        </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {history.map((item) => (
-            <HistoryFoodCard key={item.uuid} item={item} />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {history.map((event) => (
+            <HistoryItemCard key={event.uuid || event.clientEventId} event={event} />
           ))}
         </div>
       )}
@@ -62,83 +188,16 @@ export default function HistoryPage() {
   );
 }
 
-function HistoryFoodCard({ item }: { item: HistoryItem }) {
+export default function HistoryPage() {
   return (
-    <Link href={`/menu-items/${item.uuid}`} className="group block w-full">
-      <div className="h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
-        {/* Image */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-          {item.thumbnail ? (
-            <Image
-              src={item.thumbnail}
-              alt={item.localName || item.name}
-              fill
-              sizes="
-                (max-width: 640px) 100vw,
-                (max-width: 1024px) 50vw,
-                25vw
-              "
-              className="object-cover transition duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-[17px] text-slate-400">
-              មិនមានរូបភាព
-            </div>
-          )}
-
-          {/* Recently viewed badge */}
-          <div className="absolute left-3 top-3">
-            <span className="rounded-full bg-white/90 px-3 py-1.5 text-[15px] font-medium text-slate-700 shadow-sm backdrop-blur">
-              បានមើលថ្មីៗ
-            </span>
-          </div>
+    <Suspense
+      fallback={
+        <div className="mx-auto flex h-64 max-w-5xl items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
-
-        {/* Content */}
-        <div className="p-4">
-          <h3 className="line-clamp-1 text-[18px] font-bold text-slate-900">
-            {item.localName || item.name}
-          </h3>
-
-          {item.localName && item.name !== item.localName && (
-            <p className="mt-1 line-clamp-1 text-[17px] text-slate-500">
-              {item.name}
-            </p>
-          )}
-
-          <div className="mt-4 flex items-center justify-between gap-3">
-            {/* Price */}
-            {item.price != null ? (
-              <p className="text-[18px] font-bold text-primary-800 dark:text-primary-dark">
-                {item.currencyCode === "USD" ? "$" : item.currencyCode || "$"}
-
-                {item.price.toFixed(2)}
-              </p>
-            ) : (
-              <span />
-            )}
-
-            {/* Viewed date */}
-            <span className="text-[15px] text-slate-400">
-              {formatViewedTime(item.viewedAt)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </Link>
+      }
+    >
+      <HistoryContent />
+    </Suspense>
   );
-}
-
-function formatViewedTime(viewedAt: string) {
-  const date = new Date(viewedAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return date.toLocaleDateString("km-KH", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 }

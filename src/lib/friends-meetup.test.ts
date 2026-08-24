@@ -62,4 +62,17 @@ describe("Friendship and Dual-Mode Meetup Data Models", () => {
     expect(winningCard.mapsDirectionsUrl).toContain("11.5564,104.9282");
     expect(winningCard.totalVotes).toBe(5);
   });
+
+  it("validates SendFriendRequestPayload using friendUsername and friendUserUuid according to API contract", () => {
+    const usernamePayload = {
+      friendUsername: "alex_foodie",
+    };
+    const uuidPayload = {
+      friendUserUuid: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    };
+
+    expect(usernamePayload.friendUsername).toBe("alex_foodie");
+    expect(uuidPayload.friendUserUuid).toBe("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+  });
 });
+

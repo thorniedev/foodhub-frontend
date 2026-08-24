@@ -97,13 +97,13 @@ export default function QrScannerModal({
         const res = await scanQrCode({ qrCodeToken: token }).unwrap();
         const message =
           (res as { message?: string })?.message ||
-          "Friend request sent successfully!";
+          "Friend request sent! Waiting for acceptance.";
         setSuccessText(message);
         if (onSuccess) onSuccess();
         setTimeout(() => {
           setSuccessText(null);
           onClose();
-        }, 2000);
+        }, 2500);
         return;
       } catch (err: unknown) {
         const rawErr = err as any;
@@ -120,15 +120,15 @@ export default function QrScannerModal({
     const isUuid = token.length > 20 && token.includes("-");
     try {
       await sendFriendRequest({
-        ...(isUuid ? { receiverUuid: token } : { receiverUsername: token }),
+        ...(isUuid ? { friendUserUuid: token } : { friendUsername: token }),
       }).unwrap();
 
-      setSuccessText(`Friend request sent to "${token}"!`);
+      setSuccessText(`Friend request sent to "${token}"! Waiting for acceptance.`);
       if (onSuccess) onSuccess(token);
       setTimeout(() => {
         setSuccessText(null);
         onClose();
-      }, 2000);
+      }, 2500);
     } catch (err: unknown) {
       const rawErr = err as any;
       const errMsg =
