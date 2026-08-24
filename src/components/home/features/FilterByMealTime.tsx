@@ -469,6 +469,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import FoodCard from "@/components/dynamic-card/FoodCard";
@@ -476,6 +477,8 @@ import FoodCard from "@/components/dynamic-card/FoodCard";
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+
+const ITEMS_PER_PAGE = 10;
 
 /* =========================================================
    TYPES
@@ -837,6 +840,45 @@ export default function FilterByMealTime({
     filters.cuisines,
   ]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* Reset to first page whenever tab or filters change */
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    activeTab,
+    filters.query,
+    filters.dietaryTypes,
+    filters.ageGroups,
+    filters.cuisines,
+  ]);
+
+  const totalPages = Math.ceil(filteredFoods.length / ITEMS_PER_PAGE) || 1;
+
+  const paginatedFoods = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFoods.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredFoods, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    setCurrentPage(page);
+  };
+
+  /* Helper to generate visible page numbers */
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 2) {
+      return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+  }, [currentPage, totalPages]);
+
   /* =========================================================
      DEBUG FILTER
   ========================================================= */
@@ -985,7 +1027,7 @@ export default function FilterByMealTime({
 
             {!isLoading &&
               !isError &&
-              filteredFoods.map((food) => (
+              paginatedFoods.map((food) => (
                 <motion.div
                   layout
                   key={food.uuid}
@@ -1011,6 +1053,88 @@ export default function FilterByMealTime({
               ))}
           </AnimatePresence>
         </div>
+
+        {/* =====================================================
+            PAGINATION CONTROLS (10 items / page)
+        ===================================================== */}
+        {!isLoading && !isError && filteredFoods.length > 0 && (
+          <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-6 sm:flex-row dark:border-gray-800">
+            {/* Counter text */}
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              បង្ហាញ{" "}
+              <span className="font-semibold text-primary-800 dark:text-primary-400">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </span>{" "}
+              -{" "}
+              <span className="font-semibold text-primary-800 dark:text-primary-400">
+                {Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}
+              </span>{" "}
+              នៃ{" "}
+              <span className="font-semibold text-primary-800 dark:text-primary-400">
+                {filteredFoods.length}
+              </span>{" "}
+              មុខម្ហូប
+            </p>
+
+            {/* Page buttons */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {/* Prev button */}
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  aria-label="ទំព័រមុន"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  <IoChevronBack className="h-4 w-4" />
+                </button>
+
+                {/* Page numbers */}
+                {pageNumbers.map((page, idx) => {
+                  if (typeof page === "string") {
+                    return (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="flex h-10 w-8 items-center justify-center text-sm font-bold text-gray-400"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+
+                  const isActive = page === currentPage;
+
+                  return (
+                    <button
+                      key={page}
+                      type="button"
+                      onClick={() => handlePageChange(page)}
+                      className={`flex h-10 min-w-[40px] items-center justify-center rounded-full px-3 text-sm font-semibold transition ${
+                        isActive
+                          ? "bg-primary-800 text-white shadow-sm hover:bg-primary-700 dark:bg-primary-600"
+                          : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+
+                {/* Next button */}
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  aria-label="ទំព័របន្ទាប់"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  <IoChevronForward className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

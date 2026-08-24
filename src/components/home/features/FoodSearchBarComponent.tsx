@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoChevronBack, IoChevronForward, IoSearchOutline } from "react-icons/io5";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import FoodCard from "@/components/dynamic-card/FoodCard";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import SortDropdown from "./SortDropdown";
+
+const ITEMS_PER_PAGE = 10;
 /* =========================================================
    TYPES
 ========================================================= */
@@ -766,6 +768,42 @@ export default function FoodSearchBar() {
   }, [menuItems, searchInput, groupedSelected, sortBy]);
 
   /* =======================================================
+     PAGINATION (10 items / page)
+  ======================================================= */
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* Reset page when filters or query change */
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchInput, groupedSelected, sortBy]);
+
+  const totalPages = Math.ceil(filteredFoods.length / ITEMS_PER_PAGE) || 1;
+
+  const paginatedFoods = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFoods.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredFoods, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    setCurrentPage(page);
+  };
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 2) {
+      return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+  }, [currentPage, totalPages]);
+
+  /* =======================================================
      SELECTED LABELS
   ======================================================= */
 
@@ -1023,7 +1061,7 @@ export default function FoodSearchBar() {
           {!isLoading &&
             !isFetching &&
             !isError &&
-            filteredFoods.map((food) => (
+            paginatedFoods.map((food) => (
               <motion.div
                 layout
                 key={food.uuid}
@@ -1049,6 +1087,83 @@ export default function FoodSearchBar() {
             ))}
         </AnimatePresence>
       </div>
+
+      {/* ===============================================
+          PAGINATION CONTROLS (10 items / page)
+      =============================================== */}
+      {!isLoading && !isFetching && !isError && filteredFoods.length > 0 && (
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-gray-100 px-4 pt-6 sm:flex-row dark:border-gray-800">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            បង្ហាញ{" "}
+            <span className="font-semibold text-primary-800 dark:text-primary-400">
+              {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+            </span>{" "}
+            -{" "}
+            <span className="font-semibold text-primary-800 dark:text-primary-400">
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}
+            </span>{" "}
+            នៃ{" "}
+            <span className="font-semibold text-primary-800 dark:text-primary-400">
+              {filteredFoods.length}
+            </span>{" "}
+            មុខម្ហូប
+          </p>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+                aria-label="ទំព័រមុន"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                <IoChevronBack className="h-4 w-4" />
+              </button>
+
+              {pageNumbers.map((page, idx) => {
+                if (typeof page === "string") {
+                  return (
+                    <span
+                      key={`ellipsis-search-${idx}`}
+                      className="flex h-10 w-8 items-center justify-center text-sm font-bold text-gray-400"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+
+                const isActive = page === currentPage;
+
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    className={`flex h-10 min-w-[40px] items-center justify-center rounded-full px-3 text-sm font-semibold transition ${
+                      isActive
+                        ? "bg-[#1c6b45] text-white shadow-sm hover:bg-[#155335]"
+                        : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                aria-label="ទំព័របន្ទាប់"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                <IoChevronForward className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

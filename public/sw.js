@@ -1,7 +1,59 @@
 const CACHE_VERSION = "foodhub-v1";
 const DEFAULT_NOTIFICATION_URL = "/notifications";
 const DEFAULT_NOTIFICATION_ICON = "/icons/pwa-192x192.png";
-const DEFAULT_NOTIFICATION_BADGE = "/icons/pwa-192x192.png";
+const DEFAULT_NOTIFICATION_BADGE = "/icons/pwa-badge-96x96.png";
+
+function normalizeNotificationPath(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value.trim(), self.location.origin);
+
+    if (url.origin !== self.location.origin) {
+      return null;
+    }
+
+    return `${url.pathname}${url.search}${url.hash}` || DEFAULT_NOTIFICATION_URL;
+  } catch {
+    return null;
+  }
+}
+
+function resolveNotificationPath(data = {}) {
+  const explicitPath = normalizeNotificationPath(data.actionUrl || data.url);
+
+  if (explicitPath) {
+    return explicitPath;
+  }
+
+  if (typeof data.storeUuid === "string" && data.storeUuid.trim()) {
+    const storePath = `/stores/${encodeURIComponent(data.storeUuid.trim())}`;
+    const itemQuery =
+      typeof data.menuItemUuid === "string" && data.menuItemUuid.trim()
+        ? `?item=${encodeURIComponent(data.menuItemUuid.trim())}`
+        : "";
+
+    return `${storePath}${itemQuery}`;
+  }
+
+  if (typeof data.menuItemUuid === "string" && data.menuItemUuid.trim()) {
+    return `/menu-items/${encodeURIComponent(data.menuItemUuid.trim())}`;
+  }
+
+  if (data.type === "MEAL_REMINDER" && typeof data.mealTypeCode === "string") {
+    return `/menu?mealType=${encodeURIComponent(data.mealTypeCode)}`;
+  }
+
+  if (typeof data.notificationUuid === "string" && data.notificationUuid.trim()) {
+    return `/notifications?notification=${encodeURIComponent(
+      data.notificationUuid.trim(),
+    )}`;
+  }
+
+  return DEFAULT_NOTIFICATION_URL;
+}
 
 self.addEventListener("install", () => {
   console.log("[FoodHub PWA] Service Worker installed");
@@ -59,10 +111,12 @@ self.addEventListener("push", (event) => {
         data: {
           ...payload.data,
           ...(parsedPayload.data || {}),
-          url:
-            parsedPayload.data?.url ||
-            parsedPayload.url ||
-            DEFAULT_NOTIFICATION_URL,
+          actionUrl: parsedPayload.data?.actionUrl || parsedPayload.actionUrl,
+          url: resolveNotificationPath({
+            ...(parsedPayload.data || {}),
+            actionUrl: parsedPayload.data?.actionUrl || parsedPayload.actionUrl,
+            url: parsedPayload.data?.url || parsedPayload.url,
+          }),
         },
       };
     } catch (error) {
@@ -85,7 +139,7 @@ self.addEventListener("push", (event) => {
 
     data: {
       ...payload.data,
-      url: payload.data?.url || DEFAULT_NOTIFICATION_URL,
+      url: resolveNotificationPath(payload.data),
     },
 
     actions: [
@@ -117,9 +171,10 @@ self.addEventListener("notificationclick", (event) => {
     return;
   }
 
-  const targetPath = event.notification.data?.url || DEFAULT_NOTIFICATION_URL;
-
-  const targetUrl = new URL(targetPath, self.location.origin).href;
+  const targetUrl = new URL(
+    resolveNotificationPath(event.notification.data),
+    self.location.origin,
+  ).href;
 
   event.waitUntil(
     clients
@@ -133,11 +188,9 @@ self.addEventListener("notificationclick", (event) => {
             continue;
           }
 
-          if ("navigate" in client) {
-            await client.navigate(targetUrl);
+          if (client.url === targetUrl) {
+            return client.focus();
           }
-
-          return client.focus();
         }
 
         if (clients.openWindow) {
