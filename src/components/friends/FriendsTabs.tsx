@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   useGetFriendsQuery,
@@ -31,8 +31,31 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-export default function FriendsTabs() {
+function FriendUrlParamsHandler({
+  onToken,
+  onUsername,
+}: {
+  onToken: (token: string) => void;
+  onUsername: (username: string) => void;
+}) {
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!searchParams) return;
+    const token = searchParams.get("token");
+    const username = searchParams.get("username") || searchParams.get("add");
+
+    if (token) {
+      onToken(token);
+    } else if (username) {
+      onUsername(username);
+    }
+  }, [searchParams, onToken, onUsername]);
+
+  return null;
+}
+
+export default function FriendsTabs() {
   const [activeTab, setActiveTab] = useState<"friends" | "pending" | "add">("friends");
   const [pendingSubTab, setPendingSubTab] = useState<"incoming" | "outgoing">("incoming");
 
@@ -58,13 +81,8 @@ export default function FriendsTabs() {
 
   const isSubmitting = isSendingRequest || isScanningQr;
 
-  // Auto-process URL query parameters (e.g. from scanning with native camera or clicking link)
-  useEffect(() => {
-    if (!searchParams) return;
-    const token = searchParams.get("token");
-    const username = searchParams.get("username") || searchParams.get("add");
-
-    if (token) {
+  const handleUrlToken = useCallback(
+    (token: string) => {
       setActiveTab("add");
       setSearchFriendTerm(token);
       void (async () => {
@@ -77,11 +95,14 @@ export default function FriendsTabs() {
           setSendErrorMessage(msg);
         }
       })();
-    } else if (username) {
-      setActiveTab("add");
-      setSearchFriendTerm(username);
-    }
-  }, [searchParams, scanQrCode]);
+    },
+    [scanQrCode],
+  );
+
+  const handleUrlUsername = useCallback((username: string) => {
+    setActiveTab("add");
+    setSearchFriendTerm(username);
+  }, []);
 
   const handleSendRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,6 +195,13 @@ export default function FriendsTabs() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
+      <Suspense fallback={null}>
+        <FriendUrlParamsHandler
+          onToken={handleUrlToken}
+          onUsername={handleUrlUsername}
+        />
+      </Suspense>
+
       {/* Top Banner Actions: Search + QR Modals */}
       <div className="flex flex-col gap-4 rounded-3xl bg-linear-to-r from-emerald-800 to-teal-900 p-6 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div className="space-y-1">
