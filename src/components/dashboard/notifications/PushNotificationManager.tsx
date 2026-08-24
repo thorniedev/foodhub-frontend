@@ -48,6 +48,18 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function getPushEnableErrorMessage(error: unknown): string {
+  const rawMessage =
+    error instanceof Error && error.message ? error.message : getErrorMessage(error, "");
+  const message = rawMessage.toLowerCase();
+
+  if (message.includes("push service error")) {
+    return "This browser could not register with its push service. If you are using Brave, enable \"Use Google services for push messaging\" in brave://settings/privacy, restart Brave, then try again.";
+  }
+
+  return getErrorMessage(error, "FoodHub could not enable push notifications.");
+}
+
 function formatDate(value?: string | null): string {
   if (!value) {
     return "Not used yet";
@@ -301,9 +313,7 @@ export default function PushNotificationManager() {
       setMessage("Push notifications are enabled for this browser.");
       await refetchSubscriptions();
     } catch (error) {
-      setActionError(
-        getErrorMessage(error, "FoodHub could not enable push notifications."),
-      );
+      setActionError(getPushEnableErrorMessage(error));
     }
   };
 
