@@ -46,8 +46,8 @@ export const recommendationApi = baseApi.injectEndpoints({
           return { data: session };
         }
 
-        // Step 2: Fetch ranked recommendation items for this session
-        const limit = body.requestedLimit || 20;
+        // Step 2: Fetch all ranked recommendation items for this session
+        const limit = body.requestedLimit || 50;
         const itemsResult = await fetchWithBQ({
           url: `/recommendations/sessions/${encodeURIComponent(session.uuid)}/items?limit=${limit}`,
           method: "GET",

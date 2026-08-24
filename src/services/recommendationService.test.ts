@@ -88,7 +88,7 @@ describe("recommendationService", () => {
       requestSource: "WEB",
       searchRadiusKm: 5.0,
       currencyCode: "USD",
-      requestedLimit: 20,
+      requestedLimit: 12,
       profiles: [{ profileId: "prof-1", isPrimary: true }],
     };
 
@@ -98,7 +98,7 @@ describe("recommendationService", () => {
         mode: "SINGLE",
         status: "READY",
         requestSource: "WEB",
-        requestedLimit: 20,
+        requestedLimit: 12,
         candidateCount: 15,
         eligibleCount: 2,
         startedAt: "2026-08-22T12:00:00Z",
@@ -136,7 +136,7 @@ describe("recommendationService", () => {
           json: async () => mockItemsResponse,
         } as Response);
 
-      const result = await getRecommendations(mockRequest, "mock-jwt-token", 20);
+      const result = await getRecommendations(mockRequest, "mock-jwt-token", 12);
 
       expect(global.fetch).toHaveBeenNthCalledWith(
         1,
@@ -153,7 +153,7 @@ describe("recommendationService", () => {
 
       expect(global.fetch).toHaveBeenNthCalledWith(
         2,
-        "https://api.mhoubahar.store/api/v1/recommendations/sessions/session-uuid-123/items?limit=20",
+        "https://api.mhoubahar.store/api/v1/recommendations/sessions/session-uuid-123/items?limit=12",
         {
           headers: {
             "Content-Type": "application/json",
@@ -194,7 +194,7 @@ describe("recommendationService", () => {
         requestSource: "WEB",
         searchRadiusKm: 5.0,
         currencyCode: "USD",
-        requestedLimit: 20,
+        requestedLimit: 12,
         profiles: [
           { profileId: "prof-1", isPrimary: true },
           { profileId: "prof-2", isPrimary: false },

@@ -21,9 +21,10 @@ import { IoBagHandle, IoClose, IoSparkles } from "react-icons/io5";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import type { EnrichedRecommendationItem } from "@/hooks/useEnrichedRecommendationItems";
 
 type WonEntry = {
-  food: CatalogMenuItem;
+  food: CatalogMenuItem | EnrichedRecommendationItem;
   count: number;
 };
 
@@ -67,16 +68,13 @@ function pointOnCircle(angleDegrees: number, radius: number) {
 
   return {
     x: CENTER + radius * Math.sin(radians),
-
     y: CENTER - radius * Math.cos(radians),
   };
 }
 
 function createSlicePath(startAngle: number, endAngle: number) {
   const start = pointOnCircle(startAngle, RADIUS);
-
   const end = pointOnCircle(endAngle, RADIUS);
-
   const largeArc = endAngle - startAngle > 180 ? 1 : 0;
 
   return [
@@ -93,7 +91,6 @@ function normalizeAngle(angle: number) {
 
 function shortestAngleDifference(from: number, to: number) {
   const difference = to - from;
-
   return ((((difference + 180) % 360) + 360) % 360) - 180;
 }
 
@@ -101,11 +98,10 @@ function truncateText(value: string, maximumLength = 12) {
   if (value.length <= maximumLength) {
     return value;
   }
-
   return `${value.slice(0, maximumLength - 1)}…`;
 }
 
-function formatPrice(food: CatalogMenuItem) {
+function formatPrice(food: CatalogMenuItem | EnrichedRecommendationItem) {
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -113,7 +109,7 @@ function formatPrice(food: CatalogMenuItem) {
       minimumFractionDigits: 2,
     }).format(food.price);
   } catch {
-    return `$${food.price.toFixed(2)}`;
+    return `$${Number(food.price ?? 0).toFixed(2)}`;
   }
 }
 
@@ -121,19 +117,15 @@ function getMediaUrl(value: string | null | undefined): string {
   if (!value) {
     return "/Image/default-food.png";
   }
-
   if (value.startsWith("http://") || value.startsWith("https://")) {
     return value;
   }
-
   if (value.startsWith("/api/v1/")) {
     return `/api/${value.slice("/api/v1/".length)}`;
   }
-
   if (value.startsWith("/")) {
     return value;
   }
-
   return `/${value}`;
 }
 
@@ -142,7 +134,7 @@ type DisplayCodeName = {
   name: string;
 };
 
-function getDietaryTypes(food: CatalogMenuItem): DisplayCodeName[] {
+function getDietaryTypes(food: CatalogMenuItem | EnrichedRecommendationItem): DisplayCodeName[] {
   if (!Array.isArray(food.food?.dietaryTypes)) {
     return [];
   }
@@ -151,7 +143,6 @@ function getDietaryTypes(food: CatalogMenuItem): DisplayCodeName[] {
     if (!item.code || !item.name) {
       return [];
     }
-
     return [
       {
         code: item.code,
@@ -164,25 +155,15 @@ function getDietaryTypes(food: CatalogMenuItem): DisplayCodeName[] {
 function Confetti({ count = 42 }: { count?: number }) {
   const pieces = useMemo(
     () =>
-      Array.from({
-        length: count,
-      }).map((_, index) => ({
+      Array.from({ length: count }).map((_, index) => ({
         id: index,
-
         startX: (Math.random() - 0.5) * 360,
-
         drift: (Math.random() - 0.5) * 150,
-
         rotation: Math.random() * 720 - 360,
-
         delay: Math.random() * 0.25,
-
         duration: 1.6 + Math.random() * 1.2,
-
         size: 6 + Math.random() * 8,
-
         color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
-
         round: Math.random() > 0.5,
       })),
     [count],
@@ -196,11 +177,8 @@ function Confetti({ count = 42 }: { count?: number }) {
           className="absolute left-1/2 top-0 block"
           style={{
             width: piece.size,
-
             height: piece.round ? piece.size : piece.size * 0.55,
-
             backgroundColor: piece.color,
-
             borderRadius: piece.round ? 9999 : 2,
           }}
           initial={{
@@ -211,11 +189,8 @@ function Confetti({ count = 42 }: { count?: number }) {
           }}
           animate={{
             x: piece.startX + piece.drift,
-
             y: "110vh",
-
             opacity: [1, 1, 0],
-
             rotate: piece.rotation,
           }}
           transition={{
@@ -229,7 +204,7 @@ function Confetti({ count = 42 }: { count?: number }) {
   );
 }
 
-function FoodStats({ food }: { food: CatalogMenuItem }) {
+function FoodStats({ food }: { food: CatalogMenuItem | EnrichedRecommendationItem }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base text-primary-400">
       <span className="flex items-center gap-1 text-accent-400">
@@ -248,33 +223,33 @@ function FoodStats({ food }: { food: CatalogMenuItem }) {
 }
 
 type WinPopupProps = {
-  food: CatalogMenuItem;
+  food: CatalogMenuItem | EnrichedRecommendationItem;
   reducedMotion: boolean;
   onClose: () => void;
 };
 
 function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
   const dietaryTypes = getDietaryTypes(food);
+  const matchScore =
+    (food as any).finalScore != null
+      ? Math.round((food as any).finalScore * 100)
+      : (food as any).recommendation?.finalScore != null
+        ? Math.round((food as any).recommendation.finalScore * 100)
+        : null;
 
-  const badgeText = food.isFeatured
-    ? "Featured"
-    : food.food?.category?.name || "Available";
+  const badgeText = matchScore != null
+    ? `${matchScore}% Match`
+    : food.isFeatured
+      ? "Featured"
+      : food.food?.category?.name || "Available";
 
   return (
     <motion.div
       className="fixed inset-0 z-[1200] flex items-center justify-center p-4"
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
-      exit={{
-        opacity: 0,
-      }}
-      transition={{
-        duration: 0.2,
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
       <button
         type="button"
@@ -292,9 +267,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
         className="relative w-full max-w-[300px]"
         initial={
           reducedMotion
-            ? {
-                opacity: 0,
-              }
+            ? { opacity: 0 }
             : {
                 opacity: 0,
                 scale: 0.6,
@@ -326,18 +299,9 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
               background:
                 "radial-gradient(circle, rgba(251,191,36,0.65), transparent 70%)",
             }}
-            initial={{
-              scale: 0.2,
-              opacity: 0.9,
-            }}
-            animate={{
-              scale: 3,
-              opacity: 0,
-            }}
-            transition={{
-              duration: 1,
-              ease: "easeOut",
-            }}
+            initial={{ scale: 0.2, opacity: 0.9 }}
+            animate={{ scale: 3, opacity: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
           />
         )}
 
@@ -351,10 +315,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
                   rotate: -8,
                 }
           }
-          animate={{
-            scale: 1,
-            rotate: 0,
-          }}
+          animate={{ scale: 1, rotate: 0 }}
           transition={{
             delay: 0.12,
             type: "spring",
@@ -381,7 +342,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
               <Image
                 fill
                 src={getMediaUrl(food.thumbnail)}
-                alt={food.localName || food.name}
+                alt={food.localName || food.name || "Food"}
                 sizes="300px"
                 priority
                 className="object-cover"
@@ -398,12 +359,8 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
                     background:
                       "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%)",
                   }}
-                  initial={{
-                    x: "-120%",
-                  }}
-                  animate={{
-                    x: "120%",
-                  }}
+                  initial={{ x: "-120%" }}
+                  animate={{ x: "120%" }}
                   transition={{
                     duration: 1.1,
                     delay: 0.35,
@@ -481,18 +438,10 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
   return (
     <motion.div
       className="fixed inset-0 z-[1200] flex items-end justify-center p-0 sm:items-center sm:p-4"
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
-      exit={{
-        opacity: 0,
-      }}
-      transition={{
-        duration: 0.2,
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
       <button
         type="button"
@@ -506,18 +455,9 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
         aria-modal="true"
         aria-label="កាតរបស់ខ្ញុំ"
         className="relative flex max-h-[82vh] w-full max-w-md flex-col rounded-t-[28px] bg-white shadow-2xl sm:rounded-[28px]"
-        initial={{
-          y: 80,
-          opacity: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        exit={{
-          y: 80,
-          opacity: 0,
-        }}
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 80, opacity: 0 }}
         transition={{
           type: "spring",
           stiffness: 300,
@@ -576,7 +516,7 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
                   <Image
                     fill
                     src={getMediaUrl(food.thumbnail)}
-                    alt={food.localName || food.name}
+                    alt={food.localName || food.name || "Food"}
                     sizes="180px"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
@@ -605,7 +545,7 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
                     <span className="flex items-center gap-1 text-base text-accent-400">
                       <FaStar className="text-[10px]" />
 
-                      {food.store.averageRating}
+                      {food.store?.averageRating}
                     </span>
 
                     <span className="text-base font-medium text-primary-800 dark:text-primary-dark">
@@ -622,23 +562,52 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
   );
 }
 
-export default function SpinFood() {
+export type SpinFoodProps = {
+  foods?: (CatalogMenuItem | EnrichedRecommendationItem)[];
+  isLoading?: boolean;
+};
+
+export default function SpinFood({ foods, isLoading: isExternalLoading }: SpinFoodProps = {}) {
   const reducedMotion = useReducedMotion() ?? false;
 
   const {
     data: menuItems = [],
-    isLoading,
+    isLoading: isCatalogLoading,
     isFetching,
     isError,
     error,
     refetch,
-  } = useGetMenuItemsQuery();
+  } = useGetMenuItemsQuery(undefined, {
+    skip: Boolean(foods && foods.length > 0),
+  });
+
+  const isLoading = isExternalLoading ?? (foods ? false : isCatalogLoading);
+  const rawItems = foods && foods.length > 0 ? foods : menuItems;
 
   const items = useMemo(
     () =>
-      [...menuItems]
-        .filter((item) => item.availabilityStatus === "AVAILABLE")
+      [...rawItems]
+        .filter(
+          (item) =>
+            !item.availabilityStatus || item.availabilityStatus === "AVAILABLE",
+        )
         .sort((first, second) => {
+          const scoreDiff =
+            Number(
+              (second as any).finalScore ??
+                (second as any).recommendation?.finalScore ??
+                0,
+            ) -
+            Number(
+              (first as any).finalScore ??
+                (first as any).recommendation?.finalScore ??
+                0,
+            );
+
+          if (scoreDiff !== 0) {
+            return scoreDiff;
+          }
+
           if (first.isFeatured !== second.isFeatured) {
             return first.isFeatured ? -1 : 1;
           }
@@ -651,11 +620,11 @@ export default function SpinFood() {
             return ratingDifference;
           }
 
-          return (first.localName || first.name).localeCompare(
-            second.localName || second.name,
+          return (first.localName || first.name || "").localeCompare(
+            second.localName || second.name || "",
           );
         }),
-    [menuItems],
+    [rawItems],
   );
 
   const total = items.length;

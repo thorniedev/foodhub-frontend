@@ -110,7 +110,7 @@ export default function Model() {
     void createSession({
       mode: targets.length > 1 ? "GROUP" : "SINGLE",
       requestSource: promptText ? "USER_PROMPT" : "HOME_SWIPE",
-      requestedLimit: 12,
+      requestedLimit: 50,
       contextData: promptText ? { userPrompt: promptText } : undefined,
       profiles: targets.map((profile, index) => ({
         profileId: profile.uuid,
@@ -209,7 +209,12 @@ export default function Model() {
 
   const renderTabContent = () => {
     if (activeTab === "spin") {
-      return <SpinFood />;
+      return (
+        <SpinFood
+          foods={enrichedSwipeFoods}
+          isLoading={isSessionLoading || isEnriching}
+        />
+      );
     }
 
     // The swipe deck must never fall back to the raw, unfiltered catalog —

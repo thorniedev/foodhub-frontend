@@ -89,7 +89,7 @@ export default function AiRecommendationSection({ authToken }: Props) {
         requestSource: "WEB",
         searchRadiusKm: 5.0,
         currencyCode: "USD",
-        requestedLimit: 20,
+        requestedLimit: 50,
         profiles: targetProfiles,
       };
 

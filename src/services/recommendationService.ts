@@ -43,7 +43,7 @@ export async function fetchUserProfiles(token?: string): Promise<ProfileSummary[
 export async function getRecommendations(
   request: CreateSessionRequest,
   token?: string,
-  limit: number = 20
+  limit?: number
 ): Promise<{ session: SessionResponse; items: RecommendationItemDto[] }> {
   // Step 1: Create recommendation session
   const createRes = await fetch(`${BASE_API}/recommendations/sessions`, {
@@ -60,8 +60,9 @@ export async function getRecommendations(
   const sessionData = await createRes.json();
   const session: SessionResponse = sessionData.payload || sessionData;
 
-  // Step 2: Fetch ranked recommendation items for this session
-  const itemsRes = await fetch(`${BASE_API}/recommendations/sessions/${session.uuid}/items?limit=${limit}`, {
+  // Step 2: Fetch all ranked recommendation items for this session
+  const itemsLimit = limit ?? request.requestedLimit ?? 50;
+  const itemsRes = await fetch(`${BASE_API}/recommendations/sessions/${session.uuid}/items?limit=${itemsLimit}`, {
     headers: getAuthHeaders(token),
   });
 
