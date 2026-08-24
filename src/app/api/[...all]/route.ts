@@ -73,7 +73,7 @@ const backendApiUrl = /\/api\/v1$/i.test(configuredBackendUrl)
 const allowedRoutes: Record<string, ReadonlySet<string>> = {
   "users/me": new Set(["GET", "PATCH", "DELETE"]),
   "users/me/sync": new Set(["PUT"]),
-  users: new Set(["GET", "POST"]),
+  users: new Set(["GET", "POST", "PATCH", "PUT", "DELETE"]),
   profiles: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   catalog: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   safety: new Set(["GET"]),
@@ -91,6 +91,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
 };
 
 const nestedRoutePrefixes = new Set([
+  "users",
   "profiles",
   "catalog",
   "safety",
@@ -130,6 +131,10 @@ function resolveRouteRule(all: string[], backendPath: string) {
 
 function requiresAuthentication(backendPath: string, method: string) {
   if (backendPath === "users/me" || backendPath === "users/me/sync") {
+    return true;
+  }
+
+  if (backendPath === "users" || backendPath.startsWith("users/")) {
     return true;
   }
 

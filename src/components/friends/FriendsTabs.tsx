@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   useGetFriendsQuery,
   useGetIncomingRequestsQuery,
   useGetOutgoingRequestsQuery,
   useSendFriendRequestMutation,
+  useScanQrCodeMutation,
   useAcceptFriendRequestMutation,
   useRejectFriendRequestMutation,
 } from "@/app/store/friendsApi";
@@ -30,6 +32,7 @@ import {
 } from "lucide-react";
 
 export default function FriendsTabs() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"friends" | "pending" | "add">("friends");
   const [pendingSubTab, setPendingSubTab] = useState<"incoming" | "outgoing">("incoming");
 
@@ -49,32 +52,102 @@ export default function FriendsTabs() {
 
   // Mutations
   const [sendFriendRequest, { isLoading: isSendingRequest }] = useSendFriendRequestMutation();
+  const [scanQrCode, { isLoading: isScanningQr }] = useScanQrCodeMutation();
   const [acceptFriendRequest, { isLoading: isAccepting }] = useAcceptFriendRequestMutation();
   const [rejectFriendRequest, { isLoading: isRejecting }] = useRejectFriendRequestMutation();
 
+  const isSubmitting = isSendingRequest || isScanningQr;
+
+  // Auto-process URL query parameters (e.g. from scanning with native camera or clicking link)
+  useEffect(() => {
+    if (!searchParams) return;
+    const token = searchParams.get("token");
+    const username = searchParams.get("username") || searchParams.get("add");
+
+    if (token) {
+      setActiveTab("add");
+      setSearchFriendTerm(token);
+      void (async () => {
+        try {
+          await scanQrCode({ qrCodeToken: token }).unwrap();
+          setSendSuccessMessage("Friend request sent successfully via scanned QR link!");
+          setSearchFriendTerm("");
+        } catch (err: any) {
+          const msg = err?.data?.message || err?.message || "Could not process QR invitation.";
+          setSendErrorMessage(msg);
+        }
+      })();
+    } else if (username) {
+      setActiveTab("add");
+      setSearchFriendTerm(username);
+    }
+  }, [searchParams, scanQrCode]);
+
   const handleSendRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchFriendTerm.trim()) return;
+    const raw = searchFriendTerm.trim();
+    if (!raw) return;
 
     setSendSuccessMessage(null);
     setSendErrorMessage(null);
 
-    const term = searchFriendTerm.trim();
-    const isUuid = term.length > 20 && term.includes("-");
+    let cleanTerm = raw;
+
+    // Check if user pasted a link with token parameter
+    if (cleanTerm.includes("token=")) {
+      const match = cleanTerm.match(/token=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        cleanTerm = match[1];
+      }
+    }
+
+    // If it's a QR token, use scanQrCode mutation
+    if (cleanTerm.startsWith("fh_qr_") || cleanTerm.includes("qr_")) {
+      try {
+        await scanQrCode({ qrCodeToken: cleanTerm }).unwrap();
+        setSendSuccessMessage("Friend request sent successfully via QR token!");
+        setSearchFriendTerm("");
+        setTimeout(() => setSendSuccessMessage(null), 4000);
+        return;
+      } catch (err: any) {
+        const msg = err?.data?.message || err?.message || "Invalid or expired QR token.";
+        setSendErrorMessage(msg);
+        return;
+      }
+    }
+
+    // Strip leading '@' if user entered @username
+    if (cleanTerm.startsWith("@")) {
+      cleanTerm = cleanTerm.slice(1);
+    }
+
+    const isUuid = cleanTerm.length > 20 && cleanTerm.includes("-");
 
     try {
       await sendFriendRequest({
-        ...(isUuid ? { receiverUuid: term } : { receiverUsername: term }),
+        ...(isUuid ? { receiverUuid: cleanTerm } : { receiverUsername: cleanTerm }),
       }).unwrap();
 
-      setSendSuccessMessage(`Friend request sent to "${term}"!`);
+      setSendSuccessMessage(`Friend request sent to "${cleanTerm}"!`);
       setSearchFriendTerm("");
       setTimeout(() => setSendSuccessMessage(null), 4000);
     } catch (err: unknown) {
-      const errMsg =
-        typeof err === "object" && err !== null && "data" in err
-          ? ((err as { data: { message?: string } }).data?.message || "Could not send friend request.")
-          : "Could not send friend request. Please check username.";
+      const rawErr = err as any;
+      const status = rawErr?.status || rawErr?.originalStatus;
+      const serverMsg = rawErr?.data?.message || rawErr?.data?.error || rawErr?.message;
+
+      let errMsg = `Could not send friend request to "${cleanTerm}". Please check username.`;
+      if (serverMsg) {
+        if (serverMsg.toLowerCase().includes("self") || serverMsg.toLowerCase().includes("same")) {
+          errMsg = "You cannot send a friend request to yourself.";
+        } else if (serverMsg.toLowerCase().includes("already") || serverMsg.toLowerCase().includes("exists") || status === 409) {
+          errMsg = "A friend request or friendship already exists with this user.";
+        } else if (serverMsg.toLowerCase().includes("not found") || status === 404) {
+          errMsg = `User "${cleanTerm}" was not found. Please check spelling or scan their QR code.`;
+        } else {
+          errMsg = serverMsg;
+        }
+      }
       setSendErrorMessage(errMsg);
     }
   };

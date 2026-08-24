@@ -30,11 +30,14 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
   const [copied, setCopied] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
 
-  const qrValue =
-    qrData?.qrContent ||
-    (qrData?.qrCodeToken
-      ? `foodhub://friends/add?token=${qrData.qrCodeToken}`
-      : "https://foodhub.app/friends");
+  const origin =
+    typeof window !== "undefined" && window.location.origin
+      ? window.location.origin
+      : "https://foodhub.app";
+
+  const qrValue = qrData?.qrCodeToken
+    ? `${origin}/friends?token=${encodeURIComponent(qrData.qrCodeToken)}`
+    : qrData?.qrContent || `${origin}/friends`;
 
   const displayName =
     qrData?.username ||
@@ -58,8 +61,8 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
       try {
         await navigator.share({
           title: `Add ${displayName} on FoodHub`,
-          text: `Scan my FoodHub QR code or click to connect with ${displayName}!`,
-          url: qrValue.startsWith("http") ? qrValue : `https://foodhub.app/friends?token=${qrData?.qrCodeToken || ""}`,
+          text: `Scan my FoodHub QR code or click to connect with @${displayName}!`,
+          url: qrValue,
         });
         return;
       } catch {
