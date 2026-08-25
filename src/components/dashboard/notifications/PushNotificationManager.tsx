@@ -24,6 +24,7 @@ import {
   serializePushSubscription,
   urlBase64ToUint8Array,
 } from "@/lib/push/browser-push";
+import { formatNotificationTime } from "@/lib/formatDate";
 import type { WebPushSubscriptionRecord } from "@/types/notifications";
 
 type PushSupportStatus = "loading" | "supported" | "unsupported";
@@ -60,23 +61,6 @@ function getPushEnableErrorMessage(error: unknown): string {
   return getErrorMessage(error, "FoodHub could not enable push notifications.");
 }
 
-function formatDate(value?: string | null): string {
-  if (!value) {
-    return "Not used yet";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Not used yet";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-}
-
 function getPermissionTone(permission: NotificationPermission) {
   if (permission === "granted") {
     return "bg-emerald-50 text-emerald-700 ring-emerald-100";
@@ -110,7 +94,7 @@ function SubscriptionRow({
         <p className="mt-1 text-xs text-slate-500">
           {subscription.browserName || "Browser"} ·{" "}
           {subscription.status || "ACTIVE"} · Last used{" "}
-          {formatDate(subscription.lastUsedAt)}
+          {formatNotificationTime(subscription.lastUsedAt, "en-KH")}
         </p>
       </div>
 
@@ -135,10 +119,10 @@ function NearbyRecommendationsSettings() {
   const nearby = useNearbyRecommendationPings();
   const lastPingLabel = useMemo(() => {
     if (!nearby.lastPingAt) {
-      return "No ping sent yet";
+      return "—";
     }
 
-    return formatDate(nearby.lastPingAt);
+    return formatNotificationTime(nearby.lastPingAt, "en-KH");
   }, [nearby.lastPingAt]);
 
   return (

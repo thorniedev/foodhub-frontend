@@ -5,6 +5,7 @@ import type {
   NotificationFilterTab,
   NotificationSummaryCard,
 } from "@/types/notifications";
+import { getPhnomPenhDateKey } from "@/lib/formatDate";
 
 const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   recommendations: "ការណែនាំ",
@@ -130,24 +131,23 @@ export function getNotificationFeatureKey(
 function getNotificationGroup(
   createdAt: string,
 ): AppNotification["group"] {
-  const date = new Date(createdAt);
+  const targetDateKey = getPhnomPenhDateKey(createdAt);
 
-  if (Number.isNaN(date.getTime())) {
+  if (!targetDateKey) {
     return "earlier";
   }
 
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diffDays = Math.round(
-    (today.getTime() - target.getTime()) / 86_400_000,
+  const todayKey = getPhnomPenhDateKey(now);
+  const yesterdayKey = getPhnomPenhDateKey(
+    new Date(now.getTime() - 86_400_000),
   );
 
-  if (diffDays <= 0) {
+  if (targetDateKey === todayKey) {
     return "today";
   }
 
-  if (diffDays === 1) {
+  if (targetDateKey === yesterdayKey) {
     return "yesterday";
   }
 

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { AlertTriangle, ChevronRight, Loader2, Trash2 } from "lucide-react";
 import { categoryStyles } from "@/lib/notifications/category-styles";
-import { timeAgo } from "@/lib/notifications/notification-mappers";
+import { formatNotificationTime } from "@/lib/formatDate";
 import type { AppNotification } from "@/types/notifications";
 
 interface Props {
@@ -106,7 +106,7 @@ export default function NotificationCard({
           </div>
 
           <div className="flex items-center gap-3 text-base text-slate-400">
-            <span>{timeAgo(notification.createdAt)}</span>
+            <span>{formatNotificationTime(notification.createdAt)}</span>
             <button
               type="button"
               onClick={() => onOpen(notification)}
