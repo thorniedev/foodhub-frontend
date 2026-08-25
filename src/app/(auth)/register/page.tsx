@@ -6,8 +6,6 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import {
   EyeIcon,
   EyeOffIcon,
-  GoogleIcon,
-  GitHubIcon,
   AlertCircleIcon,
   CheckCircleIcon,
 } from "@/components/auth/icons";
@@ -307,30 +305,6 @@ export default function RegisterPage() {
           {isLoading ? "កំពុងបង្កើតគណនី..." : "Register / បង្កើតគណនី"}
         </button>
       </form>
-
-      {/* Social Login Divider & Buttons */}
-      <div className="kc-divider">
-        <span>ឬចូលគណនីជាមួយ</span>
-      </div>
-
-      <div className="kc-social-row">
-        <a
-          href="/api/auth/login?kc_idp_hint=google"
-          className="kc-pill-social-btn"
-          id="social-google"
-        >
-          <GoogleIcon />
-          <span>Google</span>
-        </a>
-        <a
-          href="/api/auth/login?kc_idp_hint=github"
-          className="kc-pill-social-btn"
-          id="social-github"
-        >
-          <GitHubIcon />
-          <span>GitHub</span>
-        </a>
-      </div>
 
       {/* Footer */}
       <p className="kc-footer-text">

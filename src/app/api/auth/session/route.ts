@@ -15,6 +15,16 @@ interface KeycloakClaims {
   family_name?: string;
 
   exp?: number;
+
+  realm_access?: {
+    roles?: string[];
+  };
+  resource_access?: Record<
+    string,
+    {
+      roles?: string[];
+    }
+  >;
 }
 
 function decodeJwt(token: string): KeycloakClaims | null {
@@ -31,6 +41,39 @@ function decodeJwt(token: string): KeycloakClaims | null {
   } catch {
     return null;
   }
+}
+
+function normalizeRole(role: unknown): string {
+  if (typeof role !== "string") {
+    return "";
+  }
+
+  const normalized = role.trim().toUpperCase();
+  return normalized.startsWith("ROLE_")
+    ? normalized.slice("ROLE_".length)
+    : normalized;
+}
+
+function getRolesFromClaims(claims: KeycloakClaims | null): string[] {
+  if (!claims) {
+    return [];
+  }
+
+  const roles = [
+    ...(claims.realm_access?.roles ?? []),
+    ...Object.values(claims.resource_access ?? {}).flatMap((access) =>
+      Array.isArray(access.roles) ? access.roles : [],
+    ),
+  ];
+
+  return [...new Set(roles.map(normalizeRole).filter(Boolean))];
+}
+
+function getPrimaryRole(roles: string[]): string | null {
+  if (roles.includes("SUPER_ADMIN")) return "SUPER_ADMIN";
+  if (roles.includes("ADMIN")) return "ADMIN";
+  if (roles.includes("USER")) return "USER";
+  return roles[0] ?? null;
 }
 
 export async function GET(request: NextRequest) {
@@ -63,6 +106,7 @@ export async function GET(request: NextRequest) {
   }
 
   const claims = decodeJwt(token);
+  const accessClaims = accessToken ? decodeJwt(accessToken) : claims;
 
   if (!claims) {
     return NextResponse.json(
@@ -103,6 +147,8 @@ export async function GET(request: NextRequest) {
   /*
    * Logged-in Keycloak user
    */
+  const roles = getRolesFromClaims(accessClaims);
+
   const user = {
     uuid: claims.sub ?? "",
 
@@ -115,6 +161,10 @@ export async function GET(request: NextRequest) {
     lastName: claims.family_name ?? null,
 
     emailVerified: claims.email_verified ?? false,
+
+    role: getPrimaryRole(roles),
+
+    roles,
 
     status: "ACTIVE",
 

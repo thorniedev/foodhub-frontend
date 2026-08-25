@@ -84,6 +84,38 @@ function createBackendResponse(data: unknown, status: number) {
   });
 }
 
+async function syncCurrentUser(
+  backendApiUrl: string,
+  accessToken: string,
+): Promise<boolean> {
+  try {
+    const syncResponse = await fetch(`${backendApiUrl}/users/me/sync`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!syncResponse.ok) {
+      console.error("PROFILE USER SYNC ERROR:", {
+        status: syncResponse.status,
+        response: await parseBackendResponse(syncResponse),
+      });
+    }
+
+    return syncResponse.ok;
+  } catch (error) {
+    console.error("PROFILE USER SYNC CONNECTION ERROR:", error);
+    return false;
+  }
+}
+
+function shouldRetryAfterSync(status: number): boolean {
+  return status === 404 || status >= 500;
+}
+
 /**
  * GET /api/profiles?page=0&size=20
  */
@@ -111,7 +143,7 @@ export async function GET(request: NextRequest) {
   });
 
   try {
-    const backendResponse = await fetch(backendUrl, {
+    let backendResponse = await fetch(backendUrl, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -120,7 +152,24 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
 
-    const responseData = await parseBackendResponse(backendResponse);
+    let responseData = await parseBackendResponse(backendResponse);
+
+    if (!backendResponse.ok && shouldRetryAfterSync(backendResponse.status)) {
+      const synced = await syncCurrentUser(backendApiUrl, accessToken);
+
+      if (synced) {
+        backendResponse = await fetch(backendUrl, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          cache: "no-store",
+        });
+
+        responseData = await parseBackendResponse(backendResponse);
+      }
+    }
 
     if (!backendResponse.ok) {
       console.error("GET PROFILES BACKEND ERROR:", {

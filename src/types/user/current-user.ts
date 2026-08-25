@@ -10,6 +10,9 @@ export interface CurrentUser {
 
   emailVerified: boolean;
 
+  role?: string | null;
+  roles?: string[];
+
   status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | string;
 
   lastLoginAt?: string | null;
