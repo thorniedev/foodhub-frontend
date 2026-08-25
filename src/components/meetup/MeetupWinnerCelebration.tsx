@@ -75,7 +75,12 @@ export default function MeetupWinnerCelebration({
       : "https://www.google.com/maps");
 
   const handleShare = async () => {
-    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    const currentUrl =
+      typeof window !== "undefined"
+        ? window.location.href
+        : shareToken
+          ? `/meetup/result/${shareToken}`
+          : "";
     const shareText = `👑 Winner Announced for "${winningCard.title}"!\nWe're dining at ${restaurantName} (${foodName}).\nDirections: ${directionsUrl}`;
 
     if (navigator.share) {
@@ -97,7 +102,12 @@ export default function MeetupWinnerCelebration({
   };
 
   const handleTelegramShare = () => {
-    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    const currentUrl =
+      typeof window !== "undefined"
+        ? window.location.href
+        : shareToken
+          ? `/meetup/result/${shareToken}`
+          : "";
     const text = encodeURIComponent(
       `👑 Winner for "${winningCard.title}":\n🍽️ ${restaurantName}\n📍 Open in Google Maps: ${directionsUrl}`,
     );

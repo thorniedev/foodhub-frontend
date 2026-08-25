@@ -440,23 +440,34 @@ export async function GET(request: NextRequest) {
     if (!syncResponse.ok) {
       const errorBody = await syncResponse.text();
 
-      console.error("[USER SYNC ERROR]", {
-        status: syncResponse.status,
-        statusText: syncResponse.statusText,
-        response: errorBody,
-        url: syncUrl,
-      });
+      // 409 Conflict means the user is already registered/synced in the backend.
+      // This is expected for returning users. Treat it as successful and let login proceed.
+      if (syncResponse.status === 409) {
+        console.log("[USER SYNC CONFLICT - OK]", {
+          status: 409,
+          message:
+            "User already exists in backend (idempotent sync). Proceeding with login.",
+          url: syncUrl,
+        });
+      } else {
+        console.error("[USER SYNC ERROR]", {
+          status: syncResponse.status,
+          statusText: syncResponse.statusText,
+          response: errorBody,
+          url: syncUrl,
+        });
 
-      return createLoginErrorResponse(
-        request,
-        "user_sync_failed",
-        `User synchronization failed with status ${syncResponse.status}.`,
-      );
+        return createLoginErrorResponse(
+          request,
+          "user_sync_failed",
+          `User synchronization failed with status ${syncResponse.status}.`,
+        );
+      }
     }
 
     const syncText = syncResponse.ok ? await syncResponse.text() : "";
 
-    console.log("[USER SYNC SUCCESS]", {
+    console.log("[USER SYNC PROCESSED]", {
       status: syncResponse.status,
       hasResponseBody: Boolean(syncText),
     });

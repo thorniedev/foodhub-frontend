@@ -6,8 +6,11 @@ import type {
   MeetupRecommendationItem,
   MeetupRecommendationSessionResponse,
   MeetupRecommendationStatus,
+  MeetupResultResponse,
   MeetupVoteResponse,
+  MeetupVoteTallyResponse,
   MeetupVotesResponse,
+  MeetupWinningCardResponse,
 } from "@/types/meetup-api";
 
 type UnknownRecord = Record<string, unknown>;
@@ -85,6 +88,21 @@ function getNumber(
   return null;
 }
 
+function getBoolean(
+  record: UnknownRecord,
+  keys: readonly string[],
+): boolean | undefined {
+  for (const key of keys) {
+    const value = record[key];
+
+    if (typeof value === "boolean") {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
 function getArray(record: UnknownRecord, keys: readonly string[]): unknown[] {
   for (const key of keys) {
     const value = record[key];
@@ -122,6 +140,32 @@ function getNestedRecord(
   return null;
 }
 
+function getStringArray(
+  record: UnknownRecord,
+  keys: readonly string[],
+): string[] {
+  return getArray(record, keys).flatMap((value) => {
+    if (typeof value === "string" && value.trim()) {
+      return [value.trim()];
+    }
+
+    if (isRecord(value)) {
+      const label = getString(value, [
+        "uuid",
+        "code",
+        "name",
+        "localName",
+        "allergenCode",
+        "dietaryTypeCode",
+      ]);
+
+      return label ? [label] : [];
+    }
+
+    return [];
+  });
+}
+
 export function normalizeMeetupParticipantResponse(
   response: unknown,
 ): MeetupParticipantResponse {
@@ -134,10 +178,26 @@ export function normalizeMeetupParticipantResponse(
     uuid: getString(record, ["uuid", "participantUuid"]),
     meetupUuid: getString(record, ["meetupUuid", "groupUuid"]),
     profileId: getNumber(record, ["profileId"]),
+    profileUuid: getString(record, ["profileUuid", "profileUUID"]),
     nickname: getString(record, ["nickname", "name", "displayName"]),
+    participantRole: getString(record, [
+      "participantRole",
+      "role",
+    ]) as MeetupParticipantResponse["participantRole"],
     locationLat: getNumber(record, ["locationLat", "latitude"]),
     locationLng: getNumber(record, ["locationLng", "longitude"]),
+    locationMode: getString(record, ["locationMode"]),
+    targetAreaName: getString(record, ["targetAreaName", "areaName"]),
+    targetCity: getString(record, ["targetCity", "city"]),
+    targetProvince: getString(record, ["targetProvince", "province"]),
     mapsLink: getString(record, ["mapsLink", "mapUrl"]),
+    guestToken: getString(record, ["guestToken", "participantToken"]),
+    dietaryTypes: getStringArray(record, ["dietaryTypes"]),
+    dietaryRestrictions: getStringArray(record, ["dietaryRestrictions"]),
+    allergies: getStringArray(record, ["allergies"]),
+    budgetMin: getNumber(record, ["budgetMin", "minimumBudget"]),
+    budgetMax: getNumber(record, ["budgetMax", "maximumBudget"]),
+    budgetRange: getString(record, ["budgetRange"]),
     joinedAt: getString(record, ["joinedAt", "createdAt"]),
     raw: response,
   };
@@ -176,9 +236,23 @@ export function normalizeMeetupGroupResponse(
 
     votingMethod: getString(groupRecord, ["votingMethod"]),
 
+    audienceMode: getString(groupRecord, ["audienceMode", "inviteMode"]),
+
+    locationMode: getString(groupRecord, ["locationMode"]),
+
     searchRadiusKm: getNumber(groupRecord, ["searchRadiusKm", "radiusKm"]),
 
     timezone: getString(groupRecord, ["timezone"]),
+
+    targetAreaName: getString(groupRecord, ["targetAreaName", "areaName"]),
+
+    targetCity: getString(groupRecord, ["targetCity", "city"]),
+
+    targetProvince: getString(groupRecord, ["targetProvince", "province"]),
+
+    targetLat: getNumber(groupRecord, ["targetLat", "latitude"]),
+
+    targetLng: getNumber(groupRecord, ["targetLng", "longitude"]),
 
     meetingPointLat: getNumber(groupRecord, [
       "meetingPointLat",
@@ -192,11 +266,37 @@ export function normalizeMeetupGroupResponse(
 
     meetingPointMethod: getString(groupRecord, ["meetingPointMethod"]),
 
+    candidateStoreUuids: getStringArray(groupRecord, ["candidateStoreUuids"]),
+
     participants,
 
     winningCandidateId: getNumber(groupRecord, ["winningCandidateId"]),
 
+    winningCandidateUuid: getString(groupRecord, [
+      "winningCandidateUuid",
+      "winningCandidateUUID",
+      "winningFoodUuid",
+      "winningCandidate",
+    ]),
+
+    winningCandidateName: getString(groupRecord, [
+      "winningCandidateName",
+      "winningFoodName",
+      "winnerName",
+    ]),
+
+    guestAllowed: getBoolean(groupRecord, ["guestAllowed"]),
+
+    expectedGuestCount: getNumber(groupRecord, ["expectedGuestCount"]),
+
+    maxParticipants: getNumber(groupRecord, [
+      "maxParticipants",
+      "maximumParticipants",
+    ]),
+
     expiresAt: getString(groupRecord, ["expiresAt"]),
+
+    decidedAt: getString(groupRecord, ["decidedAt"]),
 
     createdAt: getString(groupRecord, ["createdAt"]),
 
@@ -237,8 +337,8 @@ function normalizeRecommendationItem(
 
   return {
     uuid: getString(record, ["uuid", "candidateUuid"]),
-    menuItemId: getNumber(record, ["menuItemId"]),
-    menuItemName: getString(record, ["menuItemName"]),
+    menuItemId: getNumber(record, ["menuItemId", "foodId"]),
+    menuItemName: getString(record, ["menuItemName", "foodName", "name"]),
     storeId: getNumber(record, ["storeId"]),
     storeName: getString(record, ["storeName"]),
     distanceKm: getNumber(record, ["distanceKm"]),
@@ -283,6 +383,7 @@ export function normalizeMeetupVoteResponse(
     meetupUuid: getString(record, ["meetupUuid", "groupUuid"]),
     participantUuid: getString(record, ["participantUuid"]),
     candidateUuid: getString(record, ["candidateUuid", "storeCandidateUuid"]),
+    foodUuid: getString(record, ["foodUuid", "menuItemUuid"]),
     rankChoice: getNumber(record, ["rankChoice", "rank"]),
     createdAt: getString(record, ["createdAt", "votedAt"]),
     raw: response,
@@ -309,6 +410,102 @@ export function normalizeMeetupVotesResponse(
       normalizeMeetupVoteResponse,
     ),
 
+    raw: response,
+  };
+}
+
+function normalizeTallyEntry(response: unknown) {
+  const record = isRecord(response) ? response : {};
+
+  return {
+    candidateUuid:
+      getString(record, ["candidateUuid", "foodUuid", "menuItemUuid"]) ?? "",
+    foodUuid: getString(record, ["foodUuid", "menuItemUuid"]),
+    candidateName:
+      getString(record, ["candidateName", "foodName", "menuItemName"]) ??
+      undefined,
+    foodName: getString(record, ["foodName", "menuItemName"]),
+    storeName: getString(record, ["storeName"]),
+    voteCount: getNumber(record, ["voteCount", "votes", "count"]) ?? 0,
+  };
+}
+
+export function normalizeMeetupVoteTallyResponse(
+  response: unknown,
+): MeetupVoteTallyResponse {
+  const record = getEnvelopeRecord(response);
+
+  return {
+    meetupUuid: getString(record, ["meetupUuid", "groupUuid"]),
+    totalVotes: getNumber(record, ["totalVotes", "voteCount", "votes"]) ?? 0,
+    tally: getArray(record, ["tally", "results", "items"]).map(
+      normalizeTallyEntry,
+    ),
+  };
+}
+
+export function normalizeMeetupWinningCardResponse(
+  response: unknown,
+): MeetupWinningCardResponse {
+  const record = getEnvelopeRecord(response);
+
+  return {
+    meetupUuid: getString(record, ["meetupUuid", "groupUuid"]) ?? "",
+    shareToken: getString(record, ["shareToken"]),
+    title: getString(record, ["title", "meetupTitle", "groupName"]) ?? "",
+    status: getString(record, ["status", "meetupStatus"]),
+    resultReady:
+      getBoolean(record, ["resultReady", "ready"]) ??
+      getString(record, ["status"]) === "DECIDED",
+    winningCandidateId: getNumber(record, ["winningCandidateId"]),
+    winningCandidateUuid: getString(record, [
+      "winningCandidateUuid",
+      "winningFoodUuid",
+      "foodUuid",
+      "candidateUuid",
+    ]),
+    winningCandidateName:
+      getString(record, [
+        "winningCandidateName",
+        "winningFoodName",
+        "foodName",
+        "candidateName",
+        "storeName",
+      ]) ?? "",
+    totalVotes: getNumber(record, ["totalVotes", "voteCount"]) ?? 0,
+    meetingPointLat: getNumber(record, ["meetingPointLat", "targetLat"]),
+    meetingPointLng: getNumber(record, ["meetingPointLng", "targetLng"]),
+    mapsDirectionsUrl:
+      getString(record, ["mapsDirectionsUrl", "directionsUrl", "mapsLink"]) ??
+      "",
+    decidedAt: getString(record, ["decidedAt", "updatedAt"]),
+    storeName: getString(record, ["storeName"]) ?? undefined,
+    storeAddress: getString(record, ["storeAddress", "address"]) ?? undefined,
+    foodName: getString(record, ["foodName", "menuItemName"]) ?? undefined,
+    foodPhotoUrl: getString(record, ["foodPhotoUrl", "photoUrl", "imageUrl"]) ??
+      undefined,
+    rating: getNumber(record, ["rating", "averageRating"]) ?? undefined,
+    price: getNumber(record, ["price", "priceSnapshot"]) ?? undefined,
+    distanceKm: getNumber(record, ["distanceKm"]) ?? undefined,
+  };
+}
+
+export function normalizeMeetupResultResponse(
+  response: unknown,
+): MeetupResultResponse {
+  const record = getEnvelopeRecord(response);
+  const winningCard = normalizeMeetupWinningCardResponse(response);
+  const tally = getArray(record, ["tally", "results", "items"]).map(
+    normalizeTallyEntry,
+  );
+
+  return {
+    ...winningCard,
+    resultReady:
+      winningCard.resultReady ??
+      Boolean(winningCard.winningCandidateId || winningCard.winningCandidateUuid),
+    tally,
+    message: getString(record, ["message", "detail"]),
     raw: response,
   };
 }

@@ -7,6 +7,10 @@ export type MeetupVotingMethod =
 
 export type MeetupMeetingPointMethod = "CENTROID" | string;
 
+export type MeetupAudienceMode = "FRIENDS" | "GUESTS" | string;
+
+export type MeetupLocationMode = "AREA" | "PIN" | string;
+
 export type MeetupGroupStatus =
   | "COLLECTING"
   | "RECOMMENDING"
@@ -22,12 +26,20 @@ export type MeetupRecommendationStatus =
   | "FAILED";
 
 export interface CreateMeetupRequest {
-  createdByUserId: number;
+  createdByUserId?: number;
   title: string;
-  votingMethod: MeetupVotingMethod;
-  searchRadiusKm: number;
+  votingMethod?: MeetupVotingMethod;
+  audienceMode: "FRIENDS" | "GUESTS";
+  guestAllowed: boolean;
+  locationMode: "AREA" | "PIN";
+  searchRadiusKm?: number;
   timezone?: string;
   expiresAt?: string;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
+  targetLat?: number | null;
+  targetLng?: number | null;
   meetingPointLat?: number | null;
   meetingPointLng?: number | null;
   candidateStoreUuids?: string[] | null;
@@ -36,11 +48,11 @@ export interface CreateMeetupRequest {
   minimumParticipants?: number;
   candidateLimit?: number;
   scheduledFor?: string;
-  // Dual-mode flags
-  guestAllowed?: boolean;
   friendUserUuids?: string[];
+  expectedGuestCount?: number;
+  maxParticipants?: number;
   durationMinutes?: number;
-  inviteMode?: "FRIENDS" | "GUEST_LINK";
+  inviteMode?: "FRIENDS" | "GUEST_LINK" | "GUESTS";
 }
 
 export interface UpdateMeetupGroupRequest {
@@ -48,6 +60,11 @@ export interface UpdateMeetupGroupRequest {
   timezone?: string;
   searchRadiusKm?: number;
   status?: MeetupGroupStatus;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
+  targetLat?: number | null;
+  targetLng?: number | null;
 }
 
 export interface UpdateMeetupGroupArgs {
@@ -61,8 +78,11 @@ export interface LeaveMeetupParticipantArgs {
 }
 
 export interface UpdateMeetupParticipantLocationRequest {
-  locationLat: number;
-  locationLng: number;
+  locationLat?: number | null;
+  locationLng?: number | null;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
   mapsLink?: string | null;
 }
 
@@ -83,19 +103,33 @@ export interface SubmitMeetupVoteRequest {
 export interface JoinMeetupParticipantRequest {
   meetupUuid?: string;
   shareToken?: string;
-  nickname: string;
+  nickname?: string;
+  guestNickname?: string;
   profileId?: number | null;
+  profileUuid?: string | null;
+  locationMode?: "AREA" | "PIN";
   locationLat?: number | null;
   locationLng?: number | null;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
   mapsLink?: string | null;
   dietaryRestrictions?: string[];
+  dietaryTypes?: string[];
   allergies?: string[];
-  budgetRange?: string;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  budgetRange?: string | null;
+  contextData?: Record<string, unknown>;
+  profileSnapshot?: Record<string, unknown>;
 }
 
 export interface MeetupVoteTallyEntry {
   candidateUuid: string;
+  foodUuid?: string | null;
   candidateName?: string;
+  foodName?: string | null;
+  storeName?: string | null;
   voteCount: number;
 }
 
@@ -108,14 +142,23 @@ export interface MeetupVoteTallyResponse {
 export interface MeetupParticipantDto {
   uuid: string;
   nickname: string;
+  profileUuid?: string | null;
   profileId: number | null;
   participantRole: "HOST" | "MEMBER";
   locationLat: number | null;
   locationLng: number | null;
+  locationMode?: MeetupLocationMode | null;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
   status: "ACTIVE" | "LEFT" | "REMOVED";
+  guestToken?: string | null;
+  dietaryTypes?: string[];
   dietaryRestrictions?: string[];
   allergies?: string[];
-  budgetRange?: string;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  budgetRange?: string | null;
   joinedAt?: string;
 }
 
@@ -124,14 +167,23 @@ export interface MeetupParticipantResponse {
   uuid: string | null;
   meetupUuid: string | null;
   profileId: number | null;
+  profileUuid: string | null;
   nickname: string | null;
   participantRole?: "HOST" | "MEMBER" | null;
   locationLat: number | null;
   locationLng: number | null;
+  locationMode?: MeetupLocationMode | null;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
   mapsLink: string | null;
+  guestToken?: string | null;
+  dietaryTypes?: string[];
   dietaryRestrictions?: string[];
   allergies?: string[];
-  budgetRange?: string;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  budgetRange?: string | null;
   joinedAt: string | null;
   raw: unknown;
 }
@@ -143,7 +195,14 @@ export interface MeetupGroupDto {
   title: string;
   status: "COLLECTING" | "VOTING" | "DECIDED" | "CANCELLED";
   votingMethod: "SINGLE_PICK" | "APPROVAL" | "RANKED";
+  audienceMode?: MeetupAudienceMode;
+  locationMode?: MeetupLocationMode;
   searchRadiusKm: number;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
+  targetLat?: number | null;
+  targetLng?: number | null;
   meetingPointLat: number | null;
   meetingPointLng: number | null;
   winningCandidateId: number | null;
@@ -151,6 +210,8 @@ export interface MeetupGroupDto {
   decidedAt: string | null;
   participants: MeetupParticipantDto[];
   guestAllowed?: boolean;
+  expectedGuestCount?: number | null;
+  maxParticipants?: number | null;
   shareToken?: string;
 }
 
@@ -162,16 +223,26 @@ export interface MeetupGroupResponse {
   title: string | null;
   status: MeetupGroupStatus | null;
   votingMethod: string | null;
+  audienceMode: MeetupAudienceMode | null;
+  locationMode: MeetupLocationMode | null;
   searchRadiusKm: number | null;
   timezone: string | null;
+  targetAreaName: string | null;
+  targetCity: string | null;
+  targetProvince: string | null;
+  targetLat: number | null;
+  targetLng: number | null;
   meetingPointLat: number | null;
   meetingPointLng: number | null;
   meetingPointMethod: string | null;
   candidateStoreUuids?: string[] | null;
   participants: MeetupParticipantResponse[];
   winningCandidateId: number | null;
+  winningCandidateUuid?: string | null;
   winningCandidateName?: string | null;
   guestAllowed?: boolean;
+  expectedGuestCount?: number | null;
+  maxParticipants?: number | null;
   expiresAt: string | null;
   decidedAt?: string | null;
   createdAt: string | null;
@@ -181,14 +252,18 @@ export interface MeetupGroupResponse {
 
 export interface MeetupWinningCardResponse {
   meetupUuid: string;
+  shareToken?: string | null;
   title: string;
-  winningCandidateId: number;
+  status?: MeetupGroupStatus | null;
+  resultReady?: boolean;
+  winningCandidateId: number | null;
+  winningCandidateUuid?: string | null;
   winningCandidateName: string;
   totalVotes: number;
-  meetingPointLat: number;
-  meetingPointLng: number;
+  meetingPointLat: number | null;
+  meetingPointLng: number | null;
   mapsDirectionsUrl: string; // e.g. "https://www.google.com/maps/dir/?api=1&destination=11.5564,104.9282"
-  decidedAt: string;
+  decidedAt: string | null;
   storeName?: string;
   storeAddress?: string;
   foodName?: string;
@@ -196,6 +271,12 @@ export interface MeetupWinningCardResponse {
   rating?: number;
   price?: number;
   distanceKm?: number;
+}
+
+export interface MeetupResultResponse extends MeetupWinningCardResponse {
+  tally: MeetupVoteTallyEntry[];
+  message?: string | null;
+  raw: unknown;
 }
 
 export interface MeetupMeetingPointResponse {

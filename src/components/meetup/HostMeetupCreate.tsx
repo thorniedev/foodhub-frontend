@@ -1,31 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useGetFriendsQuery } from "@/app/store/friendsApi";
+import { useEffect, useMemo, useState } from "react";
 import {
-  useCreateMeetupMutation,
-} from "@/app/store/groupRecommendationApi";
-import {
-  useGetCurrentUserQuery,
-  useGetBackendUserQuery,
-} from "@/app/store/auth/currentUserApi";
-import {
-  Users,
-  Link2,
-  Shield,
-  MapPin,
-  Clock,
-  Compass,
   Check,
-  Copy,
-  Share2,
-  Send,
-  Loader2,
-  Sparkles,
   CheckCircle2,
+  Copy,
+  Link2,
+  Loader2,
   Navigation,
+  Send,
+  Shield,
+  Sparkles,
+  Users,
 } from "lucide-react";
+
+import { useGetBackendUserQuery } from "@/app/store/auth/currentUserApi";
+import { useGetFriendsQuery } from "@/app/store/friendsApi";
+import { useCreateMeetupMutation } from "@/app/store/groupRecommendationApi";
 import {
   Dialog,
   DialogContent,
@@ -33,37 +26,104 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { APP_TIME_ZONE } from "@/lib/formatDate";
+import type { CreateMeetupRequest } from "@/types/meetup-api";
+import type { Coordinates } from "@/types/location";
+import type { LocationSearchResult } from "@/types/location-search";
+
+const LocationPickerMap = dynamic(
+  () => import("@/components/food-page/location/picker/LocationPickerMap"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[360px] items-center justify-center rounded-2xl bg-slate-100 text-sm font-semibold text-slate-500">
+        Loading map...
+      </div>
+    ),
+  },
+);
+
+type MeetupMode = "friends" | "guest";
+type MeetupLocationMode = "area" | "pin";
+
+const DEFAULT_PIN: Coordinates = {
+  latitude: 11.5564,
+  longitude: 104.9282,
+};
+
+const RADIUS_OPTIONS = [1, 2, 3, 4, 5] as const;
+
+function getExpiry(durationMinutes: number): string {
+  return new Date(Date.now() + durationMinutes * 60 * 1000).toISOString();
+}
+
+function getNumberValue(value: string, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function saveCreatedMeetupHistory(input: {
+  uuid: string;
+  shareToken: string;
+  title: string;
+  audienceMode: "FRIENDS" | "GUESTS";
+  locationMode: "AREA" | "PIN";
+  locationName: string;
+  radiusKm: number;
+  participantCount: number;
+}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      `foodhub-meetup-share-${input.uuid}`,
+      JSON.stringify({
+        uuid: input.uuid,
+        shareToken: input.shareToken,
+        title: input.title,
+        audienceMode: input.audienceMode,
+        inviteMode:
+          input.audienceMode === "FRIENDS" ? "FRIENDS" : "GUEST_LINK",
+        locationMode: input.locationMode,
+        status: "VOTING",
+        createdAt: new Date().toISOString(),
+        participantCount: input.participantCount,
+        locationName: input.locationName,
+        radiusKm: input.radiusKm,
+      }),
+    );
+  } catch {
+    // Local history is nice to have, not required for creating the meetup.
+  }
+}
 
 export default function HostMeetupCreate() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedFriendUuid = searchParams.get("friendUuid");
 
-  const { data: user } = useGetCurrentUserQuery();
-  const { data: backendUser } = useGetBackendUserQuery();
-  const { data: friends = [], isLoading: isLoadingFriends } = useGetFriendsQuery();
-
+  const { data: backendUser, isLoading: isLoadingUser } =
+    useGetBackendUserQuery();
+  const { data: friends = [], isLoading: isLoadingFriends } =
+    useGetFriendsQuery();
   const [createMeetup, { isLoading: isCreating }] = useCreateMeetupMutation();
 
-  // Mode: 1 = FoodHub Friends, 2 = Casual Team / Guest Link
-  const [mode, setMode] = useState<"friends" | "guest">("friends");
-
-  // Common fields
+  const [mode, setMode] = useState<MeetupMode>("friends");
+  const [locationMode, setLocationMode] =
+    useState<MeetupLocationMode>("area");
   const [title, setTitle] = useState("");
-  const [votingMethod, setVotingMethod] = useState<"SINGLE_PICK" | "APPROVAL" | "RANKED">("SINGLE_PICK");
-
-  // Mode 1: Friends selection
   const [selectedFriendUuids, setSelectedFriendUuids] = useState<string[]>([]);
-
-  // Mode 2: Location & settings
-  const [locationLat, setLocationLat] = useState<number>(11.5564); // Phnom Penh default
-  const [locationLng, setLocationLng] = useState<number>(104.9282);
-  const [locationName, setLocationName] = useState("Phnom Penh Central");
-  const [isGettingGps, setIsGettingGps] = useState(false);
+  const [targetAreaName, setTargetAreaName] = useState("Phnom Penh");
+  const [targetCity, setTargetCity] = useState("Phnom Penh");
+  const [targetProvince, setTargetProvince] = useState("Phnom Penh");
+  const [pin, setPin] = useState<Coordinates>(DEFAULT_PIN);
   const [searchRadiusKm, setSearchRadiusKm] = useState<number>(3);
-  const [durationMinutes, setDurationMinutes] = useState<number>(30);
-
-  // Success / Share Modal
+  const [expectedGuestCount, setExpectedGuestCount] = useState<number>(4);
+  const [durationMinutes, setDurationMinutes] = useState<number>(120);
+  const [isGettingGps, setIsGettingGps] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createdMeetup, setCreatedMeetup] = useState<{
     uuid: string;
     shareToken: string;
@@ -71,437 +131,615 @@ export default function HostMeetupCreate() {
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Auto-select friend if passed in query param
   useEffect(() => {
-    if (preselectedFriendUuid && !selectedFriendUuids.includes(preselectedFriendUuid)) {
-      setSelectedFriendUuids((prev) => [...prev, preselectedFriendUuid]);
-    }
-  }, [preselectedFriendUuid]);
-
-  const toggleFriend = (uuid: string) => {
-    setSelectedFriendUuids((prev) =>
-      prev.includes(uuid) ? prev.filter((id) => id !== uuid) : [...prev, uuid],
-    );
-  };
-
-  const handleGetCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+    if (!preselectedFriendUuid) {
       return;
     }
-    setIsGettingGps(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocationLat(pos.coords.latitude);
-        setLocationLng(pos.coords.longitude);
-        setLocationName("My Current GPS Location");
-        setIsGettingGps(false);
-      },
-      (err) => {
-        console.warn("GPS error:", err);
-        setIsGettingGps(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
+
+    setMode("friends");
+    setSelectedFriendUuids((current) =>
+      current.includes(preselectedFriendUuid)
+        ? current
+        : [...current, preselectedFriendUuid],
     );
-  };
+  }, [preselectedFriendUuid]);
 
-  const handleCreateMeetup = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const currentUserId = backendUser?.id || 1;
-    const meetupTitle =
-      title.trim() ||
-      (mode === "friends"
-        ? `Lunch with Friends (${selectedFriendUuids.length + 1})`
-        : "FoodHub Team Lunch");
-
-    const expiresAt = new Date(
-      Date.now() + (durationMinutes > 0 ? durationMinutes * 60 * 1000 : 86400000),
-    ).toISOString();
-
-    try {
-      const response = await createMeetup({
-        createdByUserId: currentUserId,
-        title: meetupTitle,
-        votingMethod,
-        searchRadiusKm,
-        timezone: "Asia/Phnom_Penh",
-        expiresAt,
-        meetingPointLat: locationLat,
-        meetingPointLng: locationLng,
-        guestAllowed: mode === "guest",
-        friendUserUuids: mode === "friends" ? selectedFriendUuids : [],
-        durationMinutes: mode === "guest" ? durationMinutes : undefined,
-        inviteMode: mode === "friends" ? "FRIENDS" : "GUEST_LINK",
-      }).unwrap();
-
-      const createdUuid = response.uuid || "new-meetup";
-      const shareToken =
-        response.shareToken ||
-        (createdUuid.includes("-") ? createdUuid.split("-")[0] : createdUuid);
-
-      setCreatedMeetup({
-        uuid: createdUuid,
-        shareToken,
-        title: meetupTitle,
-      });
-    } catch (err) {
-      console.error("Failed to create meetup:", err);
-    }
-  };
+  const pinPlace = useMemo<LocationSearchResult>(
+    () => ({
+      id: "meetup-pin",
+      name: "FoodHub meetup pin",
+      address: `${pin.latitude.toFixed(6)}, ${pin.longitude.toFixed(6)}`,
+      addressLine1: null,
+      addressLine2: null,
+      city: targetCity || "Phnom Penh",
+      district: targetAreaName || null,
+      county: null,
+      state: targetProvince || "Phnom Penh",
+      postcode: null,
+      country: "Cambodia",
+      countryCode: "kh",
+      latitude: pin.latitude,
+      longitude: pin.longitude,
+      type: "meetup-target",
+    }),
+    [pin.latitude, pin.longitude, targetAreaName, targetCity, targetProvince],
+  );
 
   const shareUrl =
     typeof window !== "undefined" && createdMeetup
       ? `${window.location.origin}/meet/${createdMeetup.shareToken}`
-      : `https://foodhub.app/meet/${createdMeetup?.shareToken || ""}`;
+      : "";
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
+  const toggleFriend = (uuid: string) => {
+    setSelectedFriendUuids((current) =>
+      current.includes(uuid)
+        ? current.filter((item) => item !== uuid)
+        : [...current, uuid],
+    );
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setErrorMessage("This browser does not support current location.");
+      return;
+    }
+
+    setIsGettingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setPin({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: position.timestamp,
+        });
+        setLocationMode("pin");
+        setIsGettingGps(false);
+      },
+      () => {
+        setErrorMessage("Could not read current location. Pick on the map.");
+        setIsGettingGps(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 12_000,
+      },
+    );
+  };
+
+  const handleCreateMeetup = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setErrorMessage(null);
+
+    if (!backendUser?.id) {
+      setErrorMessage("Please sign in before creating a meetup.");
+      return;
+    }
+
+    if (mode === "friends" && selectedFriendUuids.length === 0) {
+      setErrorMessage("Select at least one friend for Friend mode.");
+      return;
+    }
+
+    if (
+      locationMode === "area" &&
+      (!targetAreaName.trim() || !targetCity.trim() || !targetProvince.trim())
+    ) {
+      setErrorMessage("Area mode needs area, city, and province.");
+      return;
+    }
+
+    if (
+      locationMode === "pin" &&
+      (!Number.isFinite(pin.latitude) || !Number.isFinite(pin.longitude))
+    ) {
+      setErrorMessage("Pin mode needs a valid latitude and longitude.");
+      return;
+    }
+
+    const audienceMode = mode === "friends" ? "FRIENDS" : "GUESTS";
+    const apiLocationMode = locationMode === "area" ? "AREA" : "PIN";
+    const meetupTitle =
+      title.trim() ||
+      (mode === "friends"
+        ? `Lunch with ${selectedFriendUuids.length + 1} friends`
+        : `Guest meetup in ${targetAreaName || targetCity || "Phnom Penh"}`);
+
+    const body: CreateMeetupRequest = {
+      createdByUserId: backendUser.id,
+      title: meetupTitle,
+      votingMethod: "SINGLE_PICK",
+      audienceMode,
+      guestAllowed: mode === "guest",
+      friendUserUuids: mode === "friends" ? selectedFriendUuids : [],
+      expectedGuestCount: mode === "guest" ? expectedGuestCount : undefined,
+      maxParticipants:
+        mode === "guest"
+          ? expectedGuestCount + 1
+          : selectedFriendUuids.length + 1,
+      locationMode: apiLocationMode,
+      timezone: APP_TIME_ZONE,
+      expiresAt: getExpiry(durationMinutes),
+      durationMinutes,
+      candidateLimit: 12,
+      currencyCode: "USD",
+      ...(locationMode === "area"
+        ? {
+            targetAreaName: targetAreaName.trim(),
+            targetCity: targetCity.trim(),
+            targetProvince: targetProvince.trim(),
+          }
+        : {
+            targetLat: pin.latitude,
+            targetLng: pin.longitude,
+            searchRadiusKm,
+          }),
+    };
+
+    try {
+      const response = await createMeetup(body).unwrap();
+
+      if (!response.uuid || !response.shareToken) {
+        setErrorMessage("Meetup created, but the backend did not return a share token.");
+        return;
+      }
+
+      saveCreatedMeetupHistory({
+        uuid: response.uuid,
+        shareToken: response.shareToken,
+        title: response.title || meetupTitle,
+        audienceMode,
+        locationMode: apiLocationMode,
+        locationName:
+          locationMode === "area"
+            ? [targetAreaName, targetCity, targetProvince]
+                .filter(Boolean)
+                .join(", ")
+            : `${pin.latitude.toFixed(5)}, ${pin.longitude.toFixed(5)}`,
+        radiusKm: searchRadiusKm,
+        participantCount:
+          mode === "guest" ? expectedGuestCount + 1 : selectedFriendUuids.length + 1,
+      });
+
+      setCreatedMeetup({
+        uuid: response.uuid,
+        shareToken: response.shareToken,
+        title: response.title || meetupTitle,
+      });
+    } catch (error) {
+      console.error("Failed to create meetup:", error);
+      setErrorMessage("FoodHub could not create the meetup with the production backend.");
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!shareUrl) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(shareUrl);
     setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
+    window.setTimeout(() => setCopiedLink(false), 2400);
   };
 
   const handleShareTelegram = () => {
+    if (!createdMeetup || !shareUrl) {
+      return;
+    }
+
     const text = encodeURIComponent(
-      `🍽️ Join our FoodHub Meetup: "${createdMeetup?.title}"!\nVote for what to eat together:\n${shareUrl}`,
+      `Join FoodHub meetup: ${createdMeetup.title}\n${shareUrl}`,
     );
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${text}`, "_blank");
+    window.open(
+      `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${text}`,
+      "_blank",
+    );
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
-      {/* Header Banner */}
-      <div className="rounded-3xl bg-linear-to-r from-emerald-800 to-teal-900 p-6 text-white shadow-xl sm:p-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
-            <Sparkles className="h-6 w-6 text-emerald-300" />
-          </div>
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <section className="rounded-3xl bg-linear-to-r from-emerald-800 to-teal-900 p-6 text-white shadow-xl sm:p-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-              Create Group Dining Meetup
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-100">
+              <Sparkles className="h-3.5 w-3.5" />
+              Group dining
+            </div>
+            <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+              បង្កើតការណាត់ញ៉ាំអាហារ
             </h1>
-            <p className="mt-1 text-sm text-emerald-100/90">
-              Pick a dining mode, collect dietary preferences, and vote on the best spot!
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-emerald-50/90">
+              Create a friend-only room or a guest invite link, choose area or pin
+              targeting, then let everyone vote on safe food recommendations.
             </p>
           </div>
+
+          <div className="grid min-w-[280px] grid-cols-2 gap-2 rounded-2xl bg-black/20 p-1.5">
+            {[
+              { value: "friends", label: "Friend", icon: Users },
+              { value: "guest", label: "Guest", icon: Link2 },
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = mode === item.value;
+
+              return (
+                <button
+                  type="button"
+                  key={item.value}
+                  onClick={() => setMode(item.value as MeetupMode)}
+                  className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition ${
+                    isActive
+                      ? "bg-white text-emerald-950 shadow-md"
+                      : "text-emerald-50 hover:bg-white/10"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+      </section>
 
-        {/* Dual Mode Switcher Tabs */}
-        <div className="mt-8 grid grid-cols-2 gap-3 rounded-2xl bg-black/20 p-1.5 backdrop-blur-sm">
-          <button
-            type="button"
-            onClick={() => setMode("friends")}
-            className={`flex items-center justify-center gap-2.5 rounded-xl py-3 text-sm font-bold transition ${
-              mode === "friends"
-                ? "bg-white text-emerald-950 shadow-md"
-                : "text-emerald-100 hover:bg-white/10"
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            <span>Mode 1: FoodHub Friends</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMode("guest")}
-            className={`flex items-center justify-center gap-2.5 rounded-xl py-3 text-sm font-bold transition ${
-              mode === "guest"
-                ? "bg-white text-emerald-950 shadow-md"
-                : "text-emerald-100 hover:bg-white/10"
-            }`}
-          >
-            <Link2 className="h-4 w-4" />
-            <span>Mode 2: Casual Team / Guest Link</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Creation Form */}
       <form
         onSubmit={handleCreateMeetup}
-        className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8 space-y-6"
+        className="space-y-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7"
       >
-        {/* Title Input */}
-        <div>
-          <label className="block text-sm font-bold text-slate-800 dark:text-slate-200">
-            Meetup Title
-          </label>
-          <input
-            type="text"
-            placeholder={
-              mode === "friends"
-                ? "e.g. Friday Lunch with Squad"
-                : "e.g. Engineering Team Lunch @ BKK"
-            }
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-          />
+        <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
+          <div>
+            <label className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Meetup title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Lunch near Phnom Penh"
+              className="mt-2 h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              Voting window
+            </label>
+            <select
+              value={durationMinutes}
+              onChange={(event) =>
+                setDurationMinutes(getNumberValue(event.target.value, 120))
+              }
+              className="mt-2 h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            >
+              <option value={30}>30 minutes</option>
+              <option value={60}>1 hour</option>
+              <option value={120}>2 hours</option>
+              <option value={1440}>24 hours</option>
+            </select>
+          </div>
         </div>
 
-        {/* MODE 1: Friends Selection Checklist */}
-        {mode === "friends" && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                Select Friends to Invite ({selectedFriendUuids.length} selected)
+        <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/50">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-black text-slate-900 dark:text-white">
+                Location mode
+              </p>
+              <p className="text-xs text-slate-500">
+                Choose a neighborhood or pick a precise meeting point.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1 rounded-xl bg-white p-1 shadow-xs dark:bg-slate-900">
+              {[
+                { value: "area", label: "Area" },
+                { value: "pin", label: "Pin" },
+              ].map((item) => (
+                <button
+                  type="button"
+                  key={item.value}
+                  onClick={() => setLocationMode(item.value as MeetupLocationMode)}
+                  className={`min-h-10 rounded-lg px-4 text-sm font-bold transition ${
+                    locationMode === item.value
+                      ? "bg-emerald-600 text-white"
+                      : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {locationMode === "area" ? (
+            <div className="grid gap-3 md:grid-cols-3">
+              <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                Target area
+                <input
+                  value={targetAreaName}
+                  onChange={(event) => setTargetAreaName(event.target.value)}
+                  className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                />
               </label>
-              <span className="text-xs text-slate-400">
-                Dietary profiles auto-attached
+              <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                City
+                <input
+                  value={targetCity}
+                  onChange={(event) => setTargetCity(event.target.value)}
+                  className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                Province
+                <input
+                  value={targetProvince}
+                  onChange={(event) => setTargetProvince(event.target.value)}
+                  className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                />
+              </label>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                <LocationPickerMap
+                  value={pin}
+                  selectedPlace={pinPlace}
+                  onChange={setPin}
+                />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Latitude
+                  <input
+                    type="number"
+                    step="0.000001"
+                    value={pin.latitude}
+                    onChange={(event) =>
+                      setPin((current) => ({
+                        ...current,
+                        latitude: getNumberValue(event.target.value, current.latitude),
+                      }))
+                    }
+                    className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  />
+                </label>
+                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Longitude
+                  <input
+                    type="number"
+                    step="0.000001"
+                    value={pin.longitude}
+                    onChange={(event) =>
+                      setPin((current) => ({
+                        ...current,
+                        longitude: getNumberValue(event.target.value, current.longitude),
+                      }))
+                    }
+                    className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={isGettingGps}
+                  className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-100 px-4 text-sm font-bold text-emerald-800 transition hover:bg-emerald-200 disabled:cursor-wait disabled:opacity-70 dark:bg-emerald-950 dark:text-emerald-300"
+                >
+                  {isGettingGps ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Navigation className="h-4 w-4" />
+                  )}
+                  Use current
+                </button>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Search radius
+                </p>
+                <div className="mt-2 grid grid-cols-5 gap-2">
+                  {RADIUS_OPTIONS.map((radius) => (
+                    <button
+                      type="button"
+                      key={radius}
+                      onClick={() => setSearchRadiusKm(radius)}
+                      className={`min-h-10 rounded-xl text-sm font-bold transition ${
+                        searchRadiusKm === radius
+                          ? "bg-emerald-600 text-white"
+                          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                      }`}
+                    >
+                      {radius}km
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {mode === "friends" ? (
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-black text-slate-900 dark:text-white">
+                  Invite FoodHub friends
+                </p>
+                <p className="text-xs text-slate-500">
+                  Only selected friends can join this room.
+                </p>
+              </div>
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                {selectedFriendUuids.length} selected
               </span>
             </div>
 
             {isLoadingFriends ? (
-              <div className="flex h-36 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+              <div className="flex min-h-32 items-center justify-center rounded-2xl border border-slate-200">
+                <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
               </div>
             ) : friends.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500 dark:border-slate-800">
-                You haven&apos;t added any friends yet. Add friends on the Friends page or use Mode 2 to invite via link!
+              <div className="rounded-2xl border border-dashed border-slate-300 p-5 text-sm text-slate-500">
+                No FoodHub friends found yet. Use Guest mode to create a public invite link.
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-h-80 overflow-y-auto pr-1">
+              <div className="grid max-h-80 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3">
                 {friends.map((friend) => {
                   const isSelected = selectedFriendUuids.includes(friend.userUuid);
+
                   return (
                     <button
                       type="button"
                       key={friend.friendshipUuid}
                       onClick={() => toggleFriend(friend.userUuid)}
-                      className={`flex items-start gap-3 rounded-2xl border p-3.5 text-left transition ${
+                      className={`flex min-h-24 items-start gap-3 rounded-2xl border p-4 text-left transition ${
                         isSelected
-                          ? "border-emerald-600 bg-emerald-50/70 shadow-xs dark:border-emerald-500 dark:bg-emerald-950/40"
-                          : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900"
+                          ? "border-emerald-600 bg-emerald-50 shadow-xs dark:bg-emerald-950/40"
+                          : "border-slate-200 bg-white hover:border-emerald-200 dark:border-slate-800 dark:bg-slate-900"
                       }`}
                     >
-                      <div
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border mt-0.5 transition ${
+                      <span
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border ${
                           isSelected
                             ? "border-emerald-600 bg-emerald-600 text-white"
                             : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800"
                         }`}
                       >
                         {isSelected && <Check className="h-4 w-4" />}
-                      </div>
+                      </span>
 
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-bold text-sm text-slate-900 dark:text-white">
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-black text-slate-900 dark:text-white">
                           @{friend.username}
-                        </p>
-                        <div className="mt-1 flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400">
-                          <Shield className="h-3 w-3 shrink-0" />
+                        </span>
+                        <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                          <Shield className="h-3.5 w-3.5" />
                           <span className="truncate">
-                            {friend.defaultProfileName || "Standard Profile"}
+                            {friend.defaultProfileName || "Default active profile"}
                           </span>
-                        </div>
-                      </div>
+                        </span>
+                      </span>
                     </button>
                   );
                 })}
               </div>
             )}
+          </section>
+        ) : (
+          <section className="grid gap-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 dark:border-emerald-900 dark:bg-emerald-950/20 sm:grid-cols-[1fr_220px]">
+            <div>
+              <p className="text-sm font-black text-slate-900 dark:text-white">
+                Guest invite capacity
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                FoodHub reserves one host seat plus the guest count.
+              </p>
+            </div>
+
+            <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              Expected guests
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={expectedGuestCount}
+                onChange={(event) =>
+                  setExpectedGuestCount(
+                    Math.max(1, getNumberValue(event.target.value, 1)),
+                  )
+                }
+                className="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              />
+            </label>
+          </section>
+        )}
+
+        {errorMessage && (
+          <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+            {errorMessage}
           </div>
         )}
 
-        {/* MODE 2: Casual Team / Guest Link Controls */}
-        {mode === "guest" && (
-          <div className="space-y-6 rounded-2xl border border-slate-200/90 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-950/40">
-            {/* Central Meeting Pin & GPS */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-emerald-600" />
-                  Central Meeting Point
-                </label>
-                <button
-                  type="button"
-                  onClick={handleGetCurrentLocation}
-                  disabled={isGettingGps}
-                  className="flex items-center gap-1.5 rounded-xl bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300"
-                >
-                  {isGettingGps ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Navigation className="h-3 w-3" />
-                  )}
-                  Use Current GPS
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
-                <Compass className="h-4 w-4 text-slate-400" />
-                <span>
-                  Pinned: {locationName} ({locationLat.toFixed(4)}, {locationLng.toFixed(4)})
-                </span>
-              </div>
-            </div>
-
-            {/* Radius Slider */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm font-bold text-slate-800 dark:text-slate-200">
-                <span>Search Radius</span>
-                <span className="text-emerald-600 dark:text-emerald-400">{searchRadiusKm} km</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 5, 10].map((r) => (
-                  <button
-                    type="button"
-                    key={r}
-                    onClick={() => setSearchRadiusKm(r)}
-                    className={`flex-1 rounded-xl py-2 text-xs font-bold transition ${
-                      searchRadiusKm === r
-                        ? "bg-emerald-600 text-white shadow-xs"
-                        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
-                    }`}
-                  >
-                    {r}km
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Duration Selector */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm font-bold text-slate-800 dark:text-slate-200">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-emerald-600" />
-                  Voting Duration
-                </span>
-                <span className="text-xs text-slate-500">
-                  {durationMinutes === 0 ? "Manual finish by host" : `${durationMinutes} minutes`}
-                </span>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { label: "15 min", val: 15 },
-                  { label: "30 min", val: 30 },
-                  { label: "1 hour", val: 60 },
-                  { label: "Manual", val: 0 },
-                ].map((item) => (
-                  <button
-                    type="button"
-                    key={item.val}
-                    onClick={() => setDurationMinutes(item.val)}
-                    className={`rounded-xl py-2 text-xs font-bold transition ${
-                      durationMinutes === item.val
-                        ? "bg-emerald-600 text-white shadow-xs"
-                        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Voting Method */}
-        <div className="space-y-2">
-          <label className="block text-sm font-bold text-slate-800 dark:text-slate-200">
-            Voting Method
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: "SINGLE_PICK", label: "Single Pick (👍)" },
-              { id: "APPROVAL", label: "Approval (👍/👎)" },
-              { id: "RANKED", label: "Ranked Choice (❤️)" },
-            ].map((m) => (
-              <button
-                type="button"
-                key={m.id}
-                onClick={() => setVotingMethod(m.id as "SINGLE_PICK" | "APPROVAL" | "RANKED")}
-                className={`rounded-2xl border p-3 text-center text-xs font-bold transition ${
-                  votingMethod === m.id
-                    ? "border-emerald-600 bg-emerald-50 text-emerald-800 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-300 shadow-xs"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Submit Button */}
         <button
           type="submit"
-          disabled={isCreating}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-4 text-base font-bold text-white shadow-lg transition hover:bg-emerald-700 active:scale-98 disabled:opacity-50"
+          disabled={isCreating || isLoadingUser}
+          className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-4 text-base font-black text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
         >
-          {isCreating ? (
+          {isCreating || isLoadingUser ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" /> Creating Meetup...
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Creating meetup...
             </>
           ) : (
             <>
               <Sparkles className="h-5 w-5" />
-              {mode === "friends" ? "Launch Friends Meetup" : "Generate Guest Link & Room"}
+              {mode === "friends" ? "Create Friend Meetup" : "Create Guest Meetup"}
             </>
           )}
         </button>
       </form>
 
-      {/* Share / Room Modal */}
       {createdMeetup && (
         <Dialog open={Boolean(createdMeetup)} onOpenChange={() => setCreatedMeetup(null)}>
           <DialogContent className="max-w-md rounded-3xl bg-white p-6 dark:bg-slate-900 sm:p-8">
             <DialogHeader className="text-center">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                <CheckCircle2 className="h-6 w-6" />
               </div>
               <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
-                Meetup Room Created!
+                Meetup created
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">
-                Share this invite link with your members or join the live voting room right now.
+              <DialogDescription className="text-sm text-slate-500">
+                Copy the invite link from the returned share token.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 my-4">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Invite Link
-                </span>
-                <p className="mt-1 font-mono text-xs font-bold text-slate-800 truncate dark:text-slate-200">
-                  {shareUrl}
-                </p>
-              </div>
+            <div className="my-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">
+                Invite link
+              </span>
+              <p className="mt-1 truncate font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
+                {shareUrl}
+              </p>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                >
-                  {copiedLink ? (
-                    <>
-                      <Check className="h-4 w-4 text-emerald-600" /> Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" /> Copy Link
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleShareTelegram}
-                  className="flex items-center justify-center gap-2 rounded-2xl bg-[#229ED9] py-3 text-xs font-bold text-white shadow-xs transition hover:bg-[#1f8fc4]"
-                >
-                  <Send className="h-4 w-4" /> Share to Telegram
-                </button>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+              >
+                {copiedLink ? (
+                  <>
+                    <Check className="h-4 w-4 text-emerald-600" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    Copy
+                  </>
+                )}
+              </button>
 
               <button
                 type="button"
-                onClick={() => router.push(`/meet/${createdMeetup.shareToken}`)}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700"
+                onClick={handleShareTelegram}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[#229ED9] px-4 text-sm font-bold text-white transition hover:bg-[#1f8fc4]"
               >
-                Enter Live Voting Room &rarr;
+                <Send className="h-4 w-4" />
+                Telegram
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => router.push(`/meet/${createdMeetup.shareToken}`)}
+              className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-emerald-700"
+            >
+              Open voting room
+            </button>
           </DialogContent>
         </Dialog>
       )}

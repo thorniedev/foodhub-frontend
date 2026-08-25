@@ -14,6 +14,7 @@ import {
   Trophy,
   Navigation,
 } from "lucide-react";
+import { formatPhnomPenhDate } from "@/lib/formatDate";
 
 interface MeetupHistoryItem {
   uuid: string;
@@ -86,6 +87,7 @@ function readSavedMeetupHistory(): MeetupHistoryItem[] {
       try {
         const parsed = JSON.parse(raw) as Partial<MeetupHistoryItem> & {
           inviteMode?: string;
+          audienceMode?: string;
         };
 
         if (typeof parsed.uuid !== "string" || !parsed.uuid) {
@@ -102,7 +104,10 @@ function readSavedMeetupHistory(): MeetupHistoryItem[] {
             typeof parsed.title === "string" && parsed.title
               ? parsed.title
               : "ការណាត់ញ៉ាំអាហារ",
-          mode: parsed.inviteMode === "GUEST_LINK" ? "GUEST_LINK" : "FRIENDS",
+          mode:
+            parsed.audienceMode === "GUESTS" || parsed.inviteMode === "GUEST_LINK"
+              ? "GUEST_LINK"
+              : "FRIENDS",
           status:
             parsed.status === "DECIDED" ||
             parsed.status === "COLLECTING" ||
@@ -169,7 +174,7 @@ export default function DashboardMeetupHistoryPage() {
         </div>
 
         <Link
-          href="/menu/location"
+          href="/meetup/create"
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-800 active:scale-98 shrink-0"
         >
           <Plus className="h-4 w-4" />
@@ -219,7 +224,7 @@ export default function DashboardMeetupHistoryPage() {
             ចូលទៅកាន់ផ្ទាំងទីតាំង ដើម្បីចាប់ផ្តើមបង្កើតការណាត់ជួបញ៉ាំអាហារជាមួយមិត្តភក្តិ ឬផ្ញើតំណភ្ញៀវ!
           </p>
           <Link
-            href="/menu/location"
+            href="/meetup/create"
             className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-800"
           >
             <Plus className="h-4 w-4" /> ចាប់ផ្តើមឥឡូវនេះ
@@ -275,7 +280,7 @@ export default function DashboardMeetupHistoryPage() {
 
                   <span className="text-xs text-slate-400 flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
-                    {new Date(item.createdAt).toLocaleDateString("km-KH")}
+                    {formatPhnomPenhDate(item.createdAt)}
                   </span>
                 </div>
 
@@ -331,7 +336,13 @@ export default function DashboardMeetupHistoryPage() {
               <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  onClick={() => router.push(`/meet/${item.shareToken}`)}
+                  onClick={() =>
+                    router.push(
+                      item.status === "DECIDED"
+                        ? `/meetup/result/${item.shareToken}`
+                        : `/meet/${item.shareToken}`,
+                    )
+                  }
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 active:scale-98 dark:bg-slate-800 dark:hover:bg-emerald-600"
                 >
                   <Vote className="h-3.5 w-3.5" />

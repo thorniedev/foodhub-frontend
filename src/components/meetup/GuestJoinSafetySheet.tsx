@@ -1,337 +1,589 @@
 "use client";
 
-import React, { useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertCircle,
+  Check,
+  DollarSign,
+  Loader2,
+  MapPin,
+  Navigation,
+  ShieldAlert,
+  Sparkles,
+  User,
+} from "lucide-react";
+
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 import {
   useJoinMeetupParticipantMutation,
   useUpdateMeetupParticipantLocationMutation,
 } from "@/app/store/groupRecommendationApi";
-import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 import {
-  ShieldAlert,
-  Sparkles,
-  MapPin,
-  Check,
-  Loader2,
-  Navigation,
-  DollarSign,
-  AlertCircle,
-  User,
-} from "lucide-react";
+  useGetAllergenOptionsQuery,
+  useGetDietaryTypeOptionsQuery,
+  useGetMemberProfilesQuery,
+} from "@/app/store/memberProfileApi";
+import {
+  saveStoredMeetupSession,
+  type StoredMeetupSession,
+} from "@/lib/meetup/meetup-session";
+import type { SafetyOption } from "@/types/member-profile/member-profile";
+import type {
+  MeetupAudienceMode,
+  MeetupLocationMode,
+} from "@/types/meetup-api";
 
 interface GuestJoinSafetySheetProps {
   shareToken: string;
+  meetupUuid?: string | null;
   meetupTitle?: string;
-  hostMeetingPointLat?: number | null;
-  hostMeetingPointLng?: number | null;
-  onJoined: (participantUuid: string) => void;
+  audienceMode?: MeetupAudienceMode | null;
+  guestAllowed?: boolean;
+  locationMode?: MeetupLocationMode | null;
+  targetAreaName?: string | null;
+  targetCity?: string | null;
+  targetProvince?: string | null;
+  onJoined: (session: StoredMeetupSession) => void;
 }
 
-const DIETARY_CHIPS = [
-  { id: "NO_PORK", label: "No Pork (គ្មានសាច់ជ្រូក)" },
-  { id: "HALAL", label: "Halal (ហាឡាល់)" },
-  { id: "VEGETARIAN", label: "Vegetarian (បួស)" },
-  { id: "VEGAN", label: "Vegan" },
-  { id: "NO_BEEF", label: "No Beef (គ្មានសាច់គោ)" },
+const FALLBACK_DIETARY_OPTIONS: SafetyOption[] = [
+  { uuid: "HALAL", code: "HALAL", name: "Halal", localName: "ហាឡាល់" },
+  { uuid: "VEGETARIAN", code: "VEGETARIAN", name: "Vegetarian", localName: "បួស" },
+  { uuid: "VEGAN", code: "VEGAN", name: "Vegan" },
+  { uuid: "NO_PORK", code: "NO_PORK", name: "No pork", localName: "គ្មានសាច់ជ្រូក" },
+  { uuid: "NO_BEEF", code: "NO_BEEF", name: "No beef", localName: "គ្មានសាច់គោ" },
 ];
 
-const ALLERGY_CHIPS = [
-  { id: "PEANUT", label: "Peanut (សណ្តែកដី)" },
-  { id: "SEAFOOD", label: "Seafood (គ្រឿងសមុទ្រ)" },
-  { id: "DAIRY", label: "Dairy (ទឹកដោះគោ)" },
-  { id: "GLUTEN", label: "Gluten" },
-  { id: "EGG", label: "Egg (ស៊ុត)" },
+const FALLBACK_ALLERGEN_OPTIONS: SafetyOption[] = [
+  { uuid: "PEANUT", code: "PEANUT", name: "Peanut", localName: "សណ្តែកដី" },
+  { uuid: "SEAFOOD", code: "SEAFOOD", name: "Seafood", localName: "គ្រឿងសមុទ្រ" },
+  { uuid: "DAIRY", code: "DAIRY", name: "Dairy", localName: "ទឹកដោះគោ" },
+  { uuid: "GLUTEN", code: "GLUTEN", name: "Gluten" },
+  { uuid: "EGG", code: "EGG", name: "Egg", localName: "ស៊ុត" },
 ];
 
-const BUDGET_OPTIONS = [
-  { id: "BUDGET_1_5", label: "$1 - $5 (Street / Standard)" },
-  { id: "BUDGET_5_15", label: "$5 - $15 (Casual Dining)" },
-  { id: "BUDGET_15_PLUS", label: "$15+ (Special / Premium)" },
-];
+function getOptionLabel(option: SafetyOption): string {
+  return option.localName || option.name || option.code;
+}
+
+function toggleValue(values: string[], value: string): string[] {
+  return values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
+}
+
+function toBudgetRange(min: number | null, max: number | null): string | null {
+  if (min === null && max === null) {
+    return null;
+  }
+
+  if (min !== null && max !== null) {
+    return `${min}-${max}`;
+  }
+
+  return min !== null ? `${min}+` : `0-${max}`;
+}
+
+function getNumericInput(value: string): number | null {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
 
 export default function GuestJoinSafetySheet({
   shareToken,
-  meetupTitle = "Group Meetup",
-  hostMeetingPointLat,
-  hostMeetingPointLng,
+  meetupUuid,
+  meetupTitle = "FoodHub meetup",
+  audienceMode,
+  guestAllowed,
+  locationMode,
+  targetAreaName,
+  targetCity,
+  targetProvince,
   onJoined,
 }: GuestJoinSafetySheetProps) {
+  const normalizedLocationMode = locationMode === "PIN" ? "PIN" : "AREA";
+  const isFriendRoom = audienceMode === "FRIENDS" && !guestAllowed;
+
   const { data: user } = useGetCurrentUserQuery();
+  const { data: profilePage, isLoading: isLoadingProfiles } =
+    useGetMemberProfilesQuery(undefined, {
+      skip: !user,
+    });
+  const { data: allergenPage } = useGetAllergenOptionsQuery();
+  const { data: dietaryPage } = useGetDietaryTypeOptionsQuery();
 
-  const [nickname, setNickname] = useState(
-    user?.username || user?.firstName || "",
-  );
-  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
-  const [allergies, setAllergies] = useState<string[]>([]);
-  const [budgetRange, setBudgetRange] = useState<string>("BUDGET_5_15");
-
-  const [locationChoice, setLocationChoice] = useState<"gps" | "host">("host");
-  const [userLat, setUserLat] = useState<number | null>(hostMeetingPointLat ?? 11.5564);
-  const [userLng, setUserLng] = useState<number | null>(hostMeetingPointLng ?? 104.9282);
-  const [isGettingGps, setIsGettingGps] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const [joinMeetupParticipant, { isLoading: isJoining }] = useJoinMeetupParticipantMutation();
+  const [joinMeetupParticipant, { isLoading: isJoining }] =
+    useJoinMeetupParticipantMutation();
   const [updateLocation] = useUpdateMeetupParticipantLocationMutation();
 
-  const toggleDietary = (id: string) => {
-    setDietaryRestrictions((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
+  const profiles = useMemo(
+    () => (profilePage?.contents ?? []).filter((profile) => profile.isActive),
+    [profilePage?.contents],
+  );
+  const allergenOptions =
+    allergenPage?.contents && allergenPage.contents.length > 0
+      ? allergenPage.contents
+      : FALLBACK_ALLERGEN_OPTIONS;
+  const dietaryOptions =
+    dietaryPage?.contents && dietaryPage.contents.length > 0
+      ? dietaryPage.contents
+      : FALLBACK_DIETARY_OPTIONS;
 
-  const toggleAllergy = (id: string) => {
-    setAllergies((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
+  const [selectedProfileUuid, setSelectedProfileUuid] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [areaName, setAreaName] = useState(targetAreaName || "Phnom Penh");
+  const [city, setCity] = useState(targetCity || "Phnom Penh");
+  const [province, setProvince] = useState(targetProvince || "Phnom Penh");
+  const [locationLat, setLocationLat] = useState<number | null>(null);
+  const [locationLng, setLocationLng] = useState<number | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [dietaryTypes, setDietaryTypes] = useState<string[]>([]);
+  const [budgetMin, setBudgetMin] = useState<number | null>(2);
+  const [budgetMax, setBudgetMax] = useState<number | null>(8);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleShareGps = () => {
+  useEffect(() => {
+    setAreaName(targetAreaName || "Phnom Penh");
+    setCity(targetCity || "Phnom Penh");
+    setProvince(targetProvince || "Phnom Penh");
+  }, [targetAreaName, targetCity, targetProvince]);
+
+  useEffect(() => {
+    if (nickname || !user) {
+      return;
+    }
+
+    setNickname(user.username || user.firstName || "");
+  }, [nickname, user]);
+
+  const handleShareLocation = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+      setErrorMessage("Current location is not available in this browser.");
       return;
     }
-    setIsGettingGps(true);
+
+    setIsGettingLocation(true);
+    setErrorMessage(null);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLat(pos.coords.latitude);
-        setUserLng(pos.coords.longitude);
-        setLocationChoice("gps");
-        setIsGettingGps(false);
+      (position) => {
+        setLocationLat(position.coords.latitude);
+        setLocationLng(position.coords.longitude);
+        setIsGettingLocation(false);
       },
-      (err) => {
-        console.warn("GPS error:", err);
-        setIsGettingGps(false);
-        alert("Could not access GPS. Using host's meeting point.");
+      () => {
+        setErrorMessage("Please allow location to join this pin-based meetup.");
+        setIsGettingLocation(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 },
+      {
+        enableHighAccuracy: true,
+        timeout: 12_000,
+      },
     );
   };
 
-  const handleJoin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nickname.trim()) {
-      setErrorMessage("Please enter a nickname to join.");
+  const handleJoin = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setErrorMessage(null);
+
+    if (isFriendRoom && !user) {
+      setErrorMessage("Please sign in to join this friend meetup.");
       return;
     }
 
-    setErrorMessage(null);
+    if (!isFriendRoom && !nickname.trim()) {
+      setErrorMessage("Enter a nickname to join as a guest.");
+      return;
+    }
+
+    if (
+      normalizedLocationMode === "PIN" &&
+      (locationLat === null || locationLng === null)
+    ) {
+      setErrorMessage("Please allow current location before joining.");
+      return;
+    }
+
+    if (
+      normalizedLocationMode === "AREA" &&
+      (!areaName.trim() || !city.trim() || !province.trim())
+    ) {
+      setErrorMessage("Please provide area, city, and province.");
+      return;
+    }
+
+    if (
+      budgetMin !== null &&
+      budgetMax !== null &&
+      budgetMin > budgetMax
+    ) {
+      setErrorMessage("Budget minimum cannot be higher than budget maximum.");
+      return;
+    }
+
+    const joinMode = isFriendRoom ? "FRIEND" : "GUEST";
+    const displayName =
+      joinMode === "FRIEND"
+        ? nickname.trim() || user?.username || user?.firstName || "FoodHub member"
+        : nickname.trim();
+    const profileSnapshot =
+      joinMode === "GUEST"
+        ? {
+            nickname: displayName,
+            allergies,
+            dietaryTypes,
+            budgetMin,
+            budgetMax,
+          }
+        : undefined;
+
     try {
-      const joinRes = await joinMeetupParticipant({
+      const participant = await joinMeetupParticipant({
         shareToken,
-        nickname: nickname.trim(),
-        dietaryRestrictions,
-        allergies,
-        budgetRange,
-        locationLat: userLat,
-        locationLng: userLng,
+        nickname: displayName,
+        guestNickname: joinMode === "GUEST" ? displayName : undefined,
+        profileUuid: selectedProfileUuid || undefined,
+        locationMode: normalizedLocationMode,
+        ...(normalizedLocationMode === "PIN"
+          ? {
+              locationLat,
+              locationLng,
+            }
+          : {
+              targetAreaName: areaName.trim(),
+              targetCity: city.trim(),
+              targetProvince: province.trim(),
+            }),
+        ...(joinMode === "GUEST"
+          ? {
+              allergies,
+              dietaryTypes,
+              dietaryRestrictions: dietaryTypes,
+              budgetMin,
+              budgetMax,
+              budgetRange: toBudgetRange(budgetMin, budgetMax),
+              profileSnapshot,
+              contextData: {
+                profileSnapshot,
+              },
+            }
+          : {}),
       }).unwrap();
 
-      const participantUuid = joinRes.uuid || `p-${Date.now()}`;
-
-      // Store in localStorage for guest persistence
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`fh_guest_token_${shareToken}`, participantUuid);
-        localStorage.setItem(`fh_participant_uuid`, participantUuid);
-        localStorage.setItem(`fh_nickname`, nickname.trim());
+      if (!participant.uuid) {
+        setErrorMessage("The backend did not return a participant id.");
+        return;
       }
 
-      // If user chose GPS, update participant location
-      if (locationChoice === "gps" && userLat && userLng) {
-        try {
-          await updateLocation({
-            participantUuid,
-            body: { locationLat: userLat, locationLng: userLng },
-          });
-        } catch {
-          // ignore
-        }
+      try {
+        await updateLocation({
+          participantUuid: participant.uuid,
+          meetupUuid: meetupUuid ?? participant.meetupUuid ?? undefined,
+          body:
+            normalizedLocationMode === "PIN"
+              ? {
+                  locationLat,
+                  locationLng,
+                }
+              : {
+                  targetAreaName: areaName.trim(),
+                  targetCity: city.trim(),
+                  targetProvince: province.trim(),
+                },
+        }).unwrap();
+      } catch (locationError) {
+        console.warn("Participant location update skipped:", locationError);
       }
 
-      onJoined(participantUuid);
-    } catch (err: unknown) {
-      console.error("Failed to join meetup:", err);
-      // Fallback for seamless UX
-      const fallbackUuid = `p-${Date.now()}`;
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`fh_guest_token_${shareToken}`, fallbackUuid);
-        localStorage.setItem(`fh_participant_uuid`, fallbackUuid);
-        localStorage.setItem(`fh_nickname`, nickname.trim());
-      }
-      onJoined(fallbackUuid);
+      const storedSession: StoredMeetupSession = {
+        participantUuid: participant.uuid,
+        guestToken: participant.guestToken ?? null,
+        profileUuid: selectedProfileUuid || participant.profileUuid || null,
+        nickname: displayName,
+        joinMode,
+        locationMode: normalizedLocationMode,
+        targetAreaName: normalizedLocationMode === "AREA" ? areaName.trim() : null,
+        targetCity: normalizedLocationMode === "AREA" ? city.trim() : null,
+        targetProvince: normalizedLocationMode === "AREA" ? province.trim() : null,
+        locationLat,
+        locationLng,
+        allergies,
+        dietaryTypes,
+        budgetMin,
+        budgetMax,
+        profileSnapshot,
+      };
+
+      saveStoredMeetupSession(shareToken, storedSession);
+      onJoined(storedSession);
+    } catch (error) {
+      console.error("Failed to join meetup:", error);
+      setErrorMessage("FoodHub could not join this meetup. Please try again.");
     }
   };
 
+  if (isFriendRoom && !user) {
+    return (
+      <div className="mx-auto w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950">
+          <User className="h-7 w-7" />
+        </div>
+        <h2 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">
+          Sign in to join
+        </h2>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+          This invite is for FoodHub friends. Sign in, choose a profile, then
+          join the vote.
+        </p>
+        <Link
+          href={`/login?returnTo=${encodeURIComponent(`/meet/${shareToken}`)}`}
+          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-2xl bg-emerald-600 px-6 text-sm font-black text-white shadow-md transition hover:bg-emerald-700"
+        >
+          Sign in
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto w-full max-w-xl rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 shadow-xs">
+    <div className="mx-auto w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-7">
+      <div className="space-y-2 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950">
           <Sparkles className="h-7 w-7" />
         </div>
         <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-          Join &ldquo;{meetupTitle}&rdquo;
+          Join {meetupTitle}
         </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Set your dietary needs and budget in 5 seconds to get personalized food suggestions!
+        <p className="mx-auto max-w-md text-sm leading-6 text-slate-500">
+          Add the safety and location details FoodHub needs before showing food
+          choices.
         </p>
       </div>
 
-      <form onSubmit={handleJoin} className="mt-8 space-y-6">
-        {/* Nickname Input */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Your Nickname
-          </label>
-          <div className="relative mt-2">
-            <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="e.g. Dara, Alex, Sophea..."
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-10 pr-4 text-sm font-medium text-slate-900 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            />
-          </div>
-        </div>
+      <form onSubmit={handleJoin} className="mt-7 space-y-6">
+        {isFriendRoom ? (
+          <section className="space-y-3">
+            <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
+              FoodHub profile
+              <select
+                value={selectedProfileUuid}
+                onChange={(event) => setSelectedProfileUuid(event.target.value)}
+                disabled={isLoadingProfiles}
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              >
+                <option value="">Use default active profile</option>
+                {profiles.map((profile) => (
+                  <option key={profile.uuid} value={profile.uuid}>
+                    {profile.profileName}
+                    {profile.isDefault ? " - Default" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        {/* 1. Dietary Restrictions Chips */}
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
-            Dietary Preferences (ចំណូលចិត្តអាហារ)
-          </div>
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            {DIETARY_CHIPS.map((chip) => {
-              const isSelected = dietaryRestrictions.includes(chip.id);
-              return (
-                <button
-                  type="button"
-                  key={chip.id}
-                  onClick={() => toggleDietary(chip.id)}
-                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition ${
-                    isSelected
-                      ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
-                      : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300"
-                  }`}
-                >
-                  {isSelected && <Check className="h-3 w-3" />}
-                  <span>{chip.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+            {profiles.length === 0 && !isLoadingProfiles && (
+              <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                No active profile found. FoodHub will ask the backend to use
+                your default active profile.
+              </p>
+            )}
+          </section>
+        ) : (
+          <section>
+            <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
+              Guest nickname
+              <div className="relative mt-2">
+                <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  value={nickname}
+                  onChange={(event) => setNickname(event.target.value)}
+                  placeholder="Your nickname"
+                  className="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-10 pr-4 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                />
+              </div>
+            </label>
+          </section>
+        )}
 
-        {/* 2. Allergy Chips */}
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-            <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
-            Allergies & Sensitivities (អាឡែរហ្ស៊ី)
-          </div>
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            {ALLERGY_CHIPS.map((chip) => {
-              const isSelected = allergies.includes(chip.id);
-              return (
-                <button
-                  type="button"
-                  key={chip.id}
-                  onClick={() => toggleAllergy(chip.id)}
-                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition ${
-                    isSelected
-                      ? "border-amber-600 bg-amber-600 text-white shadow-xs"
-                      : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300"
-                  }`}
-                >
-                  {isSelected && <Check className="h-3 w-3" />}
-                  <span>{chip.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 3. Budget Selector */}
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-            <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
-            Target Budget per Person
-          </div>
-          <div className="mt-2.5 grid grid-cols-3 gap-2">
-            {BUDGET_OPTIONS.map((opt) => (
+        {normalizedLocationMode === "PIN" ? (
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white">
+                  <Navigation className="h-4 w-4 text-emerald-600" />
+                  Current location
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Pin-based meetups need your current position.
+                </p>
+              </div>
               <button
                 type="button"
-                key={opt.id}
-                onClick={() => setBudgetRange(opt.id)}
-                className={`rounded-2xl border p-2.5 text-center text-xs font-bold transition ${
-                  budgetRange === opt.id
-                    ? "border-emerald-600 bg-emerald-50 text-emerald-800 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-300 shadow-xs"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
-                }`}
+                onClick={handleShareLocation}
+                disabled={isGettingLocation}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 text-sm font-black text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-70"
               >
-                {opt.label}
+                {isGettingLocation ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MapPin className="h-4 w-4" />
+                )}
+                Allow location
               </button>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* 4. Live GPS vs Host Location Choice */}
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60 space-y-3">
-          <span className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Meeting Point Location
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setLocationChoice("host")}
-              className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-bold transition ${
-                locationChoice === "host"
-                  ? "border-emerald-600 bg-white text-emerald-800 shadow-xs dark:bg-slate-900 dark:text-emerald-300"
-                  : "border-slate-200 bg-transparent text-slate-600 dark:border-slate-800 dark:text-slate-400"
-              }`}
-            >
-              <MapPin className="h-3.5 w-3.5" />
-              Use Host Pin
-            </button>
+            {locationLat !== null && locationLng !== null && (
+              <p className="mt-3 rounded-xl bg-white px-3 py-2 font-mono text-xs font-semibold text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+                {locationLat.toFixed(6)}, {locationLng.toFixed(6)}
+              </p>
+            )}
+          </section>
+        ) : (
+          <section className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60 sm:grid-cols-3">
+            <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              Area
+              <input
+                value={areaName}
+                onChange={(event) => setAreaName(event.target.value)}
+                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              />
+            </label>
+            <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              City
+              <input
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              />
+            </label>
+            <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              Province
+              <input
+                value={province}
+                onChange={(event) => setProvince(event.target.value)}
+                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              />
+            </label>
+          </section>
+        )}
 
-            <button
-              type="button"
-              onClick={handleShareGps}
-              disabled={isGettingGps}
-              className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-bold transition ${
-                locationChoice === "gps"
-                  ? "border-emerald-600 bg-emerald-600 text-white shadow-xs"
-                  : "border-slate-200 bg-transparent text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-400"
-              }`}
-            >
-              {isGettingGps ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Navigation className="h-3.5 w-3.5" />
-              )}
-              Share My GPS
-            </button>
-          </div>
-        </div>
+        {!isFriendRoom && (
+          <section className="space-y-5">
+            <div>
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-emerald-700">
+                <Sparkles className="h-3.5 w-3.5" />
+                Dietary types
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {dietaryOptions.map((option) => {
+                  const value = option.code || option.uuid;
+                  const isSelected = dietaryTypes.includes(value);
+
+                  return (
+                    <button
+                      type="button"
+                      key={value}
+                      onClick={() => setDietaryTypes((current) => toggleValue(current, value))}
+                      className={`inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition ${
+                        isSelected
+                          ? "border-emerald-600 bg-emerald-600 text-white"
+                          : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
+                      }`}
+                    >
+                      {isSelected && <Check className="h-3.5 w-3.5" />}
+                      {getOptionLabel(option)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-700">
+                <ShieldAlert className="h-3.5 w-3.5" />
+                Allergies
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {allergenOptions.map((option) => {
+                  const value = option.code || option.uuid;
+                  const isSelected = allergies.includes(value);
+
+                  return (
+                    <button
+                      type="button"
+                      key={value}
+                      onClick={() => setAllergies((current) => toggleValue(current, value))}
+                      className={`inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition ${
+                        isSelected
+                          ? "border-amber-600 bg-amber-600 text-white"
+                          : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
+                      }`}
+                    >
+                      {isSelected && <Check className="h-3.5 w-3.5" />}
+                      {getOptionLabel(option)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                Budget min
+                <div className="relative mt-2">
+                  <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.5"
+                    value={budgetMin ?? ""}
+                    onChange={(event) => setBudgetMin(getNumericInput(event.target.value))}
+                    className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  />
+                </div>
+              </label>
+              <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                Budget max
+                <div className="relative mt-2">
+                  <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.5"
+                    value={budgetMax ?? ""}
+                    onChange={(event) => setBudgetMax(getNumericInput(event.target.value))}
+                    className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  />
+                </div>
+              </label>
+            </div>
+          </section>
+        )}
 
         {errorMessage && (
-          <div className="flex items-center gap-2 rounded-2xl bg-rose-50 p-3.5 text-xs font-semibold text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-            <span>{errorMessage}</span>
+          <div className="flex items-center gap-2 rounded-2xl bg-rose-50 p-3.5 text-sm font-semibold text-rose-700">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {errorMessage}
           </div>
         )}
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={isJoining}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-lg transition hover:bg-emerald-700 active:scale-98 disabled:opacity-50"
+          className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
         >
           {isJoining ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Joining Meetup...
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Joining...
             </>
           ) : (
-            "Enter Group Vote Now &rarr;"
+            "Join voting room"
           )}
         </button>
       </form>

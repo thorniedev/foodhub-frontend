@@ -8,7 +8,6 @@ import {
 } from "@/app/store/groupRecommendationApi";
 import { useGetFriendsQuery } from "@/app/store/friendsApi";
 import {
-  useGetCurrentUserQuery,
   useGetBackendUserQuery,
 } from "@/app/store/auth/currentUserApi";
 import type { LocationStore } from "@/types/location-store";
@@ -41,6 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { APP_TIME_ZONE } from "@/lib/formatDate";
 import MobileLocationToolbar from "../MobileLocationToolbar";
 
 const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
@@ -75,7 +75,6 @@ export default function GroupRecommendation({
 }: GroupRecommendationProps) {
   const router = useRouter();
 
-  const { data: user } = useGetCurrentUserQuery();
   const { data: backendUser } = useGetBackendUserQuery();
   const { data: friends = [], isLoading: isLoadingFriends } = useGetFriendsQuery();
 
@@ -153,7 +152,12 @@ export default function GroupRecommendation({
   const handleCreateMeetup = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const currentUserId = backendUser?.id || 1;
+    if (!backendUser?.id) {
+      alert("Please sign in before creating a meetup.");
+      return;
+    }
+
+    const currentUserId = backendUser.id;
     const meetupTitle =
       title.trim() ||
       (activeMode === "friends"
@@ -166,27 +170,39 @@ export default function GroupRecommendation({
 
     const lat = userLocation?.latitude ?? 11.5564;
     const lng = userLocation?.longitude ?? 104.9282;
+    const expectedGuestCount = 4;
 
     try {
       const response = await createMeetup({
         createdByUserId: currentUserId,
         title: meetupTitle,
         votingMethod,
+        audienceMode: activeMode === "friends" ? "FRIENDS" : "GUESTS",
+        locationMode: "PIN",
         searchRadiusKm,
-        timezone: "Asia/Phnom_Penh",
+        timezone: APP_TIME_ZONE,
         expiresAt,
-        meetingPointLat: lat,
-        meetingPointLng: lng,
+        targetLat: lat,
+        targetLng: lng,
         guestAllowed: activeMode === "guest",
         friendUserUuids: activeMode === "friends" ? selectedFriendUuids : [],
+        expectedGuestCount:
+          activeMode === "guest" ? expectedGuestCount : undefined,
+        maxParticipants:
+          activeMode === "guest"
+            ? expectedGuestCount + 1
+            : selectedFriendUuids.length + 1,
         durationMinutes: activeMode === "guest" ? durationMinutes : undefined,
         inviteMode: activeMode === "friends" ? "FRIENDS" : "GUEST_LINK",
       }).unwrap();
 
-      const createdUuid = response.uuid || "new-meetup";
-      const shareToken =
-        response.shareToken ||
-        (createdUuid.includes("-") ? createdUuid.split("-")[0] : createdUuid);
+      if (!response.uuid || !response.shareToken) {
+        alert("Meetup created, but no invite link was returned.");
+        return;
+      }
+
+      const createdUuid = response.uuid;
+      const shareToken = response.shareToken;
 
       // Save to localStorage for Meetup History page
       try {
@@ -196,10 +212,15 @@ export default function GroupRecommendation({
             uuid: createdUuid,
             shareToken,
             title: meetupTitle,
+            audienceMode: activeMode === "friends" ? "FRIENDS" : "GUESTS",
             inviteMode: activeMode === "friends" ? "FRIENDS" : "GUEST_LINK",
+            locationMode: "PIN",
             status: "VOTING",
             createdAt: new Date().toISOString(),
-            participantCount: activeMode === "friends" ? selectedFriendUuids.length + 1 : 1,
+            participantCount:
+              activeMode === "friends"
+                ? selectedFriendUuids.length + 1
+                : expectedGuestCount + 1,
             radiusKm: searchRadiusKm,
           }),
         );
