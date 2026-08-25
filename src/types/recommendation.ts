@@ -47,8 +47,11 @@ export interface SessionResponse {
 export interface RecommendationItemDto {
   uuid: string;
   menuItemId: number;
+  menuItemUuid?: string | null;
+  foodUuid?: string | null;
   menuItemName: string;
   storeId: number;
+  storeUuid?: string | null;
   storeName: string;
   rankPosition: number;
   finalScore: number;
@@ -91,8 +94,11 @@ export interface CreateRecommendationSessionRequest {
 export interface RecommendationItem {
   uuid: string;
   menuItemId?: number;
+  menuItemUuid?: string | null;
+  foodUuid?: string | null;
   menuItemName: string | null;
   storeId?: number;
+  storeUuid?: string | null;
   storeName: string | null;
   rankPosition: number | null;
   finalScore: number | null;

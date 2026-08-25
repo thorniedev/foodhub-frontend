@@ -44,7 +44,7 @@ export default function Footer() {
               <div className="mt-6">
                 <div className="relative h-[80px] w-[160px] max-w-full">
                   <Image
-                    src="/Image/foodhub-logo.png"
+                    src="/Image/logo.png"
                     alt="FoodHub logo"
                     className="object-contain object-left"
                     width={160}

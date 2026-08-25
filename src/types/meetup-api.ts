@@ -282,12 +282,16 @@ export interface MeetupWinningCardResponse {
   meetingPointLng: number | null;
   mapsDirectionsUrl: string; // e.g. "https://www.google.com/maps/dir/?api=1&destination=11.5564,104.9282"
   decidedAt: string | null;
+  storeUuid?: string | null;
   storeName?: string;
   storeAddress?: string;
+  storeLatitude?: number | null;
+  storeLongitude?: number | null;
   foodName?: string;
   foodPhotoUrl?: string;
   rating?: number;
   price?: number;
+  currencyCode?: string | null;
   distanceKm?: number;
 }
 

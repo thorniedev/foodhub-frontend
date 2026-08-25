@@ -153,7 +153,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0">
           <Image
-            src="/Image/foodHub-logo.png"
+            src="/Image/logo.png"
             alt="FoodHub logo"
             width={198}
             height={100}

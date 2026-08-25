@@ -55,21 +55,32 @@ export function useEnrichedRecommendationItems(
 
       setIsEnriching(true);
 
-      const itemsByUuid = new Map(
-        sessionItems.map((item) => [item.uuid, item]),
-      );
+      const itemsByUuid = new Map<string, RecommendationItem>();
+      sessionItems.forEach((item) => {
+        if (item.uuid) {
+          itemsByUuid.set(item.uuid, item);
+        }
+        if (item.menuItemUuid) {
+          itemsByUuid.set(item.menuItemUuid, item);
+        }
+      });
 
       const results = await Promise.all(
-        sessionItems.map((item) =>
-          dispatch(
+        sessionItems.map((item) => {
+          const menuItemUuid = item.menuItemUuid || item.uuid;
+
+          return dispatch(
             menuApi.endpoints.getMenuItemByUuid.initiate({
-              uuid: item.uuid,
+              uuid: menuItemUuid,
               sessionUuid: session.uuid,
             }),
           )
             .unwrap()
             .then((food): EnrichedRecommendationItem => {
-              const sourceItem = itemsByUuid.get(food.uuid);
+              const sourceItem =
+                itemsByUuid.get(food.uuid) ||
+                itemsByUuid.get(menuItemUuid) ||
+                itemsByUuid.get(item.uuid);
               return {
                 ...food,
                 isExploration: sourceItem?.isExploration,
@@ -77,7 +88,7 @@ export function useEnrichedRecommendationItems(
               };
             })
             .catch((): EnrichedRecommendationItem => ({
-              uuid: item.uuid,
+              uuid: menuItemUuid,
               name: item.menuItemName ?? "Recommended dish",
               localName: item.menuItemName ?? null,
               description: null,
@@ -132,8 +143,8 @@ export function useEnrichedRecommendationItems(
               distanceKm: item.distanceKm,
               isExploration: item.isExploration,
               rankPosition: item.rankPosition,
-            } as unknown as EnrichedRecommendationItem)),
-        ),
+            } as unknown as EnrichedRecommendationItem));
+        }),
       );
 
       if (!cancelled) {

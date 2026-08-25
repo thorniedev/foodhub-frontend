@@ -504,13 +504,17 @@ export function normalizeMeetupWinningCardResponse(
       getString(record, ["mapsDirectionsUrl", "directionsUrl", "mapsLink"]) ??
       "",
     decidedAt: getString(record, ["decidedAt", "updatedAt"]),
+    storeUuid: getString(record, ["storeUuid"]) ?? undefined,
     storeName: getString(record, ["storeName"]) ?? undefined,
     storeAddress: getString(record, ["storeAddress", "address"]) ?? undefined,
+    storeLatitude: getNumber(record, ["storeLatitude"]) ?? undefined,
+    storeLongitude: getNumber(record, ["storeLongitude"]) ?? undefined,
     foodName: getString(record, ["foodName", "menuItemName"]) ?? undefined,
     foodPhotoUrl: getString(record, ["foodPhotoUrl", "photoUrl", "imageUrl"]) ??
       undefined,
     rating: getNumber(record, ["rating", "averageRating"]) ?? undefined,
     price: getNumber(record, ["price", "priceSnapshot"]) ?? undefined,
+    currencyCode: getString(record, ["currencyCode"]) ?? undefined,
     distanceKm: getNumber(record, ["distanceKm"]) ?? undefined,
   };
 }

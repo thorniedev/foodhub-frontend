@@ -66,9 +66,19 @@ export default function MeetupWinnerCelebration({
     winningCard.winningCandidateName ||
     "Selected Group Choice";
 
+  const storeSearchUrl =
+    winningCard.storeName || winningCard.storeAddress
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          [winningCard.storeName, winningCard.storeAddress]
+            .filter(Boolean)
+            .join(", "),
+        )}`
+      : "";
+
   const directionsUrl =
     winningCard.mapsDirectionsUrl ||
-    (winningCard.meetingPointLat && winningCard.meetingPointLng
+    storeSearchUrl ||
+    (winningCard.meetingPointLat != null && winningCard.meetingPointLng != null
       ? `https://www.google.com/maps/dir/?api=1&destination=${winningCard.meetingPointLat},${winningCard.meetingPointLng}`
       : "https://www.google.com/maps");
 
@@ -191,7 +201,7 @@ export default function MeetupWinnerCelebration({
             className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 active:scale-98 transition text-base"
           >
             <MapPin className="w-5 h-5 shrink-0" />
-            Open Direct in Google Maps (Turn-by-Turn Directions)
+            បើកផែនទី
           </a>
 
           {/* Secondary Actions */}
