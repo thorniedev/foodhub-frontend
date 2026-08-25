@@ -233,7 +233,7 @@ export default function HostMeetupCreate() {
       new Set(
         mode === "friends"
           ? selectedFriendUuids.filter(
-              (uuid) => uuid && uuid !== user.userUuid,
+              (uuid) => uuid && uuid !== user.uuid,
             )
           : [],
       ),

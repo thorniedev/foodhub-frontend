@@ -158,7 +158,7 @@ export default function GroupRecommendation({
       new Set(
         activeMode === "friends"
           ? selectedFriendUuids.filter(
-              (uuid) => uuid && uuid !== user?.userUuid,
+              (uuid) => uuid && uuid !== user?.uuid,
             )
           : [],
       ),
