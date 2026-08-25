@@ -1,8 +1,6 @@
 export type MeetupVotingMethod =
   | "SINGLE_PICK"
-  | "APPROVAL"
-  | "RANKED"
-  | "RANKED_CHOICE"
+  | "RANKED_BORDA"
   | string;
 
 export type MeetupMeetingPointMethod = "CENTROID" | string;
@@ -214,7 +212,7 @@ export interface MeetupGroupDto {
   createdByUserId: number;
   title: string;
   status: "COLLECTING" | "VOTING" | "DECIDED" | "CANCELLED";
-  votingMethod: "SINGLE_PICK" | "APPROVAL" | "RANKED";
+  votingMethod: "SINGLE_PICK" | "RANKED_BORDA";
   audienceMode?: MeetupAudienceMode;
   locationMode?: MeetupLocationMode;
   searchRadiusKm: number;

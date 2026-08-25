@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { APP_TIME_ZONE } from "@/lib/formatDate";
 import { saveStoredMeetupSession } from "@/lib/meetup/meetup-session";
 import type { CreateMeetupRequest } from "@/types/meetup-api";
@@ -317,7 +318,12 @@ export default function HostMeetupCreate() {
       });
     } catch (error) {
       console.error("Failed to create meetup:", error);
-      setErrorMessage("FoodHub could not create the meetup with the production backend.");
+      setErrorMessage(
+        getApiErrorMessage(
+          error,
+          "FoodHub could not create the meetup with the production backend.",
+        ),
+      );
     }
   };
 

@@ -21,7 +21,6 @@ function normalizeBaseUrl(url: string): string {
 function getBackendApiUrl(): string {
   const configuredBackendUrl =
     process.env.BACKEND_API_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
     "https://api.mhoubahar.store";
 
   const normalizedUrl = normalizeBaseUrl(configuredBackendUrl);
@@ -76,7 +75,7 @@ async function syncUser(backendApiUrl: string, accessToken: string): Promise<boo
   try {
     const syncUrl = `${backendApiUrl}/users/me/sync`;
     const res = await fetch(syncUrl, {
-      method: "POST",
+      method: "PUT",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,

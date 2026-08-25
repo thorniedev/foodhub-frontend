@@ -39,6 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { APP_TIME_ZONE } from "@/lib/formatDate";
 import { saveStoredMeetupSession } from "@/lib/meetup/meetup-session";
 import MobileLocationToolbar from "../MobileLocationToolbar";
@@ -84,7 +85,8 @@ export default function GroupRecommendation({
 
   // Common Fields
   const [title, setTitle] = useState("");
-  const [votingMethod, setVotingMethod] = useState<"SINGLE_PICK" | "APPROVAL" | "RANKED">("SINGLE_PICK");
+  const [votingMethod, setVotingMethod] =
+    useState<"SINGLE_PICK" | "RANKED_BORDA">("SINGLE_PICK");
   const [view, setView] = useState<LocationViewMode>("list");
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
@@ -244,6 +246,12 @@ export default function GroupRecommendation({
       });
     } catch (err) {
       console.error("Failed to create meetup:", err);
+      alert(
+        getApiErrorMessage(
+          err,
+          "FoodHub could not create the meetup with the production backend.",
+        ),
+      );
     }
   };
 
@@ -456,13 +464,14 @@ export default function GroupRecommendation({
           <div className="grid grid-cols-3 gap-2">
             {[
               { id: "SINGLE_PICK", label: "Single Pick (👍)" },
-              { id: "APPROVAL", label: "Approval (👍/👎)" },
-              { id: "RANKED", label: "Ranked (❤️)" },
+              { id: "RANKED_BORDA", label: "Ranked (❤️)" },
             ].map((m) => (
               <button
                 type="button"
                 key={m.id}
-                onClick={() => setVotingMethod(m.id as "SINGLE_PICK" | "APPROVAL" | "RANKED")}
+                onClick={() =>
+                  setVotingMethod(m.id as "SINGLE_PICK" | "RANKED_BORDA")
+                }
                 className={`rounded-2xl border p-2.5 text-center text-xs font-bold transition ${
                   votingMethod === m.id
                     ? "border-primary-800 bg-primary-50 text-primary-900 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-300 shadow-xs"

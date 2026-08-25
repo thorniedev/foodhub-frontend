@@ -114,6 +114,22 @@ function requiresAuthentication(backendPath: string, method: string) {
     return true;
   }
 
+  if (backendPath === "meetup/groups" && method === "POST") {
+    return true;
+  }
+
+  if (backendPath === "meetup/groups/me" && method === "GET") {
+    return true;
+  }
+
+  if (
+    backendPath.startsWith("meetup/groups/") &&
+    (method === "POST" || method === "PATCH" || method === "DELETE") &&
+    !backendPath.startsWith("meetup/groups/share/")
+  ) {
+    return true;
+  }
+
   // Media upload / delete requires auth, but GET (fetching store logo / photos) is public!
   if (backendPath === "media" || backendPath.startsWith("media/")) {
     return method !== "GET";
@@ -198,9 +214,7 @@ async function forwardRequest(
   targetUrl.search = request.nextUrl.search;
 
   const incomingAuthorization = request.headers.get("authorization");
-  const accessToken =
-    request.cookies.get("foodhub_access_token")?.value ||
-    request.cookies.get("foodhub_id_token")?.value;
+  const accessToken = request.cookies.get("foodhub_access_token")?.value;
 
   if (
     requiresAuthentication(backendPath, request.method) &&
