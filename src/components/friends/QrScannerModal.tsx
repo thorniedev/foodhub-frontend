@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
   useScanQrCodeMutation,
   useSendFriendRequestMutation,
 } from "@/app/store/friendsApi";
+import { parseFriendQrInput } from "@/lib/friends/qr-code";
 import {
   Camera,
   CheckCircle2,
@@ -66,50 +67,19 @@ export default function QrScannerModal({
 
   // Process a found QR token string or username
   const handleProcessToken = useCallback(
-    async (rawCode: string) => {
-      let token = rawCode.trim();
-      if (!token) {
+    async (rawCode: string, options?: { preferQrToken?: boolean }) => {
+      const parsedInput = parseFriendQrInput(rawCode, options);
+
+      if (!parsedInput) {
         setErrorText("កូដ QR មិនត្រឹមត្រូវ ឬទទេ។ សូមសាកល្បងម្តងទៀត។");
         return;
       }
 
-      // Handle JSON payload if code contains JSON
-      if (token.startsWith("{") && token.endsWith("}")) {
-        try {
-          const parsed = JSON.parse(token);
-          token =
-            parsed.qrCodeToken ||
-            parsed.token ||
-            parsed.username ||
-            parsed.userUuid ||
-            token;
-        } catch {
-          // continue
-        }
-      }
-
-      // Extract token if embedded in URL or query parameter
-      if (token.includes("token=")) {
-        const match = token.match(/token=([a-zA-Z0-9_-]+)/);
-        if (match && match[1]) {
-          token = match[1];
-        }
-      } else if (token.includes("/friends?add=") || token.includes("/u/")) {
-        const match = token.match(/(?:\/friends\?add=|\/u\/)([a-zA-Z0-9_.-]+)/);
-        if (match && match[1]) {
-          token = match[1];
-        }
-      }
-
-      // Strip leading '@' if someone shared username
-      if (token.startsWith("@")) {
-        token = token.slice(1);
-      }
+      const token = parsedInput.value;
 
       setErrorText(null);
 
-      // If it looks like a QR token (fh_qr_... or qr_...)
-      if (token.startsWith("fh_qr_") || token.includes("qr_")) {
+      if (parsedInput.isQrToken) {
         try {
           const res = await scanQrCode({ qrCodeToken: token }).unwrap();
           const message =
@@ -200,7 +170,7 @@ export default function QrScannerModal({
                   if (barcodes.length > 0) {
                     const detected = barcodes[0].rawValue;
                     if (detected) {
-                      handleProcessToken(detected);
+                      handleProcessToken(detected, { preferQrToken: true });
                       return;
                     }
                   }
@@ -234,14 +204,14 @@ export default function QrScannerModal({
     };
   }, [handleProcessToken, isOpen, useManual]);
 
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (manualInput.trim()) {
       handleProcessToken(manualInput.trim());
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -255,7 +225,7 @@ export default function QrScannerModal({
         const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
         const barcodes = await detector.detect(imageBitmap);
         if (barcodes.length > 0 && barcodes[0].rawValue) {
-          handleProcessToken(barcodes[0].rawValue);
+          handleProcessToken(barcodes[0].rawValue, { preferQrToken: true });
           return;
         } else {
           setErrorText("រកមិនឃើញ QR ត្រឹមត្រូវក្នុងរូបនេះទេ។ សូមសាកល្បងរូបផ្សេង ឬបញ្ចូលដោយដៃ។");

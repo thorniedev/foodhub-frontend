@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Dialog,
@@ -35,9 +35,10 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
       ? window.location.origin
       : "https://foodhub.app";
 
-  const qrValue = qrData?.qrCodeToken
+  const shareUrl = qrData?.qrCodeToken
     ? `${origin}/friends?token=${encodeURIComponent(qrData.qrCodeToken)}`
-    : qrData?.qrContent || `${origin}/friends`;
+    : `${origin}/friends`;
+  const qrValue = qrData?.qrContent || shareUrl;
 
   const displayName =
     qrData?.username ||
@@ -62,14 +63,14 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
         await navigator.share({
           title: `បន្ថែម ${displayName} នៅម្ហូបអាហារ`,
           text: `ស្កេន QR របស់ខ្ញុំ ឬចុចតំណ ដើម្បីភ្ជាប់ជាមួយ @${displayName}`,
-          url: qrValue,
+          url: shareUrl,
         });
         return;
       } catch {
         // Fallback to clipboard
       }
     }
-    navigator.clipboard.writeText(qrValue);
+    navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };

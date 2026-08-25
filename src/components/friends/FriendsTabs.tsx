@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   useGetFriendsQuery,
@@ -14,6 +14,7 @@ import {
 import FriendCard from "./FriendCard";
 import MyQrCodeModal from "./MyQrCodeModal";
 import QrScannerModal from "./QrScannerModal";
+import { parseFriendQrInput } from "@/lib/friends/qr-code";
 import {
   Users,
   UserPlus,
@@ -126,7 +127,7 @@ export default function FriendsTabs() {
     setSearchFriendTerm(username);
   }, []);
 
-  const handleSendRequest = async (e: React.FormEvent) => {
+  const handleSendRequest = async (e: FormEvent) => {
     e.preventDefault();
     const raw = searchFriendTerm.trim();
     if (!raw) return;
@@ -134,18 +135,12 @@ export default function FriendsTabs() {
     setSendSuccessMessage(null);
     setSendErrorMessage(null);
 
-    let cleanTerm = raw;
+    const parsedInput = parseFriendQrInput(raw);
+    if (!parsedInput) return;
 
-    // Check if user pasted a link with token parameter
-    if (cleanTerm.includes("token=")) {
-      const match = cleanTerm.match(/token=([a-zA-Z0-9_-]+)/);
-      if (match && match[1]) {
-        cleanTerm = match[1];
-      }
-    }
+    const cleanTerm = parsedInput.value;
 
-    // If it's a QR token, use scanQrCode mutation
-    if (cleanTerm.startsWith("fh_qr_") || cleanTerm.includes("qr_")) {
+    if (parsedInput.isQrToken) {
       try {
         await scanQrCode({ qrCodeToken: cleanTerm }).unwrap();
         setSendSuccessMessage("បានផ្ញើសំណើមិត្តភក្តិតាម QR រួចរាល់។");
@@ -157,11 +152,6 @@ export default function FriendsTabs() {
         setSendErrorMessage(msg);
         return;
       }
-    }
-
-    // Strip leading '@' if user entered @username
-    if (cleanTerm.startsWith("@")) {
-      cleanTerm = cleanTerm.slice(1);
     }
 
     const isUuid = cleanTerm.length > 20 && cleanTerm.includes("-");
