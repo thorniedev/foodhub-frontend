@@ -229,10 +229,20 @@ export default function HostMeetupCreate() {
 
     const audienceMode = mode === "friends" ? "FRIENDS" : "GUESTS";
     const apiLocationMode = locationMode === "area" ? "AREA" : "PIN";
+    const sanitizedFriendUuids = Array.from(
+      new Set(
+        mode === "friends"
+          ? selectedFriendUuids.filter(
+              (uuid) => uuid && uuid !== user.userUuid,
+            )
+          : [],
+      ),
+    );
+
     const meetupTitle =
       title.trim() ||
       (mode === "friends"
-        ? `Lunch with ${selectedFriendUuids.length + 1} friends`
+        ? `Lunch with ${sanitizedFriendUuids.length + 1} friends`
         : `Guest meetup in ${targetAreaName || targetCity || "Phnom Penh"}`);
 
     const body: CreateMeetupRequest = {
@@ -240,12 +250,12 @@ export default function HostMeetupCreate() {
       votingMethod: "SINGLE_PICK",
       audienceMode,
       guestAllowed: mode === "guest",
-      friendUserUuids: mode === "friends" ? selectedFriendUuids : [],
+      friendUserUuids: sanitizedFriendUuids,
       expectedGuestCount: mode === "guest" ? expectedGuestCount : undefined,
       maxParticipants:
         mode === "guest"
-          ? expectedGuestCount + 1
-          : selectedFriendUuids.length + 1,
+          ? Math.max(20, expectedGuestCount + 5)
+          : Math.max(20, sanitizedFriendUuids.length + 5),
       locationMode: apiLocationMode,
       timezone: APP_TIME_ZONE,
       expiresAt: getExpiry(durationMinutes),

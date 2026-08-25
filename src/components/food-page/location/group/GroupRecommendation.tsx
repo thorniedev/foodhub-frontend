@@ -154,10 +154,20 @@ export default function GroupRecommendation({
       return;
     }
 
+    const sanitizedFriendUuids = Array.from(
+      new Set(
+        activeMode === "friends"
+          ? selectedFriendUuids.filter(
+              (uuid) => uuid && uuid !== user?.userUuid,
+            )
+          : [],
+      ),
+    );
+
     const meetupTitle =
       title.trim() ||
       (activeMode === "friends"
-        ? `Lunch with Friends (${selectedFriendUuids.length + 1})`
+        ? `Lunch with Friends (${sanitizedFriendUuids.length + 1})`
         : "FoodHub Group Lunch");
 
     const expiresAt = new Date(
@@ -174,19 +184,19 @@ export default function GroupRecommendation({
         votingMethod,
         audienceMode: activeMode === "friends" ? "FRIENDS" : "GUESTS",
         locationMode: "PIN",
-        searchRadiusKm,
+        searchRadiusKm: Math.min(5, Math.max(1, searchRadiusKm || 3)),
         timezone: APP_TIME_ZONE,
         expiresAt,
         targetLat: lat,
         targetLng: lng,
         guestAllowed: activeMode === "guest",
-        friendUserUuids: activeMode === "friends" ? selectedFriendUuids : [],
+        friendUserUuids: sanitizedFriendUuids,
         expectedGuestCount:
           activeMode === "guest" ? expectedGuestCount : undefined,
         maxParticipants:
           activeMode === "guest"
-            ? expectedGuestCount + 1
-            : selectedFriendUuids.length + 1,
+            ? Math.max(20, expectedGuestCount + 5)
+            : Math.max(20, sanitizedFriendUuids.length + 5),
         durationMinutes: activeMode === "guest" ? durationMinutes : undefined,
         inviteMode: activeMode === "friends" ? "FRIENDS" : "GUEST_LINK",
       }).unwrap();
@@ -402,7 +412,7 @@ export default function GroupRecommendation({
               <span className="text-primary-800 dark:text-emerald-400 font-bold">{searchRadiusKm} km</span>
             </div>
             <div className="grid grid-cols-5 gap-2">
-              {[1, 2, 3, 5, 10].map((r) => (
+              {[1, 2, 3, 4, 5].map((r) => (
                 <button
                   type="button"
                   key={r}
