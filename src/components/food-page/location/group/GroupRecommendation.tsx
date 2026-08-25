@@ -8,7 +8,7 @@ import {
 } from "@/app/store/groupRecommendationApi";
 import { useGetFriendsQuery } from "@/app/store/friendsApi";
 import {
-  useGetBackendUserQuery,
+  useGetCurrentUserQuery,
 } from "@/app/store/auth/currentUserApi";
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
@@ -40,6 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { APP_TIME_ZONE } from "@/lib/formatDate";
+import { saveStoredMeetupSession } from "@/lib/meetup/meetup-session";
 import MobileLocationToolbar from "../MobileLocationToolbar";
 
 const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
@@ -74,7 +75,7 @@ export default function GroupRecommendation({
 }: GroupRecommendationProps) {
   const router = useRouter();
 
-  const { data: backendUser } = useGetBackendUserQuery();
+  const { data: user } = useGetCurrentUserQuery();
   const { data: friends = [], isLoading: isLoadingFriends } = useGetFriendsQuery();
 
   const [createMeetup, { isLoading: isCreating }] = useCreateMeetupMutation();
@@ -146,12 +147,11 @@ export default function GroupRecommendation({
   const handleCreateMeetup = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!backendUser?.id) {
+    if (!user) {
       alert("Please sign in before creating a meetup.");
       return;
     }
 
-    const currentUserId = backendUser.id;
     const meetupTitle =
       title.trim() ||
       (activeMode === "friends"
@@ -168,7 +168,6 @@ export default function GroupRecommendation({
 
     try {
       const response = await createMeetup({
-        createdByUserId: currentUserId,
         title: meetupTitle,
         votingMethod,
         audienceMode: activeMode === "friends" ? "FRIENDS" : "GUESTS",
@@ -220,6 +219,22 @@ export default function GroupRecommendation({
         );
       } catch {
         // ignore
+      }
+
+      const hostParticipant = response.participants.find(
+        (participant) => participant.participantRole === "HOST",
+      );
+
+      if (hostParticipant?.uuid) {
+        saveStoredMeetupSession(shareToken, {
+          participantUuid: hostParticipant.uuid,
+          profileUuid: hostParticipant.profileUuid,
+          nickname: hostParticipant.nickname || user.username,
+          joinMode: "FRIEND",
+          locationMode: "PIN",
+          locationLat: lat,
+          locationLng: lng,
+        });
       }
 
       setCreatedMeetup({

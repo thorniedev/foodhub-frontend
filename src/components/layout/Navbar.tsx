@@ -216,33 +216,38 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          onClick={() => setOpen((current) => !current)}
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? "បិទម៉ឺនុយ" : "បើកម៉ឺនុយ"}
-          className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-primary-900 transition-colors duration-200 hover:bg-primary-800/10 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-white md:hidden"
-        >
-          <span
-            className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
-              open ? "rotate-45" : "-translate-y-[6px]"
-            }`}
-          />
+        {/* Mobile controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2 md:hidden">
+          <ThemeToggle />
 
-          <span
-            className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-200 ease-out motion-reduce:transition-none ${
-              open ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100"
-            }`}
-          />
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setOpen((current) => !current)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "បិទម៉ឺនុយ" : "បើកម៉ឺនុយ"}
+            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-primary-900 transition-colors duration-200 hover:bg-primary-800/10 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-white"
+          >
+            <span
+              className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
+                open ? "rotate-45" : "-translate-y-[6px]"
+              }`}
+            />
 
-          <span
-            className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
-              open ? "-rotate-45" : "translate-y-[6px]"
-            }`}
-          />
-        </button>
+            <span
+              className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-200 ease-out motion-reduce:transition-none ${
+                open ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100"
+              }`}
+            />
+
+            <span
+              className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
+                open ? "-rotate-45" : "translate-y-[6px]"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

@@ -14,7 +14,7 @@ interface AuthSessionResponse {
 
 /** Shape returned by the backend GET /api/v1/users/me */
 export interface BackendUser {
-  id: number;
+  id: number | null;
   uuid: string;
   username: string;
   primaryEmail: string | null;
@@ -56,11 +56,7 @@ export const currentUserApi =
           ],
         }),
 
-      /**
-       * Fetches the authenticated user from the real backend.
-       * This is the only source that has the numeric `id` required
-       * by endpoints such as POST /meetup/groups (createdByUserId).
-       */
+      /** Fetches the authenticated user profile from the real backend. */
       getBackendUser:
         builder.query<
           BackendUser | null,
@@ -94,14 +90,18 @@ export const currentUserApi =
                 ? Number(target.id)
                 : null;
 
-            if (!id) {
+            const uuid = typeof target.uuid === "string" ? target.uuid : "";
+            const username =
+              typeof target.username === "string" ? target.username : "";
+
+            if (!id && !uuid && !username) {
               return null;
             }
 
             return {
               id,
-              uuid: typeof target.uuid === "string" ? target.uuid : "",
-              username: typeof target.username === "string" ? target.username : "",
+              uuid,
+              username,
               primaryEmail:
                 typeof target.primaryEmail === "string" ? target.primaryEmail : null,
               firstName:
@@ -146,12 +146,16 @@ export const currentUserApi =
               ? Number(target.id)
               : null;
 
-          if (!id) return null;
+          const uuid = typeof target.uuid === "string" ? target.uuid : "";
+          const username =
+            typeof target.username === "string" ? target.username : "";
+
+          if (!id && !uuid && !username) return null;
 
           return {
             id,
-            uuid: typeof target.uuid === "string" ? target.uuid : "",
-            username: typeof target.username === "string" ? target.username : "",
+            uuid,
+            username,
             primaryEmail:
               typeof target.primaryEmail === "string" ? target.primaryEmail : null,
             firstName:
@@ -193,4 +197,4 @@ export const {
   useGetBackendUserQuery,
   useSyncBackendUserMutation,
   useUpdateCurrentUserMutation,
-} = currentUserApi;
+} = currentUserApi;

@@ -237,13 +237,14 @@ export default function GuestJoinSafetySheet({
         locationMode: normalizedLocationMode,
         ...(normalizedLocationMode === "PIN"
           ? {
+              locationInputType: "MANUAL_PIN",
               locationLat,
               locationLng,
             }
           : {
-              targetAreaName: areaName.trim(),
-              targetCity: city.trim(),
-              targetProvince: province.trim(),
+              locationAreaName: areaName.trim(),
+              locationCity: city.trim(),
+              locationProvince: province.trim(),
             }),
         ...(joinMode === "GUEST"
           ? {
@@ -273,13 +274,14 @@ export default function GuestJoinSafetySheet({
           body:
             normalizedLocationMode === "PIN"
               ? {
+                  locationInputType: "MANUAL_PIN",
                   locationLat,
                   locationLng,
                 }
               : {
-                  targetAreaName: areaName.trim(),
-                  targetCity: city.trim(),
-                  targetProvince: province.trim(),
+                  locationAreaName: areaName.trim(),
+                  locationCity: city.trim(),
+                  locationProvince: province.trim(),
                 },
         }).unwrap();
       } catch (locationError) {

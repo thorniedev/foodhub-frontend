@@ -30,6 +30,74 @@ import type {
   MeetupWinningCardResponse,
 } from "@/types/meetup-api";
 
+function toCreateMeetupBody(body: CreateMeetupRequest) {
+  return {
+    title: body.title,
+    audienceMode: body.audienceMode,
+    locationMode: body.locationMode,
+    targetAreaName: body.targetAreaName,
+    targetCity: body.targetCity,
+    targetProvince: body.targetProvince,
+    targetLat: body.targetLat,
+    targetLng: body.targetLng,
+    votingMethod: body.votingMethod,
+    searchRadiusKm: body.searchRadiusKm,
+    timezone: body.timezone,
+    meetingPointLat: body.meetingPointLat,
+    meetingPointLng: body.meetingPointLng,
+    expiresAt: body.expiresAt,
+    durationMinutes: body.durationMinutes,
+    guestAllowed: body.guestAllowed,
+    maxParticipants: body.maxParticipants,
+    expectedGuestCount: body.expectedGuestCount,
+    friendUserUuids: body.friendUserUuids,
+  };
+}
+
+function toJoinMeetupBody(body: JoinMeetupParticipantRequest) {
+  const locationInputType =
+    body.locationInputType ?? (body.locationMode === "PIN" ? "MANUAL_PIN" : undefined);
+
+  return {
+    meetupUuid: body.meetupUuid,
+    shareToken: body.shareToken,
+    profileId: body.profileId,
+    profileUuid: body.profileUuid,
+    nickname: body.nickname ?? body.guestNickname,
+    locationInputType,
+    mapsLink: body.mapsLink,
+    locationLat: body.locationLat,
+    locationLng: body.locationLng,
+    locationAreaName: body.locationAreaName ?? body.targetAreaName,
+    locationCity: body.locationCity ?? body.targetCity,
+    locationProvince: body.locationProvince ?? body.targetProvince,
+    allergies: body.allergies,
+    dietaryTypes: body.dietaryTypes,
+    budgetMin: body.budgetMin,
+    budgetMax: body.budgetMax,
+  };
+}
+
+function toUpdateParticipantLocationBody(
+  body: UpdateMeetupParticipantLocationArgs["body"],
+) {
+  const locationInputType =
+    body.locationInputType ??
+    (body.locationLat !== undefined || body.locationLng !== undefined
+      ? "MANUAL_PIN"
+      : undefined);
+
+  return {
+    locationInputType,
+    locationLat: body.locationLat,
+    locationLng: body.locationLng,
+    mapsLink: body.mapsLink,
+    locationAreaName: body.locationAreaName ?? body.targetAreaName,
+    locationCity: body.locationCity ?? body.targetCity,
+    locationProvince: body.locationProvince ?? body.targetProvince,
+  };
+}
+
 export const groupRecommendationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // ─────────────────────────────────────────────────────────
@@ -41,7 +109,7 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "/meetup/groups",
         method: "POST",
-        body,
+        body: toCreateMeetupBody(body),
       }),
       transformResponse: (response: unknown) =>
         normalizeMeetupGroupResponse(response),
@@ -117,7 +185,7 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "/meetup/participants/join",
         method: "POST",
-        body,
+        body: toJoinMeetupBody(body),
       }),
       transformResponse: (response: unknown) =>
         normalizeMeetupParticipantResponse(response),
@@ -131,7 +199,7 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
       query: ({ participantUuid, body }) => ({
         url: `/meetup/participants/${encodeURIComponent(participantUuid)}/location`,
         method: "PATCH",
-        body,
+        body: toUpdateParticipantLocationBody(body),
       }),
       transformResponse: (response: unknown) =>
         normalizeMeetupParticipantResponse(response),

@@ -16,7 +16,7 @@ import {
   Users,
 } from "lucide-react";
 
-import { useGetBackendUserQuery } from "@/app/store/auth/currentUserApi";
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 import { useGetFriendsQuery } from "@/app/store/friendsApi";
 import { useCreateMeetupMutation } from "@/app/store/groupRecommendationApi";
 import {
@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { APP_TIME_ZONE } from "@/lib/formatDate";
+import { saveStoredMeetupSession } from "@/lib/meetup/meetup-session";
 import type { CreateMeetupRequest } from "@/types/meetup-api";
 import type { Coordinates } from "@/types/location";
 import type { LocationSearchResult } from "@/types/location-search";
@@ -104,8 +105,7 @@ export default function HostMeetupCreate() {
   const searchParams = useSearchParams();
   const preselectedFriendUuid = searchParams.get("friendUuid");
 
-  const { data: backendUser, isLoading: isLoadingUser } =
-    useGetBackendUserQuery();
+  const { data: user, isLoading: isLoadingUser } = useGetCurrentUserQuery();
   const { data: friends = [], isLoading: isLoadingFriends } =
     useGetFriendsQuery();
   const [createMeetup, { isLoading: isCreating }] = useCreateMeetupMutation();
@@ -200,7 +200,7 @@ export default function HostMeetupCreate() {
     event.preventDefault();
     setErrorMessage(null);
 
-    if (!backendUser?.id) {
+    if (!user) {
       setErrorMessage("Please sign in before creating a meetup.");
       return;
     }
@@ -235,7 +235,6 @@ export default function HostMeetupCreate() {
         : `Guest meetup in ${targetAreaName || targetCity || "Phnom Penh"}`);
 
     const body: CreateMeetupRequest = {
-      createdByUserId: backendUser.id,
       title: meetupTitle,
       votingMethod: "SINGLE_PICK",
       audienceMode,
@@ -289,6 +288,27 @@ export default function HostMeetupCreate() {
         participantCount:
           mode === "guest" ? expectedGuestCount + 1 : selectedFriendUuids.length + 1,
       });
+
+      const hostParticipant = response.participants.find(
+        (participant) => participant.participantRole === "HOST",
+      );
+
+      if (hostParticipant?.uuid) {
+        saveStoredMeetupSession(response.shareToken, {
+          participantUuid: hostParticipant.uuid,
+          profileUuid: hostParticipant.profileUuid,
+          nickname: hostParticipant.nickname || user.username,
+          joinMode: "FRIEND",
+          locationMode: apiLocationMode,
+          targetAreaName:
+            apiLocationMode === "AREA" ? targetAreaName.trim() : null,
+          targetCity: apiLocationMode === "AREA" ? targetCity.trim() : null,
+          targetProvince:
+            apiLocationMode === "AREA" ? targetProvince.trim() : null,
+          locationLat: apiLocationMode === "PIN" ? pin.latitude : null,
+          locationLng: apiLocationMode === "PIN" ? pin.longitude : null,
+        });
+      }
 
       setCreatedMeetup({
         uuid: response.uuid,

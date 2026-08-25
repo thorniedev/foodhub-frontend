@@ -11,6 +11,11 @@ export type MeetupAudienceMode = "FRIENDS" | "GUESTS" | string;
 
 export type MeetupLocationMode = "AREA" | "PIN" | string;
 
+export type MeetupParticipantLocationInputType =
+  | "MANUAL_PIN"
+  | "MAPS_LINK"
+  | string;
+
 export type MeetupGroupStatus =
   | "COLLECTING"
   | "RECOMMENDING"
@@ -26,7 +31,6 @@ export type MeetupRecommendationStatus =
   | "FAILED";
 
 export interface CreateMeetupRequest {
-  createdByUserId?: number;
   title: string;
   votingMethod?: MeetupVotingMethod;
   audienceMode: "FRIENDS" | "GUESTS";
@@ -78,8 +82,12 @@ export interface LeaveMeetupParticipantArgs {
 }
 
 export interface UpdateMeetupParticipantLocationRequest {
+  locationInputType?: MeetupParticipantLocationInputType | null;
   locationLat?: number | null;
   locationLng?: number | null;
+  locationAreaName?: string | null;
+  locationCity?: string | null;
+  locationProvince?: string | null;
   targetAreaName?: string | null;
   targetCity?: string | null;
   targetProvince?: string | null;
@@ -108,8 +116,12 @@ export interface JoinMeetupParticipantRequest {
   profileId?: number | null;
   profileUuid?: string | null;
   locationMode?: "AREA" | "PIN";
+  locationInputType?: MeetupParticipantLocationInputType | null;
   locationLat?: number | null;
   locationLng?: number | null;
+  locationAreaName?: string | null;
+  locationCity?: string | null;
+  locationProvince?: string | null;
   targetAreaName?: string | null;
   targetCity?: string | null;
   targetProvince?: string | null;
@@ -147,7 +159,11 @@ export interface MeetupParticipantDto {
   participantRole: "HOST" | "MEMBER";
   locationLat: number | null;
   locationLng: number | null;
+  locationInputType?: MeetupParticipantLocationInputType | null;
   locationMode?: MeetupLocationMode | null;
+  locationAreaName?: string | null;
+  locationCity?: string | null;
+  locationProvince?: string | null;
   targetAreaName?: string | null;
   targetCity?: string | null;
   targetProvince?: string | null;
@@ -172,7 +188,11 @@ export interface MeetupParticipantResponse {
   participantRole?: "HOST" | "MEMBER" | null;
   locationLat: number | null;
   locationLng: number | null;
+  locationInputType?: MeetupParticipantLocationInputType | null;
   locationMode?: MeetupLocationMode | null;
+  locationAreaName?: string | null;
+  locationCity?: string | null;
+  locationProvince?: string | null;
   targetAreaName?: string | null;
   targetCity?: string | null;
   targetProvince?: string | null;

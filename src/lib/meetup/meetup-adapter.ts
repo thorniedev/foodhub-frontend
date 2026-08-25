@@ -172,6 +172,27 @@ export function normalizeMeetupParticipantResponse(
   const envelope = getEnvelopeRecord(response);
 
   const record = getNestedRecord(envelope, ["participant"]) ?? envelope;
+  const locationLat = getNumber(record, ["locationLat", "latitude"]);
+  const locationLng = getNumber(record, ["locationLng", "longitude"]);
+  const locationAreaName = getString(record, [
+    "locationAreaName",
+    "targetAreaName",
+    "areaName",
+  ]);
+  const locationCity = getString(record, ["locationCity", "targetCity", "city"]);
+  const locationProvince = getString(record, [
+    "locationProvince",
+    "targetProvince",
+    "province",
+  ]);
+  const locationInputType = getString(record, ["locationInputType"]);
+  const inferredLocationMode =
+    getString(record, ["locationMode"]) ??
+    (locationLat !== null && locationLng !== null
+      ? "PIN"
+      : locationAreaName || locationCity || locationProvince
+        ? "AREA"
+        : null);
 
   return {
     id: getNumber(record, ["id"]),
@@ -184,12 +205,16 @@ export function normalizeMeetupParticipantResponse(
       "participantRole",
       "role",
     ]) as MeetupParticipantResponse["participantRole"],
-    locationLat: getNumber(record, ["locationLat", "latitude"]),
-    locationLng: getNumber(record, ["locationLng", "longitude"]),
-    locationMode: getString(record, ["locationMode"]),
-    targetAreaName: getString(record, ["targetAreaName", "areaName"]),
-    targetCity: getString(record, ["targetCity", "city"]),
-    targetProvince: getString(record, ["targetProvince", "province"]),
+    locationLat,
+    locationLng,
+    locationInputType,
+    locationMode: inferredLocationMode,
+    locationAreaName,
+    locationCity,
+    locationProvince,
+    targetAreaName: locationAreaName,
+    targetCity: locationCity,
+    targetProvince: locationProvince,
     mapsLink: getString(record, ["mapsLink", "mapUrl"]),
     guestToken: getString(record, ["guestToken", "participantToken"]),
     dietaryTypes: getStringArray(record, ["dietaryTypes"]),
