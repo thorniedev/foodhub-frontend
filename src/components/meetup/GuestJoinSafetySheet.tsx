@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import {
   AlertCircle,
   Check,
@@ -148,20 +148,6 @@ export default function GuestJoinSafetySheet({
   const [budgetMax, setBudgetMax] = useState<number | null>(8);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setAreaName(targetAreaName || "Phnom Penh");
-    setCity(targetCity || "Phnom Penh");
-    setProvince(targetProvince || "Phnom Penh");
-  }, [targetAreaName, targetCity, targetProvince]);
-
-  useEffect(() => {
-    if (nickname || !user) {
-      return;
-    }
-
-    setNickname(user.username || user.firstName || "");
-  }, [nickname, user]);
-
   const handleShareLocation = () => {
     if (!navigator.geolocation) {
       setErrorMessage("Current location is not available in this browser.");
@@ -187,7 +173,7 @@ export default function GuestJoinSafetySheet({
     );
   };
 
-  const handleJoin = async (event: React.FormEvent) => {
+  const handleJoin = async (event: FormEvent) => {
     event.preventDefault();
     setErrorMessage(null);
 

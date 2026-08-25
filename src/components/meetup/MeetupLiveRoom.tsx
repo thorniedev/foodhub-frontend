@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Check,
   Copy,
@@ -331,10 +331,13 @@ export default function MeetupLiveRoom({
     useCompleteMeetupVotingMutation();
 
   const [storedSession, setStoredSession] =
-    useState<StoredMeetupSession | null>(null);
+    useState<StoredMeetupSession | null>(() =>
+      readStoredMeetupSession(shareToken),
+    );
   const [recommendationSession, setRecommendationSession] =
     useState<RecommendationSession | null>(null);
-  const [recommendationKey, setRecommendationKey] = useState("");
+  const recommendationKeyRef = useRef("");
+  const [recommendationRefreshKey, setRecommendationRefreshKey] = useState(0);
   const [recommendationError, setRecommendationError] = useState<string | null>(
     null,
   );
@@ -343,10 +346,6 @@ export default function MeetupLiveRoom({
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [copiedResult, setCopiedResult] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
-
-  useEffect(() => {
-    setStoredSession(readStoredMeetupSession(shareToken));
-  }, [shareToken]);
 
   const defaultProfileUuid = useMemo(() => {
     const profiles = profilePage?.contents ?? [];
@@ -392,6 +391,15 @@ export default function MeetupLiveRoom({
 
   const participantCount = participants.length;
   const totalVotes = tally?.totalVotes ?? 0;
+  const missingFriendProfile =
+    storedSession?.joinMode === "FRIEND" &&
+    !selectedRecommendationProfileUuid &&
+    !isLoadingProfiles;
+  const effectiveRecommendationError =
+    recommendationError ||
+    (missingFriendProfile
+      ? "No active FoodHub profile is available for recommendations."
+      : null);
 
   useEffect(() => {
     if (!meetupUuid || !storedSession) {
@@ -410,7 +418,6 @@ export default function MeetupLiveRoom({
       storedSession.joinMode === "FRIEND" &&
       !selectedRecommendationProfileUuid
     ) {
-      setRecommendationError("No active FoodHub profile is available for recommendations.");
       return;
     }
 
@@ -423,12 +430,11 @@ export default function MeetupLiveRoom({
       radius: group?.searchRadiusKm,
     });
 
-    if (recommendationKey === nextKey) {
+    if (recommendationKeyRef.current === nextKey) {
       return;
     }
 
-    setRecommendationKey(nextKey);
-    setRecommendationError(null);
+    recommendationKeyRef.current = nextKey;
 
     void createRecommendationSession({
       mode: "GROUP",
@@ -492,7 +498,7 @@ export default function MeetupLiveRoom({
     group?.targetProvince,
     isLoadingProfiles,
     meetupUuid,
-    recommendationKey,
+    recommendationRefreshKey,
     selectedRecommendationProfileUuid,
     shareToken,
     storedSession,
@@ -704,8 +710,10 @@ export default function MeetupLiveRoom({
               <button
                 type="button"
                 onClick={() => {
-                  setRecommendationKey("");
+                  recommendationKeyRef.current = "";
+                  setRecommendationError(null);
                   setRecommendationSession(null);
+                  setRecommendationRefreshKey((current) => current + 1);
                 }}
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300"
               >
@@ -719,9 +727,9 @@ export default function MeetupLiveRoom({
                 <Loader2 className="mr-2 h-5 w-5 animate-spin text-emerald-600" />
                 Loading recommendations...
               </div>
-            ) : recommendationError ? (
+            ) : effectiveRecommendationError ? (
               <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-sm font-semibold text-rose-700">
-                {recommendationError}
+                {effectiveRecommendationError}
               </div>
             ) : candidates.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm leading-6 text-slate-500">

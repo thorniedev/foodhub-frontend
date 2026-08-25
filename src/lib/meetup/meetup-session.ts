@@ -86,17 +86,21 @@ export function saveStoredMeetupSession(
     return;
   }
 
-  window.localStorage.setItem(sessionKey(shareToken), JSON.stringify(session));
+  try {
+    window.localStorage.setItem(sessionKey(shareToken), JSON.stringify(session));
 
-  if (session.joinMode === "GUEST") {
-    window.localStorage.setItem(
-      `fh_guest_token_${shareToken}`,
-      session.participantUuid,
-    );
-    window.localStorage.setItem("fh_participant_uuid", session.participantUuid);
+    if (session.joinMode === "GUEST") {
+      window.localStorage.setItem(
+        `fh_guest_token_${shareToken}`,
+        session.participantUuid,
+      );
+      window.localStorage.setItem("fh_participant_uuid", session.participantUuid);
 
-    if (session.nickname) {
-      window.localStorage.setItem("fh_nickname", session.nickname);
+      if (session.nickname) {
+        window.localStorage.setItem("fh_nickname", session.nickname);
+      }
     }
+  } catch {
+    // The backend join already succeeded; keep the UI usable if storage is blocked.
   }
 }

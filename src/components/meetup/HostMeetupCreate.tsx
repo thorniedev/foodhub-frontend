@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import {
   Check,
   CheckCircle2,
@@ -114,7 +114,9 @@ export default function HostMeetupCreate() {
   const [locationMode, setLocationMode] =
     useState<MeetupLocationMode>("area");
   const [title, setTitle] = useState("");
-  const [selectedFriendUuids, setSelectedFriendUuids] = useState<string[]>([]);
+  const [selectedFriendUuids, setSelectedFriendUuids] = useState<string[]>(
+    () => (preselectedFriendUuid ? [preselectedFriendUuid] : []),
+  );
   const [targetAreaName, setTargetAreaName] = useState("Phnom Penh");
   const [targetCity, setTargetCity] = useState("Phnom Penh");
   const [targetProvince, setTargetProvince] = useState("Phnom Penh");
@@ -130,19 +132,6 @@ export default function HostMeetupCreate() {
     title: string;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
-
-  useEffect(() => {
-    if (!preselectedFriendUuid) {
-      return;
-    }
-
-    setMode("friends");
-    setSelectedFriendUuids((current) =>
-      current.includes(preselectedFriendUuid)
-        ? current
-        : [...current, preselectedFriendUuid],
-    );
-  }, [preselectedFriendUuid]);
 
   const pinPlace = useMemo<LocationSearchResult>(
     () => ({
@@ -207,7 +196,7 @@ export default function HostMeetupCreate() {
     );
   };
 
-  const handleCreateMeetup = async (event: React.FormEvent) => {
+  const handleCreateMeetup = async (event: FormEvent) => {
     event.preventDefault();
     setErrorMessage(null);
 

@@ -456,7 +456,7 @@ export function normalizeMeetupWinningCardResponse(
     status: getString(record, ["status", "meetupStatus"]),
     resultReady:
       getBoolean(record, ["resultReady", "ready"]) ??
-      getString(record, ["status"]) === "DECIDED",
+      (getString(record, ["status"])?.toUpperCase() === "DECIDED"),
     winningCandidateId: getNumber(record, ["winningCandidateId"]),
     winningCandidateUuid: getString(record, [
       "winningCandidateUuid",

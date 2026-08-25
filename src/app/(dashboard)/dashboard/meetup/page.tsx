@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -33,37 +33,6 @@ interface MeetupHistoryItem {
     mapsDirectionsUrl: string;
   };
 }
-
-const DEFAULT_HISTORY_SESSIONS: MeetupHistoryItem[] = [
-  {
-    uuid: "meetup-demo-1",
-    shareToken: "fh_demo_friends",
-    title: "ញ៉ាំបាយថ្ងៃត្រង់ជាមួយក្រុមការងារ BKK",
-    mode: "FRIENDS",
-    status: "DECIDED",
-    createdAt: "2026-08-22T12:30:00Z",
-    participantCount: 4,
-    locationName: "BKK1, Phnom Penh",
-    radiusKm: 3,
-    winnerStore: {
-      name: "ភោជនីយដ្ឋានខ្មែរ សុរិន្ទ",
-      foodTitle: "អាម៉ុកត្រី និងដូងស្រស់",
-      rating: 4.8,
-      mapsDirectionsUrl: "https://www.google.com/maps/dir/?api=1&destination=11.5516,104.9250",
-    },
-  },
-  {
-    uuid: "meetup-demo-2",
-    shareToken: "fh_demo_guest",
-    title: "ញ៉ាំអាហារពេលល្ងាចជាមួយក្រុមការងារ",
-    mode: "GUEST_LINK",
-    status: "VOTING",
-    createdAt: "2026-08-23T02:00:00Z",
-    participantCount: 6,
-    locationName: "Toul Kork, Phnom Penh",
-    radiusKm: 5,
-  },
-];
 
 function readSavedMeetupHistory(): MeetupHistoryItem[] {
   if (typeof window === "undefined") {
@@ -139,7 +108,7 @@ function readSavedMeetupHistory(): MeetupHistoryItem[] {
 export default function DashboardMeetupHistoryPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"FRIENDS" | "GUEST_LINK">("FRIENDS");
-  const [historyList, setHistoryList] = useState<MeetupHistoryItem[]>(DEFAULT_HISTORY_SESSIONS);
+  const [historyList, setHistoryList] = useState<MeetupHistoryItem[]>([]);
 
   useEffect(() => {
     const savedItems = readSavedMeetupHistory();

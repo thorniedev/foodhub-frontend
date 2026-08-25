@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type FormEvent } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
@@ -31,7 +31,6 @@ import {
   Loader2,
   CheckCircle2,
   Utensils,
-  Plus,
 } from "lucide-react";
 import {
   Dialog,
@@ -80,12 +79,7 @@ export default function GroupRecommendation({
 
   const [createMeetup, { isLoading: isCreating }] = useCreateMeetupMutation();
 
-  // Mode: "friends" | "guest"
-  const [activeMode, setActiveMode] = useState<"friends" | "guest">(meetupMode);
-
-  useEffect(() => {
-    setActiveMode(meetupMode);
-  }, [meetupMode]);
+  const activeMode = meetupMode;
 
   // Common Fields
   const [title, setTitle] = useState("");
@@ -149,7 +143,7 @@ export default function GroupRecommendation({
     );
   };
 
-  const handleCreateMeetup = async (e: React.FormEvent) => {
+  const handleCreateMeetup = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!backendUser?.id) {

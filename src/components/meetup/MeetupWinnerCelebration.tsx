@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { MeetupWinningCardResponse } from "@/types/meetup-api";
 import {
@@ -10,7 +9,6 @@ import {
   Share2,
   Check,
   Star,
-  DollarSign,
   Compass,
   Send,
   Sparkles,
