@@ -157,10 +157,17 @@ function toMeetupCandidate(item: RecommendationItem): MeetupCandidate | null {
   const store = readNestedRecord(raw, ["store"]);
   const recommendation = readNestedRecord(raw, ["recommendation"]);
   const foodUuid =
-    getString(raw, ["foodUuid", "menuItemUuid", "menuItemUUID"]) ||
+    item.foodUuid ||
+    item.menuItemUuid ||
+    getString(raw, [
+      "foodUuid",
+      "menuItemUuid",
+      "menuItemUUID",
+      "food_uuid",
+      "menu_item_uuid",
+    ]) ||
     getString(food, ["uuid", "foodUuid", "menuItemUuid"]) ||
-    item.uuid ||
-    (typeof item.menuItemId === "number" ? String(item.menuItemId) : "");
+    item.uuid;
 
   if (!foodUuid) {
     return null;
@@ -545,9 +552,13 @@ export default function MeetupLiveRoom({
 
       setSelectedFoodUuid(candidate.foodUuid);
       await refetchTally();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Meetup vote failed:", error);
-      setActionError("FoodHub could not submit your vote.");
+      const apiMessage =
+        error?.data?.message ||
+        error?.message ||
+        "FoodHub could not submit your vote.";
+      setActionError(apiMessage);
     }
   };
 

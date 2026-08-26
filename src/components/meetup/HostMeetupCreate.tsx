@@ -707,64 +707,67 @@ export default function HostMeetupCreate() {
 
       {createdMeetup && (
         <Dialog open={Boolean(createdMeetup)} onOpenChange={() => setCreatedMeetup(null)}>
-          <DialogContent className="max-w-md rounded-3xl bg-white p-6 dark:bg-slate-900 sm:p-8">
+          <DialogContent className="w-full sm:max-w-lg rounded-3xl bg-white p-6 dark:bg-slate-900 sm:p-8 border-0 shadow-2xl">
             <DialogHeader className="text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                <CheckCircle2 className="h-6 w-6" />
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+                <CheckCircle2 className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
-                Meetup created
+              <DialogTitle className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-normal">
+                Meetup Created Successfully!
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-500">
-                Copy the invite link from the returned share token.
+              <DialogDescription className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                Copy the invite link to share with friends or enter the live room directly.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="my-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">
-                Invite link
-              </span>
-              <p className="mt-1 truncate font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
-                {shareUrl}
-              </p>
-            </div>
+            <div className="space-y-4 my-4">
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-950/60">
+                <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 mb-1.5">
+                  Invite Link
+                </span>
+                <p className="font-mono text-xs font-semibold text-slate-800 dark:text-slate-200 truncate bg-white dark:bg-slate-900 py-2 px-3 rounded-xl border border-gray-200/80 dark:border-slate-800 select-all">
+                  {shareUrl}
+                </p>
+              </div>
 
-            <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="h-4 w-4 text-emerald-600" />
+                      <span className="text-emerald-700 dark:text-emerald-400">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 text-slate-500" />
+                      <span>Copy Link</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleShareTelegram}
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-[#229ED9] py-3 text-xs font-bold text-white shadow-xs transition hover:bg-[#1f8fc4] active:scale-[0.98]"
+                >
+                  <Send className="h-4 w-4" />
+                  <span>Telegram</span>
+                </button>
+              </div>
+
               <button
                 type="button"
-                onClick={handleCopyLink}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                onClick={() => router.push(`/meet/${createdMeetup.shareToken}`)}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-[0.99]"
               >
-                {copiedLink ? (
-                  <>
-                    <Check className="h-4 w-4 text-emerald-600" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    Copy
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShareTelegram}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-[#229ED9] px-4 text-sm font-bold text-white transition hover:bg-[#1f8fc4]"
-              >
-                <Send className="h-4 w-4" />
-                Telegram
+                <span>Enter Live Room</span>
+                <span className="text-lg leading-none">&rarr;</span>
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => router.push(`/meet/${createdMeetup.shareToken}`)}
-              className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-emerald-700"
-            >
-              Open voting room
-            </button>
           </DialogContent>
         </Dialog>
       )}
