@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import { EASE_SOFT, VIEWPORT, group } from "@/lib/reveal";
+import { EASE_SOFT, VIEWPORT, group, riseReveal } from "@/lib/reveal";
 import { useGetPopularBannersQuery } from "@/app/store/bannerApi";
 import { resolveBannerImageUrl } from "@/lib/banner-media";
 
@@ -17,42 +17,42 @@ const DEFAULT_CARDS = [
     rotate: -10,
     fit: "object-cover",
     layout: "z-7 sm:mt-6 max-sm:mt-3",
-    title: "ការស្វែងរកអាហារ 1",
+    title: "Popular Dish 1",
   },
   {
     src: "/Image/food-picture/drink 1.jpg",
     rotate: -3,
     fit: "object-cover",
     layout: "z-6 sm:-mt-6 max-sm:-mt-3 -ml-10",
-    title: "ភេសជ្ជៈពេញនិយម 1",
+    title: "Popular Drink 1",
   },
   {
     src: "/Image/food-picture/card 2.jpg",
     rotate: -1,
     fit: "object-fill",
     layout: "z-5 -ml-10",
-    title: "ការស្វែងរកអាហារ 2",
+    title: "Popular Dish 2",
   },
   {
     src: "/Image/food-picture/card 3.jpg",
     rotate: 2,
     fit: "object-cover",
     layout: "z-4 sm:-mt-6 max-sm:-mt-3 -ml-10",
-    title: "ការស្វែងរកអាហារ 3",
+    title: "Popular Dish 3",
   },
   {
     src: "/Image/food-picture/drink 2.jpg",
     rotate: 5,
     fit: "object-cover",
     layout: "z-2 sm:mt-4 max-sm:mt-2 -ml-10",
-    title: "ភេសជ្ជៈពេញនិយម 2",
+    title: "Popular Drink 2",
   },
   {
     src: "/Image/food-picture/card 6.jpg",
     rotate: 10,
     fit: "object-cover",
     layout: "z-1 -ml-10",
-    title: "ការស្វែងរកអាហារ 4",
+    title: "Popular Dish 4",
   },
 ];
 
@@ -105,46 +105,13 @@ interface PopularCardItemProps {
   reduceMotion: boolean | null;
 }
 
-// function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
-//   const [imgSrc, setImgSrc] = useState(card.src);
-
-//   return (
-//     <motion.div
-//       key={card.id}
-//       custom={{ rotate: card.rotate, from }}
-//       variants={cardReveal}
-//       whileHover={
-//         reduceMotion
-//           ? undefined
-//           : {
-//               y: -14,
-//               scale: 1.04,
-//               transition: { duration: 0.35, ease: EASE_SOFT },
-//             }
-//       }
-//       style={{ willChange: "transform" }}
-//       className={`shrink-0 ${card.layout}`}
-//     >
-//       <Image
-//         width={235}
-//         height={285}
-//         className={`sm:border-6 ${card.fit} lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[130px] max-md:w-[100px] border-white shadow-md max-sm:rounded-md sm:rounded-[24px]`}
-//         src={imgSrc}
-//         alt={card.title}
-//         unoptimized
-//         onError={() => {
-//           if (imgSrc !== card.fallbackSrc) {
-//             setImgSrc(card.fallbackSrc);
-//           }
-//         }}
-//       />
-//     </motion.div>
-//   );
-// }
-
 function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
   const [imgSrc, setImgSrc] = useState(card.src);
   const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(card.src);
+  }, [card.src]);
 
   return (
     <motion.div
@@ -209,10 +176,13 @@ export default function PopularSection() {
     if (bannerData && bannerData.length > 0) {
       return bannerData.map((banner, index) => {
         const preset = LAYOUT_PRESETS[index % LAYOUT_PRESETS.length];
-        const defaultFallback = DEFAULT_CARDS[index % DEFAULT_CARDS.length].src;
+        const defaultFallback =
+          DEFAULT_CARDS[index % DEFAULT_CARDS.length].src;
+        const resolvedUrl = resolveBannerImageUrl(banner, defaultFallback);
+
         return {
           id: String(banner.id || `popular-banner-${index}`),
-          src: resolveBannerImageUrl(banner, defaultFallback),
+          src: resolvedUrl,
           fallbackSrc: defaultFallback,
           rotate: preset.rotate,
           fit: preset.fit,
@@ -241,6 +211,7 @@ export default function PopularSection() {
         className="  max-sm:px-2.5 flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full"
       >
         <motion.p
+          variants={riseReveal}
           className="
        text-center
         font-semibold
@@ -248,7 +219,7 @@ export default function PopularSection() {
 
         lg:text-6xl  py-2
         md:text-5xl
-        max-md:text-3xl dark:text-primary-dark 
+        max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark 
       "
         >
           បទពិសោធន៍ថ្មីក្នុង <br className="sm:hidden max-sm:block" />
@@ -262,6 +233,7 @@ export default function PopularSection() {
     ====================================================== */}
 
         <motion.p
+          variants={riseReveal}
           className="
         text-center
         font-light
