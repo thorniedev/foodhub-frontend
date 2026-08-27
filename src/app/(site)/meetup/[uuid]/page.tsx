@@ -19,12 +19,13 @@ export default async function MeetupRoomPage({ params }: MeetupRoomPageProps) {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500 dark:bg-slate-950">
           Loading live meetup room...
         </div>
       }
     >
-      <MeetupLiveRoom shareToken={uuid} initialMeetupUuid={uuid} />
+      {/* Host route: the meetup uuid resolves through the owner endpoint. */}
+      <MeetupLiveRoom meetupUuid={uuid} />
     </Suspense>
   );
 }

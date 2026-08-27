@@ -1,3 +1,7 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
+
 export interface StoredMeetupSession {
   participantUuid: string;
   guestToken?: string | null;
@@ -19,6 +23,35 @@ export interface StoredMeetupSession {
 
 const sessionKey = (shareToken: string) =>
   `foodhub-meetup-session-${shareToken}`;
+
+const shareKey = (meetupUuid: string) => `foodhub-meetup-share-${meetupUuid}`;
+
+/**
+ * The backend hands out the plaintext share token once, at creation, and only
+ * ever stores its hash. A host who reloads can therefore recover the token for
+ * invite links from local history alone — never from the meetup API.
+ */
+export function readStoredShareToken(meetupUuid: string): string | null {
+  if (typeof window === "undefined" || !meetupUuid) {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(shareKey(meetupUuid));
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as { shareToken?: unknown };
+
+    return typeof parsed.shareToken === "string" && parsed.shareToken
+      ? parsed.shareToken
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 export function readStoredMeetupSession(
   shareToken: string,
@@ -103,4 +136,96 @@ export function saveStoredMeetupSession(
   } catch {
     // The backend join already succeeded; keep the UI usable if storage is blocked.
   }
+
+  notifySessionChange();
+}
+
+/* ── Reading the stored identity as a React external store ─────────────── */
+
+const listeners = new Set<() => void>();
+
+function notifySessionChange() {
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+function subscribe(onStoreChange: () => void) {
+  listeners.add(onStoreChange);
+  /* Another tab joining the same meetup should update this one too. */
+  window.addEventListener("storage", onStoreChange);
+
+  return () => {
+    listeners.delete(onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+  };
+}
+
+/*
+ * useSyncExternalStore compares snapshots by identity, so a fresh object on
+ * every read would loop forever. Each key keeps its last parse alongside the
+ * raw strings it came from, and re-parses only when those change.
+ */
+const snapshotCache = new Map<
+  string,
+  { signature: string; value: StoredMeetupSession | null }
+>();
+
+function readSignature(key: string): string {
+  try {
+    /* JSON keeps the three values unambiguously separated. */
+    return JSON.stringify([
+      window.localStorage.getItem(sessionKey(key)),
+      window.localStorage.getItem(`fh_guest_token_${key}`),
+      window.localStorage.getItem("fh_participant_uuid"),
+    ]);
+  } catch {
+    return "";
+  }
+}
+
+function getSnapshot(key: string): StoredMeetupSession | null {
+  const signature = readSignature(key);
+  const cached = snapshotCache.get(key);
+
+  if (cached && cached.signature === signature) {
+    return cached.value;
+  }
+
+  const value = readStoredMeetupSession(key);
+  snapshotCache.set(key, { signature, value });
+
+  return value;
+}
+
+/**
+ * Subscribes to the identity stored for `key` (a share token, or a meetup uuid
+ * when the room was opened without one).
+ *
+ * Local storage is unavailable while rendering on the server, so the server
+ * snapshot is always `null` and the stored identity appears on the client
+ * without risking a hydration mismatch.
+ */
+export function useStoredMeetupSession(
+  key: string,
+): StoredMeetupSession | null {
+  return useSyncExternalStore(
+    subscribe,
+    () => (key ? getSnapshot(key) : null),
+    () => null,
+  );
+}
+
+/**
+ * Reads the plaintext share token a host stored when they created `meetupUuid`.
+ *
+ * Returns `null` on the server for the same reason as
+ * {@link useStoredMeetupSession}: local storage does not exist there.
+ */
+export function useStoredShareToken(meetupUuid: string): string | null {
+  return useSyncExternalStore(
+    subscribe,
+    () => (meetupUuid ? readStoredShareToken(meetupUuid) : null),
+    () => null,
+  );
 }

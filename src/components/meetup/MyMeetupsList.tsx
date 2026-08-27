@@ -13,7 +13,8 @@ import {
 
 import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 import { useGetMyMeetupsQuery } from "@/app/store/groupRecommendationApi";
-import type { MeetupGroupStatus } from "@/types/meetup-api";
+import { readStoredShareToken } from "@/lib/meetup/meetup-session";
+import type { MeetupGroupResponse, MeetupGroupStatus } from "@/types/meetup-api";
 
 const STATUS_LABEL: Record<string, string> = {
   COLLECTING: "កំពុងប្រមូលអ្នកចូលរួម",
@@ -40,6 +41,29 @@ function statusStyle(status: MeetupGroupStatus | null) {
     (status && STATUS_STYLE[status]) ||
     "bg-slate-100 text-slate-600 ring-slate-200"
   );
+}
+
+/**
+ * The meetup API stores only the share token's hash, so a host recovers the
+ * plaintext from the history written at creation. Falling back to the uuid
+ * route keeps the room reachable even when that history is gone.
+ */
+function shareTokenFor(meetup: MeetupGroupResponse): string | null {
+  return meetup.shareToken || readStoredShareToken(meetup.uuid ?? "");
+}
+
+function roomHref(
+  meetupUuid: string | null,
+  shareToken: string | null,
+  isDecided: boolean,
+): string {
+  if (shareToken) {
+    return isDecided
+      ? `/meetup/result/${encodeURIComponent(shareToken)}`
+      : `/meet/${encodeURIComponent(shareToken)}`;
+  }
+
+  return `/meetup/${encodeURIComponent(meetupUuid ?? "")}`;
 }
 
 export default function MyMeetupsList() {
@@ -130,29 +154,18 @@ export default function MyMeetupsList() {
                 ) : null}
               </div>
 
-              {meetup.shareToken ? (
-                <Link
-                  href={
-                    isDecided
-                      ? `/meetup/result/${encodeURIComponent(meetup.shareToken)}`
-                      : `/meet/${encodeURIComponent(meetup.shareToken)}`
-                  }
-                  className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-4 text-sm font-black text-white transition hover:bg-primary-700"
-                >
-                  {isDecided ? (
-                    <Trophy className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <Vote className="h-4 w-4 shrink-0" />
-                  )}
-                  {isDecided ? "មើលលទ្ធផល" : "បន្តបោះឆ្នោត"}
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                </Link>
-              ) : (
-                /* The share token is returned once at creation and never again. */
-                <p className="mt-auto rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-400 dark:bg-slate-950">
-                  តំណចែករំលែកមិនមានទេ
-                </p>
-              )}
+              <Link
+                href={roomHref(meetup.uuid, shareTokenFor(meetup), isDecided)}
+                className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-4 text-sm font-black text-white transition hover:bg-primary-700"
+              >
+                {isDecided ? (
+                  <Trophy className="h-4 w-4 shrink-0" />
+                ) : (
+                  <Vote className="h-4 w-4 shrink-0" />
+                )}
+                {isDecided ? "មើលលទ្ធផល" : "បន្តបោះឆ្នោត"}
+                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+              </Link>
             </article>
           );
         })}

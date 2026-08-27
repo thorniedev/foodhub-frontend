@@ -24,6 +24,7 @@ import {
   useGetDietaryTypeOptionsQuery,
   useGetMemberProfilesQuery,
 } from "@/app/store/memberProfileApi";
+import { getMeetupErrorMessage } from "@/lib/meetup/meetup-errors";
 import {
   saveStoredMeetupSession,
   type StoredMeetupSession,
@@ -44,7 +45,31 @@ interface GuestJoinSafetySheetProps {
   targetAreaName?: string | null;
   targetCity?: string | null;
   targetProvince?: string | null;
+  targetLat?: number | null;
+  targetLng?: number | null;
+  searchRadiusKm?: number | null;
+  /** Storage key for the joined identity: share token, or meetup uuid. */
+  sessionKey: string;
   onJoined: (session: StoredMeetupSession) => void;
+}
+
+const EARTH_RADIUS_KM = 6371.0088;
+
+/** Great-circle distance, mirroring the radius check the vote endpoint applies. */
+function distanceKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+
+  return EARTH_RADIUS_KM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 const FALLBACK_DIETARY_OPTIONS: SafetyOption[] = [
@@ -104,6 +129,10 @@ export default function GuestJoinSafetySheet({
   targetAreaName,
   targetCity,
   targetProvince,
+  targetLat,
+  targetLng,
+  searchRadiusKm,
+  sessionKey,
   onJoined,
 }: GuestJoinSafetySheetProps) {
   const normalizedLocationMode = locationMode === "PIN" ? "PIN" : "AREA";
@@ -147,6 +176,35 @@ export default function GuestJoinSafetySheet({
   const [budgetMin, setBudgetMin] = useState<number | null>(2);
   const [budgetMax, setBudgetMax] = useState<number | null>(8);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  /*
+   * A pin meetup rejects votes from outside its radius, so the distance is
+   * checked here — being told before joining beats a failed first vote.
+   */
+  const outOfRadiusKm = useMemo(() => {
+    if (
+      normalizedLocationMode !== "PIN" ||
+      locationLat === null ||
+      locationLng === null ||
+      targetLat === null ||
+      targetLat === undefined ||
+      targetLng === null ||
+      targetLng === undefined
+    ) {
+      return null;
+    }
+
+    const distance = distanceKm(targetLat, targetLng, locationLat, locationLng);
+
+    return distance > (searchRadiusKm ?? 5) ? distance : null;
+  }, [
+    normalizedLocationMode,
+    locationLat,
+    locationLng,
+    targetLat,
+    targetLng,
+    searchRadiusKm,
+  ]);
 
   const handleShareLocation = () => {
     if (!navigator.geolocation) {
@@ -239,7 +297,8 @@ export default function GuestJoinSafetySheet({
 
     try {
       const participant = await joinMeetupParticipant({
-        shareToken,
+        /* A host arriving without the one-time token joins by meetup uuid. */
+        ...(shareToken ? { shareToken } : { meetupUuid: meetupUuid ?? undefined }),
         nickname: displayName,
         guestNickname: joinMode === "GUEST" ? displayName : undefined,
         profileUuid: selectedProfileUuid || undefined,
@@ -316,11 +375,16 @@ export default function GuestJoinSafetySheet({
         profileSnapshot,
       };
 
-      saveStoredMeetupSession(shareToken, storedSession);
+      saveStoredMeetupSession(sessionKey, storedSession);
       onJoined(storedSession);
     } catch (error) {
       console.error("Failed to join meetup:", error);
-      setErrorMessage("FoodHub could not join this meetup. Please try again.");
+      setErrorMessage(
+        getMeetupErrorMessage(
+          error,
+          "FoodHub មិនអាចចូលរួមការណាត់ជួបនេះបានទេ។ សូមព្យាយាមម្តងទៀត។",
+        ),
+      );
     }
   };
 
@@ -338,7 +402,9 @@ export default function GuestJoinSafetySheet({
           join the vote.
         </p>
         <Link
-          href={`/login?returnTo=${encodeURIComponent(`/meet/${shareToken}`)}`}
+          href={`/login?returnTo=${encodeURIComponent(
+            shareToken ? `/meet/${shareToken}` : `/meetup/${meetupUuid ?? ""}`,
+          )}`}
           className="mt-5 inline-flex min-h-12 items-center justify-center rounded-2xl bg-primary-600 px-6 text-sm font-black text-white shadow-md transition hover:bg-primary-700"
         >
           Sign in
@@ -437,6 +503,15 @@ export default function GuestJoinSafetySheet({
             {locationLat !== null && locationLng !== null && (
               <p className="mt-3 rounded-xl bg-white px-3 py-2 font-mono text-sm font-semibold text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                 {locationLat.toFixed(6)}, {locationLng.toFixed(6)}
+              </p>
+            )}
+
+            {outOfRadiusKm !== null && (
+              <p className="mt-3 flex items-start gap-2 rounded-xl bg-accent-50 px-3 py-2.5 text-sm font-semibold leading-5 text-accent-800 dark:bg-accent-950/30 dark:text-accent-200">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                អ្នកនៅចម្ងាយ {outOfRadiusKm.toFixed(1)} គ.ម ពីចំណុចណាត់ជួប
+                ដែលលើសរង្វង់ {searchRadiusKm ?? 5} គ.ម។ អ្នកអាចចូលរួមបាន
+                ប៉ុន្តែការបោះឆ្នោតនឹងត្រូវបានបដិសេធ។
               </p>
             )}
           </section>

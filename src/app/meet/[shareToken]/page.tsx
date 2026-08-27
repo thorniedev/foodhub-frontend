@@ -24,6 +24,7 @@ export default async function MeetGuestPage({ params }: MeetPageProps) {
         </div>
       }
     >
+      {/* Public invite route: the share token resolves without a session. */}
       <MeetupLiveRoom shareToken={shareToken} />
     </Suspense>
   );

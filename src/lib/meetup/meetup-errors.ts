@@ -1,0 +1,101 @@
+import { getApiErrorMessage } from "@/lib/api-error";
+
+/**
+ * The meetup endpoints reject with precise English reasons ("Participant is
+ * outside the selected meetup radius"). Showing those raw leaves people stuck,
+ * so each known reason is matched on a stable fragment and rewritten into an
+ * instruction the room can act on.
+ */
+const MEETUP_ERROR_RULES: ReadonlyArray<{
+  match: RegExp;
+  message: string;
+}> = [
+  {
+    match: /outside the selected meetup radius/i,
+    message:
+      "ទីតាំងរបស់អ្នកនៅឆ្ងាយពីចំណុចណាត់ជួប។ សូមធ្វើបច្ចុប្បន្នភាពទីតាំង ឬសុំឲ្យម្ចាស់ផ្ទះពង្រីករង្វង់ស្វែងរក។",
+  },
+  {
+    match: /location must be shared before voting/i,
+    message: "សូមចែករំលែកទីតាំងរបស់អ្នកជាមុនសិន មុននឹងបោះឆ្នោត។",
+  },
+  {
+    match: /area must be resolved before voting/i,
+    message:
+      "តំបន់របស់អ្នកមិនទាន់ត្រូវបានបញ្ជាក់ទេ។ សូមបំពេញតំបន់ ក្រុង និងខេត្តរបស់អ្នក។",
+  },
+  {
+    match: /already voted for this food/i,
+    message: "អ្នកបានបោះឆ្នោតឲ្យម្ហូបនេះរួចហើយ។",
+  },
+  {
+    match: /nickname is already taken/i,
+    message: "ឈ្មោះហៅក្រៅនេះមានគេប្រើរួចហើយ។ សូមជ្រើសរើសឈ្មោះផ្សេង។",
+  },
+  {
+    match: /maximum participant limit/i,
+    message: "ការណាត់ជួបនេះមានអ្នកចូលរួមពេញហើយ។",
+  },
+  {
+    match: /no longer accepting votes/i,
+    message: "ការណាត់ជួបនេះមិនទទួលសំឡេងបោះឆ្នោតទៀតទេ។",
+  },
+  {
+    match: /only active participants can vote/i,
+    message: "មានតែអ្នកចូលរួមសកម្មទេដែលអាចបោះឆ្នោតបាន។",
+  },
+  {
+    match: /does not belong to this meetup/i,
+    message: "អ្នកមិនមែនជាសមាជិកនៃការណាត់ជួបនេះទេ។",
+  },
+  {
+    match: /result is not ready yet/i,
+    message: "លទ្ធផលមិនទាន់រួចរាល់។ សូមរង់ចាំម្ចាស់ផ្ទះបញ្ចប់ការបោះឆ្នោត។",
+  },
+  {
+    match: /food not found/i,
+    message: "ម្ហូបនេះលែងមានក្នុងបញ្ជីហើយ។ សូមផ្ទុកបញ្ជីម្ហូបឡើងវិញ។",
+  },
+  {
+    match: /meetup not found/i,
+    message: "រកមិនឃើញការណាត់ជួប។ តំណអាចផុតកំណត់ ឬត្រូវបានលុប។",
+  },
+  {
+    match: /participant not found/i,
+    message: "រកមិនឃើញអ្នកចូលរួម។ សូមចូលរួមការណាត់ជួបម្ដងទៀត។",
+  },
+  {
+    match: /either meetupuuid or sharetoken/i,
+    message: "តំណអញ្ជើញមិនត្រឹមត្រូវទេ។",
+  },
+];
+
+/**
+ * Turns a meetup API failure into a message the room can act on, falling back
+ * to `fallback` when the reason is not one FoodHub recognises.
+ */
+export function getMeetupErrorMessage(error: unknown, fallback: string): string {
+  const raw = getApiErrorMessage(error, "");
+
+  if (!raw) {
+    return fallback;
+  }
+
+  for (const rule of MEETUP_ERROR_RULES) {
+    if (rule.match.test(raw)) {
+      return rule.message;
+    }
+  }
+
+  return fallback;
+}
+
+/** True when the failure is a duplicate-vote conflict, which is recoverable. */
+export function isAlreadyVotedError(error: unknown): boolean {
+  return /already voted for this food/i.test(getApiErrorMessage(error, ""));
+}
+
+/** True when the result endpoint is answering "not decided yet" rather than failing. */
+export function isResultNotReadyError(error: unknown): boolean {
+  return /result is not ready yet/i.test(getApiErrorMessage(error, ""));
+}

@@ -2,31 +2,32 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check,
-  Copy,
+  AlertCircle,
+  ArrowRight,
+  ChefHat,
   Loader2,
-  MapPin,
-  QrCode,
+  LogOut,
   RefreshCw,
-  Share2,
-  ShieldCheck,
-  Sparkles,
+  ShieldAlert,
   Trophy,
-  Undo2,
-  Users,
-  Vote,
+  Utensils,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
-import { useGetBackendUserQuery, useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
-import { getApiErrorMessage } from "@/lib/api-error";
+import {
+  useGetBackendUserQuery,
+  useGetCurrentUserQuery,
+} from "@/app/store/auth/currentUserApi";
 import {
   useCompleteMeetupVotingMutation,
+  useGetMeetupGroupQuery,
   useGetMeetupParticipantsQuery,
   useGetMeetupVoteTallyQuery,
   useGetMeetupVotesQuery,
+  useLeaveMeetupParticipantMutation,
+  useRemoveMeetupParticipantMutation,
   useResolveMeetupShareTokenQuery,
   useRetractMeetupVoteMutation,
   useSubmitMeetupVoteMutation,
@@ -41,323 +42,137 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  readStoredMeetupSession,
+  buildMeetupSlate,
+  collectMeetupProfileUuids,
+  type MeetupCandidate,
+} from "@/lib/meetup/meetup-candidates";
+import {
+  getMeetupErrorMessage,
+  isAlreadyVotedError,
+} from "@/lib/meetup/meetup-errors";
+import {
+  useStoredMeetupSession,
+  useStoredShareToken,
   type StoredMeetupSession,
 } from "@/lib/meetup/meetup-session";
+import type { RecommendationSession } from "@/types/recommendation";
+import type { MeetupWinningCardResponse } from "@/types/meetup-api";
 import GuestJoinSafetySheet from "./GuestJoinSafetySheet";
-import type { RecommendationItem, RecommendationSession } from "@/types/recommendation";
-
-/**
- * Turns an account-derived nickname into something readable. Emails are
- * reduced to their local part so the room never displays a full address.
- */
-function toDisplayName(nickname: string | null, fallback: string): string {
-  const trimmed = (nickname ?? "").trim();
-
-  if (!trimmed) {
-    return fallback;
-  }
-
-  const atIndex = trimmed.indexOf("@");
-  const localPart = atIndex > 0 ? trimmed.slice(0, atIndex) : trimmed;
-
-  return localPart.replace(/[._-]+/g, " ").trim() || fallback;
-}
+import MeetupCandidateCard from "./MeetupCandidateCard";
+import MeetupParticipantsPanel from "./MeetupParticipantsPanel";
+import MeetupRoomHeader from "./MeetupRoomHeader";
+import MeetupTallyPanel from "./MeetupTallyPanel";
+import MeetupWinnerCelebration from "./MeetupWinnerCelebration";
 
 interface MeetupLiveRoomProps {
-  shareToken: string;
-  initialMeetupUuid?: string;
+  /** Present when the room was opened from a host/dashboard link. */
+  meetupUuid?: string;
+  /** Present when the room was opened from a public invite link. */
+  shareToken?: string;
 }
 
-interface MeetupCandidate {
-  candidateUuid: string;
-  foodUuid: string;
-  foodName: string;
-  storeName: string;
-  photoUrl: string | null;
-  rating: number | null;
-  price: number | null;
-  currencyCode: string;
-  distanceKm: number | null;
-  finalScore: number | null;
-  reasonText: string | null;
-  reasonCodes: string[];
-  safetyStatus: string | null;
-  dietaryTags: string[];
-  allergenTags: string[];
-}
-
-type UnknownRecord = Record<string, unknown>;
-
-function isRecord(value: unknown): value is UnknownRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function getString(record: UnknownRecord, keys: readonly string[]): string | null {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (typeof value === "string" && value.trim()) {
-      return value.trim();
-    }
-  }
-
-  return null;
-}
-
-function getNumber(record: UnknownRecord, keys: readonly string[]): number | null {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return value;
-    }
-
-    if (typeof value === "string" && value.trim()) {
-      const parsed = Number(value);
-
-      if (Number.isFinite(parsed)) {
-        return parsed;
-      }
-    }
-  }
-
-  return null;
-}
-
-function readNestedRecord(record: UnknownRecord, keys: readonly string[]): UnknownRecord {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (isRecord(value)) {
-      return value;
-    }
-  }
-
-  return {};
-}
-
-function getStringArray(record: UnknownRecord, keys: readonly string[]): string[] {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (Array.isArray(value)) {
-      return value.flatMap((entry) => {
-        if (typeof entry === "string" && entry.trim()) {
-          return [entry.trim()];
-        }
-
-        if (isRecord(entry)) {
-          const label = getString(entry, [
-            "code",
-            "uuid",
-            "name",
-            "localName",
-            "allergenCode",
-            "dietaryTypeCode",
-          ]);
-
-          return label ? [label] : [];
-        }
-
-        return [];
-      });
-    }
-  }
-
-  return [];
-}
-
-function getItemRaw(item: RecommendationItem): UnknownRecord {
-  const candidate = item as RecommendationItem & { raw?: unknown };
-  return isRecord(candidate.raw) ? candidate.raw : {};
-}
-
-function toMeetupCandidate(item: RecommendationItem): MeetupCandidate | null {
-  const raw = getItemRaw(item);
-  const food = readNestedRecord(raw, ["food", "menuItem"]);
-  const store = readNestedRecord(raw, ["store"]);
-  const recommendation = readNestedRecord(raw, ["recommendation"]);
-  const foodUuid =
-    item.foodUuid ||
-    item.menuItemUuid ||
-    getString(raw, [
-      "foodUuid",
-      "menuItemUuid",
-      "menuItemUUID",
-      "food_uuid",
-      "menu_item_uuid",
-    ]) ||
-    getString(food, ["uuid", "foodUuid", "menuItemUuid"]) ||
-    item.uuid;
-
-  if (!foodUuid) {
-    return null;
-  }
-
-  return {
-    candidateUuid:
-      getString(raw, ["candidateUuid", "uuid"]) || item.uuid || foodUuid,
-    foodUuid,
-    foodName:
-      item.menuItemName ||
-      getString(raw, ["foodName", "name", "menuItemName"]) ||
-      getString(food, ["name", "localName", "canonicalName"]) ||
-      "FoodHub item",
-    storeName:
-      item.storeName ||
-      getString(raw, ["storeName"]) ||
-      getString(store, ["name", "storeName"]) ||
-      "FoodHub store",
-    photoUrl:
-      getString(raw, ["photoUrl", "foodPhotoUrl", "imageUrl"]) ||
-      getString(food, ["imageUrl", "photoUrl"]) ||
-      null,
-    rating:
-      getNumber(raw, ["rating", "averageRating"]) ||
-      getNumber(store, ["averageRating", "rating"]),
-    price:
-      item.priceSnapshot ??
-      getNumber(raw, ["price", "priceSnapshot"]) ??
-      getNumber(food, ["price"]),
-    currencyCode: item.currencyCode || getString(raw, ["currencyCode"]) || "USD",
-    distanceKm: item.distanceKm ?? getNumber(raw, ["distanceKm"]),
-    finalScore: item.finalScore ?? getNumber(raw, ["finalScore"]),
-    reasonText:
-      item.reasonText ||
-      getString(raw, ["reasonText"]) ||
-      getString(recommendation, ["reasonText"]),
-    reasonCodes:
-      item.reasonCodes ||
-      getStringArray(raw, ["reasonCodes"]) ||
-      getStringArray(recommendation, ["reasonCodes"]),
-    safetyStatus:
-      getString(raw, ["safetyStatus"]) ||
-      getString(recommendation, ["safetyStatus"]),
-    dietaryTags: [
-      ...getStringArray(raw, ["dietaryTypes", "dietaryTags"]),
-      ...getStringArray(food, ["dietaryTypes", "dietaryTags"]),
-    ],
-    allergenTags: [
-      ...getStringArray(raw, ["allergenDeclarations", "allergens"]),
-      ...getStringArray(food, ["allergenDeclarations", "allergens"]),
-    ],
-  };
-}
-
-function normalizeNeedles(values?: string[]): string[] {
-  return (values ?? [])
-    .map((value) => value.toLowerCase().trim())
-    .filter(Boolean);
-}
-
-function isSafeForParticipant(
-  candidate: MeetupCandidate,
-  session: StoredMeetupSession | null,
-) {
-  const safetyStatus = candidate.safetyStatus?.toUpperCase();
-
-  if (
-    safetyStatus === "BLOCKED" ||
-    safetyStatus === "UNSAFE" ||
-    safetyStatus === "DANGER"
-  ) {
-    return false;
-  }
-
-  if (!session || session.joinMode !== "GUEST") {
-    return true;
-  }
-
-  if (
-    session.budgetMin !== undefined &&
-    session.budgetMin !== null &&
-    candidate.price !== null &&
-    candidate.price < session.budgetMin
-  ) {
-    return false;
-  }
-
-  if (
-    session.budgetMax !== undefined &&
-    session.budgetMax !== null &&
-    candidate.price !== null &&
-    candidate.price > session.budgetMax
-  ) {
-    return false;
-  }
-
-  const selectedAllergies = normalizeNeedles(session.allergies);
-  const itemAllergens = normalizeNeedles(candidate.allergenTags);
-
-  if (
-    selectedAllergies.length > 0 &&
-    itemAllergens.some((allergen) =>
-      selectedAllergies.some((selected) => allergen.includes(selected)),
-    )
-  ) {
-    return false;
-  }
-
-  const selectedDietaryTypes = normalizeNeedles(session.dietaryTypes);
-  const itemDietaryTags = normalizeNeedles(candidate.dietaryTags);
-
-  if (
-    selectedDietaryTypes.length > 0 &&
-    itemDietaryTags.length > 0 &&
-    !selectedDietaryTypes.every((selected) =>
-      itemDietaryTags.some((tag) => tag.includes(selected)),
-    )
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
-function buildResultLink(shareToken: string) {
-  return `/meetup/result/${encodeURIComponent(shareToken)}`;
+function CandidateSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="aspect-[16/10] animate-pulse bg-slate-100 dark:bg-slate-800" />
+      <div className="space-y-3 p-4">
+        <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-3 w-1/2 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
+        <div className="h-11 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
+      </div>
+    </div>
+  );
 }
 
 export default function MeetupLiveRoom({
-  shareToken,
-  initialMeetupUuid,
+  meetupUuid: meetupUuidProp,
+  shareToken: shareTokenProp,
 }: MeetupLiveRoomProps) {
   const router = useRouter();
   const { data: user } = useGetCurrentUserQuery();
   const { data: backendUser } = useGetBackendUserQuery();
   const { data: profilePage, isLoading: isLoadingProfiles } =
-    useGetMemberProfilesQuery(undefined, {
-      skip: !user,
-    });
+    useGetMemberProfilesQuery(undefined, { skip: !user });
+
+  /*
+   * Polling stops once the room can no longer change — decided, cancelled, or
+   * unreachable — so a dead link does not keep hitting the API every few
+   * seconds for as long as the tab stays open.
+   */
+  const [isRoomLive, setIsRoomLive] = useState(true);
+  const roomPollMs = isRoomLive ? 6000 : 0;
+
+  /*
+   * A room reached by share token resolves through the public endpoint; one
+   * reached by uuid (host links, "my meetups") resolves through the owner
+   * endpoint. Only one of the two ever runs.
+   */
+  const shareTokenQuery = useResolveMeetupShareTokenQuery(shareTokenProp ?? "", {
+    skip: !shareTokenProp,
+    pollingInterval: roomPollMs,
+  });
+
+  const uuidQuery = useGetMeetupGroupQuery(meetupUuidProp ?? "", {
+    skip: Boolean(shareTokenProp) || !meetupUuidProp,
+    pollingInterval: roomPollMs,
+  });
 
   const {
     data: group,
     isLoading: isLoadingGroup,
     isError: hasGroupError,
     refetch: refetchGroup,
-  } = useResolveMeetupShareTokenQuery(shareToken, {
-    pollingInterval: 5000,
-  });
+  } = shareTokenProp ? shareTokenQuery : uuidQuery;
 
-  const meetupUuid = group?.uuid || initialMeetupUuid || "";
+  const meetupUuid = group?.uuid || meetupUuidProp || "";
+
+  const isRoomFinished =
+    group?.status === "DECIDED" ||
+    group?.status === "CANCELLED" ||
+    group?.status === "EXPIRED";
+  const shouldPoll = !hasGroupError && !isRoomFinished;
 
   /*
-   * The group payload normally carries participants. Some backend builds
-   * return it empty, so the dedicated participants endpoint backs it up.
+   * Adjusted during render rather than in an effect: the next poll interval is
+   * derived from the response that just arrived, so React can re-render with
+   * the new value before committing instead of after an extra pass.
    */
+  if (shouldPoll !== isRoomLive) {
+    setIsRoomLive(shouldPoll);
+  }
+
+  /*
+   * The invite and result links need the plaintext share token, which the API
+   * only returns once at creation. A host arriving by uuid recovers it from
+   * the local history written at that moment.
+   */
+  const recoveredShareToken = useStoredShareToken(
+    shareTokenProp ? "" : meetupUuid,
+  );
+
+  const shareToken = shareTokenProp || recoveredShareToken;
+
+  /* Identity is stored per share token; a uuid-only room keys on the uuid. */
+  const sessionKey = shareToken || meetupUuid;
+
   const { data: participantList } = useGetMeetupParticipantsQuery(meetupUuid, {
     skip: !meetupUuid,
-    pollingInterval: 8000,
+    pollingInterval: isRoomLive ? 8000 : 0,
   });
 
-  const allParticipants = group?.participants?.length
-    ? group.participants
-    : (participantList ?? []);
+  /* The group payload carries participants; the dedicated endpoint backs it up. */
+  const allParticipants = useMemo(
+    () =>
+      participantList?.length ? participantList : (group?.participants ?? []),
+    [participantList, group?.participants],
+  );
 
-  /* LEFT and REMOVED participants stay out of the roster and the count. */
-  const participants = allParticipants.filter(
-    (participant) => (participant.status ?? "ACTIVE") === "ACTIVE",
+  const participants = useMemo(
+    () =>
+      allParticipants.filter(
+        (participant) => (participant.status ?? "ACTIVE") === "ACTIVE",
+      ),
+    [allParticipants],
   );
 
   const departedCount = allParticipants.length - participants.length;
@@ -368,34 +183,26 @@ export default function MeetupLiveRoom({
     refetch: refetchTally,
   } = useGetMeetupVoteTallyQuery(meetupUuid, {
     skip: !meetupUuid,
-    pollingInterval: 4000,
+    pollingInterval: isRoomLive ? 4000 : 0,
   });
 
-  /*
-   * Cast votes are read back from the server so a participant's own vote
-   * survives a reload and so retracting one has a vote uuid to target.
-   */
   const { data: votesResponse, refetch: refetchVotes } = useGetMeetupVotesQuery(
     meetupUuid,
-    {
-      skip: !meetupUuid,
-      pollingInterval: 4000,
-    },
+    { skip: !meetupUuid, pollingInterval: isRoomLive ? 4000 : 0 },
   );
 
   const [createRecommendationSession, { isLoading: isLoadingRecommendations }] =
     useCreateRecommendationSessionMutation();
-  const [submitVote, { isLoading: isSubmittingVote }] =
-    useSubmitMeetupVoteMutation();
-  const [retractVote, { isLoading: isRetractingVote }] =
-    useRetractMeetupVoteMutation();
+  const [submitVote] = useSubmitMeetupVoteMutation();
+  const [retractVote] = useRetractMeetupVoteMutation();
   const [completeVoting, { isLoading: isCompleting }] =
     useCompleteMeetupVotingMutation();
+  const [removeParticipant] = useRemoveMeetupParticipantMutation();
+  const [leaveMeetup, { isLoading: isLeaving }] =
+    useLeaveMeetupParticipantMutation();
 
-  const [storedSession, setStoredSession] =
-    useState<StoredMeetupSession | null>(() =>
-      readStoredMeetupSession(shareToken),
-    );
+  /* Written by the join sheet; this room re-renders as soon as it lands. */
+  const storedSession = useStoredMeetupSession(sessionKey);
   const [recommendationSession, setRecommendationSession] =
     useState<RecommendationSession | null>(null);
   const recommendationKeyRef = useRef("");
@@ -404,56 +211,98 @@ export default function MeetupLiveRoom({
     null,
   );
   const [actionError, setActionError] = useState<string | null>(null);
+  /*
+   * complete-voting returns the winning card directly. Keeping it lets a host
+   * without the one-time share token still see the result, since the public
+   * result page can only be reached with that token.
+   */
+  const [winningCard, setWinningCard] =
+    useState<MeetupWinningCardResponse | null>(null);
+  const [votingFoodUuid, setVotingFoodUuid] = useState<string | null>(null);
+  const [removingUuid, setRemovingUuid] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [copiedResult, setCopiedResult] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
-  const defaultProfileUuid = useMemo(() => {
-    const profiles = profilePage?.contents ?? [];
-    return (
-      profiles.find((profile) => profile.isDefault && profile.isActive)?.uuid ||
-      profiles.find((profile) => profile.isActive)?.uuid ||
-      null
-    );
-  }, [profilePage?.contents]);
-
-  const selectedRecommendationProfileUuid =
-    storedSession?.profileUuid ||
-    (storedSession?.joinMode === "FRIEND" ? defaultProfileUuid : null);
+  const myProfileUuids = useMemo(
+    () =>
+      new Set(
+        (profilePage?.contents ?? [])
+          .map((profile) => profile.uuid)
+          .filter((uuid): uuid is string => Boolean(uuid)),
+      ),
+    [profilePage?.contents],
+  );
 
   /*
-   * The recommendation session must carry every profile in the room, not just
-   * the viewer's. Guests contribute no profile; their constraints ride along
-   * in contextData instead.
+   * A signed-in host or invited friend is already a participant, created
+   * server-side. Adopting that row keeps them out of the join sheet when they
+   * open the room on another device or after clearing storage.
    */
-  const meetupProfileUuids = useMemo(() => {
-    const fromParticipants = participants
-      .map((participant) => participant.profileUuid)
-      .filter((profileUuid): profileUuid is string => Boolean(profileUuid));
+  const adoptedParticipant = useMemo(() => {
+    if (storedSession || myProfileUuids.size === 0) {
+      return null;
+    }
 
-    const ordered = selectedRecommendationProfileUuid
-      ? [selectedRecommendationProfileUuid, ...fromParticipants]
-      : fromParticipants;
+    return (
+      participants.find(
+        (participant) =>
+          participant.profileUuid && myProfileUuids.has(participant.profileUuid),
+      ) ?? null
+    );
+  }, [storedSession, myProfileUuids, participants]);
 
-    return Array.from(new Set(ordered));
-  }, [participants, selectedRecommendationProfileUuid]);
+  const activeSession: StoredMeetupSession | null = useMemo(() => {
+    if (storedSession) {
+      return storedSession;
+    }
 
-  const candidates = useMemo(() => {
-    return (recommendationSession?.items ?? [])
-      .map(toMeetupCandidate)
-      .filter((candidate): candidate is MeetupCandidate => Boolean(candidate))
-      .filter((candidate) => isSafeForParticipant(candidate, storedSession));
-  }, [recommendationSession?.items, storedSession]);
+    if (adoptedParticipant?.uuid) {
+      return {
+        participantUuid: adoptedParticipant.uuid,
+        guestToken: null,
+        profileUuid: adoptedParticipant.profileUuid ?? null,
+        nickname: adoptedParticipant.nickname,
+        joinMode: "FRIEND",
+        locationMode: adoptedParticipant.locationMode === "PIN" ? "PIN" : "AREA",
+        locationLat: adoptedParticipant.locationLat,
+        locationLng: adoptedParticipant.locationLng,
+        allergies: [],
+        dietaryTypes: [],
+      };
+    }
+
+    return null;
+  }, [storedSession, adoptedParticipant]);
+
+  const myParticipantUuid = activeSession?.participantUuid ?? null;
+
+  /*
+   * Everyone in the room votes on the same dishes, so the slate is requested
+   * from the meetup's own profiles rather than the viewer's. Identical inputs
+   * make the backend return an identical ranking to every client.
+   */
+  const meetupProfileUuids = useMemo(
+    () => collectMeetupProfileUuids(participants),
+    [participants],
+  );
+
+  const slate = useMemo(
+    () => buildMeetupSlate(recommendationSession?.items ?? [], activeSession),
+    [recommendationSession?.items, activeSession],
+  );
 
   const inviteUrl =
-    typeof window !== "undefined"
+    shareToken && typeof window !== "undefined"
       ? `${window.location.origin}/meet/${shareToken}`
-      : `/meet/${shareToken}`;
-  const resultPath = buildResultLink(shareToken);
+      : "";
+  const resultPath = shareToken
+    ? `/meetup/result/${encodeURIComponent(shareToken)}`
+    : "";
   const resultUrl =
-    typeof window !== "undefined"
+    resultPath && typeof window !== "undefined"
       ? `${window.location.origin}${resultPath}`
-      : resultPath;
+      : "";
 
   const isHost =
     Boolean(
@@ -463,28 +312,26 @@ export default function MeetupLiveRoom({
     ) ||
     participants.some(
       (participant) =>
-        participant.uuid === storedSession?.participantUuid &&
+        participant.uuid === myParticipantUuid &&
         participant.participantRole === "HOST",
     );
 
-  const participantCount = participants.length;
   const totalVotes = tally?.totalVotes ?? 0;
-
-  /* APPROVAL lets a participant back several dishes; SINGLE_PICK allows one. */
   const isApprovalVoting =
     (group?.votingMethod ?? "").toUpperCase() === "APPROVAL";
+  const isDecided = group?.status === "DECIDED";
+  const isCancelled = group?.status === "CANCELLED";
+  const isVotingClosed = isDecided || isCancelled || group?.status === "EXPIRED";
 
   const myVotes = useMemo(() => {
-    const participantUuid = storedSession?.participantUuid;
-
-    if (!participantUuid) {
+    if (!myParticipantUuid) {
       return [];
     }
 
     return (votesResponse?.votes ?? []).filter(
-      (vote) => vote.participantUuid === participantUuid,
+      (vote) => vote.participantUuid === myParticipantUuid,
     );
-  }, [votesResponse?.votes, storedSession?.participantUuid]);
+  }, [votesResponse?.votes, myParticipantUuid]);
 
   /* foodUuid -> voteUuid, so a second tap on a card can retract that vote. */
   const myVoteUuidByFoodUuid = useMemo(() => {
@@ -501,15 +348,27 @@ export default function MeetupLiveRoom({
     return map;
   }, [myVotes]);
 
+  const votedParticipantUuids = useMemo(
+    () =>
+      new Set(
+        (votesResponse?.votes ?? [])
+          .map((vote) => vote.participantUuid)
+          .filter((uuid): uuid is string => Boolean(uuid)),
+      ),
+    [votesResponse?.votes],
+  );
+
   /* Display-only frontrunner; the host's complete-voting call decides. */
   const leadingFoodUuid = useMemo(() => {
     const leader = (tally?.tally ?? []).find((entry) => entry.isWinner);
 
-    return leader?.foodUuid || leader?.candidateUuid || tally?.winnerUuid || null;
+    return (
+      leader?.foodUuid || leader?.candidateUuid || tally?.winnerUuid || null
+    );
   }, [tally?.tally, tally?.winnerUuid]);
-  /* No profile anywhere in the room means there is nothing safe to match on. */
+
   const missingGroupProfiles =
-    meetupProfileUuids.length === 0 && !isLoadingProfiles;
+    meetupProfileUuids.length === 0 && !isLoadingProfiles && Boolean(group);
 
   const effectiveRecommendationError =
     recommendationError ||
@@ -518,26 +377,15 @@ export default function MeetupLiveRoom({
       : null);
 
   useEffect(() => {
-    if (!meetupUuid || !storedSession) {
-      return;
-    }
-
-    if (isLoadingProfiles) {
-      return;
-    }
-
-    /* Without at least one profile the backend has no safety set to apply. */
-    if (meetupProfileUuids.length === 0) {
+    if (!meetupUuid || !group || meetupProfileUuids.length === 0) {
       return;
     }
 
     const nextKey = JSON.stringify({
       meetupUuid,
-      participantUuid: storedSession.participantUuid,
       profileUuids: meetupProfileUuids,
-      guest: storedSession.joinMode === "GUEST" ? storedSession.profileSnapshot : null,
-      locationMode: group?.locationMode,
-      radius: group?.searchRadiusKm,
+      radius: group.searchRadiusKm,
+      refresh: recommendationRefreshKey,
     });
 
     if (recommendationKeyRef.current === nextKey) {
@@ -545,6 +393,7 @@ export default function MeetupLiveRoom({
     }
 
     recommendationKeyRef.current = nextKey;
+    setRecommendationError(null);
 
     void createRecommendationSession({
       /*
@@ -552,41 +401,19 @@ export default function MeetupLiveRoom({
        * must use SINGLE or the backend rejects the session.
        */
       mode: meetupProfileUuids.length >= 2 ? "GROUP" : "SINGLE",
-      /*
-       * "WEB" is the request source the backend accepts. The meetup marker
-       * travels in contextData, which is free-form.
-       */
-      //requestSource: "WEB",
       requestSource: "HOMEPAGE_AUTO",
       requestedLimit: 12,
-      searchRadiusKm: group?.searchRadiusKm ?? 3,
+      searchRadiusKm: group.searchRadiusKm ?? 5,
       currencyCode: "USD",
       contextData: {
         meetupUuid,
-        shareToken,
-        audienceMode: group?.audienceMode,
-        locationMode: group?.locationMode,
-        targetAreaName: group?.targetAreaName,
-        targetCity: group?.targetCity,
-        targetProvince: group?.targetProvince,
-        targetLat: group?.targetLat,
-        targetLng: group?.targetLng,
-        participantUuid: storedSession.participantUuid,
-        participantLocation:
-          storedSession.locationMode === "PIN"
-            ? {
-                lat: storedSession.locationLat,
-                lng: storedSession.locationLng,
-              }
-            : {
-                areaName: storedSession.targetAreaName,
-                city: storedSession.targetCity,
-                province: storedSession.targetProvince,
-              },
-        profileSnapshot:
-          storedSession.joinMode === "GUEST"
-            ? storedSession.profileSnapshot
-            : undefined,
+        audienceMode: group.audienceMode,
+        locationMode: group.locationMode,
+        targetAreaName: group.targetAreaName,
+        targetCity: group.targetCity,
+        targetProvince: group.targetProvince,
+        targetLat: group.targetLat,
+        targetLng: group.targetLng,
       },
       profiles: meetupProfileUuids.map((profileUuid, index) => ({
         profileId: profileUuid,
@@ -594,44 +421,43 @@ export default function MeetupLiveRoom({
       })),
     })
       .unwrap()
-      .then((session) => {
-        setRecommendationSession(session);
-      })
+      .then(setRecommendationSession)
       .catch((error) => {
         console.error("Meetup recommendation request failed:", error);
-        setRecommendationError("FoodHub មិនអាចផ្ទុកការណែនាំដែលមានសុវត្ថិភាពសម្រាប់ការណាត់ជួបនេះបានទេ។");
+        recommendationKeyRef.current = "";
+        setRecommendationError(
+          "FoodHub មិនអាចផ្ទុកការណែនាំដែលមានសុវត្ថិភាពសម្រាប់ការណាត់ជួបនេះបានទេ។",
+        );
       });
   }, [
     createRecommendationSession,
-    group?.audienceMode,
-    group?.locationMode,
-    group?.searchRadiusKm,
-    group?.targetAreaName,
-    group?.targetCity,
-    group?.targetLat,
-    group?.targetLng,
-    group?.targetProvince,
-    isLoadingProfiles,
+    group,
     meetupProfileUuids,
     meetupUuid,
     recommendationRefreshKey,
-    shareToken,
-    storedSession,
   ]);
 
-  const getVoteCount = (candidate: MeetupCandidate) => {
-    const entry = tally?.tally.find(
-      (item) =>
-        item.foodUuid === candidate.foodUuid ||
-        item.candidateUuid === candidate.foodUuid ||
-        item.candidateUuid === candidate.candidateUuid,
-    );
-
-    return entry?.voteCount ?? 0;
-  };
+  const getVoteCount = useCallback(
+    (candidate: MeetupCandidate) =>
+      (tally?.tally ?? []).find(
+        (entry) =>
+          entry.foodUuid === candidate.foodUuid ||
+          entry.candidateUuid === candidate.foodUuid,
+      )?.voteCount ?? 0,
+    [tally?.tally],
+  );
 
   const handleCopy = async (value: string, type: "invite" | "result") => {
-    await navigator.clipboard.writeText(value);
+    if (!value) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      setActionError("មិនអាចចម្លងតំណបានទេ។ សូមចម្លងដោយដៃ។");
+      return;
+    }
 
     if (type === "invite") {
       setCopiedInvite(true);
@@ -643,12 +469,13 @@ export default function MeetupLiveRoom({
   };
 
   const handleVote = async (candidate: MeetupCandidate) => {
-    if (!meetupUuid || !storedSession) {
+    if (!meetupUuid || !activeSession) {
       setActionError("សូមចូលរួមការណាត់ជួបមុននឹងបោះឆ្នោត។");
       return;
     }
 
     setActionError(null);
+    setVotingFoodUuid(candidate.foodUuid);
 
     const existingVoteUuid = myVoteUuidByFoodUuid.get(candidate.foodUuid);
 
@@ -659,9 +486,8 @@ export default function MeetupLiveRoom({
       } else {
         if (!isApprovalVoting) {
           /*
-           * SINGLE_PICK allows one vote, so clear the previous one first.
-           * A backend that replaces the vote itself makes this a no-op, so a
-           * failure here must not block the new vote.
+           * SINGLE_PICK allows one vote, so clear the previous one first. A
+           * vote already gone server-side must not block the new one.
            */
           for (const vote of myVotes) {
             if (!vote.uuid) {
@@ -678,18 +504,26 @@ export default function MeetupLiveRoom({
 
         await submitVote({
           meetupUuid,
-          participantUuid: storedSession.participantUuid,
+          participantUuid: activeSession.participantUuid,
+          /* The vote endpoint resolves canonical foods only. */
           foodUuid: candidate.foodUuid,
-          rankChoice: 1,
         }).unwrap();
       }
 
       await Promise.all([refetchVotes(), refetchTally()]);
     } catch (error: unknown) {
       console.error("Meetup vote failed:", error);
-      setActionError(
-        getApiErrorMessage(error, "FoodHub មិនអាចកែសំឡេងរបស់អ្នកបានទេ។"),
-      );
+
+      if (isAlreadyVotedError(error)) {
+        /* The server already holds this vote; realign instead of erroring. */
+        await Promise.all([refetchVotes(), refetchTally()]);
+      } else {
+        setActionError(
+          getMeetupErrorMessage(error, "FoodHub មិនអាចកែសំឡេងរបស់អ្នកបានទេ។"),
+        );
+      }
+    } finally {
+      setVotingFoodUuid(null);
     }
   };
 
@@ -701,50 +535,106 @@ export default function MeetupLiveRoom({
     setActionError(null);
 
     try {
-      await completeVoting(meetupUuid).unwrap();
+      const card = await completeVoting(meetupUuid).unwrap();
       await Promise.all([refetchGroup(), refetchTally()]);
-      router.push(resultPath);
+
+      if (resultPath) {
+        router.push(resultPath);
+      } else {
+        setWinningCard(card);
+      }
     } catch (error) {
       console.error("Complete voting failed:", error);
-      setActionError("FoodHub មិនទាន់អាចបញ្ចប់ការបោះឆ្នោតបានទេ។");
+      setActionError(
+        getMeetupErrorMessage(error, "FoodHub មិនទាន់អាចបញ្ចប់ការបោះឆ្នោតបានទេ។"),
+      );
     }
+  };
+
+  const handleRemoveParticipant = async (participantUuid: string) => {
+    setActionError(null);
+    setRemovingUuid(participantUuid);
+
+    try {
+      await removeParticipant({ participantUuid, meetupUuid }).unwrap();
+    } catch (error) {
+      setActionError(
+        getMeetupErrorMessage(error, "មិនអាចដកអ្នកចូលរួមនេះបានទេ។"),
+      );
+    } finally {
+      setRemovingUuid(null);
+    }
+  };
+
+  const handleLeave = async () => {
+    if (!activeSession) {
+      return;
+    }
+
+    setActionError(null);
+
+    try {
+      await leaveMeetup({
+        participantUuid: activeSession.participantUuid,
+        meetupUuid,
+      }).unwrap();
+      router.push("/meetup");
+    } catch (error) {
+      setActionError(
+        getMeetupErrorMessage(error, "មិនអាចចាកចេញពីការណាត់ជួបបានទេ។"),
+      );
+    }
+  };
+
+  const handleRefreshRecommendations = () => {
+    recommendationKeyRef.current = "";
+    setRecommendationError(null);
+    setRecommendationSession(null);
+    setRecommendationRefreshKey((current) => current + 1);
   };
 
   if (isLoadingGroup) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-slate-500">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary-600" />
-        កំពុងផ្ទុកការណាត់ជួប...
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-3 text-slate-500">
+          <Loader2 className="h-7 w-7 animate-spin text-primary-600" />
+          <p className="text-sm font-bold">កំពុងផ្ទុកការណាត់ជួប...</p>
+        </div>
       </main>
     );
   }
 
   if (hasGroupError || !group) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 pt-24">
-        <section className="mx-auto max-w-xl rounded-3xl border border-rose-100 bg-white p-8 text-center shadow-sm">
-          <p className="text-2xl font-black text-slate-900">
+      <main className="min-h-screen bg-slate-50 px-4 pt-24 dark:bg-slate-950">
+        <section className="mx-auto max-w-xl rounded-3xl border border-rose-100 bg-white p-8 text-center shadow-sm dark:border-rose-900/40 dark:bg-slate-900">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/40">
+            <AlertCircle className="h-7 w-7" />
+          </div>
+          <h1 className="mt-4 text-2xl! font-black text-slate-900 dark:text-white">
             រកមិនឃើញការណាត់ជួប
-          </p>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            តំណអញ្ជើញអាចផុតកំណត់ ឬមិនអាចប្រើបាន។
+          </h1>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            តំណអញ្ជើញអាចផុតកំណត់ ត្រូវបានលុប ឬមិនត្រឹមត្រូវ។
           </p>
           <Link
             href="/meetup/create"
-            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary-600 px-5 text-sm font-black text-white"
+            className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-6 text-sm font-black text-white shadow-md transition hover:bg-primary-700"
           >
             បង្កើតការណាត់ជួប
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </section>
       </main>
     );
   }
 
-  if (!storedSession && group.status !== "DECIDED") {
+  /* An unidentified visitor joins first; a decided room is read-only. */
+  if (!activeSession && !isDecided) {
     return (
       <main className="min-h-screen bg-slate-50 px-4 pb-16 pt-24 dark:bg-slate-950 sm:px-6">
         <GuestJoinSafetySheet
-          shareToken={shareToken}
+          shareToken={shareToken ?? ""}
           meetupUuid={meetupUuid}
           meetupTitle={group.title || "FoodHub meetup"}
           audienceMode={group.audienceMode}
@@ -753,8 +643,11 @@ export default function MeetupLiveRoom({
           targetAreaName={group.targetAreaName}
           targetCity={group.targetCity}
           targetProvince={group.targetProvince}
-          onJoined={(session) => {
-            setStoredSession(session);
+          targetLat={group.targetLat}
+          targetLng={group.targetLng}
+          searchRadiusKm={group.searchRadiusKm}
+          sessionKey={sessionKey}
+          onJoined={() => {
             void refetchGroup();
           }}
         />
@@ -762,396 +655,202 @@ export default function MeetupLiveRoom({
     );
   }
 
-  const isDecided = group.status === "DECIDED";
-  const isCancelled = group.status === "CANCELLED";
-
   return (
-    <main className="min-h-screen bg-slate-50 px-4 pb-16 pt-20 dark:bg-slate-950 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <section className="rounded-3xl bg-linear-to-r from-primary-800 to-primary-950 p-6 text-white shadow-xl sm:p-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-bold uppercase tracking-wide text-primary-100">
-                <Vote className="h-3.5 w-3.5" />
-                {isDecided
-                  ? "បោះឆ្នោតរួចរាល់"
-                  : isCancelled
-                    ? "បានលុបចោល"
-                    : "កំពុងបោះឆ្នោត"}
-              </div>
-              <p className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-                {group.title || "ការណាត់ញ៉ាំអាហារ FoodHub"}
+    <main className="min-h-screen bg-slate-50 px-4 pb-20 pt-20 dark:bg-slate-950 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-5">
+        <MeetupRoomHeader
+          group={group}
+          participantCount={participants.length}
+          totalVotes={totalVotes}
+          canShare={Boolean(shareToken)}
+          copiedInvite={copiedInvite}
+          copiedResult={copiedResult}
+          onCopyInvite={() => handleCopy(inviteUrl, "invite")}
+          onCopyResult={() => handleCopy(resultUrl, "result")}
+          onShowQr={() => setShowQrModal(true)}
+        />
+
+        {winningCard ? (
+          <MeetupWinnerCelebration
+            winningCard={winningCard}
+            shareToken={shareToken ?? undefined}
+          />
+        ) : (
+          isDecided && (
+            <section className="flex flex-col gap-3 rounded-3xl border border-accent-200 bg-accent-50 p-5 dark:border-accent-900 dark:bg-accent-950/30 sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-center gap-2 text-sm font-black text-accent-800 dark:text-accent-200">
+                <Trophy className="h-5 w-5 shrink-0" />
+                ការបោះឆ្នោតបានបញ្ចប់រួចរាល់។
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-semibold text-primary-50/90">
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="h-4 w-4" />
-                  {participantCount} នាក់ចូលរួម
-                  {departedCount > 0 ? ` · ចាកចេញ ${departedCount}` : ""}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4" />
-                  {group.locationMode === "PIN"
-                    ? `ជុំវិញ ${group.searchRadiusKm ?? 3} គ.ម`
-                    : [group.targetAreaName, group.targetCity, group.targetProvince]
-                        .filter(Boolean)
-                        .join(", ") || "តាមតំបន់"}
-                </span>
-              </div>
-            </div>
+              {resultPath && (
+                <Link
+                  href={resultPath}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 text-sm font-black text-white shadow-sm transition hover:bg-primary-700"
+                >
+                  បើកទំព័រលទ្ធផល
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+            </section>
+          )
+        )}
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setShowQrModal(true)}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 text-sm font-bold text-white transition hover:bg-white/20"
-              >
-                <QrCode className="h-4 w-4" />
-                QR កូដ
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCopy(inviteUrl, "invite")}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-primary-950 transition hover:bg-slate-100"
-              >
-                {copiedInvite ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-                អញ្ជើញ
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCopy(resultUrl, "result")}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-accent-300 px-4 text-sm font-bold text-primary-950 transition hover:bg-accent-200"
-              >
-                {copiedResult ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                លទ្ធផល
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {isDecided && (
-          <section className="rounded-3xl border border-accent-200 bg-accent-50 p-5 text-sm font-semibold text-accent-800">
-            ការបោះឆ្នោតបានបញ្ចប់។{" "}
-            <Link href={resultPath} className="font-black underline">
-              បើកទំព័រលទ្ធផល
-            </Link>
-            .
+        {isCancelled && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            ការណាត់ជួបនេះត្រូវបានលុបចោលដោយម្ចាស់ផ្ទះ។
           </section>
         )}
 
         {actionError && (
-          <section className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          <section
+            role="alert"
+            className="flex items-start gap-2.5 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold leading-6 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-300"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             {actionError}
           </section>
         )}
 
-        <section className="grid gap-4 lg:grid-cols-[1fr_340px]">
-          <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xl font-black text-slate-900 dark:text-white">
-                  ម្ហូបដែលមានសុវត្ថិភាព
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  ការណែនាំត្រូវបានផ្ទុកតាមអ្នកចូលរួមដែលបានចូល។
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="flex items-center gap-2 text-lg! font-black text-slate-900 dark:text-white">
+                  <Utensils className="h-5 w-5 shrink-0 text-primary-600" />
+                  ជ្រើសរើសម្ហូប
+                </h2>
+                <p className="mt-1 text-sm leading-5 text-slate-500">
+                  បញ្ជីតែមួយសម្រាប់អ្នកគ្រប់គ្នាក្នុងបន្ទប់នេះ។
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  recommendationKeyRef.current = "";
-                  setRecommendationError(null);
-                  setRecommendationSession(null);
-                  setRecommendationRefreshKey((current) => current + 1);
-                }}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300"
+                onClick={handleRefreshRecommendations}
+                disabled={isLoadingRecommendations}
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoadingRecommendations ? "animate-spin" : ""}`}
+                />
                 ផ្ទុកឡើងវិញ
               </button>
             </div>
 
+            {slate.hiddenForAllergies > 0 && (
+              <p className="flex items-start gap-2 rounded-2xl border border-accent-200 bg-accent-50 px-4 py-3 text-sm font-semibold leading-6 text-accent-800 dark:border-accent-900 dark:bg-accent-950/30 dark:text-accent-200">
+                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                បានលាក់ម្ហូប {slate.hiddenForAllergies} មុខ
+                ព្រោះមានធាតុផ្សំដែលអ្នកបានរាយថាមានអាឡែស៊ី។
+              </p>
+            )}
+
             {isLoadingRecommendations ? (
-              <div className="flex min-h-64 items-center justify-center rounded-2xl bg-slate-50 text-sm font-semibold text-slate-500">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary-600" />
-                កំពុងផ្ទុកការណែនាំ...
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <CandidateSkeleton />
+                <CandidateSkeleton />
+                <CandidateSkeleton />
               </div>
             ) : effectiveRecommendationError ? (
               <div className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-rose-100 bg-rose-50 p-6 text-center dark:border-rose-900/40 dark:bg-rose-950/20">
-                <p className="max-w-md text-sm font-semibold leading-6 text-rose-700 dark:text-rose-300 lg:text-base">
+                <ChefHat className="h-9 w-9 text-rose-400" />
+                <p className="max-w-md text-sm font-semibold leading-6 text-rose-700 dark:text-rose-300">
                   {effectiveRecommendationError}
                 </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    recommendationKeyRef.current = "";
-                    setRecommendationError(null);
-                    setRecommendationSession(null);
-                    setRecommendationRefreshKey((current) => current + 1);
-                  }}
+                  onClick={handleRefreshRecommendations}
                   className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-50 dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-900"
                 >
                   <RefreshCw className="h-4 w-4 shrink-0" />
                   ព្យាយាមម្តងទៀត
                 </button>
               </div>
-            ) : candidates.length === 0 ? (
-              <div className="flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm leading-6 text-slate-500 dark:border-slate-700">
-                មិនទាន់មានម្ហូបដែលមានសុវត្ថិភាពត្រូវនឹងលក្ខខណ្ឌទេ។
-                សូមផ្ទុកឡើងវិញបន្ទាប់ពីមានអ្នកចូលរួមបន្ថែម។
+            ) : slate.candidates.length === 0 ? (
+              <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
+                <ChefHat className="h-9 w-9 text-slate-300 dark:text-slate-600" />
+                <p className="max-w-sm text-sm leading-6 text-slate-500">
+                  មិនទាន់មានម្ហូបដែលត្រូវនឹងលក្ខខណ្ឌរបស់បន្ទប់នេះទេ។
+                  សូមផ្ទុកឡើងវិញបន្ទាប់ពីមានអ្នកចូលរួមបន្ថែម។
+                </p>
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                {candidates.map((candidate) => {
-                  const voteCount = getVoteCount(candidate);
-                  const selected = myVoteUuidByFoodUuid.has(candidate.foodUuid);
-                  const isLeading =
-                    voteCount > 0 && candidate.foodUuid === leadingFoodUuid;
-
-                  return (
-                    <article
-                      key={`${candidate.foodUuid}-${candidate.candidateUuid}`}
-                      className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition dark:bg-slate-950 ${
-                        selected
-                          ? "border-primary-500 ring-2 ring-primary-500/15"
-                          : "border-slate-200 dark:border-slate-800"
-                      }`}
-                    >
-                      <div className="relative h-40 bg-slate-100 dark:bg-slate-800">
-                        {candidate.photoUrl ? (
-                          <img
-                            src={candidate.photoUrl}
-                            alt={candidate.foodName}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-slate-400">
-                            <Sparkles className="h-8 w-8" />
-                          </div>
-                        )}
-                        <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary-600 px-2.5 py-1 text-sm font-black text-white shadow-sm">
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          សុវត្ថិភាព
-                        </span>
-                        {isLeading && (
-                          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-accent-300 px-2.5 py-1 text-sm font-black text-primary-950 shadow-sm">
-                            <Trophy className="h-3.5 w-3.5" />
-                            នាំមុខ
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="space-y-4 p-4">
-                        <div>
-                          <p className="line-clamp-2 text-lg font-black text-slate-900 dark:text-white">
-                            {candidate.foodName}
-                          </p>
-                          <p className="mt-1 text-sm font-semibold text-secondary-500">
-                            {candidate.storeName}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 text-sm font-bold">
-                          {candidate.price !== null && (
-                            <span className="rounded-full bg-primary-50 px-2.5 py-1 text-primary-700">
-                              {candidate.currencyCode === "USD" ? "$" : candidate.currencyCode}
-                              {candidate.price.toFixed(2)}
-                            </span>
-                          )}
-                          {candidate.distanceKm !== null && (
-                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                              {candidate.distanceKm.toFixed(1)}km
-                            </span>
-                          )}
-                          {candidate.finalScore !== null && (
-                            <span className="rounded-full bg-accent-50 px-2.5 py-1 text-accent-700">
-                              ពិន្ទុ {Math.round(candidate.finalScore)}
-                            </span>
-                          )}
-                        </div>
-
-                        {candidate.reasonText && (
-                          <p className="line-clamp-3 text-sm leading-6 text-slate-500">
-                            {candidate.reasonText}
-                          </p>
-                        )}
-
-                        <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
-                          <span className="text-sm font-black text-primary-700">
-                            {voteCount} vote{voteCount === 1 ? "" : "s"}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleVote(candidate)}
-                            disabled={
-                              isSubmittingVote || isRetractingVote || isDecided
-                            }
-                            aria-pressed={selected}
-                            aria-label={
-                              selected
-                                ? `ដកសំឡេងសម្រាប់ ${candidate.foodName}`
-                                : `បោះឆ្នោតឲ្យ ${candidate.foodName}`
-                            }
-                            className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                              selected
-                                ? "border border-primary-600 bg-white text-primary-700 hover:bg-primary-50 dark:bg-slate-950 dark:hover:bg-slate-900"
-                                : "bg-primary-600 text-white hover:bg-primary-700"
-                            }`}
-                          >
-                            {isSubmittingVote || isRetractingVote ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : selected ? (
-                              <Undo2 className="h-4 w-4" />
-                            ) : (
-                              <Vote className="h-4 w-4" />
-                            )}
-                            {selected ? "ដកសំឡេង" : "បោះឆ្នោត"}
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {slate.candidates.map((candidate) => (
+                  <MeetupCandidateCard
+                    key={candidate.foodUuid}
+                    candidate={candidate}
+                    voteCount={getVoteCount(candidate)}
+                    totalVotes={totalVotes}
+                    isSelected={myVoteUuidByFoodUuid.has(candidate.foodUuid)}
+                    isLeading={candidate.foodUuid === leadingFoodUuid}
+                    isBusy={votingFoodUuid === candidate.foodUuid}
+                    isLocked={isVotingClosed || votingFoodUuid !== null}
+                    onVote={handleVote}
+                  />
+                ))}
               </div>
             )}
-          </div>
+          </section>
 
           <aside className="space-y-4">
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-lg font-black text-slate-900 dark:text-white">
-                  លទ្ធផលបោះឆ្នោត
-                </p>
-                {isFetchingTally && (
-                  <Loader2 className="h-4 w-4 animate-spin text-primary-600" />
-                )}
-              </div>
-              <p className="mt-1 text-sm font-semibold text-slate-400">
-                {isApprovalVoting
-                  ? "បោះឆ្នោតបែបយល់ព្រម — អាចជ្រើសរើសម្ហូបច្រើនមុខ។"
-                  : "ម្នាក់មួយសំឡេង — បោះម្ដងទៀតនឹងផ្លាស់ប្ដូរសំឡេង។"}
-              </p>
+            <MeetupTallyPanel
+              tally={tally?.tally ?? []}
+              totalVotes={totalVotes}
+              isFetching={isFetchingTally}
+              isApprovalVoting={isApprovalVoting}
+            />
 
-              <div className="mt-4 space-y-3">
-                {(tally?.tally ?? []).length === 0 ? (
-                  <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950">
-                    កំពុងរង់ចាំសំឡេងបោះឆ្នោត។
-                  </p>
-                ) : (
-                  tally?.tally.map((entry, index) => (
-                    <div
-                      key={`${entry.candidateUuid}-${index}`}
-                      className={`rounded-2xl p-3 ${
-                        entry.isWinner
-                          ? "bg-accent-50 ring-1 ring-accent-200 dark:bg-accent-950/30 dark:ring-accent-900"
-                          : "bg-slate-50 dark:bg-slate-950"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="flex min-w-0 items-center gap-1.5 truncate text-sm font-black text-slate-800 dark:text-slate-200">
-                          {entry.isWinner && (
-                            <Trophy className="h-3.5 w-3.5 shrink-0 text-accent-500" />
-                          )}
-                          <span className="truncate">
-                            {entry.foodName ||
-                              entry.candidateName ||
-                              entry.candidateUuid}
-                          </span>
-                        </p>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-sm font-black ${
-                            entry.isWinner
-                              ? "bg-accent-200 text-accent-900"
-                              : "bg-primary-100 text-primary-700"
-                          }`}
-                        >
-                          {entry.voteCount}
-                        </span>
-                      </div>
-                      {entry.storeName && (
-                        <p className="mt-1 truncate text-sm font-semibold text-slate-400">
-                          {entry.storeName}
-                        </p>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
+            <MeetupParticipantsPanel
+              participants={participants}
+              departedCount={departedCount}
+              myParticipantUuid={myParticipantUuid}
+              votedParticipantUuids={votedParticipantUuids}
+              canModerate={isHost && !isVotingClosed}
+              removingUuid={removingUuid}
+              onRemove={handleRemoveParticipant}
+            />
 
-              <div className="mt-4 border-t border-slate-100 pt-4 text-sm font-semibold text-slate-500 dark:border-slate-800">
-                សំឡេងសរុប៖ {totalVotes}
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-lg font-black text-slate-900 dark:text-white">
-                អ្នកចូលរួម
-              </p>
-              <div className="mt-4 space-y-2">
-                {participants.length === 0 ? (
-                  <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950">
-                    កំពុងរង់ចាំអ្នកចូលរួម។
-                  </p>
-                ) : (
-                  participants.map((participant, index) => (
-                    <div
-                      key={participant.uuid || index}
-                      className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-950"
-                    >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-black text-white">
-                        {toDisplayName(participant.nickname, "?")
-                          .charAt(0)
-                          .toUpperCase()}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-black capitalize text-slate-800 dark:text-slate-200">
-                          {toDisplayName(
-                            participant.nickname,
-                            `សមាជិក ${index + 1}`,
-                          )}
-                        </span>
-                        <span className="text-sm font-semibold text-slate-400">
-                          {participant.participantRole === "HOST"
-                            ? "ម្ចាស់ផ្ទះ"
-                            : participant.participantRole === "GUEST"
-                              ? "ភ្ញៀវ"
-                              : "សមាជិក"}
-                          {participant.locationLat !== null &&
-                          participant.locationLng !== null
-                            ? " · បានចែករំលែកទីតាំង"
-                            : ""}
-                        </span>
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </section>
-
-            {isHost && !isDecided && !isCancelled && (
+            {isHost && !isVotingClosed && (
               <section className="rounded-3xl border border-primary-200 bg-primary-50 p-5 dark:border-primary-900 dark:bg-primary-950/30">
-                <p className="text-lg font-black text-slate-900 dark:text-white">
+                <h2 className="text-base! font-black text-slate-900 dark:text-white">
                   បញ្ចប់ការបោះឆ្នោត
-                </p>
+                </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  តំណលទ្ធផលនឹងបើកបន្ទាប់ពីការបោះឆ្នោតបញ្ចប់។
+                  ម្ហូបដែលមានសំឡេងច្រើនជាងគេនឹងក្លាយជាលទ្ធផលចុងក្រោយ។
                 </p>
                 <button
                   type="button"
                   onClick={handleCompleteVoting}
-                  disabled={isCompleting}
-                  className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-primary-700 disabled:cursor-wait disabled:opacity-60"
+                  disabled={isCompleting || totalVotes === 0}
+                  className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isCompleting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Trophy className="h-4 w-4" />
                   )}
-                  បញ្ចប់ការបោះឆ្នោត
+                  {totalVotes === 0 ? "រង់ចាំសំឡេងបោះឆ្នោត" : "បញ្ចប់ការបោះឆ្នោត"}
                 </button>
               </section>
             )}
+
+            {activeSession && !isHost && !isVotingClosed && (
+              <button
+                type="button"
+                onClick={handleLeave}
+                disabled={isLeaving}
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-500 transition hover:border-rose-200 hover:text-rose-600 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+              >
+                {isLeaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <LogOut className="h-4 w-4" />
+                )}
+                ចាកចេញពីការណាត់ជួប
+              </button>
+            )}
           </aside>
-        </section>
+        </div>
       </div>
 
       <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
@@ -1164,12 +863,16 @@ export default function MeetupLiveRoom({
               បើកតំណអញ្ជើញនេះនៅលើឧបករណ៍ផ្សេង។
             </DialogDescription>
           </DialogHeader>
-          <div className="my-4 flex justify-center">
-            <QRCodeSVG value={inviteUrl} size={200} />
-          </div>
-          <p className="truncate font-mono text-sm text-slate-400">
-            {inviteUrl}
-          </p>
+          {inviteUrl && (
+            <>
+              <div className="my-4 flex justify-center rounded-2xl bg-white p-3">
+                <QRCodeSVG value={inviteUrl} size={200} />
+              </div>
+              <p className="truncate font-mono text-xs text-slate-400">
+                {inviteUrl}
+              </p>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </main>

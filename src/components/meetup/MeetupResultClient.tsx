@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Loader2, RefreshCw, Trophy, Vote } from "lucide-react";
 
 import {
@@ -21,21 +22,30 @@ function isResultReady(status?: string | null, resultReady?: boolean) {
 export default function MeetupResultClient({
   shareToken,
 }: MeetupResultClientProps) {
+  /*
+   * The result endpoint answers 400 "not ready yet" until the host completes
+   * voting, so this page polls the meetup until it turns DECIDED and then
+   * stops — a decided result never changes again.
+   */
+  const [isWaitingForResult, setIsWaitingForResult] = useState(true);
+  const resultPollMs = isWaitingForResult ? 5000 : 0;
+
   const {
     data: result,
     isLoading: isLoadingResult,
     isFetching: isFetchingResult,
     refetch: refetchResult,
   } = useGetMeetupResultQuery(shareToken, {
-    pollingInterval: 5000,
+    pollingInterval: resultPollMs,
   });
 
   const {
     data: group,
     isLoading: isLoadingGroup,
+    isError: hasGroupError,
     refetch: refetchGroup,
   } = useResolveMeetupShareTokenQuery(shareToken, {
-    pollingInterval: 5000,
+    pollingInterval: resultPollMs,
   });
 
   const meetupUuid = result?.meetupUuid || group?.uuid || "";
@@ -45,10 +55,20 @@ export default function MeetupResultClient({
     refetch: refetchTally,
   } = useGetMeetupVoteTallyQuery(meetupUuid, {
     skip: !meetupUuid,
-    pollingInterval: 5000,
+    pollingInterval: resultPollMs,
   });
 
   const ready = isResultReady(result?.status || group?.status, result?.resultReady);
+  const shouldWait =
+    !ready && group?.status !== "CANCELLED" && !hasGroupError;
+
+  /*
+   * Adjusted during render rather than in an effect: polling only has to stop
+   * once the meetup reaches a state that can no longer change.
+   */
+  if (shouldWait !== isWaitingForResult) {
+    setIsWaitingForResult(shouldWait);
+  }
   const hasWinner =
     Boolean(result?.winningCandidateName) ||
     Boolean(result?.winningCandidateId) ||
@@ -63,6 +83,7 @@ export default function MeetupResultClient({
   }
 
   const isLoading = isLoadingResult || isLoadingGroup;
+  const isCancelled = group?.status === "CANCELLED";
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-16 pt-24 dark:bg-slate-950 sm:px-6">
@@ -76,11 +97,12 @@ export default function MeetupResultClient({
             )}
           </div>
           <p className="mt-4 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-            លទ្ធផលមិនទាន់រួចរាល់
+            {isCancelled ? "ការណាត់ជួបត្រូវបានលុបចោល" : "លទ្ធផលមិនទាន់រួចរាល់"}
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            ការបោះឆ្នោតកំពុងបន្ត។ ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាព
-            នៅពេលម្ចាស់ផ្ទះបញ្ចប់ការណាត់ជួប។
+            {isCancelled
+              ? "ម្ចាស់ផ្ទះបានលុបចោលការណាត់ជួបនេះ ដូច្នេះគ្មានលទ្ធផលចុងក្រោយទេ។"
+              : "ការបោះឆ្នោតកំពុងបន្ត។ ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាព នៅពេលម្ចាស់ផ្ទះបញ្ចប់ការណាត់ជួប។"}
           </p>
         </div>
 
