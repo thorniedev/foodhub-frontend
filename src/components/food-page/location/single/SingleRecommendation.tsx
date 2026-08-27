@@ -587,11 +587,13 @@ export default function SingleRecommendation({
                   transition={{
                     duration: 0.22,
                   }}
+                  onClick={() => storeUuid && handleViewDestination(storeUuid)}
                   className={`
         min-w-0
         rounded-[24px]
-        transition-shadow
-        ${selected ? "ring-2 ring-primary-300 ring-offset-2" : ""}
+        transition-all
+        cursor-pointer
+        ${selected ? "ring-2 ring-primary-700 ring-offset-2 shadow-md dark:ring-emerald-500" : ""}
       `}
                 >
                   <FooodCard

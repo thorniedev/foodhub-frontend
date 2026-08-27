@@ -11,14 +11,17 @@ import {
   IoLocationOutline,
   IoMapOutline,
   IoOptionsOutline,
+  IoLinkOutline,
   IoPeopleOutline,
   IoPersonOutline,
   IoRefreshOutline,
+  IoRestaurantOutline,
   IoShieldCheckmarkOutline,
   IoStorefrontOutline,
 } from "react-icons/io5";
 
 import type { RecommendationMode } from "@/types/location";
+import RecommendationModeTabs from "./RecommendationModeTabs";
 
 import type { LocationSelectionSource } from "@/hooks/useUserLocation";
 
@@ -115,20 +118,24 @@ export default function LocationHeader({
             aria-level={1}
             className="mt-2 text-[24px] font-semibold leading-tight text-primary-900 sm:text-[27px]"
           >
-            {mode === "single"
-              ? "ការណាត់ញ៉ាំអាហារជាមួយមិត្តភក្តិ"
-              : "ការណាត់ញ៉ាំអាហារជាក្រុម"}
+            {mode === "me"
+              ? "ម្ហូបនៅជិតអ្នក"
+              : mode === "single"
+                ? "ការណាត់ញ៉ាំអាហារជាមួយមិត្តភក្តិ"
+                : "ការណាត់ញ៉ាំអាហារជាក្រុម"}
           </p>
 
           <p className="mt-2 max-w-2xl text-[17px] leading-8 text-gray-500">
-            {mode === "single"
-              ? "ជ្រើសរើសមិត្តភក្តិ និងស្វែងរកហាងដែលស័ក្តិសមជាមួយសុវត្ថិភាពម្ហូបអាហារ"
-              : "បង្កើតតំណភ្ជាប់ចែករំលែកដើម្បីអញ្ជើញក្រុមការងារ ឬមិត្តភក្តិបោះឆ្នោតភ្លាមៗ"}
+            {mode === "me"
+              ? "ជ្រើសរើសគណនីគ្រួសារ រួចមើលម្ហូបដែលត្រូវនឹងអ្នកនៅជុំវិញទីតាំងបច្ចុប្បន្ន"
+              : mode === "single"
+                ? "ជ្រើសរើសមិត្តភក្តិ និងស្វែងរកហាងដែលស័ក្តិសមជាមួយសុវត្ថិភាពម្ហូបអាហារ"
+                : "បង្កើតតំណភ្ជាប់ចែករំលែកដើម្បីអញ្ជើញក្រុមការងារ ឬមិត្តភក្តិបោះឆ្នោតភ្លាមៗ"}
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto">
-          <RecommendationModeSwitch mode={mode} onChange={onModeChange} />
+        <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center 2xl:w-auto">
+          <RecommendationModeTabs mode={mode} onChange={onModeChange} />
 
           {onOpenFilters && (
             <button
@@ -145,8 +152,8 @@ export default function LocationHeader({
 
       <div className="mt-5 flex flex-wrap gap-2.5">
         <InfoChip
-          icon={<IoStorefrontOutline className="text-[21px]" />}
-          label={`${storeCount} ហាង`}
+          icon={<IoRestaurantOutline className="text-[21px]" />}
+          label={`${storeCount} មុខម្ហូប`}
           variant="green"
         />
 
@@ -292,64 +299,7 @@ export default function LocationHeader({
   );
 }
 
-type RecommendationModeSwitchProps = {
-  mode: RecommendationMode;
 
-  onChange: (mode: RecommendationMode) => void;
-};
-
-function RecommendationModeSwitch({
-  mode,
-  onChange,
-}: RecommendationModeSwitchProps) {
-  const options: Array<{
-    value: RecommendationMode;
-    label: string;
-    icon: ReactNode;
-  }> = [
-    {
-      value: "single",
-      label: "Friend",
-      icon: <IoPersonOutline />,
-    },
-    {
-      value: "group",
-      label: "Guest Link",
-      icon: <IoPeopleOutline />,
-    },
-  ];
-
-  return (
-    <div
-      role="tablist"
-      aria-label="Recommendation mode"
-      className="grid min-h-12 w-full grid-cols-2 rounded-full bg-gray-100 p-1 sm:w-auto"
-    >
-      {options.map((option) => {
-        const selected = mode === option.value;
-
-        return (
-          <button
-            key={option.value}
-            type="button"
-            role="tab"
-            aria-selected={selected}
-            onClick={() => onChange(option.value)}
-            className={`flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 text-[17px] font-semibold transition ${
-              selected
-                ? "bg-primary-800 text-white shadow-sm"
-                : "text-gray-600 hover:bg-white hover:text-primary-800 dark:text-primary-dark"
-            }`}
-          >
-            <span className="text-[21px]">{option.icon}</span>  
-
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 type InfoChipProps = {
   icon: ReactNode;

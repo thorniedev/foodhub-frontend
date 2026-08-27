@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ComponentProps } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -61,6 +61,7 @@ import LocationPickerModal, {
   type PickedMapLocation,
 } from "./picker/LocationPickerModal";
 import SingleRecommendation from "./single/SingleRecommendation";
+import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
 import GroupRecommendation from "./group/GroupRecommendation";
 
 import StoreFilters from "../store/StoreFilters";
@@ -403,7 +404,7 @@ export default function LocationContent({
     () => catalogMenuItems.map(toLocationMenuItem),
     [catalogMenuItems],
   );
-  const [mode, setMode] = useState<RecommendationMode>("single");
+  const [mode, setMode] = useState<RecommendationMode>("me");
 
   /*
    * IMPORTANT:
@@ -572,7 +573,7 @@ export default function LocationContent({
   // client-side, the same way Advanced Filter narrows a candidate set.
   useEffect(() => {
     if (
-      mode !== "single" ||
+      mode !== "me" ||
       !hasValidCoordinates(coordinates) ||
       !canRecommend ||
       targetProfiles.length === 0
@@ -616,10 +617,12 @@ export default function LocationContent({
     }
   };
 
-  const recommendedMenuItems = useMemo(
-    () => recommendedFoodsRaw.map(toLocationMenuItem),
-    [recommendedFoodsRaw],
-  );
+  const recommendedMenuItems = useMemo(() => {
+    if (recommendedFoodsRaw.length > 0) {
+      return recommendedFoodsRaw.map(toLocationMenuItem);
+    }
+    return menuItems;
+  }, [recommendedFoodsRaw, menuItems]);
 
   const matchingFoods = useMemo(
     () => filterLocationMenuItems(recommendedMenuItems, effectiveFoodFilters),
@@ -706,7 +709,10 @@ export default function LocationContent({
   );
 
   const effectiveRadiusKm =
-    mode === "single" ? singleRadiusKm : groupLocationFilters.radiusKm;
+    mode === "me" ? singleRadiusKm : groupLocationFilters.radiusKm;
+
+  /* Personal mode filters food; the meetup modes filter stores. */
+  const usesFoodFilters = mode === "me";
 
   const headerLocationStatus = convertLocationStatus(status, coordinates);
 
@@ -834,7 +840,7 @@ export default function LocationContent({
     xl:block
   "
           >
-            {mode === "single" ? (
+            {usesFoodFilters ? (
               <LocationFilters
                 menuItems={menuItems}
                 filters={foodFilters}
@@ -870,17 +876,58 @@ export default function LocationContent({
             />
 
             <div className="mt-6 pb-10">
-              <GroupRecommendation
-                meetupMode={mode === "single" ? "friends" : "guest"}
-                menuItems={menuItems}
-                stores={groupFilteredStores}
-                userLocation={coordinates}
-                filters={groupLocationFilters}
-                searchQuery={searchQuery}
-                onOpenFilters={() => setFiltersOpen(true)}
-                onResultCountChange={setResultCount}
-                onRadiusChange={setSelectedRadiusKm}
-              />
+              {mode === "me" ? (
+                <>
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                    <div className="min-w-0">
+                      <p className="text-[17px] font-semibold text-primary-900 dark:text-white">
+                        គណនីដែលកំពុងប្រើ
+                      </p>
+                      <p className="mt-1 text-[15px] text-gray-500 dark:text-slate-400 lg:text-[17px]">
+                        ការណែនាំគិតបញ្ចូលអាឡែស៊ី និងរបបអាហាររបស់គណនីដែលបានជ្រើស
+                      </p>
+                    </div>
+
+                    <ProfileMultiSelect
+                      profiles={activeProfiles}
+                      targetProfiles={targetProfiles}
+                      onToggle={handleToggleProfile}
+                      onSelectAll={handleSelectAllProfiles}
+                      allSelected={allActiveProfilesSelected}
+                      emptyLabel="ជ្រើសរើសគណនីគ្រួសារ"
+                      triggerClassName="flex min-h-11 items-center gap-2 rounded-full bg-primary-50 py-1 pl-1 pr-3 text-[15px] font-semibold text-primary-800 transition hover:bg-primary-100 dark:bg-primary-950/40 dark:text-primary-300"
+                    />
+                  </div>
+
+                  <SingleRecommendation
+                    /* Same runtime shape, declared against @/types/manu1. */
+                    menuItems={
+                      matchingFoods as unknown as ComponentProps<
+                        typeof SingleRecommendation
+                      >["menuItems"]
+                    }
+                    stores={foodStores}
+                    userLocation={coordinates}
+                    filters={singleLocationFilters}
+                    foodSort={foodFilters.sortBy}
+                    searchQuery={searchQuery}
+                    onOpenFilters={() => setFiltersOpen(true)}
+                    onResultCountChange={setResultCount}
+                  />
+                </>
+              ) : (
+                <GroupRecommendation
+                  meetupMode={mode === "single" ? "friends" : "guest"}
+                  menuItems={menuItems}
+                  stores={groupFilteredStores}
+                  userLocation={coordinates}
+                  filters={groupLocationFilters}
+                  searchQuery={searchQuery}
+                  onOpenFilters={() => setFiltersOpen(true)}
+                  onResultCountChange={setResultCount}
+                  onRadiusChange={setSelectedRadiusKm}
+                />
+              )}
             </div>
           </main>
         </div>
@@ -898,9 +945,7 @@ export default function LocationContent({
               <button
                 type="button"
                 aria-label={
-                  mode === "single"
-                    ? "Close food filters"
-                    : "Close store filters"
+                  usesFoodFilters ? "Close food filters" : "Close store filters"
                 }
                 onClick={() => setFiltersOpen(false)}
                 className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
@@ -938,7 +983,7 @@ export default function LocationContent({
                   md:rounded-r-[30px]
                 "
               >
-                {mode === "single" ? (
+                {usesFoodFilters ? (
                   <LocationFilters
                     menuItems={menuItems}
                     filters={foodFilters}

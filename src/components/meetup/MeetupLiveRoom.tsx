@@ -47,6 +47,23 @@ import {
 import GuestJoinSafetySheet from "./GuestJoinSafetySheet";
 import type { RecommendationItem, RecommendationSession } from "@/types/recommendation";
 
+/**
+ * Turns an account-derived nickname into something readable. Emails are
+ * reduced to their local part so the room never displays a full address.
+ */
+function toDisplayName(nickname: string | null, fallback: string): string {
+  const trimmed = (nickname ?? "").trim();
+
+  if (!trimmed) {
+    return fallback;
+  }
+
+  const atIndex = trimmed.indexOf("@");
+  const localPart = atIndex > 0 ? trimmed.slice(0, atIndex) : trimmed;
+
+  return localPart.replace(/[._-]+/g, " ").trim() || fallback;
+}
+
 interface MeetupLiveRoomProps {
   shareToken: string;
   initialMeetupUuid?: string;
@@ -404,6 +421,23 @@ export default function MeetupLiveRoom({
     storedSession?.profileUuid ||
     (storedSession?.joinMode === "FRIEND" ? defaultProfileUuid : null);
 
+  /*
+   * The recommendation session must carry every profile in the room, not just
+   * the viewer's. Guests contribute no profile; their constraints ride along
+   * in contextData instead.
+   */
+  const meetupProfileUuids = useMemo(() => {
+    const fromParticipants = participants
+      .map((participant) => participant.profileUuid)
+      .filter((profileUuid): profileUuid is string => Boolean(profileUuid));
+
+    const ordered = selectedRecommendationProfileUuid
+      ? [selectedRecommendationProfileUuid, ...fromParticipants]
+      : fromParticipants;
+
+    return Array.from(new Set(ordered));
+  }, [participants, selectedRecommendationProfileUuid]);
+
   const candidates = useMemo(() => {
     return (recommendationSession?.items ?? [])
       .map(toMeetupCandidate)
@@ -473,14 +507,14 @@ export default function MeetupLiveRoom({
 
     return leader?.foodUuid || leader?.candidateUuid || tally?.winnerUuid || null;
   }, [tally?.tally, tally?.winnerUuid]);
-  const missingFriendProfile =
-    storedSession?.joinMode === "FRIEND" &&
-    !selectedRecommendationProfileUuid &&
-    !isLoadingProfiles;
+  /* No profile anywhere in the room means there is nothing safe to match on. */
+  const missingGroupProfiles =
+    meetupProfileUuids.length === 0 && !isLoadingProfiles;
+
   const effectiveRecommendationError =
     recommendationError ||
-    (missingFriendProfile
-      ? "មិនមានប្រវត្តិរូប FoodHub សកម្មសម្រាប់ការណែនាំទេ។"
+    (missingGroupProfiles
+      ? "មិនមានប្រវត្តិរូប FoodHub សកម្មក្នុងបន្ទប់នេះទេ។ សូមឲ្យសមាជិកដែលមានគណនីចូលរួម ដើម្បីទទួលការណែនាំដែលមានសុវត្ថិភាព។"
       : null);
 
   useEffect(() => {
@@ -488,25 +522,19 @@ export default function MeetupLiveRoom({
       return;
     }
 
-    if (
-      storedSession.joinMode === "FRIEND" &&
-      !selectedRecommendationProfileUuid &&
-      isLoadingProfiles
-    ) {
+    if (isLoadingProfiles) {
       return;
     }
 
-    if (
-      storedSession.joinMode === "FRIEND" &&
-      !selectedRecommendationProfileUuid
-    ) {
+    /* Without at least one profile the backend has no safety set to apply. */
+    if (meetupProfileUuids.length === 0) {
       return;
     }
 
     const nextKey = JSON.stringify({
       meetupUuid,
       participantUuid: storedSession.participantUuid,
-      profileUuid: selectedRecommendationProfileUuid,
+      profileUuids: meetupProfileUuids,
       guest: storedSession.joinMode === "GUEST" ? storedSession.profileSnapshot : null,
       locationMode: group?.locationMode,
       radius: group?.searchRadiusKm,
@@ -519,8 +547,16 @@ export default function MeetupLiveRoom({
     recommendationKeyRef.current = nextKey;
 
     void createRecommendationSession({
-      mode: "GROUP",
-      requestSource: "MEETUP",
+      /*
+       * GROUP requires two or more distinct profiles; a room with one profile
+       * must use SINGLE or the backend rejects the session.
+       */
+      mode: meetupProfileUuids.length >= 2 ? "GROUP" : "SINGLE",
+      /*
+       * "WEB" is the request source the backend accepts. The meetup marker
+       * travels in contextData, which is free-form.
+       */
+      requestSource: "WEB",
       requestedLimit: 12,
       searchRadiusKm: group?.searchRadiusKm ?? 3,
       currencyCode: "USD",
@@ -551,14 +587,10 @@ export default function MeetupLiveRoom({
             ? storedSession.profileSnapshot
             : undefined,
       },
-      profiles: selectedRecommendationProfileUuid
-        ? [
-            {
-              profileId: selectedRecommendationProfileUuid,
-              isPrimary: true,
-            },
-          ]
-        : [],
+      profiles: meetupProfileUuids.map((profileUuid, index) => ({
+        profileId: profileUuid,
+        isPrimary: index === 0,
+      })),
     })
       .unwrap()
       .then((session) => {
@@ -579,9 +611,9 @@ export default function MeetupLiveRoom({
     group?.targetLng,
     group?.targetProvince,
     isLoadingProfiles,
+    meetupProfileUuids,
     meetupUuid,
     recommendationRefreshKey,
-    selectedRecommendationProfileUuid,
     shareToken,
     storedSession,
   ]);
@@ -843,11 +875,26 @@ export default function MeetupLiveRoom({
                 កំពុងផ្ទុកការណែនាំ...
               </div>
             ) : effectiveRecommendationError ? (
-              <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-sm font-semibold text-rose-700">
-                {effectiveRecommendationError}
+              <div className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-rose-100 bg-rose-50 p-6 text-center dark:border-rose-900/40 dark:bg-rose-950/20">
+                <p className="max-w-md text-sm font-semibold leading-6 text-rose-700 dark:text-rose-300 lg:text-base">
+                  {effectiveRecommendationError}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    recommendationKeyRef.current = "";
+                    setRecommendationError(null);
+                    setRecommendationSession(null);
+                    setRecommendationRefreshKey((current) => current + 1);
+                  }}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-50 dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-900"
+                >
+                  <RefreshCw className="h-4 w-4 shrink-0" />
+                  ព្យាយាមម្តងទៀត
+                </button>
               </div>
             ) : candidates.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm leading-6 text-slate-500">
+              <div className="flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm leading-6 text-slate-500 dark:border-slate-700">
                 មិនទាន់មានម្ហូបដែលមានសុវត្ថិភាពត្រូវនឹងលក្ខខណ្ឌទេ។
                 សូមផ្ទុកឡើងវិញបន្ទាប់ពីមានអ្នកចូលរួមបន្ថែម។
               </div>
@@ -1050,11 +1097,16 @@ export default function MeetupLiveRoom({
                       className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-950"
                     >
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-black text-white">
-                        {(participant.nickname || "M").charAt(0).toUpperCase()}
+                        {toDisplayName(participant.nickname, "?")
+                          .charAt(0)
+                          .toUpperCase()}
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-sm font-black text-slate-800 dark:text-slate-200">
-                          {participant.nickname || `សមាជិក ${index + 1}`}
+                        <span className="block truncate text-sm font-black capitalize text-slate-800 dark:text-slate-200">
+                          {toDisplayName(
+                            participant.nickname,
+                            `សមាជិក ${index + 1}`,
+                          )}
                         </span>
                         <span className="text-sm font-semibold text-slate-400">
                           {participant.participantRole === "HOST"

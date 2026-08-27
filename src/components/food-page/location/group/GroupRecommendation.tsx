@@ -5,11 +5,10 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
   useCreateMeetupMutation,
+  useTriggerGroupMeetupInviteMutation,
 } from "@/app/store/groupRecommendationApi";
 import { useGetFriendsQuery } from "@/app/store/friendsApi";
-import {
-  useGetCurrentUserQuery,
-} from "@/app/store/auth/currentUserApi";
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 import type { LocationStore } from "@/types/location-store";
 import type { MenuItem } from "@/types/manu";
 import type {
@@ -31,6 +30,7 @@ import {
   Loader2,
   CheckCircle2,
   Utensils,
+  Compass,
 } from "lucide-react";
 import {
   Dialog,
@@ -43,6 +43,8 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { APP_TIME_ZONE } from "@/lib/formatDate";
 import { saveStoredMeetupSession } from "@/lib/meetup/meetup-session";
 import MobileLocationToolbar from "../MobileLocationToolbar";
+import StoreMenuItemList from "../StoreMenuItemList";
+import { buildStoreMenuItemCards } from "@/lib/location/store-menu-item-cards";
 
 const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
   ssr: false,
@@ -50,6 +52,16 @@ const FoodLocationMap = dynamic(() => import("../FoodLocationMap"), {
     <div className="h-[58dvh] min-h-[440px] animate-pulse rounded-[24px] bg-slate-100 dark:bg-slate-800" />
   ),
 });
+
+const POPULAR_AREAS = [
+  "Boeung Keng Kang 1",
+  "Toul Tompoung",
+  "Daun Penh / Riverside",
+  "Toul Kork",
+  "Chroy Changvar",
+  "Tonle Bassac",
+  "7 Makara",
+];
 
 interface GroupRecommendationProps {
   meetupMode?: "friends" | "guest";
@@ -80,6 +92,7 @@ export default function GroupRecommendation({
   const { data: friends = [], isLoading: isLoadingFriends } = useGetFriendsQuery();
 
   const [createMeetup, { isLoading: isCreating }] = useCreateMeetupMutation();
+  const [triggerGroupMeetupInvite] = useTriggerGroupMeetupInviteMutation();
 
   const activeMode = meetupMode;
 
@@ -93,6 +106,10 @@ export default function GroupRecommendation({
   // Radius & Duration (Dynamic)
   const [searchRadiusKm, setSearchRadiusKm] = useState<number>(filters.radiusKm || 5);
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
+
+  // Location Mode & Area for Guest Mode
+  const [guestLocationMode, setGuestLocationMode] = useState<"PIN" | "AREA">("PIN");
+  const [targetAreaName, setTargetAreaName] = useState("Boeung Keng Kang 1");
 
   // Friend Mode Fields
   const [selectedFriendUuids, setSelectedFriendUuids] = useState<string[]>([]);
@@ -136,9 +153,25 @@ export default function GroupRecommendation({
     return result;
   }, [recommendedStores, searchQuery]);
 
+  /* Each candidate store contributes the dishes it actually sells. */
+  const menuItemCards = useMemo(() => {
+    const cards = buildStoreMenuItemCards(filteredStores);
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return cards;
+    }
+
+    return cards.filter(
+      (card) =>
+        card.name.toLowerCase().includes(query) ||
+        card.storeName.toLowerCase().includes(query),
+    );
+  }, [filteredStores, searchQuery]);
+
   useEffect(() => {
-    onResultCountChange(filteredStores.length);
-  }, [filteredStores.length, onResultCountChange]);
+    onResultCountChange(menuItemCards.length);
+  }, [menuItemCards.length, onResultCountChange]);
 
   const toggleFriend = (uuid: string) => {
     setSelectedFriendUuids((prev) =>
@@ -177,18 +210,22 @@ export default function GroupRecommendation({
     const lat = userLocation?.latitude ?? 11.5564;
     const lng = userLocation?.longitude ?? 104.9282;
     const expectedGuestCount = 4;
+    const isAreaMode = activeMode === "guest" && guestLocationMode === "AREA";
 
     try {
       const response = await createMeetup({
         title: meetupTitle,
         votingMethod,
         audienceMode: activeMode === "friends" ? "FRIENDS" : "GUESTS",
-        locationMode: "PIN",
+        locationMode: isAreaMode ? "AREA" : "PIN",
+        targetAreaName: isAreaMode ? targetAreaName.trim() || "Boeung Keng Kang 1" : undefined,
+        targetCity: isAreaMode ? "Phnom Penh" : undefined,
+        targetProvince: isAreaMode ? "Phnom Penh" : undefined,
         searchRadiusKm: Math.min(5, Math.max(1, searchRadiusKm || 3)),
         timezone: APP_TIME_ZONE,
         expiresAt,
-        targetLat: lat,
-        targetLng: lng,
+        targetLat: isAreaMode ? undefined : lat,
+        targetLng: isAreaMode ? undefined : lng,
         guestAllowed: activeMode === "guest",
         friendUserUuids: sanitizedFriendUuids,
         expectedGuestCount:
@@ -219,7 +256,7 @@ export default function GroupRecommendation({
             title: meetupTitle,
             audienceMode: activeMode === "friends" ? "FRIENDS" : "GUESTS",
             inviteMode: activeMode === "friends" ? "FRIENDS" : "GUEST_LINK",
-            locationMode: "PIN",
+            locationMode: isAreaMode ? "AREA" : "PIN",
             status: "VOTING",
             createdAt: new Date().toISOString(),
             participantCount:
@@ -243,10 +280,30 @@ export default function GroupRecommendation({
           profileUuid: hostParticipant.profileUuid,
           nickname: hostParticipant.nickname || user.username,
           joinMode: "FRIEND",
-          locationMode: "PIN",
-          locationLat: lat,
-          locationLng: lng,
+          locationMode: isAreaMode ? "AREA" : "PIN",
+          locationLat: isAreaMode ? undefined : lat,
+          locationLng: isAreaMode ? undefined : lng,
+          targetAreaName: isAreaMode ? targetAreaName : undefined,
         });
+      }
+
+      // Automatically dispatch invite notifications to friends if in Friends Mode
+      if (activeMode === "friends" && sanitizedFriendUuids.length > 0) {
+        try {
+          const inviteeProfiles = friends
+            .filter((f) => sanitizedFriendUuids.includes(f.userUuid) && f.defaultProfileUuid)
+            .map((f) => f.defaultProfileUuid as string);
+
+          if (inviteeProfiles.length > 0) {
+            await triggerGroupMeetupInvite({
+              meetupUuid: createdUuid,
+              inviteeProfileUuids: inviteeProfiles,
+              message: `Hey! Join our FoodHub dinner meetup: "${meetupTitle}"!`,
+            }).unwrap();
+          }
+        } catch (inviteErr) {
+          console.warn("Could not dispatch automated friend invites:", inviteErr);
+        }
       }
 
       setCreatedMeetup({
@@ -308,14 +365,14 @@ export default function GroupRecommendation({
             </h3>
             <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
               {activeMode === "friends"
-                ? "ជ្រើសរើសមិត្តភក្តិដើម្បីប្រព័ន្ធភ្ជាប់ទិន្នន័យសុវត្ថិភាពម្ហូបអាហារដោយស្វ័យប្រវត្តិ"
-                : "កំណត់កាំស្វែងរក និងរយៈពេលបោះឆ្នោត ដើម្បីបង្កើតបន្ទប់ចែករំលែក"}
+                ? "ជ្រើសរើសមិត្តភក្តិដើម្បីប្រព័ន្ធភ្ជាប់ទិន្នន័យសុវត្ថិភាពម្ហូបអាហារ និងផ្ញើដំណឹងអញ្ជើញដោយស្វ័យប្រវត្តិ"
+                : "កំណត់កាំស្វែងរក និងរយៈពេលបោះឆ្នោត ដើម្បីបង្កើតបន្ទប់ចែករំលែកជាសាធារណៈ"}
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs font-semibold text-primary-800 bg-primary-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-3 py-1.5 rounded-full self-start sm:self-auto">
             <MapPin className="h-3.5 w-3.5" />
-            <span>{filteredStores.length} ហាងនៅជិត</span>
+            <span>{filteredStores.length} ហាង &bull; {menuItemCards.length} មុខម្ហូប</span>
           </div>
         </div>
 
@@ -345,7 +402,7 @@ export default function GroupRecommendation({
                 ជ្រើសរើសមិត្តភក្តិ ({selectedFriendUuids.length} នាក់បានជ្រើសរើស)
               </label>
               <span className="text-xs text-primary-700 dark:text-emerald-400 font-medium">
-                ភ្ជាប់ប្រវត្តិសុវត្ថិភាពស្វ័យប្រវត្តិ
+                ភ្ជាប់ប្រវត្តិសុវត្ថិភាព & ផ្ញើ Notification ស្វ័យប្រវត្តិ
               </span>
             </div>
 
@@ -399,6 +456,70 @@ export default function GroupRecommendation({
                     </button>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MODE 2: Guest Mode Location Mode (PIN vs AREA) */}
+        {activeMode === "guest" && (
+          <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
+            <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
+              <span className="flex items-center gap-1.5">
+                <Compass className="h-4 w-4 text-primary-800" />
+                របៀបកំណត់ទីតាំង (Location Mode)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setGuestLocationMode("PIN")}
+                className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition ${
+                  guestLocationMode === "PIN"
+                    ? "bg-primary-800 text-white shadow-xs"
+                    : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+                }`}
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                <span>ចំណុចផែនទី (GPS / PIN)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGuestLocationMode("AREA")}
+                className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition ${
+                  guestLocationMode === "AREA"
+                    ? "bg-primary-800 text-white shadow-xs"
+                    : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+                }`}
+              >
+                <Compass className="h-3.5 w-3.5" />
+                <span>តំបន់គោលដៅ (Area)</span>
+              </button>
+            </div>
+
+            {guestLocationMode === "AREA" && (
+              <div className="space-y-2 pt-2">
+                <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300">
+                  ជ្រើសរើសតំបន់ ឬសង្កាត់ក្នុងរាជធានីភ្នំពេញ
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {POPULAR_AREAS.map((area) => (
+                    <button
+                      type="button"
+                      key={area}
+                      onClick={() => setTargetAreaName(area)}
+                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                        targetAreaName === area
+                          ? "bg-primary-800 text-white"
+                          : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+                      }`}
+                    >
+                      {area}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -471,10 +592,10 @@ export default function GroupRecommendation({
           <label className="block text-sm font-semibold text-primary-900 dark:text-slate-200">
             វិធីសាស្ត្របោះឆ្នោត (Voting Method)
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {[
-              { id: "SINGLE_PICK", label: "Single Pick (👍)" },
-              { id: "RANKED_BORDA", label: "Ranked (❤️)" },
+              { id: "SINGLE_PICK", label: "Single Pick (👍 បោះបាន 1)" },
+              { id: "RANKED_BORDA", label: "Ranked Borda (❤️ ដាក់ចំណាត់ថ្នាក់)" },
             ].map((m) => (
               <button
                 type="button"
@@ -513,12 +634,12 @@ export default function GroupRecommendation({
         </button>
       </form>
 
-      {/* Candidate Stores & Interactive Map Preview */}
+      {/* Candidate Menu Items Cards & Interactive Map Preview */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-base sm:text-lg font-bold text-primary-900 dark:text-white flex items-center gap-2">
-            <span>ហាងដែលស័ក្តិសមសម្រាប់បោះឆ្នោត ({filteredStores.length})</span>
-          </h4>
+          <p className="flex items-center gap-2 text-base font-bold text-primary-900 dark:text-white sm:text-lg">
+            <span>មុខម្ហូបក្នុងហាងដែលស័ក្តិសមសម្រាប់បោះឆ្នោត ({menuItemCards.length})</span>
+          </p>
 
           <MobileLocationToolbar
             view={view}
@@ -530,7 +651,11 @@ export default function GroupRecommendation({
         {/* List & Map Layout */}
         <div className="2xl:hidden">
           {view === "list" ? (
-            <StoreList stores={filteredStores} selectedId={selectedStoreId} onSelect={setSelectedStoreId} />
+            <StoreMenuItemList
+              cards={menuItemCards}
+              selectedStoreId={selectedStoreId}
+              onSelectStore={setSelectedStoreId}
+            />
           ) : (
             <FoodLocationMap
               mode="group"
@@ -547,7 +672,11 @@ export default function GroupRecommendation({
 
         <div className="hidden min-w-0 gap-6 2xl:grid 2xl:grid-cols-[minmax(420px,46%)_minmax(0,54%)]">
           <div className="min-w-0">
-            <StoreList stores={filteredStores} selectedId={selectedStoreId} onSelect={setSelectedStoreId} />
+            <StoreMenuItemList
+              cards={menuItemCards}
+              selectedStoreId={selectedStoreId}
+              onSelectStore={setSelectedStoreId}
+            />
           </div>
 
           <div className="min-w-0">
@@ -597,7 +726,7 @@ export default function GroupRecommendation({
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3 text-xs font-bold text-gray-700 transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3 text-xs font-bold text-gray-700 transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
                 >
                   {copiedLink ? (
                     <>
@@ -615,7 +744,7 @@ export default function GroupRecommendation({
                 <button
                   type="button"
                   onClick={handleShareTelegram}
-                  className="flex items-center justify-center gap-2 rounded-2xl bg-[#229ED9] py-3 text-xs font-bold text-white shadow-xs transition hover:bg-[#1f8fc4] active:scale-[0.98]"
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-[#229ED9] py-3 text-xs font-bold text-white shadow-xs transition hover:bg-[#1f8fc4] active:scale-[0.98] cursor-pointer"
                 >
                   <Send className="h-4 w-4" /> <span>ផ្ញើទៅ Telegram</span>
                 </button>
@@ -624,7 +753,7 @@ export default function GroupRecommendation({
               <button
                 type="button"
                 onClick={() => router.push(`/meet/${createdMeetup.shareToken}`)}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-800 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-primary-900 active:scale-[0.99] dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-800 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-primary-900 active:scale-[0.99] dark:bg-emerald-600 dark:hover:bg-emerald-700 cursor-pointer"
               >
                 <span>ចូលបន្ទប់បោះឆ្នោតផ្ទាល់ (Enter Live Room)</span>
                 <span className="text-lg leading-none">&rarr;</span>
@@ -633,71 +762,6 @@ export default function GroupRecommendation({
           </DialogContent>
         </Dialog>
       )}
-    </div>
-  );
-}
-
-function StoreList({
-  stores,
-  selectedId,
-  onSelect,
-}: {
-  stores: GroupRecommendedStore[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  if (stores.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
-        មិនមានហាងក្នុងចម្ងាយដែលបានកំណត់ទេ។
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {stores.map((store) => {
-        const isSelected = selectedId === store.uuid;
-        return (
-          <div
-            key={store.uuid}
-            onClick={() => onSelect(store.uuid)}
-            className={`cursor-pointer rounded-2xl border p-4 transition ${
-              isSelected
-                ? "border-primary-700 bg-primary-50/50 shadow-sm dark:border-emerald-500"
-                : "border-gray-100 bg-white hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900"
-            }`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <h5 className="font-bold text-base text-primary-900 dark:text-white">
-                  {store.localName?.trim() || store.name}
-                </h5>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-1">
-                  {store.addressLine || "Phnom Penh, Cambodia"}
-                </p>
-              </div>
-
-              {store.averageRating && (
-                <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700">
-                  ⭐ {store.averageRating.toFixed(1)}
-                </span>
-              )}
-            </div>
-
-            <div className="mt-3 flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-50 dark:border-slate-800">
-              <span className="flex items-center gap-1 text-primary-700 dark:text-emerald-400 font-medium">
-                <MapPin className="h-3 w-3" />
-                {store.distanceKm ? `${store.distanceKm.toFixed(1)} km ពីអ្នក` : "ជិតអ្នក"}
-              </span>
-
-              <span className="text-gray-400">
-                {store.isOpenNow ? "🟢 បើកដំណើរការ" : "🔴 បានបិទ"}
-              </span>
-            </div>
-          </div>
-        );
-      })}
     </div>
   );
 }

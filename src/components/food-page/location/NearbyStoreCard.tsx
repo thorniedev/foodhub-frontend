@@ -15,11 +15,14 @@ import {
 
 import { FaStar } from "react-icons/fa";
 
-import type { RecommendedStore } from "@/types/location";
+import type { RecommendedStore,
+  RecommendationMode,
+} from "@/types/location";
 
 interface NearbyStoreCardProps {
   store: RecommendedStore;
-  mode?: "single" | "group";
+  /* Personal mode reuses the compact single-column layout. */
+  mode?: RecommendationMode;
   selected: boolean;
 
   votingEnabled?: boolean;

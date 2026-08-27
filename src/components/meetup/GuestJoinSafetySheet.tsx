@@ -213,9 +213,18 @@ export default function GuestJoinSafetySheet({
     }
 
     const joinMode = isFriendRoom ? "FRIEND" : "GUEST";
+    /*
+     * `username` is an email address on this backend, so prefer a real name
+     * and fall back to the local part rather than showing the address to the
+     * whole room.
+     */
+    const accountName =
+      user?.firstName?.trim() ||
+      (user?.username ?? "").split("@")[0].replace(/[._-]+/g, " ").trim();
+
     const displayName =
       joinMode === "FRIEND"
-        ? nickname.trim() || user?.username || user?.firstName || "FoodHub member"
+        ? nickname.trim() || accountName || "សមាជិក FoodHub"
         : nickname.trim();
     const profileSnapshot =
       joinMode === "GUEST"

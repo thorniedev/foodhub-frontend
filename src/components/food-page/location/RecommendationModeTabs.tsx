@@ -1,8 +1,19 @@
 "use client";
 
-import { IoPeopleOutline, IoPersonOutline } from "react-icons/io5";
+import { motion } from "framer-motion";
+import { IoLinkOutline, IoPeopleOutline, IoPersonOutline } from "react-icons/io5";
 
 import type { RecommendationMode } from "@/types/location";
+
+const OPTIONS: Array<{
+  value: RecommendationMode;
+  label: string;
+  Icon: typeof IoPersonOutline;
+}> = [
+  { value: "me", label: "សម្រាប់ខ្ញុំ", Icon: IoPersonOutline },
+  { value: "single", label: "សម្រាប់មិត្តភក្តិ", Icon: IoPeopleOutline },
+  { value: "group", label: "សម្រាប់ភ្ញៀវ", Icon: IoLinkOutline },
+];
 
 interface RecommendationModeTabsProps {
   mode: RecommendationMode;
@@ -14,32 +25,44 @@ export default function RecommendationModeTabs({
   onChange,
 }: RecommendationModeTabsProps) {
   return (
-    <div className="grid w-full grid-cols-2 rounded-full bg-gray-100 p-1 sm:w-auto">
-      <button
-        type="button"
-        onClick={() => onChange("single")}
-        className={`flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-[16px] font-semibold transition ${
-          mode === "single"
-            ? "bg-primary-800 text-white shadow-sm"
-            : "text-gray-600 hover:text-primary-800 dark:text-primary-dark"
-        }`}
-      >
-        <IoPersonOutline className="text-[20px]" />
-        Friend
-      </button>
+    <div
+      role="tablist"
+      aria-label="Recommendation mode"
+      className="relative flex w-full sm:w-auto items-center rounded-full bg-gray-100/90 dark:bg-slate-800/90 p-1 shadow-inner"
+    >
+      {OPTIONS.map(({ value, label, Icon }) => {
+        const selected = mode === value;
 
-      <button
-        type="button"
-        onClick={() => onChange("group")}
-        className={`flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-[16px] font-semibold transition ${
-          mode === "group"
-            ? "bg-primary-800 text-white shadow-sm"
-            : "text-gray-600 hover:text-primary-800 dark:text-primary-dark"
-        }`}
-      >
-        <IoPeopleOutline className="text-[20px]" />
-        Guest Link
-      </button>
+        return (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onChange(value)}
+            className={`relative z-10 flex min-h-11 flex-1 sm:flex-initial items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-[14px] sm:px-5 sm:text-[15px] font-bold transition-colors duration-200 ${
+              selected
+                ? "text-white"
+                : "text-gray-600 hover:text-primary-900 dark:text-slate-300 dark:hover:text-white"
+            }`}
+          >
+            {selected && (
+              <motion.span
+                layoutId="location-mode-active-pill"
+                className="absolute inset-0 z-[-1] rounded-full bg-primary-800 dark:bg-emerald-600 shadow-md"
+                transition={{
+                  type: "spring",
+                  stiffness: 420,
+                  damping: 32,
+                }}
+              />
+            )}
+
+            <Icon className="shrink-0 text-[18px] sm:text-[19px]" />
+            <span>{label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -7,7 +7,12 @@ export interface Coordinates {
   timestamp?: number;
 }
 
-export type RecommendationMode = "single" | "group";
+/**
+ * "me"     — personal picks for the signed-in user and their family profiles
+ * "single" — a meetup with FoodHub friends
+ * "group"  — a shareable guest link
+ */
+export type RecommendationMode = "me" | "single" | "group";
 
 export type LocationViewMode = "list" | "map";
 

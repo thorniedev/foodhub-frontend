@@ -1,5 +1,5 @@
 import { baseApi } from "./baseApi";
-import { normalizePageResponse } from "./utils/normalize";
+import { normalizePageResponse, normalizePayload } from "./utils/normalize";
 
 import {
   normalizeMeetupActionResponse,
@@ -407,6 +407,20 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
         },
       ],
     }),
+
+    /** POST /api/v1/notifications/triggers/group-meetup-invite */
+    triggerGroupMeetupInvite: builder.mutation<
+      { message: string },
+      { meetupUuid: string; inviteeProfileUuids: string[]; message?: string }
+    >({
+      query: (body) => ({
+        url: "/notifications/triggers/group-meetup-invite",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: unknown) =>
+        normalizePayload(response, { message: "Invites sent successfully" }),
+    }),
   }),
 
   overrideExisting: true,
@@ -423,6 +437,7 @@ export const {
   useDeleteMeetupGroupMutation,
   useCompleteMeetupVotingMutation,
   useGetMeetupResultQuery,
+  useTriggerGroupMeetupInviteMutation,
   // Participants
   useJoinMeetupParticipantMutation,
   useUpdateMeetupParticipantLocationMutation,
