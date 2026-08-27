@@ -14,16 +14,21 @@ import {
   ShieldCheck,
   Sparkles,
   Trophy,
+  Undo2,
   Users,
   Vote,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 import { useGetBackendUserQuery, useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+import { getApiErrorMessage } from "@/lib/api-error";
 import {
   useCompleteMeetupVotingMutation,
+  useGetMeetupParticipantsQuery,
   useGetMeetupVoteTallyQuery,
+  useGetMeetupVotesQuery,
   useResolveMeetupShareTokenQuery,
+  useRetractMeetupVoteMutation,
   useSubmitMeetupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
@@ -319,7 +324,26 @@ export default function MeetupLiveRoom({
   });
 
   const meetupUuid = group?.uuid || initialMeetupUuid || "";
-  const participants = group?.participants ?? [];
+
+  /*
+   * The group payload normally carries participants. Some backend builds
+   * return it empty, so the dedicated participants endpoint backs it up.
+   */
+  const { data: participantList } = useGetMeetupParticipantsQuery(meetupUuid, {
+    skip: !meetupUuid,
+    pollingInterval: 8000,
+  });
+
+  const allParticipants = group?.participants?.length
+    ? group.participants
+    : (participantList ?? []);
+
+  /* LEFT and REMOVED participants stay out of the roster and the count. */
+  const participants = allParticipants.filter(
+    (participant) => (participant.status ?? "ACTIVE") === "ACTIVE",
+  );
+
+  const departedCount = allParticipants.length - participants.length;
 
   const {
     data: tally,
@@ -330,10 +354,24 @@ export default function MeetupLiveRoom({
     pollingInterval: 4000,
   });
 
+  /*
+   * Cast votes are read back from the server so a participant's own vote
+   * survives a reload and so retracting one has a vote uuid to target.
+   */
+  const { data: votesResponse, refetch: refetchVotes } = useGetMeetupVotesQuery(
+    meetupUuid,
+    {
+      skip: !meetupUuid,
+      pollingInterval: 4000,
+    },
+  );
+
   const [createRecommendationSession, { isLoading: isLoadingRecommendations }] =
     useCreateRecommendationSessionMutation();
   const [submitVote, { isLoading: isSubmittingVote }] =
     useSubmitMeetupVoteMutation();
+  const [retractVote, { isLoading: isRetractingVote }] =
+    useRetractMeetupVoteMutation();
   const [completeVoting, { isLoading: isCompleting }] =
     useCompleteMeetupVotingMutation();
 
@@ -348,7 +386,6 @@ export default function MeetupLiveRoom({
   const [recommendationError, setRecommendationError] = useState<string | null>(
     null,
   );
-  const [selectedFoodUuid, setSelectedFoodUuid] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [copiedResult, setCopiedResult] = useState(false);
@@ -398,6 +435,44 @@ export default function MeetupLiveRoom({
 
   const participantCount = participants.length;
   const totalVotes = tally?.totalVotes ?? 0;
+
+  /* APPROVAL lets a participant back several dishes; SINGLE_PICK allows one. */
+  const isApprovalVoting =
+    (group?.votingMethod ?? "").toUpperCase() === "APPROVAL";
+
+  const myVotes = useMemo(() => {
+    const participantUuid = storedSession?.participantUuid;
+
+    if (!participantUuid) {
+      return [];
+    }
+
+    return (votesResponse?.votes ?? []).filter(
+      (vote) => vote.participantUuid === participantUuid,
+    );
+  }, [votesResponse?.votes, storedSession?.participantUuid]);
+
+  /* foodUuid -> voteUuid, so a second tap on a card can retract that vote. */
+  const myVoteUuidByFoodUuid = useMemo(() => {
+    const map = new Map<string, string>();
+
+    for (const vote of myVotes) {
+      const foodUuid = vote.foodUuid || vote.candidateUuid;
+
+      if (foodUuid && vote.uuid) {
+        map.set(foodUuid, vote.uuid);
+      }
+    }
+
+    return map;
+  }, [myVotes]);
+
+  /* Display-only frontrunner; the host's complete-voting call decides. */
+  const leadingFoodUuid = useMemo(() => {
+    const leader = (tally?.tally ?? []).find((entry) => entry.isWinner);
+
+    return leader?.foodUuid || leader?.candidateUuid || tally?.winnerUuid || null;
+  }, [tally?.tally, tally?.winnerUuid]);
   const missingFriendProfile =
     storedSession?.joinMode === "FRIEND" &&
     !selectedRecommendationProfileUuid &&
@@ -405,7 +480,7 @@ export default function MeetupLiveRoom({
   const effectiveRecommendationError =
     recommendationError ||
     (missingFriendProfile
-      ? "No active FoodHub profile is available for recommendations."
+      ? "មិនមានប្រវត្តិរូប FoodHub សកម្មសម្រាប់ការណែនាំទេ។"
       : null);
 
   useEffect(() => {
@@ -491,7 +566,7 @@ export default function MeetupLiveRoom({
       })
       .catch((error) => {
         console.error("Meetup recommendation request failed:", error);
-        setRecommendationError("FoodHub could not load safe recommendations for this meetup.");
+        setRecommendationError("FoodHub មិនអាចផ្ទុកការណែនាំដែលមានសុវត្ថិភាពសម្រាប់ការណាត់ជួបនេះបានទេ។");
       });
   }, [
     createRecommendationSession,
@@ -536,29 +611,52 @@ export default function MeetupLiveRoom({
 
   const handleVote = async (candidate: MeetupCandidate) => {
     if (!meetupUuid || !storedSession) {
-      setActionError("Join this meetup before voting.");
+      setActionError("សូមចូលរួមការណាត់ជួបមុននឹងបោះឆ្នោត។");
       return;
     }
 
     setActionError(null);
 
-    try {
-      await submitVote({
-        meetupUuid,
-        participantUuid: storedSession.participantUuid,
-        foodUuid: candidate.foodUuid,
-        rankChoice: 1,
-      }).unwrap();
+    const existingVoteUuid = myVoteUuidByFoodUuid.get(candidate.foodUuid);
 
-      setSelectedFoodUuid(candidate.foodUuid);
-      await refetchTally();
-    } catch (error: any) {
+    try {
+      if (existingVoteUuid) {
+        /* Tapping a dish already backed by this participant retracts it. */
+        await retractVote({ voteUuid: existingVoteUuid, meetupUuid }).unwrap();
+      } else {
+        if (!isApprovalVoting) {
+          /*
+           * SINGLE_PICK allows one vote, so clear the previous one first.
+           * A backend that replaces the vote itself makes this a no-op, so a
+           * failure here must not block the new vote.
+           */
+          for (const vote of myVotes) {
+            if (!vote.uuid) {
+              continue;
+            }
+
+            try {
+              await retractVote({ voteUuid: vote.uuid, meetupUuid }).unwrap();
+            } catch {
+              /* Already replaced or removed server-side. */
+            }
+          }
+        }
+
+        await submitVote({
+          meetupUuid,
+          participantUuid: storedSession.participantUuid,
+          foodUuid: candidate.foodUuid,
+          rankChoice: 1,
+        }).unwrap();
+      }
+
+      await Promise.all([refetchVotes(), refetchTally()]);
+    } catch (error: unknown) {
       console.error("Meetup vote failed:", error);
-      const apiMessage =
-        error?.data?.message ||
-        error?.message ||
-        "FoodHub could not submit your vote.";
-      setActionError(apiMessage);
+      setActionError(
+        getApiErrorMessage(error, "FoodHub មិនអាចកែសំឡេងរបស់អ្នកបានទេ។"),
+      );
     }
   };
 
@@ -575,15 +673,15 @@ export default function MeetupLiveRoom({
       router.push(resultPath);
     } catch (error) {
       console.error("Complete voting failed:", error);
-      setActionError("FoodHub could not complete voting yet.");
+      setActionError("FoodHub មិនទាន់អាចបញ្ចប់ការបោះឆ្នោតបានទេ។");
     }
   };
 
   if (isLoadingGroup) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-slate-500">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin text-emerald-600" />
-        Loading meetup...
+        <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary-600" />
+        កំពុងផ្ទុកការណាត់ជួប...
       </main>
     );
   }
@@ -592,17 +690,17 @@ export default function MeetupLiveRoom({
     return (
       <main className="min-h-screen bg-slate-50 px-4 pt-24">
         <section className="mx-auto max-w-xl rounded-3xl border border-rose-100 bg-white p-8 text-center shadow-sm">
-          <h1 className="text-2xl font-black text-slate-900">
-            Meetup not found
-          </h1>
+          <p className="text-2xl font-black text-slate-900">
+            រកមិនឃើញការណាត់ជួប
+          </p>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            The invite link may be expired or unavailable.
+            តំណអញ្ជើញអាចផុតកំណត់ ឬមិនអាចប្រើបាន។
           </p>
           <Link
             href="/meetup/create"
-            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white"
+            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary-600 px-5 text-sm font-black text-white"
           >
-            Create meetup
+            បង្កើតការណាត់ជួប
           </Link>
         </section>
       </main>
@@ -632,32 +730,38 @@ export default function MeetupLiveRoom({
   }
 
   const isDecided = group.status === "DECIDED";
+  const isCancelled = group.status === "CANCELLED";
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-16 pt-20 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <section className="rounded-3xl bg-linear-to-r from-emerald-800 to-teal-900 p-6 text-white shadow-xl sm:p-8">
+        <section className="rounded-3xl bg-linear-to-r from-primary-800 to-primary-950 p-6 text-white shadow-xl sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-100">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-bold uppercase tracking-wide text-primary-100">
                 <Vote className="h-3.5 w-3.5" />
-                {isDecided ? "Voting complete" : "Live voting"}
+                {isDecided
+                  ? "បោះឆ្នោតរួចរាល់"
+                  : isCancelled
+                    ? "បានលុបចោល"
+                    : "កំពុងបោះឆ្នោត"}
               </div>
-              <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-                {group.title || "FoodHub dining meetup"}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-semibold text-emerald-50/90">
+              <p className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+                {group.title || "ការណាត់ញ៉ាំអាហារ FoodHub"}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-semibold text-primary-50/90">
                 <span className="inline-flex items-center gap-1.5">
                   <Users className="h-4 w-4" />
-                  {participantCount} joined
+                  {participantCount} នាក់ចូលរួម
+                  {departedCount > 0 ? ` · ចាកចេញ ${departedCount}` : ""}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="h-4 w-4" />
                   {group.locationMode === "PIN"
-                    ? `${group.searchRadiusKm ?? 3}km radius`
+                    ? `ជុំវិញ ${group.searchRadiusKm ?? 3} គ.ម`
                     : [group.targetAreaName, group.targetCity, group.targetProvince]
                         .filter(Boolean)
-                        .join(", ") || "Area meetup"}
+                        .join(", ") || "តាមតំបន់"}
                 </span>
               </div>
             </div>
@@ -669,33 +773,33 @@ export default function MeetupLiveRoom({
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 text-sm font-bold text-white transition hover:bg-white/20"
               >
                 <QrCode className="h-4 w-4" />
-                QR
+                QR កូដ
               </button>
               <button
                 type="button"
                 onClick={() => handleCopy(inviteUrl, "invite")}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-emerald-950 transition hover:bg-slate-100"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-primary-950 transition hover:bg-slate-100"
               >
                 {copiedInvite ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-                Invite
+                អញ្ជើញ
               </button>
               <button
                 type="button"
                 onClick={() => handleCopy(resultUrl, "result")}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-amber-300 px-4 text-sm font-bold text-emerald-950 transition hover:bg-amber-200"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-accent-300 px-4 text-sm font-bold text-primary-950 transition hover:bg-accent-200"
               >
                 {copiedResult ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                Result
+                លទ្ធផល
               </button>
             </div>
           </div>
         </section>
 
         {isDecided && (
-          <section className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm font-semibold text-amber-800">
-            Voting is complete.{" "}
+          <section className="rounded-3xl border border-accent-200 bg-accent-50 p-5 text-sm font-semibold text-accent-800">
+            ការបោះឆ្នោតបានបញ្ចប់។{" "}
             <Link href={resultPath} className="font-black underline">
-              Open the result page
+              បើកទំព័រលទ្ធផល
             </Link>
             .
           </section>
@@ -711,11 +815,11 @@ export default function MeetupLiveRoom({
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                  Safe food choices
-                </h2>
+                <p className="text-xl font-black text-slate-900 dark:text-white">
+                  ម្ហូបដែលមានសុវត្ថិភាព
+                </p>
                 <p className="mt-1 text-sm text-slate-500">
-                  Recommendations are loaded for the joined participant.
+                  ការណែនាំត្រូវបានផ្ទុកតាមអ្នកចូលរួមដែលបានចូល។
                 </p>
               </div>
               <button
@@ -729,14 +833,14 @@ export default function MeetupLiveRoom({
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300"
               >
                 <RefreshCw className="h-4 w-4" />
-                Refresh
+                ផ្ទុកឡើងវិញ
               </button>
             </div>
 
             {isLoadingRecommendations ? (
               <div className="flex min-h-64 items-center justify-center rounded-2xl bg-slate-50 text-sm font-semibold text-slate-500">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin text-emerald-600" />
-                Loading recommendations...
+                <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary-600" />
+                កំពុងផ្ទុកការណែនាំ...
               </div>
             ) : effectiveRecommendationError ? (
               <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-sm font-semibold text-rose-700">
@@ -744,21 +848,23 @@ export default function MeetupLiveRoom({
               </div>
             ) : candidates.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm leading-6 text-slate-500">
-                No safe matching foods are available yet. Refresh after more
-                participants join or adjust the meetup constraints.
+                មិនទាន់មានម្ហូបដែលមានសុវត្ថិភាពត្រូវនឹងលក្ខខណ្ឌទេ។
+                សូមផ្ទុកឡើងវិញបន្ទាប់ពីមានអ្នកចូលរួមបន្ថែម។
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {candidates.map((candidate) => {
                   const voteCount = getVoteCount(candidate);
-                  const selected = selectedFoodUuid === candidate.foodUuid;
+                  const selected = myVoteUuidByFoodUuid.has(candidate.foodUuid);
+                  const isLeading =
+                    voteCount > 0 && candidate.foodUuid === leadingFoodUuid;
 
                   return (
                     <article
                       key={`${candidate.foodUuid}-${candidate.candidateUuid}`}
                       className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition dark:bg-slate-950 ${
                         selected
-                          ? "border-emerald-500 ring-2 ring-emerald-500/15"
+                          ? "border-primary-500 ring-2 ring-primary-500/15"
                           : "border-slate-200 dark:border-slate-800"
                       }`}
                     >
@@ -774,25 +880,31 @@ export default function MeetupLiveRoom({
                             <Sparkles className="h-8 w-8" />
                           </div>
                         )}
-                        <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-black text-white shadow-sm">
+                        <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary-600 px-2.5 py-1 text-sm font-black text-white shadow-sm">
                           <ShieldCheck className="h-3.5 w-3.5" />
-                          Safe
+                          សុវត្ថិភាព
                         </span>
+                        {isLeading && (
+                          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-accent-300 px-2.5 py-1 text-sm font-black text-primary-950 shadow-sm">
+                            <Trophy className="h-3.5 w-3.5" />
+                            នាំមុខ
+                          </span>
+                        )}
                       </div>
 
                       <div className="space-y-4 p-4">
                         <div>
-                          <h3 className="line-clamp-2 text-lg font-black text-slate-900 dark:text-white">
+                          <p className="line-clamp-2 text-lg font-black text-slate-900 dark:text-white">
                             {candidate.foodName}
-                          </h3>
-                          <p className="mt-1 text-sm font-semibold text-[#F97316]">
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-secondary-500">
                             {candidate.storeName}
                           </p>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 text-xs font-bold">
+                        <div className="flex flex-wrap gap-2 text-sm font-bold">
                           {candidate.price !== null && (
-                            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700">
+                            <span className="rounded-full bg-primary-50 px-2.5 py-1 text-primary-700">
                               {candidate.currencyCode === "USD" ? "$" : candidate.currencyCode}
                               {candidate.price.toFixed(2)}
                             </span>
@@ -803,8 +915,8 @@ export default function MeetupLiveRoom({
                             </span>
                           )}
                           {candidate.finalScore !== null && (
-                            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-amber-700">
-                              Score {Math.round(candidate.finalScore)}
+                            <span className="rounded-full bg-accent-50 px-2.5 py-1 text-accent-700">
+                              ពិន្ទុ {Math.round(candidate.finalScore)}
                             </span>
                           )}
                         </div>
@@ -816,23 +928,35 @@ export default function MeetupLiveRoom({
                         )}
 
                         <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
-                          <span className="text-sm font-black text-emerald-700">
+                          <span className="text-sm font-black text-primary-700">
                             {voteCount} vote{voteCount === 1 ? "" : "s"}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleVote(candidate)}
-                            disabled={isSubmittingVote || isDecided}
-                            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-black text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={
+                              isSubmittingVote || isRetractingVote || isDecided
+                            }
+                            aria-pressed={selected}
+                            aria-label={
+                              selected
+                                ? `ដកសំឡេងសម្រាប់ ${candidate.foodName}`
+                                : `បោះឆ្នោតឲ្យ ${candidate.foodName}`
+                            }
+                            className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                              selected
+                                ? "border border-primary-600 bg-white text-primary-700 hover:bg-primary-50 dark:bg-slate-950 dark:hover:bg-slate-900"
+                                : "bg-primary-600 text-white hover:bg-primary-700"
+                            }`}
                           >
-                            {isSubmittingVote ? (
+                            {isSubmittingVote || isRetractingVote ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : selected ? (
-                              <Check className="h-4 w-4" />
+                              <Undo2 className="h-4 w-4" />
                             ) : (
                               <Vote className="h-4 w-4" />
                             )}
-                            {selected ? "Voted" : "Vote"}
+                            {selected ? "ដកសំឡេង" : "បោះឆ្នោត"}
                           </button>
                         </div>
                       </div>
@@ -846,35 +970,57 @@ export default function MeetupLiveRoom({
           <aside className="space-y-4">
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                  Tally
-                </h2>
+                <p className="text-lg font-black text-slate-900 dark:text-white">
+                  លទ្ធផលបោះឆ្នោត
+                </p>
                 {isFetchingTally && (
-                  <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary-600" />
                 )}
               </div>
+              <p className="mt-1 text-sm font-semibold text-slate-400">
+                {isApprovalVoting
+                  ? "បោះឆ្នោតបែបយល់ព្រម — អាចជ្រើសរើសម្ហូបច្រើនមុខ។"
+                  : "ម្នាក់មួយសំឡេង — បោះម្ដងទៀតនឹងផ្លាស់ប្ដូរសំឡេង។"}
+              </p>
 
               <div className="mt-4 space-y-3">
                 {(tally?.tally ?? []).length === 0 ? (
                   <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950">
-                    Waiting for votes.
+                    កំពុងរង់ចាំសំឡេងបោះឆ្នោត។
                   </p>
                 ) : (
                   tally?.tally.map((entry, index) => (
                     <div
                       key={`${entry.candidateUuid}-${index}`}
-                      className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950"
+                      className={`rounded-2xl p-3 ${
+                        entry.isWinner
+                          ? "bg-accent-50 ring-1 ring-accent-200 dark:bg-accent-950/30 dark:ring-accent-900"
+                          : "bg-slate-50 dark:bg-slate-950"
+                      }`}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="truncate text-sm font-black text-slate-800 dark:text-slate-200">
-                          {entry.foodName || entry.candidateName || entry.candidateUuid}
+                        <p className="flex min-w-0 items-center gap-1.5 truncate text-sm font-black text-slate-800 dark:text-slate-200">
+                          {entry.isWinner && (
+                            <Trophy className="h-3.5 w-3.5 shrink-0 text-accent-500" />
+                          )}
+                          <span className="truncate">
+                            {entry.foodName ||
+                              entry.candidateName ||
+                              entry.candidateUuid}
+                          </span>
                         </p>
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black text-emerald-700">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-sm font-black ${
+                            entry.isWinner
+                              ? "bg-accent-200 text-accent-900"
+                              : "bg-primary-100 text-primary-700"
+                          }`}
+                        >
                           {entry.voteCount}
                         </span>
                       </div>
                       {entry.storeName && (
-                        <p className="mt-1 truncate text-xs font-semibold text-slate-400">
+                        <p className="mt-1 truncate text-sm font-semibold text-slate-400">
                           {entry.storeName}
                         </p>
                       )}
@@ -884,18 +1030,18 @@ export default function MeetupLiveRoom({
               </div>
 
               <div className="mt-4 border-t border-slate-100 pt-4 text-sm font-semibold text-slate-500 dark:border-slate-800">
-                Total votes: {totalVotes}
+                សំឡេងសរុប៖ {totalVotes}
               </div>
             </section>
 
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                Participants
-              </h2>
+              <p className="text-lg font-black text-slate-900 dark:text-white">
+                អ្នកចូលរួម
+              </p>
               <div className="mt-4 space-y-2">
                 {participants.length === 0 ? (
                   <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950">
-                    Waiting for participants.
+                    កំពុងរង់ចាំអ្នកចូលរួម។
                   </p>
                 ) : (
                   participants.map((participant, index) => (
@@ -903,15 +1049,23 @@ export default function MeetupLiveRoom({
                       key={participant.uuid || index}
                       className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-950"
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-black text-white">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-black text-white">
                         {(participant.nickname || "M").charAt(0).toUpperCase()}
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-black text-slate-800 dark:text-slate-200">
-                          {participant.nickname || `Member ${index + 1}`}
+                          {participant.nickname || `សមាជិក ${index + 1}`}
                         </span>
-                        <span className="text-xs font-semibold text-slate-400">
-                          {participant.participantRole === "HOST" ? "Host" : "Member"}
+                        <span className="text-sm font-semibold text-slate-400">
+                          {participant.participantRole === "HOST"
+                            ? "ម្ចាស់ផ្ទះ"
+                            : participant.participantRole === "GUEST"
+                              ? "ភ្ញៀវ"
+                              : "សមាជិក"}
+                          {participant.locationLat !== null &&
+                          participant.locationLng !== null
+                            ? " · បានចែករំលែកទីតាំង"
+                            : ""}
                         </span>
                       </span>
                     </div>
@@ -920,26 +1074,26 @@ export default function MeetupLiveRoom({
               </div>
             </section>
 
-            {isHost && !isDecided && (
-              <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950/30">
-                <h2 className="text-lg font-black text-slate-900 dark:text-white">
-                  Finish voting
-                </h2>
+            {isHost && !isDecided && !isCancelled && (
+              <section className="rounded-3xl border border-primary-200 bg-primary-50 p-5 dark:border-primary-900 dark:bg-primary-950/30">
+                <p className="text-lg font-black text-slate-900 dark:text-white">
+                  បញ្ចប់ការបោះឆ្នោត
+                </p>
                 <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  The result link opens after the vote is complete.
+                  តំណលទ្ធផលនឹងបើកបន្ទាប់ពីការបោះឆ្នោតបញ្ចប់។
                 </p>
                 <button
                   type="button"
                   onClick={handleCompleteVoting}
                   disabled={isCompleting}
-                  className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+                  className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-primary-700 disabled:cursor-wait disabled:opacity-60"
                 >
                   {isCompleting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Trophy className="h-4 w-4" />
                   )}
-                  Complete voting
+                  បញ្ចប់ការបោះឆ្នោត
                 </button>
               </section>
             )}
@@ -951,16 +1105,16 @@ export default function MeetupLiveRoom({
         <DialogContent className="max-w-xs rounded-3xl bg-white p-6 text-center dark:bg-slate-900">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
-              Scan to join
+              ស្កេនដើម្បីចូលរួម
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-500">
-              Open this invite on another device.
+              បើកតំណអញ្ជើញនេះនៅលើឧបករណ៍ផ្សេង។
             </DialogDescription>
           </DialogHeader>
           <div className="my-4 flex justify-center">
             <QRCodeSVG value={inviteUrl} size={200} />
           </div>
-          <p className="truncate font-mono text-xs text-slate-400">
+          <p className="truncate font-mono text-sm text-slate-400">
             {inviteUrl}
           </p>
         </DialogContent>

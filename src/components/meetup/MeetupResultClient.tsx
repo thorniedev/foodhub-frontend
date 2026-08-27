@@ -68,53 +68,70 @@ export default function MeetupResultClient({
     <main className="min-h-screen bg-slate-50 px-4 pb-16 pt-24 dark:bg-slate-950 sm:px-6">
       <section className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-100 text-accent-700 dark:bg-accent-950 dark:text-accent-300">
             {isLoading ? (
               <Loader2 className="h-7 w-7 animate-spin" />
             ) : (
               <Trophy className="h-7 w-7" />
             )}
           </div>
-          <h1 className="mt-4 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-            Result not ready yet
-          </h1>
+          <p className="mt-4 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+            លទ្ធផលមិនទាន់រួចរាល់
+          </p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            Voting is still open. This page will update when the host completes
-            the meetup.
+            ការបោះឆ្នោតកំពុងបន្ត។ ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាព
+            នៅពេលម្ចាស់ផ្ទះបញ្ចប់ការណាត់ជួប។
           </p>
         </div>
 
         <div className="mt-6 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-900 dark:text-white">
-              <Vote className="h-4 w-4 text-emerald-600" />
-              Current tally
-            </h2>
+            <p className="inline-flex items-center gap-2 text-base font-black text-slate-900 dark:text-white">
+              <Vote className="h-4 w-4 text-primary-600" />
+              លទ្ធផលបច្ចុប្បន្ន
+            </p>
             {(isFetchingResult || isFetchingTally) && (
-              <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary-600" />
             )}
           </div>
 
           <div className="mt-4 space-y-2">
             {(tally?.tally ?? []).length === 0 ? (
-              <p className="text-sm text-slate-500">Waiting for votes.</p>
+              <p className="text-sm text-slate-500">កំពុងរង់ចាំសំឡេងបោះឆ្នោត។</p>
             ) : (
               tally?.tally.map((entry, index) => (
                 <div
                   key={`${entry.candidateUuid}-${index}`}
-                  className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 dark:bg-slate-900"
+                  className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2 ${
+                    entry.isWinner
+                      ? "bg-accent-50 ring-1 ring-accent-200 dark:bg-accent-950/30 dark:ring-accent-900"
+                      : "bg-white dark:bg-slate-900"
+                  }`}
                 >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-bold text-slate-800 dark:text-slate-200">
-                      {entry.foodName || entry.candidateName || entry.candidateUuid}
-                    </span>
-                    {entry.storeName && (
-                      <span className="block truncate text-xs text-slate-400">
-                        {entry.storeName}
-                      </span>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    {entry.isWinner && (
+                      <Trophy className="h-3.5 w-3.5 shrink-0 text-accent-500" />
                     )}
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold text-slate-800 dark:text-slate-200">
+                        {entry.foodName ||
+                          entry.candidateName ||
+                          entry.candidateUuid}
+                      </span>
+                      {entry.storeName && (
+                        <span className="block truncate text-sm text-slate-400">
+                          {entry.storeName}
+                        </span>
+                      )}
+                    </span>
                   </span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-700">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-sm font-black ${
+                      entry.isWinner
+                        ? "bg-accent-200 text-accent-900"
+                        : "bg-primary-100 text-primary-700"
+                    }`}
+                  >
                     {entry.voteCount}
                   </span>
                 </div>
@@ -134,14 +151,14 @@ export default function MeetupResultClient({
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
           >
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            ផ្ទុកឡើងវិញ
           </button>
 
           <Link
             href={`/meet/${encodeURIComponent(shareToken)}`}
-            className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-emerald-700"
+            className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-primary-600 px-5 text-sm font-black text-white shadow-md transition hover:bg-primary-700"
           >
-            Back to vote
+            ត្រឡប់ទៅបោះឆ្នោត
           </Link>
         </div>
       </section>

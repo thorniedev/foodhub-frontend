@@ -1,4 +1,5 @@
 import { baseApi } from "./baseApi";
+import { normalizePageResponse } from "./utils/normalize";
 
 import {
   normalizeMeetupActionResponse,
@@ -116,6 +117,41 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "GroupRecommendation", id: "MEETUP_LIST" }],
     }),
 
+    /** GET /api/v1/meetup/groups/me */
+    getMyMeetups: builder.query<
+      { contents: MeetupGroupResponse[]; totalElements: number; totalPages: number },
+      { page?: number; size?: number } | void
+    >({
+      query: (args) => ({
+        url: `/meetup/groups/me?page=${args?.page ?? 0}&size=${args?.size ?? 20}`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) => {
+        const page = normalizePageResponse<unknown>(response);
+
+        return {
+          contents: page.contents.map(normalizeMeetupGroupResponse),
+          totalElements: page.totalElements,
+          totalPages: page.totalPages,
+        };
+      },
+      providesTags: [{ type: "GroupRecommendation", id: "MEETUP_LIST" }],
+    }),
+
+    /** POST /api/v1/meetup/groups/{uuid}/cancel */
+    cancelMeetupGroup: builder.mutation<MeetupGroupResponse, string>({
+      query: (meetupUuid) => ({
+        url: `/meetup/groups/${encodeURIComponent(meetupUuid)}/cancel`,
+        method: "POST",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeMeetupGroupResponse(response),
+      invalidatesTags: (_result, _error, meetupUuid) => [
+        { type: "GroupRecommendation", id: `MEETUP-${meetupUuid}` },
+        { type: "GroupRecommendation", id: "MEETUP_LIST" },
+      ],
+    }),
+
     /** GET /api/v1/meetup/groups/{uuid} */
     getMeetupGroup: builder.query<MeetupGroupResponse, string>({
       query: (meetupUuid) => ({
@@ -169,6 +205,7 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
         normalizeMeetupActionResponse(response),
       invalidatesTags: (_result, _error, meetupUuid) => [
         { type: "GroupRecommendation", id: `MEETUP-${meetupUuid}` },
+        { type: "GroupRecommendation", id: "MEETUP_LIST" },
         { type: "GroupVoting", id: `MEETUP-${meetupUuid}` },
       ],
     }),
@@ -378,6 +415,8 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
 export const {
   // Group
   useCreateMeetupMutation,
+  useGetMyMeetupsQuery,
+  useCancelMeetupGroupMutation,
   useGetMeetupGroupQuery,
   useResolveMeetupShareTokenQuery,
   useUpdateMeetupGroupMutation,

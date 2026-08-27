@@ -2,12 +2,15 @@ import type {
   MeetupActionResponse,
   MeetupGroupResponse,
   MeetupMeetingPointResponse,
+  MeetupParticipantResolveStatus,
   MeetupParticipantResponse,
+  MeetupParticipantStatus,
   MeetupRecommendationItem,
   MeetupRecommendationSessionResponse,
   MeetupRecommendationStatus,
   MeetupResultResponse,
   MeetupVoteResponse,
+  MeetupVoteTallyEntry,
   MeetupVoteTallyResponse,
   MeetupVotesResponse,
   MeetupWinningCardResponse,
@@ -215,6 +218,18 @@ export function normalizeMeetupParticipantResponse(
     targetAreaName: locationAreaName,
     targetCity: locationCity,
     targetProvince: locationProvince,
+    /* Absent status is treated as ACTIVE so older payloads keep working. */
+    status:
+      (getString(record, [
+        "status",
+        "participantStatus",
+      ]) as MeetupParticipantStatus | null) ?? "ACTIVE",
+    /* Whether the backend resolved this participant's location to coordinates. */
+    resolveStatus: getString(record, [
+      "resolveStatus",
+      "locationResolveStatus",
+    ]) as MeetupParticipantResolveStatus | null,
+    leftAt: getString(record, ["leftAt", "removedAt"]),
     mapsLink: getString(record, ["mapsLink", "mapUrl"]),
     guestToken: getString(record, ["guestToken", "participantToken"]),
     dietaryTypes: getStringArray(record, ["dietaryTypes"]),
@@ -319,9 +334,13 @@ export function normalizeMeetupGroupResponse(
       "maximumParticipants",
     ]),
 
+    durationMinutes: getNumber(groupRecord, ["durationMinutes"]),
+
     expiresAt: getString(groupRecord, ["expiresAt"]),
 
     decidedAt: getString(groupRecord, ["decidedAt"]),
+
+    cancelledAt: getString(groupRecord, ["cancelledAt", "canceledAt"]),
 
     createdAt: getString(groupRecord, ["createdAt"]),
 
@@ -409,7 +428,8 @@ export function normalizeMeetupVoteResponse(
     participantUuid: getString(record, ["participantUuid"]),
     candidateUuid: getString(record, ["candidateUuid", "storeCandidateUuid"]),
     foodUuid: getString(record, ["foodUuid", "menuItemUuid"]),
-    rankChoice: getNumber(record, ["rankChoice", "rank"]),
+    vote: getNumber(record, ["vote"]),
+    rankChoice: getNumber(record, ["rankChoice", "rank", "vote"]),
     createdAt: getString(record, ["createdAt", "votedAt"]),
     raw: response,
   };
@@ -439,7 +459,18 @@ export function normalizeMeetupVotesResponse(
   };
 }
 
-function normalizeTallyEntry(response: unknown) {
+/**
+ * The meetup API returns the tally under `foodVoteTallies`; older builds used
+ * `tally`. Both are accepted so the room keeps working across backend versions.
+ */
+const TALLY_ARRAY_KEYS = [
+  "foodVoteTallies",
+  "tally",
+  "results",
+  "items",
+] as const;
+
+function normalizeTallyEntry(response: unknown): MeetupVoteTallyEntry {
   const record = isRecord(response) ? response : {};
 
   return {
@@ -452,7 +483,49 @@ function normalizeTallyEntry(response: unknown) {
     foodName: getString(record, ["foodName", "menuItemName"]),
     storeName: getString(record, ["storeName"]),
     voteCount: getNumber(record, ["voteCount", "votes", "count"]) ?? 0,
+    isWinner: getBoolean(record, ["isWinner", "winner"]) ?? false,
   };
+}
+
+function readTallyEntries(record: UnknownRecord): MeetupVoteTallyEntry[] {
+  return getArray(record, TALLY_ARRAY_KEYS).map(normalizeTallyEntry);
+}
+
+/**
+ * Resolves the frontrunner for display only. Per-entry `isWinner` from the
+ * backend wins; then `winnerUuid`; then the highest vote count. A tie leaves
+ * every joint leader flagged, and a tally with no votes has no frontrunner.
+ * This never decides the meetup — only the host's complete-voting call does.
+ */
+function withWinnerFlags(
+  entries: MeetupVoteTallyEntry[],
+  winnerUuid: string | null,
+): MeetupVoteTallyEntry[] {
+  if (entries.some((entry) => entry.isWinner)) {
+    return entries;
+  }
+
+  if (winnerUuid) {
+    return entries.map((entry) => ({
+      ...entry,
+      isWinner:
+        entry.foodUuid === winnerUuid || entry.candidateUuid === winnerUuid,
+    }));
+  }
+
+  const topVoteCount = entries.reduce(
+    (highest, entry) => Math.max(highest, entry.voteCount),
+    0,
+  );
+
+  if (topVoteCount === 0) {
+    return entries;
+  }
+
+  return entries.map((entry) => ({
+    ...entry,
+    isWinner: entry.voteCount === topVoteCount,
+  }));
 }
 
 export function normalizeMeetupVoteTallyResponse(
@@ -460,12 +533,22 @@ export function normalizeMeetupVoteTallyResponse(
 ): MeetupVoteTallyResponse {
   const record = getEnvelopeRecord(response);
 
+  const winnerUuid = getString(record, [
+    "winnerUuid",
+    "winningCandidateUuid",
+    "winningFoodUuid",
+  ]);
+
+  const tally = withWinnerFlags(readTallyEntries(record), winnerUuid);
+
   return {
     meetupUuid: getString(record, ["meetupUuid", "groupUuid"]),
-    totalVotes: getNumber(record, ["totalVotes", "voteCount", "votes"]) ?? 0,
-    tally: getArray(record, ["tally", "results", "items"]).map(
-      normalizeTallyEntry,
-    ),
+    winnerUuid,
+    /* The tally payload carries no total of its own, so sum the entries. */
+    totalVotes:
+      getNumber(record, ["totalVotes", "voteCount"]) ??
+      tally.reduce((sum, entry) => sum + entry.voteCount, 0),
+    tally,
   };
 }
 
@@ -524,8 +607,11 @@ export function normalizeMeetupResultResponse(
 ): MeetupResultResponse {
   const record = getEnvelopeRecord(response);
   const winningCard = normalizeMeetupWinningCardResponse(response);
-  const tally = getArray(record, ["tally", "results", "items"]).map(
-    normalizeTallyEntry,
+  const tally = withWinnerFlags(
+    readTallyEntries(record),
+    getString(record, ["winnerUuid"]) ??
+      winningCard.winningCandidateUuid ??
+      null,
   );
 
   return {

@@ -1,18 +1,32 @@
 export type MeetupVotingMethod =
   | "SINGLE_PICK"
+  | "APPROVAL"
+  | "RANKED"
   | "RANKED_BORDA"
   | string;
 
 export type MeetupMeetingPointMethod = "CENTROID" | string;
 
-export type MeetupAudienceMode = "FRIENDS" | "GUESTS" | string;
+export type MeetupAudienceMode = "FRIENDS" | "GUESTS" | "MIXED" | string;
 
 export type MeetupLocationMode = "AREA" | "PIN" | string;
 
 export type MeetupParticipantLocationInputType =
   | "MANUAL_PIN"
+  | "GPS_CURRENT"
   | "MAPS_LINK"
+  | "AREA"
   | string;
+
+export type MeetupParticipantRole = "HOST" | "MEMBER" | "GUEST";
+
+export type MeetupParticipantResolveStatus =
+  | "RESOLVED"
+  | "PENDING"
+  | "UNRESOLVED"
+  | string;
+
+export type MeetupParticipantStatus = "ACTIVE" | "LEFT" | "REMOVED";
 
 export type MeetupGroupStatus =
   | "COLLECTING"
@@ -31,7 +45,7 @@ export type MeetupRecommendationStatus =
 export interface CreateMeetupRequest {
   title: string;
   votingMethod?: MeetupVotingMethod;
-  audienceMode: "FRIENDS" | "GUESTS";
+  audienceMode: "FRIENDS" | "GUESTS" | "MIXED";
   guestAllowed: boolean;
   locationMode: "AREA" | "PIN";
   searchRadiusKm?: number;
@@ -54,13 +68,15 @@ export interface CreateMeetupRequest {
   expectedGuestCount?: number;
   maxParticipants?: number;
   durationMinutes?: number;
-  inviteMode?: "FRIENDS" | "GUEST_LINK" | "GUESTS";
+  inviteMode?: "FRIENDS" | "GUEST_LINK" | "GUESTS" | "MIXED";
 }
 
 export interface UpdateMeetupGroupRequest {
   title?: string;
   timezone?: string;
   searchRadiusKm?: number;
+  durationMinutes?: number;
+  maxParticipants?: number;
   status?: MeetupGroupStatus;
   targetAreaName?: string | null;
   targetCity?: string | null;
@@ -141,10 +157,13 @@ export interface MeetupVoteTallyEntry {
   foodName?: string | null;
   storeName?: string | null;
   voteCount: number;
+  isWinner: boolean;
 }
 
 export interface MeetupVoteTallyResponse {
   meetupUuid: string | null;
+  /** Food uuid the backend currently considers the frontrunner, when it sends one. */
+  winnerUuid: string | null;
   totalVotes: number;
   tally: MeetupVoteTallyEntry[];
 }
@@ -154,7 +173,7 @@ export interface MeetupParticipantDto {
   nickname: string;
   profileUuid?: string | null;
   profileId: number | null;
-  participantRole: "HOST" | "MEMBER";
+  participantRole: MeetupParticipantRole;
   locationLat: number | null;
   locationLng: number | null;
   locationInputType?: MeetupParticipantLocationInputType | null;
@@ -165,7 +184,7 @@ export interface MeetupParticipantDto {
   targetAreaName?: string | null;
   targetCity?: string | null;
   targetProvince?: string | null;
-  status: "ACTIVE" | "LEFT" | "REMOVED";
+  status: MeetupParticipantStatus;
   guestToken?: string | null;
   dietaryTypes?: string[];
   dietaryRestrictions?: string[];
@@ -183,7 +202,7 @@ export interface MeetupParticipantResponse {
   profileId: number | null;
   profileUuid: string | null;
   nickname: string | null;
-  participantRole?: "HOST" | "MEMBER" | null;
+  participantRole?: MeetupParticipantRole | null;
   locationLat: number | null;
   locationLng: number | null;
   locationInputType?: MeetupParticipantLocationInputType | null;
@@ -194,6 +213,9 @@ export interface MeetupParticipantResponse {
   targetAreaName?: string | null;
   targetCity?: string | null;
   targetProvince?: string | null;
+  status: MeetupParticipantStatus | null;
+  resolveStatus: MeetupParticipantResolveStatus | null;
+  leftAt: string | null;
   mapsLink: string | null;
   guestToken?: string | null;
   dietaryTypes?: string[];
@@ -211,8 +233,8 @@ export interface MeetupGroupDto {
   uuid: string;
   createdByUserId: number;
   title: string;
-  status: "COLLECTING" | "VOTING" | "DECIDED" | "CANCELLED";
-  votingMethod: "SINGLE_PICK" | "RANKED_BORDA";
+  status: MeetupGroupStatus;
+  votingMethod: MeetupVotingMethod;
   audienceMode?: MeetupAudienceMode;
   locationMode?: MeetupLocationMode;
   searchRadiusKm: number;
@@ -261,8 +283,10 @@ export interface MeetupGroupResponse {
   guestAllowed?: boolean;
   expectedGuestCount?: number | null;
   maxParticipants?: number | null;
+  durationMinutes: number | null;
   expiresAt: string | null;
   decidedAt?: string | null;
+  cancelledAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   raw: unknown;
@@ -339,6 +363,7 @@ export interface MeetupVoteResponse {
   participantUuid: string | null;
   candidateUuid: string | null;
   foodUuid?: string | null;
+  vote: number | null;
   rankChoice: number | null;
   createdAt: string | null;
   raw: unknown;

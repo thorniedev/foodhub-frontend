@@ -318,19 +318,19 @@ export default function GuestJoinSafetySheet({
   if (isFriendRoom && !user) {
     return (
       <div className="mx-auto w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 dark:bg-primary-950">
           <User className="h-7 w-7" />
         </div>
-        <h2 className="mt-4 text-2xl font-black text-slate-900 dark:text-white">
+        <p className="mt-4 text-2xl font-black text-slate-900 dark:text-white">
           Sign in to join
-        </h2>
+        </p>
         <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
           This invite is for FoodHub friends. Sign in, choose a profile, then
           join the vote.
         </p>
         <Link
           href={`/login?returnTo=${encodeURIComponent(`/meet/${shareToken}`)}`}
-          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-2xl bg-emerald-600 px-6 text-sm font-black text-white shadow-md transition hover:bg-emerald-700"
+          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-2xl bg-primary-600 px-6 text-sm font-black text-white shadow-md transition hover:bg-primary-700"
         >
           Sign in
         </Link>
@@ -341,12 +341,12 @@ export default function GuestJoinSafetySheet({
   return (
     <div className="mx-auto w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-7">
       <div className="space-y-2 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 dark:bg-primary-950">
           <Sparkles className="h-7 w-7" />
         </div>
-        <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+        <p className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
           Join {meetupTitle}
-        </h2>
+        </p>
         <p className="mx-auto max-w-md text-sm leading-6 text-slate-500">
           Add the safety and location details FoodHub needs before showing food
           choices.
@@ -356,13 +356,13 @@ export default function GuestJoinSafetySheet({
       <form onSubmit={handleJoin} className="mt-7 space-y-6">
         {isFriendRoom ? (
           <section className="space-y-3">
-            <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
+            <label className="block text-sm font-bold uppercase tracking-wide text-slate-500">
               FoodHub profile
               <select
                 value={selectedProfileUuid}
                 onChange={(event) => setSelectedProfileUuid(event.target.value)}
                 disabled={isLoadingProfiles}
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none transition focus:border-primary-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
                 <option value="">Use default active profile</option>
                 {profiles.map((profile) => (
@@ -375,7 +375,7 @@ export default function GuestJoinSafetySheet({
             </label>
 
             {profiles.length === 0 && !isLoadingProfiles && (
-              <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+              <p className="rounded-2xl bg-accent-50 px-4 py-3 text-sm font-semibold text-accent-700">
                 No active profile found. FoodHub will ask the backend to use
                 your default active profile.
               </p>
@@ -383,7 +383,7 @@ export default function GuestJoinSafetySheet({
           </section>
         ) : (
           <section>
-            <label className="block text-xs font-bold uppercase tracking-wide text-slate-500">
+            <label className="block text-sm font-bold uppercase tracking-wide text-slate-500">
               Guest nickname
               <div className="relative mt-2">
                 <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -391,7 +391,7 @@ export default function GuestJoinSafetySheet({
                   value={nickname}
                   onChange={(event) => setNickname(event.target.value)}
                   placeholder="Your nickname"
-                  className="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-10 pr-4 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  className="h-12 w-full rounded-2xl border border-slate-300 bg-white pl-10 pr-4 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none transition focus:border-primary-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                 />
               </div>
             </label>
@@ -403,10 +403,10 @@ export default function GuestJoinSafetySheet({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="flex items-center gap-2 text-sm font-black text-slate-900 dark:text-white">
-                  <Navigation className="h-4 w-4 text-emerald-600" />
+                  <Navigation className="h-4 w-4 text-primary-600" />
                   Current location
                 </p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1 text-sm leading-5 text-slate-500">
                   Pin-based meetups need your current position.
                 </p>
               </div>
@@ -414,7 +414,7 @@ export default function GuestJoinSafetySheet({
                 type="button"
                 onClick={handleShareLocation}
                 disabled={isGettingLocation}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 text-sm font-black text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-4 text-sm font-black text-white transition hover:bg-primary-700 disabled:cursor-wait disabled:opacity-70"
               >
                 {isGettingLocation ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -426,35 +426,35 @@ export default function GuestJoinSafetySheet({
             </div>
 
             {locationLat !== null && locationLng !== null && (
-              <p className="mt-3 rounded-xl bg-white px-3 py-2 font-mono text-xs font-semibold text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+              <p className="mt-3 rounded-xl bg-white px-3 py-2 font-mono text-sm font-semibold text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                 {locationLat.toFixed(6)}, {locationLng.toFixed(6)}
               </p>
             )}
           </section>
         ) : (
           <section className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60 sm:grid-cols-3">
-            <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            <label className="text-sm font-bold uppercase tracking-wide text-slate-500">
               Area
               <input
                 value={areaName}
                 onChange={(event) => setAreaName(event.target.value)}
-                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-primary-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               />
             </label>
-            <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            <label className="text-sm font-bold uppercase tracking-wide text-slate-500">
               City
               <input
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
-                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-primary-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               />
             </label>
-            <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            <label className="text-sm font-bold uppercase tracking-wide text-slate-500">
               Province
               <input
                 value={province}
                 onChange={(event) => setProvince(event.target.value)}
-                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-primary-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               />
             </label>
           </section>
@@ -463,7 +463,7 @@ export default function GuestJoinSafetySheet({
         {!isFriendRoom && (
           <section className="space-y-5">
             <div>
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-emerald-700">
+              <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-primary-700">
                 <Sparkles className="h-3.5 w-3.5" />
                 Dietary types
               </p>
@@ -477,9 +477,9 @@ export default function GuestJoinSafetySheet({
                       type="button"
                       key={value}
                       onClick={() => setDietaryTypes((current) => toggleValue(current, value))}
-                      className={`inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition ${
+                      className={`inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 text-sm font-bold transition ${
                         isSelected
-                          ? "border-emerald-600 bg-emerald-600 text-white"
+                          ? "border-primary-600 bg-primary-600 text-white"
                           : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
                       }`}
                     >
@@ -492,7 +492,7 @@ export default function GuestJoinSafetySheet({
             </div>
 
             <div>
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-700">
+              <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-accent-700">
                 <ShieldAlert className="h-3.5 w-3.5" />
                 Allergies
               </p>
@@ -506,9 +506,9 @@ export default function GuestJoinSafetySheet({
                       type="button"
                       key={value}
                       onClick={() => setAllergies((current) => toggleValue(current, value))}
-                      className={`inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition ${
+                      className={`inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 text-sm font-bold transition ${
                         isSelected
-                          ? "border-amber-600 bg-amber-600 text-white"
+                          ? "border-accent-600 bg-accent-600 text-white"
                           : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
                       }`}
                     >
@@ -521,7 +521,7 @@ export default function GuestJoinSafetySheet({
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              <label className="text-sm font-bold uppercase tracking-wide text-slate-500">
                 Budget min
                 <div className="relative mt-2">
                   <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -531,11 +531,11 @@ export default function GuestJoinSafetySheet({
                     step="0.5"
                     value={budgetMin ?? ""}
                     onChange={(event) => setBudgetMin(getNumericInput(event.target.value))}
-                    className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                    className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-primary-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                   />
                 </div>
               </label>
-              <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              <label className="text-sm font-bold uppercase tracking-wide text-slate-500">
                 Budget max
                 <div className="relative mt-2">
                   <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -545,7 +545,7 @@ export default function GuestJoinSafetySheet({
                     step="0.5"
                     value={budgetMax ?? ""}
                     onChange={(event) => setBudgetMax(getNumericInput(event.target.value))}
-                    className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                    className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-sm font-semibold normal-case tracking-normal text-slate-900 outline-none focus:border-primary-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                   />
                 </div>
               </label>
@@ -563,7 +563,7 @@ export default function GuestJoinSafetySheet({
         <button
           type="submit"
           disabled={isJoining}
-          className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+          className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 text-sm font-black text-white shadow-lg transition hover:bg-primary-700 disabled:cursor-wait disabled:opacity-60"
         >
           {isJoining ? (
             <>

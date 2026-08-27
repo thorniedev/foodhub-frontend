@@ -698,10 +698,10 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/chanthorn.DNG",
+    avatar: "/about/chanthorn.jpg",
 
     socials: {
-      facebook: "https://www.facebook.com/USERNAME",
+      facebook: "https://web.facebook.com/ny.bee.313",
       telegram: "https://t.me/Thornoir04",
       github: "https://github.com/thornieDev/",
     },
