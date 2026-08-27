@@ -347,6 +347,8 @@ export interface CatalogRecommendationScoreBreakdown {
 }
 
 export interface CatalogRecommendation {
+  uuid?: string | null;
+  recommendationSessionUuid?: string | null;
   finalScore?: number | null;
   reasonText?: string | null;
   reasonCodes?: string[] | null;

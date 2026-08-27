@@ -16,6 +16,21 @@ import type {
   SafetyOptionResponse,
 } from "@/types/member-profile/member-profile";
 
+import type {
+  CuisinePreferenceItem,
+  UpdatePreferencesPayload,
+} from "@/types/foodhub";
+
+export interface SaveMemberPreferencesRequest {
+  uuid: string;
+  preferences: UpdatePreferencesPayload;
+}
+
+export interface SaveMemberCuisinesRequest {
+  uuid: string;
+  cuisines: CuisinePreferenceItem[];
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                   PROFILE                                  */
 /* -------------------------------------------------------------------------- */
@@ -378,6 +393,40 @@ export const memberProfileApi = baseApi.injectEndpoints({
 
       invalidatesTags: ["MemberProfile"],
     }),
+
+    /* ---------------------------------------------------------------------- */
+    /*                         UPDATE GENERAL PREFERENCES                     */
+    /* ---------------------------------------------------------------------- */
+
+    saveMemberPreferences: builder.mutation<
+      void,
+      SaveMemberPreferencesRequest
+    >({
+      query: ({ uuid, preferences }) => ({
+        url: `/profiles/${encodeURIComponent(uuid)}/preferences`,
+        method: "PUT",
+        body: preferences,
+      }),
+
+      invalidatesTags: ["MemberProfile"],
+    }),
+
+    /* ---------------------------------------------------------------------- */
+    /*                         UPDATE CUISINE PREFERENCES                     */
+    /* ---------------------------------------------------------------------- */
+
+    saveMemberCuisines: builder.mutation<
+      void,
+      SaveMemberCuisinesRequest
+    >({
+      query: ({ uuid, cuisines }) => ({
+        url: `/profiles/${encodeURIComponent(uuid)}/cuisines`,
+        method: "PUT",
+        body: cuisines,
+      }),
+
+      invalidatesTags: ["MemberProfile"],
+    }),
   }),
 
   overrideExisting: false,
@@ -409,4 +458,8 @@ export const {
   useSaveMemberDietaryTypesMutation,
   useSaveMemberMedicalConditionsMutation,
   useSaveMemberIngredientAvoidsMutation,
+
+  /* Preference update */
+  useSaveMemberPreferencesMutation,
+  useSaveMemberCuisinesMutation,
 } = memberProfileApi;

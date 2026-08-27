@@ -51,6 +51,20 @@ export interface MemberIngredientAvoidRequest {
   notes: string | null;
 }
 
+import type {
+  PreferenceResponse,
+  UpdatePreferencesPayload,
+  CuisinePreferenceItem,
+  CuisinePreferenceLevel,
+} from "@/types/foodhub";
+
+export type {
+  PreferenceResponse,
+  UpdatePreferencesPayload,
+  CuisinePreferenceItem,
+  CuisinePreferenceLevel,
+};
+
 export interface MemberProfile {
   uuid: string;
   profileName: string;
@@ -68,7 +82,7 @@ export interface MemberProfile {
   medicalConditions: MemberMedicalConditionRequest[];
   ingredientAvoids: MemberIngredientAvoidRequest[];
 
-  preferences: Record<string, unknown> | null;
+  preferences: PreferenceResponse | Record<string, unknown> | null;
 
   createdAt: string;
   updatedAt: string;

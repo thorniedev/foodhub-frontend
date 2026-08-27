@@ -57,7 +57,8 @@ function profilePreferenceValues(
     return [];
   }
 
-  return keys.flatMap((key) => valuesFromUnknown(profile.preferences?.[key]));
+  const prefs = profile.preferences as Record<string, unknown>;
+  return keys.flatMap((key) => valuesFromUnknown(prefs[key]));
 }
 
 /**

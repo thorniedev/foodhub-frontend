@@ -18,6 +18,8 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useTrackInteraction } from "@/hooks/useTrackInteraction";
 
 import type {
   CatalogDietaryType,
@@ -91,6 +93,7 @@ export default function SwipeCardTinderStyle({
   const swiperRef = useRef<SwiperInstance | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [pulseKey, setPulseKey] = useState(0);
+  const { track } = useTrackInteraction();
 
   const safeFoods = Array.isArray(foods) ? foods : [];
   const total = safeFoods.length;
@@ -114,7 +117,39 @@ export default function SwipeCardTinderStyle({
           }}
           onSlideChange={(swiper) => {
             markInteracted();
-            setActiveIndex(swiper.realIndex);
+            const prevIndex = activeIndex;
+            const newIndex = swiper.realIndex;
+            setActiveIndex(newIndex);
+
+            const prevFood = safeFoods[prevIndex];
+            if (prevFood) {
+              track({
+                eventType: "SKIP",
+                menuItemUuid: prevFood.uuid,
+                foodUuid: prevFood.food?.uuid,
+                storeUuid: prevFood.store?.uuid,
+                recommendationSessionUuid:
+                  prevFood.recommendation?.recommendationSessionUuid ||
+                  undefined,
+                recommendationItemUuid:
+                  prevFood.recommendation?.uuid || undefined,
+              });
+            }
+
+            const currentFood = safeFoods[newIndex];
+            if (currentFood) {
+              track({
+                eventType: "VIEW",
+                menuItemUuid: currentFood.uuid,
+                foodUuid: currentFood.food?.uuid,
+                storeUuid: currentFood.store?.uuid,
+                recommendationSessionUuid:
+                  currentFood.recommendation?.recommendationSessionUuid ||
+                  undefined,
+                recommendationItemUuid:
+                  currentFood.recommendation?.uuid || undefined,
+              });
+            }
           }}
           effect="cards"
           grabCursor
@@ -195,6 +230,9 @@ export default function SwipeCardTinderStyle({
 }
 
 function SwipeFoodCard({ food }: SwipeFoodCardProps) {
+  const { addBookmark, removeBookmark, findBookmark, activeProfileUuid } =
+    useBookmarks();
+  const { track } = useTrackInteraction();
   const [isFavorite, setIsFavorite] = useState(false);
 
   const effectiveThumbnail =
@@ -209,7 +247,13 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
   useEffect(() => {
     const syncFavoriteState = () => {
       const favoriteIds = getStoredFavoriteIds();
-      setIsFavorite(favoriteIds.includes(food.uuid));
+      const serverBookmark = findBookmark({
+        menuItemUuid: food.uuid,
+        foodUuid: food.food?.uuid,
+      });
+      setIsFavorite(
+        Boolean(serverBookmark) || favoriteIds.includes(food.uuid),
+      );
     };
 
     syncFavoriteState();
@@ -222,7 +266,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
         syncFavoriteState,
       );
     };
-  }, [food.uuid]);
+  }, [food.uuid, food.food?.uuid, findBookmark]);
 
   useEffect(() => {
     const nextThumbnail =
@@ -233,27 +277,83 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
     setThumbnailUrl(toFrontendApiAssetUrl(nextThumbnail));
   }, [food.thumbnail, food.gallery, food.uuid]);
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     const currentIds = getStoredFavoriteIds();
-    const isAlreadyFavorite = currentIds.includes(food.uuid);
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
+    const isAlreadyFavorite =
+      isFavorite || Boolean(serverBookmark) || currentIds.includes(food.uuid);
 
-    const nextIds = isAlreadyFavorite
-      ? currentIds.filter((id) => id !== food.uuid)
-      : [...currentIds, food.uuid];
+    if (isAlreadyFavorite) {
+      const nextIds = currentIds.filter((id) => id !== food.uuid);
+      try {
+        window.localStorage.setItem(
+          FAVORITES_STORAGE_KEY,
+          JSON.stringify(nextIds),
+        );
+      } catch {}
 
-    try {
-      window.localStorage.setItem(
-        FAVORITES_STORAGE_KEY,
-        JSON.stringify(nextIds),
-      );
-    } catch (error) {
-      console.warn(
-        "[FOOD FAVORITE STORAGE]",
-        error instanceof Error ? error.message : String(error),
-      );
+      setIsFavorite(false);
+
+      if (serverBookmark) {
+        try {
+          await removeBookmark(serverBookmark.uuid);
+        } catch (err) {
+          console.warn("[BOOKMARK REMOVE ERROR]", err);
+        }
+      }
+
+      track({
+        eventType: "UNBOOKMARK",
+        menuItemUuid: food.uuid,
+        foodUuid: food.food?.uuid,
+        storeUuid: food.store?.uuid,
+        recommendationSessionUuid:
+          food.recommendation?.recommendationSessionUuid || undefined,
+        recommendationItemUuid: food.recommendation?.uuid || undefined,
+      });
+    } else {
+      const nextIds = [
+        ...currentIds.filter((id) => id !== food.uuid),
+        food.uuid,
+      ];
+      try {
+        window.localStorage.setItem(
+          FAVORITES_STORAGE_KEY,
+          JSON.stringify(nextIds),
+        );
+      } catch {}
+
+      setIsFavorite(true);
+
+      if (activeProfileUuid) {
+        try {
+          await addBookmark({
+            menuItemUuid: food.uuid,
+            foodUuid: food.food?.uuid,
+            storeUuid: food.store?.uuid,
+            sourceRecommendationItemUuid:
+              food.recommendation?.uuid || undefined,
+            notes: food.recommendation?.reasonText || undefined,
+          });
+        } catch (err) {
+          console.warn("[BOOKMARK ADD ERROR]", err);
+        }
+      }
+
+      track({
+        eventType: "LIKE",
+        menuItemUuid: food.uuid,
+        foodUuid: food.food?.uuid,
+        storeUuid: food.store?.uuid,
+        recommendationSessionUuid:
+          food.recommendation?.recommendationSessionUuid || undefined,
+        recommendationItemUuid: food.recommendation?.uuid || undefined,
+      });
     }
 
-    setIsFavorite(nextIds.includes(food.uuid));
     window.dispatchEvent(new Event("foodhub-favorites-updated"));
   };
 
@@ -285,6 +385,17 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
     <Link
       href={`/menu-items/${food.uuid}`}
       draggable={false}
+      onClick={() => {
+        track({
+          eventType: "CLICK",
+          menuItemUuid: food.uuid,
+          foodUuid: food.food?.uuid,
+          storeUuid: food.store?.uuid,
+          recommendationSessionUuid:
+            food.recommendation?.recommendationSessionUuid || undefined,
+          recommendationItemUuid: food.recommendation?.uuid || undefined,
+        });
+      }}
       className="flex h-full w-full flex-col gap-3 rounded-[24px] border border-gray-200 bg-white p-2.5 shadow-sm"
     >
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-[14px]">

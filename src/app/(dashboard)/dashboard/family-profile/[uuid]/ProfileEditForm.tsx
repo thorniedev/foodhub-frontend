@@ -12,15 +12,23 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  Compass,
+  Flame,
   HeartPulse,
   Languages,
   LoaderCircle,
+  Plus,
   RefreshCw,
   Salad,
   Save,
   ShieldAlert,
+  Sliders,
+  Sparkles,
+  Trash2,
   UserRound,
   UsersRound,
+  Utensils,
+  Wallet,
 } from "lucide-react";
 import { IoCameraOutline } from "react-icons/io5";
 
@@ -32,6 +40,8 @@ import {
   useSaveMemberAllergiesMutation,
   useSaveMemberDietaryTypesMutation,
   useSaveMemberMedicalConditionsMutation,
+  useSaveMemberPreferencesMutation,
+  useSaveMemberCuisinesMutation,
   useUpdateMemberProfileMutation,
   useUploadMediaMutation,
   useGetMediaAccessUrlQuery,
@@ -43,6 +53,12 @@ import type {
   MemberRelationship,
   ProfileSeverity,
 } from "@/types/member-profile/member-profile";
+
+import type {
+  CuisinePreferenceLevel,
+  CuisinePreferenceItem,
+  UpdatePreferencesPayload,
+} from "@/types/foodhub";
 
 interface ProfileEditFormProps {
   uuid: string;
@@ -69,6 +85,12 @@ interface MedicalFormItem {
   notes: string;
 }
 
+interface CuisineFormItem {
+  cuisineCode: string;
+  preferenceLevel: CuisinePreferenceLevel;
+  priority: number;
+}
+
 interface EditFormState {
   profileName: string;
   relationship: MemberRelationship;
@@ -79,6 +101,116 @@ interface EditFormState {
   allergies: AllergyFormItem[];
   dietaryTypes: DietaryFormItem[];
   medicalConditions: MedicalFormItem[];
+
+  // General Preferences
+  spiceTolerance: number; // 0 - 10
+  minimumPrice: number | "";
+  maximumPrice: number | "";
+  currencyCode: "USD" | "KHR";
+  defaultSearchRadiusKm: number;
+  tastePreferences: Record<string, boolean>;
+  texturePreferences: Record<string, boolean>;
+
+  // Cuisine Preferences
+  cuisinePreferences: CuisineFormItem[];
+}
+
+export const TASTE_OPTIONS = [
+  { key: "spicy", labelKm: "ហឹរ (Spicy)", emoji: "🌶️" },
+  { key: "savory", labelKm: "ប្រៃ / ឈ្ងុយ (Savory)", emoji: "🧂" },
+  { key: "soup", labelKm: "ស៊ុប / ទឹកសម្ល (Soup)", emoji: "🍲" },
+  { key: "sweet", labelKm: "ផ្អែម (Sweet)", emoji: "🍯" },
+  { key: "sour", labelKm: "ជូរ (Sour)", emoji: "🍋" },
+  { key: "bitter", labelKm: "ល្វីង (Bitter)", emoji: "☕" },
+];
+
+export const TEXTURE_OPTIONS = [
+  { key: "crispy", labelKm: "ស្រួយ (Crispy)", emoji: "🍗" },
+  { key: "chewy", labelKm: "ស្វិត (Chewy)", emoji: "🍡" },
+  { key: "creamy", labelKm: "ទន់ម៉ត់ / ក្រែម (Creamy)", emoji: "🍦" },
+  { key: "tender", labelKm: "ផុយទន់ (Tender)", emoji: "🥩" },
+  { key: "crunchy", labelKm: "ស្រួយក្រុប (Crunchy)", emoji: "🥨" },
+];
+
+export const CUISINE_OPTIONS = [
+  { code: "KHMER", labelKm: "ខ្មែរ (Khmer)", flag: "🇰🇭" },
+  { code: "JAPANESE", labelKm: "ជប៉ុន (Japanese)", flag: "🇯🇵" },
+  { code: "CHINESE", labelKm: "ចិន (Chinese)", flag: "🇨🇳" },
+  { code: "KOREAN", labelKm: "កូរ៉េ (Korean)", flag: "🇰🇷" },
+  { code: "THAI", labelKm: "ថៃ (Thai)", flag: "🇹🇭" },
+  { code: "VIETNAMESE", labelKm: "វៀតណាម (Vietnamese)", flag: "🇻🇳" },
+  { code: "WESTERN", labelKm: "បស្ចិមប្រទេស (Western)", flag: "🍔" },
+  { code: "INDIAN", labelKm: "ឥណ្ឌា (Indian)", flag: "🇮🇳" },
+  { code: "ITALIAN", labelKm: "អ៊ីតាលី (Italian)", flag: "🍕" },
+  { code: "FRENCH", labelKm: "បារាំង (French)", flag: "🥐" },
+];
+
+export const PREFERENCE_LEVELS: {
+  value: CuisinePreferenceLevel;
+  labelKm: string;
+  badgeClass: string;
+}[] = [
+  {
+    value: "LOVE",
+    labelKm: "❤️ ចូលចិត្តខ្លាំង (LOVE)",
+    badgeClass: "bg-red-50 text-red-700 border-red-200",
+  },
+  {
+    value: "LIKE",
+    labelKm: "👍 ចូលចិត្ត (LIKE)",
+    badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  {
+    value: "NEUTRAL",
+    labelKm: "😐 ធម្មតា (NEUTRAL)",
+    badgeClass: "bg-slate-50 text-slate-700 border-slate-200",
+  },
+  {
+    value: "DISLIKE",
+    labelKm: "👎 មិនសូវចូលចិត្ត (DISLIKE)",
+    badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  {
+    value: "AVOID",
+    labelKm: "🚫 ជៀសវាង (AVOID)",
+    badgeClass: "bg-rose-100 text-rose-800 border-rose-300",
+  },
+];
+
+export function getSpiceDescriptor(level: number): {
+  labelKm: string;
+  colorClass: string;
+  emoji: string;
+} {
+  if (level === 0)
+    return {
+      labelKm: "មិនហឹរទាល់តែសោះ (Mild / 0)",
+      colorClass: "text-slate-500",
+      emoji: "🟢",
+    };
+  if (level <= 3)
+    return {
+      labelKm: "ហឹរតិចតួច (Mild)",
+      colorClass: "text-emerald-600",
+      emoji: "🌶️",
+    };
+  if (level <= 6)
+    return {
+      labelKm: "ហឹរមធ្យម (Medium)",
+      colorClass: "text-amber-600",
+      emoji: "🌶️🌶️",
+    };
+  if (level <= 8)
+    return {
+      labelKm: "ហឹរខ្លាំង (Hot)",
+      colorClass: "text-orange-600",
+      emoji: "🌶️🌶️🌶️",
+    };
+  return {
+    labelKm: "ហឹរខ្លាំងបំផុត (Extremely Spicy)",
+    colorClass: "text-red-600 font-black",
+    emoji: "🔥🌶️🔥",
+  };
 }
 
 const relationshipLabels: Record<MemberRelationship, string> = {
@@ -119,6 +251,30 @@ const initialForm: EditFormState = {
   allergies: [],
   dietaryTypes: [],
   medicalConditions: [],
+
+  spiceTolerance: 5,
+  minimumPrice: 2.0,
+  maximumPrice: 15.0,
+  currencyCode: "USD",
+  defaultSearchRadiusKm: 5.0,
+  tastePreferences: {
+    spicy: true,
+    savory: true,
+    soup: false,
+    sweet: false,
+    sour: false,
+    bitter: false,
+  },
+  texturePreferences: {
+    crispy: false,
+    chewy: false,
+    creamy: false,
+    tender: false,
+    crunchy: false,
+  },
+  cuisinePreferences: [
+    { cuisineCode: "KHMER", preferenceLevel: "LOVE", priority: 1 },
+  ],
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -315,6 +471,157 @@ async function clearSafetySection(
   }
 }
 
+function parsePreferencesFromProfile(prefs: unknown): {
+  spiceTolerance: number;
+  minimumPrice: number | "";
+  maximumPrice: number | "";
+  currencyCode: "USD" | "KHR";
+  defaultSearchRadiusKm: number;
+  tastePreferences: Record<string, boolean>;
+  texturePreferences: Record<string, boolean>;
+  cuisinePreferences: CuisineFormItem[];
+} {
+  const result = {
+    spiceTolerance: 5,
+    minimumPrice: 2.0 as number | "",
+    maximumPrice: 15.0 as number | "",
+    currencyCode: "USD" as "USD" | "KHR",
+    defaultSearchRadiusKm: 5.0,
+    tastePreferences: {
+      spicy: false,
+      savory: false,
+      soup: false,
+      sweet: false,
+      sour: false,
+      bitter: false,
+    } as Record<string, boolean>,
+    texturePreferences: {
+      crispy: false,
+      chewy: false,
+      creamy: false,
+      tender: false,
+      crunchy: false,
+    } as Record<string, boolean>,
+    cuisinePreferences: [
+      {
+        cuisineCode: "KHMER",
+        preferenceLevel: "LOVE" as CuisinePreferenceLevel,
+        priority: 1,
+      },
+    ],
+  };
+
+  if (!prefs || typeof prefs !== "object") return result;
+
+  const record = prefs as Record<string, unknown>;
+
+  // Spice
+  if (typeof record.spiceTolerance === "number") {
+    result.spiceTolerance = Math.min(10, Math.max(0, record.spiceTolerance));
+  } else if (
+    typeof record.spiceLevel === "string" ||
+    typeof record.spiceLevel === "number"
+  ) {
+    const parsed = parseInt(String(record.spiceLevel), 10);
+    if (!Number.isNaN(parsed))
+      result.spiceTolerance = Math.min(10, Math.max(0, parsed));
+  }
+
+  // Budget
+  if (typeof record.minimumPrice === "number") {
+    result.minimumPrice = record.minimumPrice;
+  } else if (typeof record.minimumBudget === "number") {
+    result.minimumPrice = record.minimumBudget;
+  }
+
+  if (typeof record.maximumPrice === "number") {
+    result.maximumPrice = record.maximumPrice;
+  } else if (typeof record.maximumBudget === "number") {
+    result.maximumPrice = record.maximumBudget;
+  }
+
+  if (record.currencyCode === "KHR" || record.currencyCode === "USD") {
+    result.currencyCode = record.currencyCode;
+  }
+
+  // Radius
+  if (typeof record.defaultSearchRadiusKm === "number") {
+    result.defaultSearchRadiusKm = record.defaultSearchRadiusKm;
+  } else if (typeof record.radiusMeters === "number") {
+    result.defaultSearchRadiusKm = record.radiusMeters / 1000;
+  }
+
+  // Tastes
+  if (Array.isArray(record.tasteCodes)) {
+    record.tasteCodes.forEach((code) => {
+      if (
+        typeof code === "string" &&
+        code.toLowerCase() in result.tastePreferences
+      ) {
+        result.tastePreferences[code.toLowerCase()] = true;
+      }
+    });
+  }
+  if (
+    typeof record.tastePreferences === "object" &&
+    record.tastePreferences !== null
+  ) {
+    Object.entries(record.tastePreferences as Record<string, boolean>).forEach(
+      ([k, v]) => {
+        if (k.toLowerCase() in result.tastePreferences) {
+          result.tastePreferences[k.toLowerCase()] = Boolean(v);
+        }
+      },
+    );
+  }
+
+  // Textures
+  if (Array.isArray(record.textureCodes)) {
+    record.textureCodes.forEach((code) => {
+      if (
+        typeof code === "string" &&
+        code.toLowerCase() in result.texturePreferences
+      ) {
+        result.texturePreferences[code.toLowerCase()] = true;
+      }
+    });
+  }
+  if (
+    typeof record.texturePreferences === "object" &&
+    record.texturePreferences !== null
+  ) {
+    Object.entries(
+      record.texturePreferences as Record<string, boolean>,
+    ).forEach(([k, v]) => {
+      if (k.toLowerCase() in result.texturePreferences) {
+        result.texturePreferences[k.toLowerCase()] = Boolean(v);
+      }
+    });
+  }
+
+  // Cuisines
+  if (Array.isArray(record.cuisines) && record.cuisines.length > 0) {
+    result.cuisinePreferences = record.cuisines.map(
+      (c: any, idx: number) => ({
+        cuisineCode: String(c.cuisineCode || c.code).toUpperCase(),
+        preferenceLevel: (c.preferenceLevel || "LOVE") as CuisinePreferenceLevel,
+        priority: c.priority || idx + 1,
+      }),
+    );
+  } else if (
+    Array.isArray(record.cuisineCodes) &&
+    record.cuisineCodes.length > 0
+  ) {
+    result.cuisinePreferences = record.cuisineCodes.map((code, idx) => ({
+      cuisineCode: String(code).toUpperCase(),
+      preferenceLevel: "LOVE" as CuisinePreferenceLevel,
+      priority: idx + 1,
+    }));
+  }
+
+  return result;
+}
+
 function PreferenceSection({
   title,
   description,
@@ -414,6 +721,12 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
   const [saveMemberMedicalConditions, saveMedicalState] =
     useSaveMemberMedicalConditionsMutation();
 
+  const [saveMemberPreferences, savePreferencesState] =
+    useSaveMemberPreferencesMutation();
+
+  const [saveMemberCuisines, saveCuisinesState] =
+    useSaveMemberCuisinesMutation();
+
   const maxDate = useMemo(() => new Date().toISOString().split("T")[0], []);
 
   const allergenOptions = allergenResponse?.contents ?? [];
@@ -438,13 +751,16 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
     saveAllergiesState.isLoading ||
     saveDietaryState.isLoading ||
     saveMedicalState.isLoading ||
+    savePreferencesState.isLoading ||
+    saveCuisinesState.isLoading ||
     isUploadingAvatar;
-
 
   useEffect(() => {
     if (!profile || initializedProfileUuid === profile.uuid) {
       return;
     }
+
+    const parsedPrefs = parsePreferencesFromProfile(profile.preferences);
 
     setForm({
       profileName: profile.profileName,
@@ -462,6 +778,15 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
       dietaryTypes: normalizeDietaryTypes(profile.dietaryTypes),
 
       medicalConditions: normalizeMedicalConditions(profile.medicalConditions),
+
+      spiceTolerance: parsedPrefs.spiceTolerance,
+      minimumPrice: parsedPrefs.minimumPrice,
+      maximumPrice: parsedPrefs.maximumPrice,
+      currencyCode: parsedPrefs.currencyCode,
+      defaultSearchRadiusKm: parsedPrefs.defaultSearchRadiusKm,
+      tastePreferences: parsedPrefs.tastePreferences,
+      texturePreferences: parsedPrefs.texturePreferences,
+      cuisinePreferences: parsedPrefs.cuisinePreferences,
     });
 
     if (profile.avatarMediaUuid) {
@@ -628,6 +953,97 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
               ...patch,
             }
           : item,
+      ),
+    }));
+  };
+
+  const handleSpiceChange = (spiceTolerance: number) => {
+    setForm((previous) => ({ ...previous, spiceTolerance }));
+  };
+
+  const handlePriceChange = (
+    field: "minimumPrice" | "maximumPrice",
+    value: string,
+  ) => {
+    const num = value === "" ? "" : parseFloat(value);
+    setForm((previous) => ({
+      ...previous,
+      [field]: Number.isNaN(num) ? "" : num,
+    }));
+  };
+
+  const handleCurrencyChange = (currencyCode: "USD" | "KHR") => {
+    setForm((previous) => ({ ...previous, currencyCode }));
+  };
+
+  const handleRadiusChange = (defaultSearchRadiusKm: number) => {
+    setForm((previous) => ({ ...previous, defaultSearchRadiusKm }));
+  };
+
+  const toggleTaste = (key: string) => {
+    setForm((previous) => ({
+      ...previous,
+      tastePreferences: {
+        ...previous.tastePreferences,
+        [key]: !previous.tastePreferences[key],
+      },
+    }));
+  };
+
+  const toggleTexture = (key: string) => {
+    setForm((previous) => ({
+      ...previous,
+      texturePreferences: {
+        ...previous.texturePreferences,
+        [key]: !previous.texturePreferences[key],
+      },
+    }));
+  };
+
+  const toggleCuisine = (cuisineCode: string) => {
+    setForm((previous) => {
+      const exists = previous.cuisinePreferences.some(
+        (c) => c.cuisineCode === cuisineCode,
+      );
+      if (exists) {
+        return {
+          ...previous,
+          cuisinePreferences: previous.cuisinePreferences.filter(
+            (c) => c.cuisineCode !== cuisineCode,
+          ),
+        };
+      }
+      return {
+        ...previous,
+        cuisinePreferences: [
+          ...previous.cuisinePreferences,
+          {
+            cuisineCode,
+            preferenceLevel: "LOVE",
+            priority: previous.cuisinePreferences.length + 1,
+          },
+        ],
+      };
+    });
+  };
+
+  const updateCuisineLevel = (
+    cuisineCode: string,
+    preferenceLevel: CuisinePreferenceLevel,
+  ) => {
+    setForm((previous) => ({
+      ...previous,
+      cuisinePreferences: previous.cuisinePreferences.map((c) =>
+        c.cuisineCode === cuisineCode ? { ...c, preferenceLevel } : c,
+      ),
+    }));
+  };
+
+  const removeCuisine = (cuisineCode: string) => {
+    setForm((previous) => ({
+      ...previous,
+      cuisinePreferences: previous.cuisinePreferences.filter(
+        (c) => c.cuisineCode !== cuisineCode,
       ),
     }));
   };
@@ -817,6 +1233,44 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         await clearSafetySection(uuid, "medical-conditions");
       }
 
+      /*
+       * ==================================================
+       * 5. GENERAL PREFERENCES (SPICE, BUDGET, RADIUS, TASTES)
+       * ==================================================
+       */
+      const minPrice =
+        typeof form.minimumPrice === "number" ? form.minimumPrice : undefined;
+      const maxPrice =
+        typeof form.maximumPrice === "number" ? form.maximumPrice : undefined;
+
+      await saveMemberPreferences({
+        uuid,
+        preferences: {
+          spiceTolerance: form.spiceTolerance,
+          minimumPrice: minPrice,
+          maximumPrice: maxPrice,
+          currencyCode: form.currencyCode,
+          defaultSearchRadiusKm: form.defaultSearchRadiusKm,
+          tastePreferences: form.tastePreferences,
+          texturePreferences: form.texturePreferences,
+        },
+      }).unwrap();
+
+      /*
+       * ==================================================
+       * 6. CUISINE PREFERENCES
+       * ==================================================
+       */
+      if (form.cuisinePreferences.length > 0) {
+        await saveMemberCuisines({
+          uuid,
+          cuisines: form.cuisinePreferences.map((item, index) => ({
+            cuisineCode: item.cuisineCode,
+            preferenceLevel: item.preferenceLevel,
+            priority: item.priority || index + 1,
+          })),
+        }).unwrap();
+      }
 
       await refetchProfile();
 
@@ -1189,6 +1643,435 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           </div>
         </div>
       </section>
+
+      {/* 2. General Food & Taste Preferences */}
+      <section className="mt-7 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+        <div className="border-b border-slate-100 pb-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
+              <Flame className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-[24px] font-bold text-primary-800 sm:text-[28px]">
+                ចំណូលចិត្តទូទៅ និងរសជាតិ
+              </h2>
+              <p className="mt-2 text-lg leading-7 text-slate-500">
+                កំណត់កម្រិតហឹរ ថវិកាអាហារ ចម្ងាយរុករក និងចំណូលចិត្តរសជាតិ។
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-7 space-y-8">
+          {/* Spice Tolerance Slider */}
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <Flame className="h-5 w-5 text-orange-500" />
+                <span className="text-lg font-bold text-slate-800">
+                  កម្រិតហឹរដែលចូលចិត្ត (Spice Tolerance)
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-primary-800 px-3.5 py-1 text-sm font-black text-white shadow-xs">
+                  {form.spiceTolerance} / 10
+                </span>
+                <span
+                  className={`text-base font-bold ${
+                    getSpiceDescriptor(form.spiceTolerance).colorClass
+                  }`}
+                >
+                  {getSpiceDescriptor(form.spiceTolerance).emoji}{" "}
+                  {getSpiceDescriptor(form.spiceTolerance).labelKm}
+                </span>
+              </div>
+            </div>
+
+            <input
+              type="range"
+              min={0}
+              max={10}
+              step={1}
+              value={form.spiceTolerance}
+              onChange={(e) =>
+                handleSpiceChange(parseInt(e.target.value, 10))
+              }
+              className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-800"
+            />
+
+            <div className="mt-3 flex justify-between text-xs sm:text-sm font-medium text-slate-400">
+              <span>0 (មិនហឹរ)</span>
+              <span>3 (ស្រាល)</span>
+              <span>5 (មធ្យម)</span>
+              <span>8 (ខ្លាំង)</span>
+              <span>10 (ខ្លាំងបំផុត)</span>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[0, 3, 5, 7, 10].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => handleSpiceChange(preset)}
+                  className={`rounded-xl px-3 py-1.5 text-sm font-bold transition ${
+                    form.spiceTolerance === preset
+                      ? "bg-primary-800 text-white shadow-xs"
+                      : "bg-white text-slate-700 border border-slate-200 hover:border-primary-800"
+                  }`}
+                >
+                  កម្រិត {preset}{" "}
+                  {preset === 0
+                    ? "(មិនហឹរ)"
+                    : preset === 5
+                    ? "(មធ្យម)"
+                    : preset === 10
+                    ? "(ខ្លាំង)"
+                    : ""}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Budget and Discovery Radius */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Budget */}
+            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 sm:p-6">
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-emerald-600" />
+                  <span className="text-lg font-bold text-slate-800">
+                    ថវិកាអាហារ (Budget)
+                  </span>
+                </div>
+                {/* Currency toggle */}
+                <div className="flex rounded-xl border border-slate-200 bg-white p-1">
+                  <button
+                    type="button"
+                    onClick={() => handleCurrencyChange("USD")}
+                    className={`rounded-lg px-3 py-1 text-xs font-black transition ${
+                      form.currencyCode === "USD"
+                        ? "bg-primary-800 text-white"
+                        : "text-slate-600 hover:text-primary-800"
+                    }`}
+                  >
+                    USD ($)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCurrencyChange("KHR")}
+                    className={`rounded-lg px-3 py-1 text-xs font-black transition ${
+                      form.currencyCode === "KHR"
+                        ? "bg-primary-800 text-white"
+                        : "text-slate-600 hover:text-primary-800"
+                    }`}
+                  >
+                    KHR (៛)
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    តម្លៃទាបបំផុត (Min)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      step={form.currencyCode === "USD" ? "0.5" : "500"}
+                      placeholder="0"
+                      value={form.minimumPrice}
+                      onChange={(e) =>
+                        handlePriceChange("minimumPrice", e.target.value)
+                      }
+                      className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-base font-bold text-slate-800 outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    តម្លៃខ្ពស់បំផុត (Max)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      step={form.currencyCode === "USD" ? "0.5" : "500"}
+                      placeholder="20"
+                      value={form.maximumPrice}
+                      onChange={(e) =>
+                        handlePriceChange("maximumPrice", e.target.value)
+                      }
+                      className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-base font-bold text-slate-800 outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Default Search Radius */}
+            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 sm:p-6">
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <Compass className="h-5 w-5 text-blue-600" />
+                  <span className="text-lg font-bold text-slate-800">
+                    ចម្ងាយរុករក (Search Radius)
+                  </span>
+                </div>
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-black text-blue-700">
+                  {form.defaultSearchRadiusKm.toFixed(1)} km
+                </span>
+              </div>
+
+              <input
+                type="range"
+                min={1}
+                max={20}
+                step={0.5}
+                value={form.defaultSearchRadiusKm}
+                onChange={(e) =>
+                  handleRadiusChange(parseFloat(e.target.value))
+                }
+                className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[1, 3, 5, 10, 15, 20].map((radius) => (
+                  <button
+                    key={radius}
+                    type="button"
+                    onClick={() => handleRadiusChange(radius)}
+                    className={`rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+                      form.defaultSearchRadiusKm === radius
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-white text-slate-700 border border-slate-200 hover:border-blue-600"
+                    }`}
+                  >
+                    {radius} km
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Taste Preferences */}
+          <div>
+            <div className="mb-3">
+              <label className="block text-lg font-bold text-slate-800">
+                ចំណូលចិត្តរសជាតិ (Taste Preferences)
+              </label>
+              <p className="text-sm text-slate-500">
+                ជ្រើសរើសរសជាតិដែលអ្នកចង់ឱ្យប្រព័ន្ធណែនាំផ្តល់អាទិភាព។
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {TASTE_OPTIONS.map((taste) => {
+                const isSelected = Boolean(
+                  form.tastePreferences[taste.key],
+                );
+                return (
+                  <button
+                    key={taste.key}
+                    type="button"
+                    onClick={() => toggleTaste(taste.key)}
+                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-base font-bold transition ${
+                      isSelected
+                        ? "border-primary-800 bg-primary-800 text-white shadow-sm"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50/50"
+                    }`}
+                  >
+                    <span>{taste.emoji}</span>
+                    <span>{taste.labelKm}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Texture Preferences */}
+          <div>
+            <div className="mb-3">
+              <label className="block text-lg font-bold text-slate-800">
+                ទម្រង់អាហារដែលចូលចិត្ត (Texture Preferences)
+              </label>
+              <p className="text-sm text-slate-500">
+                ជ្រើសរើសប្រភេទសាច់ ឬទម្រង់អាហារដែលអ្នកចូលចិត្តញ៉ាំ។
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {TEXTURE_OPTIONS.map((texture) => {
+                const isSelected = Boolean(
+                  form.texturePreferences[texture.key],
+                );
+                return (
+                  <button
+                    key={texture.key}
+                    type="button"
+                    onClick={() => toggleTexture(texture.key)}
+                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-base font-bold transition ${
+                      isSelected
+                        ? "border-amber-600 bg-amber-600 text-white shadow-sm"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-amber-600 hover:bg-amber-50/50"
+                    }`}
+                  >
+                    <span>{texture.emoji}</span>
+                    <span>{texture.labelKm}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Cuisine Preferences Section */}
+      <section className="mt-7 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+        <div className="border-b border-slate-100 pb-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600">
+              <Utensils className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-[24px] font-bold text-primary-800 sm:text-[28px]">
+                ចំណូលចិត្តប្រភេទម្ហូប (Cuisine Preferences)
+              </h2>
+              <p className="mt-2 text-lg leading-7 text-slate-500">
+                ជ្រើសរើសម្ហូបតាមជាតិសាសន៍ និងកំណត់កម្រិតចូលចិត្ត ឬជៀសវាង។
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-7 space-y-6">
+          {/* Quick select buttons */}
+          <div>
+            <label className="block text-base font-bold text-slate-700 mb-2">
+              បន្ថែម ឬជ្រើសរើសម្ហូបជាតិសាសន៍
+            </label>
+            <div className="flex flex-wrap gap-2.5">
+              {CUISINE_OPTIONS.map((cuisine) => {
+                const isSelected = form.cuisinePreferences.some(
+                  (c) => c.cuisineCode === cuisine.code,
+                );
+                return (
+                  <button
+                    key={cuisine.code}
+                    type="button"
+                    onClick={() => toggleCuisine(cuisine.code)}
+                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-base font-bold transition ${
+                      isSelected
+                        ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-indigo-600 hover:bg-indigo-50/50"
+                    }`}
+                  >
+                    <span>{cuisine.flag}</span>
+                    <span>{cuisine.labelKm}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Configured cuisines list */}
+          {form.cuisinePreferences.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <label className="block text-sm font-bold text-slate-500 uppercase tracking-wider">
+                ម្ហូបដែលបានកំណត់កម្រិត ({form.cuisinePreferences.length})
+              </label>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {form.cuisinePreferences.map((item, index) => {
+                  const cuisineMeta = CUISINE_OPTIONS.find(
+                    (c) => c.code === item.cuisineCode,
+                  );
+                  return (
+                    <div
+                      key={item.cuisineCode}
+                      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">
+                            {cuisineMeta?.flag ?? "🍽️"}
+                          </span>
+                          <span className="font-bold text-slate-900 text-base">
+                            {cuisineMeta?.labelKm ?? item.cuisineCode}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCuisine(item.cuisineCode)}
+                          className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
+                          title="លុប"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-slate-400 mb-1">
+                            កម្រិតចំណូលចិត្ត
+                          </label>
+                          <select
+                            value={item.preferenceLevel}
+                            onChange={(e) =>
+                              updateCuisineLevel(
+                                item.cuisineCode,
+                                e.target.value as CuisinePreferenceLevel,
+                              )
+                            }
+                            className="w-full rounded-xl border border-slate-200 bg-white py-2 px-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
+                          >
+                            {PREFERENCE_LEVELS.map((level) => (
+                              <option key={level.value} value={level.value}>
+                                {level.labelKm}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-slate-400 mb-1">
+                            អាទិភាព (1-10)
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={10}
+                            value={item.priority || index + 1}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              setForm((prev) => ({
+                                ...prev,
+                                cuisinePreferences:
+                                  prev.cuisinePreferences.map((c) =>
+                                    c.cuisineCode === item.cuisineCode
+                                      ? {
+                                          ...c,
+                                          priority: Number.isNaN(val)
+                                            ? 1
+                                            : val,
+                                        }
+                                      : c,
+                                  ),
+                              }));
+                            }}
+                            className="w-full rounded-xl border border-slate-200 bg-white py-2 px-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Safety load error */}
 
       {hasSafetyOptionError && (
