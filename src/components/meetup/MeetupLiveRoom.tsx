@@ -556,7 +556,8 @@ export default function MeetupLiveRoom({
        * "WEB" is the request source the backend accepts. The meetup marker
        * travels in contextData, which is free-form.
        */
-      requestSource: "WEB",
+      //requestSource: "WEB",
+      requestSource: "HOMEPAGE_AUTO",
       requestedLimit: 12,
       searchRadiusKm: group?.searchRadiusKm ?? 3,
       currencyCode: "USD",
