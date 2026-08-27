@@ -204,6 +204,19 @@ export default function FoodSearchBar() {
     [query, groupedSelected],
   );
 
+  const ITEMS_PER_PAGE = 12;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, groupedSelected]);
+
+  const totalPages = Math.ceil(filteredFoods.length / ITEMS_PER_PAGE) || 1;
+  const paginatedFoods = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFoods.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredFoods, currentPage]);
+
   const count = selected.size;
   const label =
     count === 0
@@ -336,13 +349,36 @@ export default function FoodSearchBar() {
               រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
             </motion.p>
           )}
-          {filteredFoods.map((food) => (
+          {paginatedFoods.map((food) => (
             <Link key={food.id} href={`/menu-items/${food.id}`}>
               <FoodCardComponent food={food} />
             </Link>
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-[#e7e6e1] bg-white text-[#3d3d3a] disabled:opacity-50 hover:border-[#1c6b45] hover:text-[#1c6b45] transition-all"
+          >
+            <ChevronIcon className="h-5 w-5 rotate-90" />
+          </button>
+          <span className="text-sm font-semibold text-[#3d3d3a]">
+            ទំព័រ {currentPage} នៃ {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-[#e7e6e1] bg-white text-[#3d3d3a] disabled:opacity-50 hover:border-[#1c6b45] hover:text-[#1c6b45] transition-all"
+          >
+            <ChevronIcon className="h-5 w-5 -rotate-90" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

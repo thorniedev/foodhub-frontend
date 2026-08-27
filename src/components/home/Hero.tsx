@@ -2211,8 +2211,8 @@ export default function Hero() {
   }, [heroImageLoaded, reduceMotion]);
 
   return (
-    <section className="relative w-full max-w-full overflow-x-clip">
-      <section className="relative overflow-x-clip container max-w-7xl mx-auto px-4 sm:px-6">
+    <section className="relative overflow-visible">
+      <section className="relative overflow-visible container max-w-7xl mx-auto">
         <div
           className="
           container relative mx-auto
@@ -2227,7 +2227,7 @@ export default function Hero() {
           md:mt-10
           md:py-20
           overflow-visible
-          max-md:py-55
+          max-md:py-55 max-sm:h-[2vh] max-sm:py-40
         "
         >
           {/* =====================================================
@@ -2254,7 +2254,7 @@ export default function Hero() {
               rotate: 0,
             }}
             transition={enter(REVEAL.decorate)}
-            className="absolute md:left-6 top-3 lg:left-10 lg:top-25 z-10 w-20"
+            className="absolute md:left-6 top-3 lg:left-10 lg:top-25 z-10 w-20 max-sm:hidden"
           >
             <motion.div
               {...(reduceMotion
@@ -2327,7 +2327,7 @@ export default function Hero() {
     z-1
     lg:w-237.5
     md:w-150
-    lg:-mt-6
+    lg:-mt-6 max-sm:px-4
   "
                 src="/Image/foodhub-image-new.png"
                 alt="FOODHUB"
@@ -2369,7 +2369,7 @@ export default function Hero() {
             lg:-ml-40
      min-md:-ml-25
      min-md:-mt-25
-
+max-sm:hidden
             z-20
             max-md:right-0
             max-md:mt-15
@@ -2392,7 +2392,7 @@ export default function Hero() {
                 <Image
                   className="
                 max-md:w-8
-                max-md:-rotate-90
+                max-md:-rotate-90 max-sm:w-30
               
               "
                   src="/Image/left-vector.png"
@@ -2433,7 +2433,7 @@ export default function Hero() {
             lg:-mr-40
             min-md:-mt-35
             min-md:-mr-35
-            max-md:left-0
+            max-md:left-0 max-sm:hidden
           "
             >
               <motion.div
@@ -2455,7 +2455,7 @@ export default function Hero() {
                 max-md:w-10
                 max-md:-rotate-30
             
-                max-w-[110px]
+                max-w-[110px] max-sm:w-30 
               "
                   src="/Image/right-vector.png"
                   alt=""
@@ -2502,6 +2502,7 @@ export default function Hero() {
               alt=""
               width={577}
               height={542}
+              className="max-sm:w-100"
             />
           </motion.div>
 
@@ -2574,10 +2575,11 @@ export default function Hero() {
             md:leading-17
 
             max-md:w-full
-            max-md:text-[38px]
+            max-md:text-[38px] max-sm:text-center max-sm:-mt-5 max-sm:text-4xl
           "
           >
-            ណែនាំអាហារដែលត្រូវនឹង <br className="hidden md:block" />
+            ណែនាំអាហារដែលត្រូវនឹង
+            <br className="hidden md:block max-sm:block:" />
             <motion.span
               initial={
                 reduceMotion
@@ -2658,7 +2660,7 @@ export default function Hero() {
                   flex
                   aspect-3/3.5
                   w-40
-
+          
                   rotate-[-12deg]
 
                   flex-col
@@ -2773,12 +2775,11 @@ export default function Hero() {
               pointer-events-auto
               absolute
               z-30
-
               md:right-0
               md:-top-12
 
               max-md:right-10
-              max-md:top-60
+              max-md:top-60 max-sm:-mt-6 max-sm:right-6
             "
             >
               <motion.div
@@ -2953,7 +2954,7 @@ export default function Hero() {
       w-full
       lg:h-auto
       md:h-[550px]
-      max-md:h-[350px]
+      max-md:h-[350px] max-sm:h-[500px]
     "
           />
         </motion.div>
@@ -2983,7 +2984,7 @@ export default function Hero() {
       md:gap-12.5
 
       max-md:-mt-55
-      max-md:gap-6
+      max-md:gap-6 max-sm:px-1
     "
         >
           {/* =====================================================
@@ -2999,10 +3000,10 @@ export default function Hero() {
 
         lg:text-6xl  py-2
         md:text-5xl
-        max-md:text-3xl
+        max-md:text-3xl 
       "
           >
-            បទពិសោធន៍ថ្មីក្នុង
+            បទពិសោធន៍ថ្មីក្នុង <br className="sm:hidden max-sm:block" />
             <motion.span variants={fadeIn} className="text-secondary-500">
               ការស្វែងរកអាហារ
             </motion.span>
@@ -3050,7 +3051,7 @@ export default function Hero() {
         grid-cols-1
         gap-6
         lg:grid-cols-3
-        md:gap-8
+        md:gap-8 max-sm:px-4
       "
           >
             {/* ===================================================
@@ -3063,7 +3064,7 @@ export default function Hero() {
           absolute
           md:-left-10
           md:-top-10
-          max-md:hidden
+          max-md:hidden 
         "
             >
               <motion.div variants={reduceMotion ? undefined : decorateLoop}>
@@ -3220,7 +3221,7 @@ export default function Hero() {
               text-[10px]
               font-black
               text-white
-              shadow-md
+              shadow-md max-sm:right-5 max-sm:mt-3
             "
                 >
                   add preferences

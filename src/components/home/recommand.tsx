@@ -116,6 +116,19 @@ export default function RecommandSection({
     [recommendedFoods, activeTab, filters],
   );
 
+  const ITEMS_PER_PAGE = 12;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, filters]);
+
+  const totalPages = Math.ceil(filteredFoods.length / ITEMS_PER_PAGE) || 1;
+  const paginatedFoods = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFoods.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredFoods, currentPage]);
+
   return (
     <div className="my-15 flex flex-col gap-12.5">
       <section className="flex flex-col items-center lg:pt-0 md:pt-4 justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
@@ -193,13 +206,40 @@ export default function RecommandSection({
               រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
             </motion.p>
           )}
-          {filteredFoods.map((food) => (
+          {paginatedFoods.map((food) => (
             <Link key={food.id} href={`/food/${food.id}`}>
               <FoodCardComponent food={food} />
             </Link>
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 bg-white text-gray-600 disabled:opacity-50 hover:border-primary-600 hover:text-primary-600 transition-all"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 rotate-90">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          <span className="text-sm font-semibold text-gray-600">
+            ទំព័រ {currentPage} នៃ {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 bg-white text-gray-600 disabled:opacity-50 hover:border-primary-600 hover:text-primary-600 transition-all"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 -rotate-90">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
