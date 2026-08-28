@@ -126,3 +126,22 @@ export interface RecommendationSession {
   requestedLimit: number | null;
   items: RecommendationItem[];
 }
+
+/**
+ * One profile's verdict on one menu item within a session.
+ *
+ * `profileId` is the internal numeric id, which is what meetup participants
+ * also carry, so a blocked check can be traced back to the member it belongs
+ * to. `reasons` is a free-form payload of stable reason codes.
+ */
+export interface SafetyCheckDto {
+  uuid: string;
+  profileId: number | null;
+  menuItemId: number | null;
+  menuItemName: string | null;
+  result: "SAFE" | "WARNING" | "BLOCKED" | string;
+  ruleVersion: string | null;
+  reasons: unknown;
+  checkDurationMs: number | null;
+  checkedAt: string | null;
+}

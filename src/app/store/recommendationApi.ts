@@ -5,6 +5,7 @@ import type {
   CreateRecommendationSessionRequest,
   RecommendationItem,
   RecommendationSession,
+  SafetyCheckDto,
 } from "@/types/recommendation";
 
 /**
@@ -66,9 +67,10 @@ export const recommendationApi = baseApi.injectEndpoints({
 
         const items = normalizeArrayPayload<RecommendationItem>(itemsResult.data);
 
-        const normalizedItems: RecommendationItem[] = items.map((it: any) => ({
-          ...it,
-          isExploration: it.isExploration ?? it.exploration ?? false,
+        /* Older builds spell the flag `exploration`; accept either. */
+        const normalizedItems: RecommendationItem[] = items.map((item) => ({
+          ...item,
+          isExploration: item.isExploration ?? item.exploration ?? false,
         }));
 
         return {
@@ -79,10 +81,28 @@ export const recommendationApi = baseApi.injectEndpoints({
         };
       },
     }),
+
+    /**
+     * GET /api/v1/recommendations/sessions/{uuid}/safety-checks
+     *
+     * Per-profile verdicts for a session. Used to explain an empty result:
+     * the checks say which profile blocked a dish and why.
+     */
+    getRecommendationSafetyChecks: builder.query<SafetyCheckDto[], string>({
+      query: (sessionUuid) => ({
+        url: `/recommendations/sessions/${encodeURIComponent(sessionUuid)}/safety-checks`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<SafetyCheckDto>(response),
+    }),
   }),
 
   overrideExisting: false,
 });
 
-export const { useCreateRecommendationSessionMutation } = recommendationApi;
+export const {
+  useCreateRecommendationSessionMutation,
+  useGetRecommendationSafetyChecksQuery,
+} = recommendationApi;
 

@@ -122,7 +122,8 @@ export default function AiRecommendation() {
       await createSession({
         // GROUP intersects safety across all owned profiles; SINGLE for one.
         mode: profiles.length >= 2 ? "GROUP" : "SINGLE",
-        requestSource: "USER_PROMPT",
+        // Keep this within the backend's request_source check constraint.
+        requestSource: "OTHER",
         requestedLimit: 12,
         contextData: trimmed ? { userPrompt: trimmed } : undefined,
         profiles,

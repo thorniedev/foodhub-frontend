@@ -33,7 +33,10 @@ import {
   useSubmitMeetupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
-import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
+import {
+  useCreateRecommendationSessionMutation,
+  useGetRecommendationSafetyChecksQuery,
+} from "@/app/store/recommendationApi";
 import {
   Dialog,
   DialogContent,
@@ -60,7 +63,9 @@ import type { RecommendationSession } from "@/types/recommendation";
 import type { MeetupWinningCardResponse } from "@/types/meetup-api";
 import GuestJoinSafetySheet from "./GuestJoinSafetySheet";
 import MeetupCandidateCard from "./MeetupCandidateCard";
-import MeetupParticipantsPanel from "./MeetupParticipantsPanel";
+import MeetupParticipantsPanel, {
+  toDisplayName,
+} from "./MeetupParticipantsPanel";
 import MeetupRoomHeader from "./MeetupRoomHeader";
 import MeetupTallyPanel from "./MeetupTallyPanel";
 import MeetupWinnerCelebration from "./MeetupWinnerCelebration";
@@ -553,6 +558,58 @@ export default function MeetupLiveRoom({
   ]);
 
   /*
+   * When the group's rules blocked every dish, the session's safety checks say
+   * which profile did it. Fetched only in that case — it is a per-item table
+   * and there is nothing to explain while the room has food to vote on.
+   */
+  const blockedEverything =
+    Boolean(recommendationSession) &&
+    (recommendationSession?.candidateCount ?? 0) > 0 &&
+    (recommendationSession?.eligibleCount ?? 0) === 0;
+
+  const { data: safetyChecks } = useGetRecommendationSafetyChecksQuery(
+    recommendationSession?.uuid ?? "",
+    { skip: !blockedEverything || !recommendationSession?.uuid },
+  );
+
+  /**
+   * Members whose profile blocked dishes, worst first, so the host knows whose
+   * restrictions to look at rather than guessing.
+   */
+  const blockingMembers = useMemo(() => {
+    if (!safetyChecks?.length) {
+      return [];
+    }
+
+    const blocksByProfileId = new Map<number, number>();
+
+    for (const check of safetyChecks) {
+      if (check.result?.toUpperCase() !== "BLOCKED" || check.profileId === null) {
+        continue;
+      }
+
+      blocksByProfileId.set(
+        check.profileId,
+        (blocksByProfileId.get(check.profileId) ?? 0) + 1,
+      );
+    }
+
+    return [...blocksByProfileId.entries()]
+      .map(([profileId, blockedCount]) => {
+        const participant = participants.find(
+          (candidate) => candidate.profileId === profileId,
+        );
+
+        return {
+          profileId,
+          blockedCount,
+          name: toDisplayName(participant?.nickname ?? null, "សមាជិក"),
+        };
+      })
+      .sort((left, right) => right.blockedCount - left.blockedCount);
+  }, [safetyChecks, participants]);
+
+  /*
    * An empty slate has three very different causes and the session's own
    * counters tell them apart: nothing in the catalog matched the room, the
    * group's combined allergy and diet rules blocked everything, or the dishes
@@ -942,6 +999,25 @@ export default function MeetupLiveRoom({
                     ម្ហូបដែលរកឃើញ {recommendationSession.candidateCount ?? 0} ·
                     ឆ្លងកាត់សុវត្ថិភាព {recommendationSession.eligibleCount ?? 0}
                   </p>
+                )}
+
+                {blockingMembers.length > 0 && (
+                  <div className="w-full max-w-sm space-y-1.5 rounded-2xl bg-slate-50 p-3 text-left dark:bg-slate-950/60">
+                    <p className="text-xs font-black text-slate-600 dark:text-slate-300">
+                      ច្បាប់សុវត្ថិភាពដែលបានហាមឃាត់
+                    </p>
+                    {blockingMembers.map((member) => (
+                      <p
+                        key={member.profileId}
+                        className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500"
+                      >
+                        <span className="truncate capitalize">{member.name}</span>
+                        <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 font-black text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
+                          {member.blockedCount}
+                        </span>
+                      </p>
+                    ))}
+                  </div>
                 )}
               </div>
             ) : (

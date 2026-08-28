@@ -109,7 +109,9 @@ export default function Model() {
 
     void createSession({
       mode: targets.length > 1 ? "GROUP" : "SINGLE",
-      requestSource: promptText ? "USER_PROMPT" : "HOME_SWIPE",
+      // Production stores only the documented request-source values.
+      // Prompt-driven requests have no dedicated backend enum yet.
+      requestSource: promptText ? "OTHER" : "HOMEPAGE_AUTO",
       requestedLimit: 50,
       contextData: promptText ? { userPrompt: promptText } : undefined,
       profiles: targets.map((profile, index) => ({
