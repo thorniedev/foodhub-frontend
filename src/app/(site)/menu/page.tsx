@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -264,6 +265,60 @@ function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
   return a.name;
 }
 
+function findMatchingAgeGroup(
+  param: string,
+  options?: FilterItemOption[],
+): FilterItemOption | undefined {
+  if (!param || !options || options.length === 0) return undefined;
+  const decoded = decodeURIComponent(param).trim().toLowerCase();
+
+  return options.find((opt) => {
+    const optName = (opt.name || "").trim().toLowerCase();
+    const optCode = (opt.code || "").trim().toLowerCase();
+    const optUuid = (opt.uuid || "").trim().toLowerCase();
+
+    if (optUuid === decoded || optCode === decoded || optName === decoded) {
+      return true;
+    }
+    if (optName.includes(decoded) || decoded.includes(optName)) {
+      return true;
+    }
+    if (
+      decoded.includes("យុវវ័យ") &&
+      (optName.includes("យុវវ័យ") || optCode.includes("youth") || decoded.includes("13-17"))
+    ) {
+      return true;
+    }
+    if (
+      decoded.includes("កុមារតូច") &&
+      (optName.includes("កុមារតូច") || optCode.includes("toddler") || decoded.includes("0-2"))
+    ) {
+      return true;
+    }
+    if (
+      decoded.includes("កុមារ") &&
+      (optName.includes("កុមារ") || optCode.includes("child") || optCode.includes("children") || decoded.includes("3-12")) &&
+      !decoded.includes("តូច") &&
+      !optName.includes("តូច")
+    ) {
+      return true;
+    }
+    if (
+      decoded.includes("ពេញវ័យ") &&
+      (optName.includes("ពេញវ័យ") || optCode.includes("adult") || decoded.includes("18-59"))
+    ) {
+      return true;
+    }
+    if (
+      (decoded.includes("ចំណាស់") || decoded.includes("60+")) &&
+      (optName.includes("ចំណាស់") || optCode.includes("senior") || optCode.includes("elderly"))
+    ) {
+      return true;
+    }
+    return false;
+  });
+}
+
 function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
   return Array.isArray(food.food?.dietaryTypes)
     ? food.food.dietaryTypes.map((item) => ({
@@ -514,15 +569,56 @@ function applyCustomerSearchFilters(
     // 8. Age Groups
     if (req.ageGroupUuids && req.ageGroupUuids.length > 0) {
       const ageGroups = getAgeGroups(food);
-      const matchesAge = ageGroups.some(
-        (a) =>
-          req.ageGroupUuids!.includes(a.code) ||
-          req.ageGroupUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(a.name) ||
-              normalizeText(u) === normalizeText(a.code),
-          ),
-      );
+      const matchesAge = ageGroups.some((a) => {
+        const aName = normalizeText(a.name);
+        const aCode = normalizeText(a.code);
+        return req.ageGroupUuids!.some((u) => {
+          const normU = normalizeText(u);
+          if (
+            normU === aName ||
+            normU === aCode ||
+            (a.code && req.ageGroupUuids!.includes(a.code))
+          ) {
+            return true;
+          }
+          if (aName.includes(normU) || normU.includes(aName)) {
+            return true;
+          }
+          if (
+            (normU.includes("យុវវ័យ") || normU.includes("13-17")) &&
+            (aName.includes("យុវវ័យ") || aCode.includes("youth"))
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("កុមារតូច") || normU.includes("0-2")) &&
+            (aName.includes("កុមារតូច") || aCode.includes("toddler"))
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("កុមារ") || normU.includes("3-12")) &&
+            (aName.includes("កុមារ") || aCode.includes("child") || aCode.includes("children")) &&
+            !normU.includes("តូច") &&
+            !aName.includes("តូច")
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("ពេញវ័យ") || normU.includes("18-59")) &&
+            (aName.includes("ពេញវ័យ") || aCode.includes("adult"))
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("ចំណាស់") || normU.includes("60+")) &&
+            (aName.includes("ចំណាស់") || aCode.includes("senior") || aCode.includes("elderly"))
+          ) {
+            return true;
+          }
+          return false;
+        });
+      });
       if (!matchesAge) return false;
     }
 
@@ -912,6 +1008,19 @@ function FilterSidebar({
     province: false,
     city: false,
   });
+
+  // Auto-expand age group section if ageGroup filter is active
+  useEffect(() => {
+    if (
+      customerSearchRequest.ageGroupUuids &&
+      customerSearchRequest.ageGroupUuids.length > 0
+    ) {
+      setOpenSections((previous) => ({
+        ...previous,
+        ageGroup: true,
+      }));
+    }
+  }, [customerSearchRequest.ageGroupUuids]);
 
   const isCollapsed = mobile ? false : collapsed;
 
@@ -1449,14 +1558,55 @@ function FilterSidebar({
                 onToggle={() => toggleSection("ageGroup")}
               >
                 <div className="space-y-1">
-                  {filterOptions.ageGroups.map((a) => (
-                    <CheckboxOption
-                      key={a.uuid}
-                      label={formatAgeGroupOptionLabel(a)}
-                      checked={Boolean(customerSearchRequest.ageGroupUuids?.includes(a.uuid))}
-                      onChange={() => toggleArrayItem("ageGroupUuids", a.uuid)}
-                    />
-                  ))}
+                  {filterOptions.ageGroups.map((a) => {
+                    const isChecked = Boolean(
+                      customerSearchRequest.ageGroupUuids?.includes(a.uuid) ||
+                      customerSearchRequest.ageGroupUuids?.includes(a.code) ||
+                      customerSearchRequest.ageGroupUuids?.includes(a.name) ||
+                      customerSearchRequest.ageGroupUuids?.some((u) => {
+                        const normU = normalizeText(u);
+                        const aName = normalizeText(a.name);
+                        const aCode = normalizeText(a.code);
+                        return (
+                          normU === aName ||
+                          normU === aCode ||
+                          (normU.includes("យុវវ័យ") && (aName.includes("យុវវ័យ") || aCode.includes("youth"))) ||
+                          (normU.includes("កុមារតូច") && (aName.includes("កុមារតូច") || aCode.includes("toddler"))) ||
+                          (normU.includes("កុមារ") && (aName.includes("កុមារ") || aCode.includes("child")) && !normU.includes("តូច") && !aName.includes("តូច")) ||
+                          (normU.includes("ពេញវ័យ") && (aName.includes("ពេញវ័យ") || aCode.includes("adult"))) ||
+                          (normU.includes("ចំណាស់") && (aName.includes("ចំណាស់") || aCode.includes("senior")))
+                        );
+                      }),
+                    );
+
+                    return (
+                      <CheckboxOption
+                        key={a.uuid}
+                        label={formatAgeGroupOptionLabel(a)}
+                        checked={isChecked}
+                        onChange={() => {
+                          if (isChecked) {
+                            // Uncheck: remove all representations of this group
+                            const current = customerSearchRequest.ageGroupUuids || [];
+                            const updated = current.filter(
+                              (u) =>
+                                u !== a.uuid &&
+                                u !== a.code &&
+                                u !== a.name &&
+                                !normalizeText(u).includes(normalizeText(a.name)) &&
+                                !normalizeText(a.name).includes(normalizeText(u)),
+                            );
+                            onSearchRequestChange({
+                              ...customerSearchRequest,
+                              ageGroupUuids: updated.length > 0 ? updated : undefined,
+                            });
+                          } else {
+                            toggleArrayItem("ageGroupUuids", a.uuid);
+                          }
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </FilterSection>
             )}
@@ -1806,8 +1956,19 @@ function LoadingState() {
    FOOD PAGE
 ========================================================= */
 
-export default function FoodPage() {
-  const [searchInput, setSearchInput] = useState("");
+function FoodPageContent() {
+  const searchParams = useSearchParams();
+  const rawAgeParam =
+    searchParams.get("ageGroups") ||
+    searchParams.get("ageGroup") ||
+    searchParams.get("age") ||
+    "";
+  const rawQueryParam =
+    searchParams.get("q") ||
+    searchParams.get("search") ||
+    "";
+
+  const [searchInput, setSearchInput] = useState(rawQueryParam);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
@@ -1820,6 +1981,57 @@ export default function FoodPage() {
     useDiscoverySearchMutation();
 
   const { data: discoveryFilterOptions } = useGetDiscoveryFiltersQuery();
+
+  // Synchronize URL age group search params with customerSearchRequest and filters
+  useEffect(() => {
+    if (!rawAgeParam) return;
+    const decoded = decodeURIComponent(rawAgeParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.ageGroups &&
+      discoveryFilterOptions.ageGroups.length > 0
+    ) {
+      const matched = findMatchingAgeGroup(
+        decoded,
+        discoveryFilterOptions.ageGroups,
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.ageGroupUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            ageGroupUuids: [matched.uuid],
+          };
+        });
+        setFilters((prev) => ({
+          ...prev,
+          ageGroupCodes: [matched.code || matched.name],
+        }));
+        return;
+      }
+    }
+
+    // Fallback: set the decoded query value directly
+    setCustomerSearchRequest((prev) => {
+      if (prev.ageGroupUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        ageGroupUuids: [decoded],
+      };
+    });
+    setFilters((prev) => ({
+      ...prev,
+      ageGroupCodes: [decoded],
+    }));
+  }, [rawAgeParam, discoveryFilterOptions?.ageGroups]);
+
+  // Synchronize search query param if provided
+  useEffect(() => {
+    if (rawQueryParam && !searchInput) {
+      setSearchInput(rawQueryParam);
+    }
+  }, [rawQueryParam]);
 
   useEffect(() => {
     executeDiscoverySearch({
@@ -2526,5 +2738,13 @@ function cleanKhmerLabel(label: string): string {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+export default function FoodPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <FoodPageContent />
+    </Suspense>
   );
 }
