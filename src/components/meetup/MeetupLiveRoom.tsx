@@ -49,6 +49,7 @@ import {
 import {
   getMeetupErrorMessage,
   isAlreadyVotedError,
+  isConflictError,
 } from "@/lib/meetup/meetup-errors";
 import {
   useStoredMeetupSession,
@@ -475,32 +476,50 @@ export default function MeetupLiveRoom({
       let lastError: unknown = null;
 
       for (const attempt of uniqueAttempts) {
-        try {
-          const session = await createRecommendationSession({
-            mode: attempt.mode,
-            requestSource: "HOMEPAGE_AUTO",
-            requestedLimit: 12,
-            searchRadiusKm: groupContext.searchRadiusKm,
-            currencyCode: "USD",
-            contextData: { meetupUuid, ...groupContext },
-            profiles: attempt.uuids.map((profileUuid, index) => ({
-              profileId: profileUuid,
-              isPrimary: index === 0,
-            })),
-          }).unwrap();
+        /*
+         * A 409 from session creation is a transient write conflict — several
+         * people opening the same room at once — rather than a rejection of
+         * this request. One retry clears it; anything else falls through to
+         * the next attempt immediately.
+         */
+        for (let tryCount = 0; tryCount < 2; tryCount += 1) {
+          try {
+            const session = await createRecommendationSession({
+              mode: attempt.mode,
+              requestSource: "HOMEPAGE_AUTO",
+              requestedLimit: 12,
+              searchRadiusKm: groupContext.searchRadiusKm,
+              currencyCode: "USD",
+              contextData: { meetupUuid, ...groupContext },
+              profiles: attempt.uuids.map((profileUuid, index) => ({
+                profileId: profileUuid,
+                isPrimary: index === 0,
+              })),
+            }).unwrap();
 
-          if (!cancelled) {
-            setRecommendationError(null);
-            setRecommendationSession(session);
+            if (!cancelled) {
+              setRecommendationError(null);
+              setRecommendationSession(session);
+            }
+
+            return;
+          } catch (error) {
+            console.error(
+              `Meetup slate attempt failed (${attempt.mode}):`,
+              error,
+            );
+            lastError = error;
+
+            if (cancelled || !isConflictError(error) || tryCount === 1) {
+              break;
+            }
+
+            await new Promise((resolve) => window.setTimeout(resolve, 400));
           }
+        }
 
+        if (cancelled) {
           return;
-        } catch (error) {
-          console.error(
-            `Meetup slate attempt failed (${attempt.mode}):`,
-            error,
-          );
-          lastError = error;
         }
       }
 
@@ -746,6 +765,28 @@ export default function MeetupLiveRoom({
             <ArrowRight className="h-4 w-4" />
           </Link>
         </section>
+      </main>
+    );
+  }
+
+  /*
+   * An invited friend is already a participant, so their identity is adopted
+   * from the roster rather than joined again. Waiting for the profile and
+   * participant lists before offering the join sheet stops them being pushed
+   * into a join the backend then rejects as "only accepted friends can join".
+   */
+  const isResolvingIdentity =
+    !activeSession &&
+    Boolean(user) &&
+    (isLoadingProfiles || participants.length === 0);
+
+  if (isResolvingIdentity) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-3 text-slate-500">
+          <Loader2 className="h-7 w-7 animate-spin text-primary-600" />
+          <p className="text-sm font-bold">កំពុងពិនិត្យការចូលរួមរបស់អ្នក...</p>
+        </div>
       </main>
     );
   }

@@ -33,6 +33,29 @@ const MEETUP_ERROR_RULES: ReadonlyArray<{
     message: "ឈ្មោះហៅក្រៅនេះមានគេប្រើរួចហើយ។ សូមជ្រើសរើសឈ្មោះផ្សេង។",
   },
   {
+    /* Friends-only room and the viewer is not an accepted friend of the host. */
+    match: /only accepted friends can join/i,
+    message:
+      "ការណាត់ជួបនេះសម្រាប់តែមិត្តភក្តិ FoodHub ប៉ុណ្ណោះ។ សូមផ្ញើ ឬទទួលយកសំណើមិត្តភក្តិជាមួយម្ចាស់ផ្ទះជាមុនសិន រួចបើកតំណនេះម្ដងទៀត។",
+  },
+  {
+    match: /friend meetups require a foodhub account/i,
+    message: "សូមចូលគណនី FoodHub របស់អ្នកជាមុនសិន ដើម្បីចូលរួមការណាត់ជួបនេះ។",
+  },
+  {
+    match: /friend meetups require an active foodhub profile/i,
+    message:
+      "គណនីរបស់អ្នកមិនទាន់មានប្រវត្តិរូបសកម្មទេ។ សូមបង្កើតប្រវត្តិរូបជាមុនសិន។",
+  },
+  {
+    match: /you can only join with your own active profile/i,
+    message: "អ្នកអាចចូលរួមបានតែជាមួយប្រវត្តិរូបផ្ទាល់ខ្លួនរបស់អ្នកប៉ុណ្ណោះ។",
+  },
+  {
+    match: /pinned meetups require the participant current location/i,
+    message: "ការណាត់ជួបតាមចំណុចត្រូវការទីតាំងបច្ចុប្បន្នរបស់អ្នក។ សូមអនុញ្ញាតទីតាំង។",
+  },
+  {
     match: /maximum participant limit/i,
     message: "ការណាត់ជួបនេះមានអ្នកចូលរួមពេញហើយ។",
   },
@@ -100,6 +123,34 @@ export function getMeetupErrorMessage(error: unknown, fallback: string): string 
   }
 
   return fallback;
+}
+
+function readStatus(error: unknown): number | null {
+  if (typeof error !== "object" || error === null) {
+    return null;
+  }
+
+  const record = error as { status?: unknown; originalStatus?: unknown };
+
+  for (const value of [record.status, record.originalStatus]) {
+    if (typeof value === "number") {
+      return value;
+    }
+
+    if (typeof value === "string" && /^\d+$/.test(value)) {
+      return Number(value);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * True for an HTTP 409. Session creation can hit a write conflict when several
+ * participants open the same room at once, which is worth retrying once.
+ */
+export function isConflictError(error: unknown): boolean {
+  return readStatus(error) === 409;
 }
 
 /** True when the failure is a duplicate-vote conflict, which is recoverable. */

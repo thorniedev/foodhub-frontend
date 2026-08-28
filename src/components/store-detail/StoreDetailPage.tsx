@@ -18,11 +18,11 @@ import {
   IoTimeOutline,
 } from "react-icons/io5";
 
-import { FaStar, FaStore } from "react-icons/fa";
+import { FaStore } from "react-icons/fa";
 
 import { useGetStoreByUuidQuery } from "@/app/store/locationApi";
-
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { BookmarkButton } from "@/components/common/BookmarkButton";
 
 import FoodCard from "@/components/dynamic-card/FoodCard";
 
@@ -213,13 +213,7 @@ function StoreMediaImage({
 
 function StoreHero({ store }: { store: FoodStoreDetail }) {
   const address = getStoreAddress(store);
-
   const priceLevel = formatPriceLevel(store.priceLevel);
-
-  const rating = Number(store.averageRating ?? 0);
-
-  const ratingText =
-    Number.isFinite(rating) && rating > 0 ? rating.toFixed(1) : "ថ្មី";
 
   const hygiene =
     store.hygieneRating !== null && Number.isFinite(Number(store.hygieneRating))
@@ -237,6 +231,15 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
         />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+
+        {/* Top-Right Bookmark Button */}
+        <div className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
+          <BookmarkButton
+            storeUuid={store.uuid}
+            showText={false}
+            className="h-11 w-11 sm:h-12 sm:w-12 bg-white/90 text-gray-700 shadow-md backdrop-blur-md hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80"
+          />
+        </div>
 
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 lg:p-8">
           <div className="flex items-end gap-4">
@@ -288,12 +291,6 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
           )}
 
           <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-[18px] text-gray-600">
-            <span className="inline-flex items-center gap-2">
-              <FaStar className="text-secondary-500" />
-              {ratingText}
-              {store.totalReviews > 0 ? ` (${store.totalReviews})` : ""}
-            </span>
-
             {hygiene && (
               <span className="inline-flex items-center gap-2">
                 <IoShieldCheckmarkOutline className="text-primary-700" />

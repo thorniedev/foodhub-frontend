@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,16 +9,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { useGetInteractionHistoryQuery } from "@/app/store/interactionApi";
-import { useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import { useGetMenuItemsQuery, useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import type { InteractionEventResponse } from "@/types/interaction";
-
-function getMediaUrl(value: string | null | undefined): string {
-  if (!value) return "/Image/default-food.png";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  if (value.startsWith("/api/v1/")) return `/api/${value.slice("/api/v1/".length)}`;
-  if (value.startsWith("/")) return value;
-  return `/${value}`;
-}
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 function formatRelativeTime(dateStr?: string | null): string {
   if (!dateStr) return "ថ្មីៗនេះ";
@@ -45,17 +39,42 @@ function formatRelativeTime(dateStr?: string | null): string {
   }
 }
 
-function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
+function HistoryItemCard({
+  event,
+  allMenuItems,
+}: {
+  event: InteractionEventResponse;
+  allMenuItems: CatalogMenuItem[];
+}) {
   const menuItemUuid = event.menuItemUuid || event.foodUuid || "";
-  const { data: itemDetail, isLoading } = useGetMenuItemByUuidQuery(menuItemUuid, {
+  const { data: itemDetail } = useGetMenuItemByUuidQuery(menuItemUuid, {
     skip: !menuItemUuid,
   });
 
+  const cachedItem = allMenuItems.find(
+    (m) =>
+      m.uuid === menuItemUuid ||
+      m.food?.uuid === menuItemUuid ||
+      m.name === menuItemUuid ||
+      m.localName === menuItemUuid,
+  );
+
   const title =
-    itemDetail?.localName || itemDetail?.name || "មុខម្ហូប";
-  const price = itemDetail?.price != null ? `$${Number(itemDetail.price).toFixed(2)}` : null;
-  const storeName = itemDetail?.store?.name || null;
-  const thumbnail = itemDetail?.thumbnail || "/Image/default-food.png";
+    itemDetail?.localName ||
+    itemDetail?.name ||
+    cachedItem?.localName ||
+    cachedItem?.name ||
+    "មុខម្ហូប";
+
+  const rawPrice = itemDetail?.price ?? cachedItem?.price;
+  const price = rawPrice != null ? `$${Number(rawPrice).toFixed(2)}` : null;
+
+  const storeName =
+    itemDetail?.store?.name || cachedItem?.store?.name || null;
+
+  const rawThumbnail =
+    itemDetail?.thumbnail || cachedItem?.thumbnail || "/Image/default-food.png";
+  const thumbnail = toFrontendApiAssetUrl(rawThumbnail, DEFAULT_FOOD_IMAGE);
 
   if (event.storeUuid && !event.menuItemUuid) {
     return (
@@ -90,9 +109,10 @@ function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
         <Image
-          src={getMediaUrl(thumbnail)}
+          src={thumbnail}
           alt={title}
           fill
+          unoptimized
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="object-cover transition duration-300 group-hover:scale-105"
         />
@@ -104,7 +124,7 @@ function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
 
       <div className="p-4">
         <h4 className="truncate text-base font-bold text-slate-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400">
-          {isLoading ? "កំពុងផ្ទុកមុខម្ហូប..." : title}
+          {title}
         </h4>
 
         <div className="mt-2 flex items-center justify-between gap-2 text-xs">
@@ -127,10 +147,35 @@ function HistoryContent() {
   const { data: pageData, isLoading } = useGetInteractionHistoryQuery({
     eventType: "VIEW",
     page: 0,
-    size: 30,
+    size: 50,
   });
 
-  const history = pageData?.contents ?? [];
+  const { data: allMenuItems = [] } = useGetMenuItemsQuery();
+
+  // Deduplicate history to show unique viewed items in reverse chronological order
+  const history = useMemo(() => {
+    const rawEvents: InteractionEventResponse[] =
+      pageData?.contents ?? (Array.isArray(pageData) ? pageData : []);
+
+    const seen = new Set<string>();
+    const uniqueList: InteractionEventResponse[] = [];
+
+    for (const ev of rawEvents) {
+      const key =
+        ev.menuItemUuid ||
+        ev.foodUuid ||
+        ev.storeUuid ||
+        ev.uuid ||
+        ev.clientEventId;
+
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        uniqueList.push(ev);
+      }
+    }
+
+    return uniqueList;
+  }, [pageData]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -177,7 +222,11 @@ function HistoryContent() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {history.map((event) => (
-            <HistoryItemCard key={event.uuid || event.clientEventId} event={event} />
+            <HistoryItemCard
+              key={event.uuid || event.clientEventId}
+              event={event}
+              allMenuItems={allMenuItems}
+            />
           ))}
         </div>
       )}

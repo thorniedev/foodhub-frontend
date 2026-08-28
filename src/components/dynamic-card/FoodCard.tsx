@@ -478,9 +478,10 @@ import {
   FaStore,
 } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
+import { IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
-
+import { useBookmarks } from "@/hooks/useBookmarks";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
 
@@ -633,14 +634,21 @@ export default function FoodCard({ food }: FoodCardProps) {
   );
 
   /* =======================================================
-     FAVORITE INITIAL STATE
+     BOOKMARKS & FAVORITES
   ======================================================= */
+
+  const { bookmarks, addBookmark, removeBookmark, findBookmark } =
+    useBookmarks();
 
   useEffect(() => {
     const favoriteIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
 
-    setIsFavorite(favoriteIds.includes(food.uuid));
-  }, [food.uuid]);
+    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(food.uuid));
+  }, [food.uuid, food.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
      THUMBNAIL
@@ -651,13 +659,18 @@ export default function FoodCard({ food }: FoodCardProps) {
   }, [rawImage]);
 
   /* =======================================================
-     FAVORITE TOGGLE
+     FAVORITE / BOOKMARK TOGGLE
   ======================================================= */
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     const currentIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
 
-    const isAlreadyFavorite = currentIds.includes(food.uuid);
+    const isAlreadyFavorite =
+      isFavorite || Boolean(serverBookmark) || currentIds.includes(food.uuid);
 
     const nextIds = isAlreadyFavorite
       ? currentIds.filter((id) => id !== food.uuid)
@@ -675,9 +688,24 @@ export default function FoodCard({ food }: FoodCardProps) {
       );
     }
 
-    setIsFavorite(nextIds.includes(food.uuid));
-
+    setIsFavorite(!isAlreadyFavorite);
     window.dispatchEvent(new Event("foodhub-favorites-updated"));
+
+    try {
+      if (isAlreadyFavorite) {
+        if (serverBookmark) {
+          await removeBookmark(serverBookmark.uuid);
+        }
+      } else {
+        await addBookmark({
+          menuItemUuid: food.uuid,
+          foodUuid: food.food?.uuid,
+          storeUuid: food.store?.uuid,
+        });
+      }
+    } catch (err) {
+      console.warn("[BOOKMARK SYNC ERROR]", err);
+    }
   };
 
   /* =======================================================
@@ -834,6 +862,36 @@ export default function FoodCard({ food }: FoodCardProps) {
               pointer-events-none
             "
           />
+
+          {/* Top-Right Bookmark Button */}
+          <button
+            type="button"
+            aria-label={isFavorite ? "ដកចេញពីបញ្ជីចំណូលចិត្ត" : "រក្សាទុកក្នុងបញ្ជីចំណូលចិត្ត"}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite();
+            }}
+            className={`
+              absolute right-2 top-2 z-10
+              flex h-7 w-7 sm:h-8 sm:w-8
+              items-center justify-center
+              rounded-full
+              backdrop-blur-md transition-all duration-200
+              shadow-sm hover:scale-110 active:scale-95
+              ${
+                isFavorite
+                  ? "bg-secondary-500 text-white shadow-secondary-500/30"
+                  : "bg-white/85 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
+              }
+            `}
+          >
+            {isFavorite ? (
+              <IoBookmark className="text-sm sm:text-base text-white" />
+            ) : (
+              <IoBookmarkOutline className="text-sm sm:text-base" />
+            )}
+          </button>
         </div>
 
         {/* ========================================
