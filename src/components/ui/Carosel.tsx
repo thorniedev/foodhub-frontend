@@ -1687,7 +1687,7 @@ export default function Carousel({
 
             left-2
 
-            md:-left-12  lg:-left-5
+            md:-left-5  lg:-left-5
 
             min-[1360px]:-left-5
           `}
@@ -2009,7 +2009,7 @@ export default function Carousel({
 
             right-2
 
-            md:-right-12 lg:-right-5
+            md:-right-5 lg:-right-5
 
             min-[1360px]:-right-5
           `}

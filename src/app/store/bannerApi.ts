@@ -2,6 +2,20 @@ import { baseApi } from "./baseApi";
 import { normalizeArrayPayload } from "./utils/normalize";
 import type { BannerItem } from "@/types/banner";
 
+function extractBannerPayload(response: unknown): BannerItem[] {
+  if (Array.isArray(response)) {
+    return response as BannerItem[];
+  }
+  if (
+    response &&
+    typeof response === "object" &&
+    Array.isArray((response as Record<string, unknown>).payload)
+  ) {
+    return (response as { payload: BannerItem[] }).payload;
+  }
+  return [];
+}
+
 export const bannerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // =========================================================
