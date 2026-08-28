@@ -562,8 +562,14 @@ export default function FoodCard({ food }: FoodCardProps) {
    * while discovery search returns category/cuisine at the menu-item root.
    * Support both response shapes without changing the card UI.
    */
-  const cuisine = food.food?.cuisine ?? food.cuisine ?? null;
-  const category = food.food?.category ?? food.category ?? null;
+  const foodAny = food as unknown as {
+    cuisine?: { code?: string; name: string } | null;
+    category?: { code?: string; name: string } | null;
+    imageUrl?: string | null;
+    primaryMediaUuid?: string | null;
+  };
+  const cuisine = food.food?.cuisine ?? foodAny.cuisine ?? null;
+  const category = food.food?.category ?? foodAny.category ?? null;
 
   /* =======================================================
      STATE
@@ -605,11 +611,9 @@ export default function FoodCard({ food }: FoodCardProps) {
 
   const rawImage =
     food.thumbnail ||
-    food.imageUrl ||
-    ((food as unknown as { primaryMediaUuid?: string }).primaryMediaUuid
-      ? `/api/v1/media/${
-          (food as unknown as { primaryMediaUuid?: string }).primaryMediaUuid
-        }`
+    foodAny.imageUrl ||
+    (foodAny.primaryMediaUuid
+      ? `/api/v1/media/${foodAny.primaryMediaUuid}`
       : undefined);
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>(

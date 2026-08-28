@@ -15,3 +15,4 @@ export interface BannerItem {
 }
 
 export type BannerResponse = BannerItem[];
+export type { PublicBannerResponse } from "./publicBanner";
