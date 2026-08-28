@@ -1512,7 +1512,6 @@
 //     </motion.div>
 //   );
 // }
-
 "use client";
 
 import { useRef, useState } from "react";
@@ -2080,7 +2079,7 @@ export default function MealTimeJourneySection() {
 
         {/* stage */}
         <div className="relative z-20 flex h-full items-center justify-center px-6">
-          <div className="relative h-[38vh] w-[38vh] max-h-[330px] max-w-[330px]">
+          <div className="relative h-[42vh] w-[42vh] max-h-[370px] max-w-[370px]">
             {/* dial */}
             <svg
               viewBox="0 0 200 200"
@@ -2206,19 +2205,27 @@ function Aperture({
   progress: MotionValue<number>;
   reduce: boolean;
 }) {
+  // the first dish is already plated — it fills the aperture on mount,
+  // so nobody has to scroll to find out what's in there.
+  const isFirst = index === 0;
+
   const start = index === 0 ? -0.001 : index * span;
   const end = index * span + span * 0.68;
 
   const radius = useTransform(progress, [start, end], [0, 76]);
   const clipPath = useTransform(radius, (r) => `circle(${r}% at 50% 50%)`);
-  const scale = useTransform(progress, [start, end + span * 0.3], [1.22, 1.02]);
-  const rotate = useTransform(progress, [start, end], [-5, 0]);
+  const scale = useTransform(
+    progress,
+    [start, end + span * 0.3],
+    [isFirst ? 1.06 : 1.22, 1.02],
+  );
+  const rotate = useTransform(progress, [start, end], [isFirst ? 0 : -5, 0]);
 
   return (
     <motion.div
       className="absolute inset-0"
       style={{
-        clipPath: reduce ? "circle(76% at 50% 50%)" : clipPath,
+        clipPath: reduce || isFirst ? "circle(76% at 50% 50%)" : clipPath,
         zIndex: index + 1,
         willChange: "clip-path",
       }}
@@ -2233,6 +2240,7 @@ function Aperture({
           willChange: "transform",
         }}
       />
+      
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary-950/45" />
     </motion.div>
   );
