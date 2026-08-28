@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { EASE_SOFT, VIEWPORT, group } from "@/lib/reveal";
 import { useGetPopularBannersQuery } from "@/app/store/bannerApi";
+import { normalizeArrayPayload } from "@/app/store/utils/normalize";
 import { resolveBannerImageUrl } from "@/lib/banner-media";
+import type { BannerItem } from "@/types/banner";
 
 /* =========================================================
    THE STACK CONFIGURATION & ORIGINAL FALLBACKS
@@ -117,6 +119,10 @@ function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
   const [imgSrc, setImgSrc] = useState(card.src);
   const [isHovered, setIsHovered] = useState(false);
 
+  useEffect(() => {
+    setImgSrc(card.src);
+  }, [card.src]);
+
   return (
     <motion.div
       key={card.id}
@@ -181,9 +187,13 @@ export default function PopularSection() {
   const { data: bannerData } = useGetPopularBannersQuery();
 
   const cards = useMemo(() => {
-    if (bannerData && Array.isArray(bannerData) && bannerData.length > 0) {
-      const activeBanners = bannerData.filter((b) => b.isPublished !== false);
-      const displayBanners = activeBanners.length > 0 ? activeBanners : bannerData;
+    const list = Array.isArray(bannerData)
+      ? bannerData
+      : normalizeArrayPayload<BannerItem>(bannerData);
+
+    if (list && list.length > 0) {
+      const activeBanners = list.filter((b) => b.isPublished !== false);
+      const displayBanners = activeBanners.length > 0 ? activeBanners : list;
       const sliced = displayBanners.slice(0, 6);
 
       return sliced.map((banner, index) => {

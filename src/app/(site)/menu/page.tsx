@@ -24,6 +24,7 @@ import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useDiscoverySearchMutation, useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
+import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 import type { CustomerSearchRequest, FilterItemOption, MenuItemDiscoveryResponse, SafetyStatusType } from "@/types/search";
 import {
   useGetMemberProfileByIdQuery,
@@ -889,6 +890,7 @@ function FilterSidebar({
 
   const [collapsed, setCollapsed] = useState(false);
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [categoryType, setCategoryType] = useState<CategoryFilterType>("ALL");
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     profile: true,
@@ -967,9 +969,19 @@ function FilterSidebar({
     (customerSearchRequest.maxPreparationTimeMinutes !== undefined ? 1 : 0) +
     (customerSearchRequest.profileUuid ? 1 : 0);
 
-  const categories = (filterOptions?.categories || []).filter((cat) =>
-    normalizeText(cat.name).includes(normalizeText(categoryQuery)),
-  );
+  const categories = useMemo(() => {
+    let list = filterOptions?.categories || [];
+    if (categoryType === "FOOD") {
+      list = list.filter((cat) => isFoodCategory(cat));
+    } else if (categoryType === "DRINK") {
+      list = list.filter((cat) => isDrinkCategory(cat));
+    }
+    if (categoryQuery.trim()) {
+      const q = normalizeText(categoryQuery);
+      list = list.filter((cat) => normalizeText(cat.name).includes(q));
+    }
+    return list;
+  }, [filterOptions?.categories, categoryType, categoryQuery]);
 
   return (
     <motion.aside
@@ -1152,30 +1164,80 @@ function FilterSidebar({
             {/* CATEGORY */}
             {filterOptions?.categories && filterOptions.categories.length > 0 && (
               <FilterSection
-                title="ប្រភេទម្ហូប"
+                title="ប្រភេទម្ហូប និងភេសជ្ជៈ"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.category}
                 onToggle={() => toggleSection("category")}
               >
+                {/* Dynamic Type Selector (All / Food / Drink) */}
+                <div className="mb-3 flex items-center rounded-xl bg-gray-100 dark:bg-slate-800 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryType("ALL")}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                      categoryType === "ALL"
+                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    ទាំងអស់
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryType("FOOD")}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                      categoryType === "FOOD"
+                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    🍲 ម្ហូប
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryType("DRINK")}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                      categoryType === "DRINK"
+                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    🥤 ភេសជ្ជៈ
+                  </button>
+                </div>
+
+                {/* Keep Searchbox */}
                 <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3">
                   <IoSearchOutline className="shrink-0 text-[20px] text-gray-400 dark:text-slate-500" />
                   <input
                     value={categoryQuery}
                     onChange={(event) => setCategoryQuery(event.target.value)}
-                    placeholder="ស្វែងរកប្រភេទម្ហូប"
+                    placeholder={
+                      categoryType === "FOOD"
+                        ? "ស្វែងរកប្រភេទម្ហូប"
+                        : categoryType === "DRINK"
+                          ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
+                          : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
+                    }
                     className="w-full bg-transparent text-[16px] text-gray-600 dark:text-slate-200 outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                   />
                 </div>
 
                 <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
-                  {categories.map((cat) => (
-                    <CheckboxOption
-                      key={cat.uuid}
-                      label={cat.name}
-                      checked={Boolean(customerSearchRequest.categoryUuids?.includes(cat.uuid))}
-                      onChange={() => toggleArrayItem("categoryUuids", cat.uuid)}
-                    />
-                  ))}
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <CheckboxOption
+                        key={cat.uuid}
+                        label={cat.name}
+                        checked={Boolean(customerSearchRequest.categoryUuids?.includes(cat.uuid))}
+                        onChange={() => toggleArrayItem("categoryUuids", cat.uuid)}
+                      />
+                    ))
+                  ) : (
+                    <p className="py-2 text-center text-xs text-gray-400 dark:text-slate-500">
+                      រកមិនឃើញប្រភេទដែលត្រូវគ្នា
+                    </p>
+                  )}
                 </div>
               </FilterSection>
             )}

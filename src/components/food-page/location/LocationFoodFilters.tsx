@@ -29,6 +29,7 @@ import type {
 } from "@/types/location-food-filter";
 
 import { DEFAULT_LOCATION_FOOD_FILTERS } from "@/types/location-food-filter";
+import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 
 /* -------------------------------------------------------------------------- */
 /*                                    TYPES                                   */
@@ -638,6 +639,7 @@ export default function LocationFoodFilters({
   const [collapsed, setCollapsed] = useState(false);
 
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [categoryType, setCategoryType] = useState<CategoryFilterType>("ALL");
 
   const [cuisineQuery, setCuisineQuery] = useState("");
 
@@ -925,10 +927,15 @@ export default function LocationFoodFilters({
   /* SEARCH FILTER OPTIONS                                                    */
   /* ------------------------------------------------------------------------ */
 
-  const visibleCategoryOptions = useMemo(
-    () => searchFilterOptions(categoryOptions, categoryQuery),
-    [categoryOptions, categoryQuery],
-  );
+  const visibleCategoryOptions = useMemo(() => {
+    let list = categoryOptions;
+    if (categoryType === "FOOD") {
+      list = list.filter((opt) => isFoodCategory(opt));
+    } else if (categoryType === "DRINK") {
+      list = list.filter((opt) => isDrinkCategory(opt));
+    }
+    return searchFilterOptions(list, categoryQuery);
+  }, [categoryOptions, categoryType, categoryQuery]);
 
   const visibleCuisineOptions = useMemo(
     () => searchFilterOptions(cuisineOptions, cuisineQuery),
@@ -1237,15 +1244,59 @@ export default function LocationFoodFilters({
             {/* CATEGORY */}
 
             <FilterSection
-              title="ប្រភេទម្ហូប"
+              title="ប្រភេទម្ហូប និងភេសជ្ជៈ"
               icon={<MdOutlineCategory />}
               isOpen={openSections.category}
               onToggle={() => toggleSection("category")}
             >
+              {/* Category Type Pills */}
+              <div className="mb-3 flex items-center rounded-xl bg-gray-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("ALL")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "ALL"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  ទាំងអស់
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("FOOD")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "FOOD"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  🍲 ម្ហូប
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("DRINK")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "DRINK"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  🥤 ភេសជ្ជៈ
+                </button>
+              </div>
+
+              {/* Keep Searchbox */}
               <FilterSearch
                 value={categoryQuery}
                 onChange={setCategoryQuery}
-                placeholder="ស្វែងរកប្រភេទម្ហូប"
+                placeholder={
+                  categoryType === "FOOD"
+                    ? "ស្វែងរកប្រភេទម្ហូប"
+                    : categoryType === "DRINK"
+                      ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
+                      : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
+                }
               />
 
               <OptionList

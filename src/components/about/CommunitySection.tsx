@@ -743,7 +743,7 @@ const members: MemberCardProps[] = [
     role: "FullStack",
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
-    avatar: "/about/fou1.1.JPG",
+    avatar: "/about/fou1.1.jpg",
 
     socials: {
       facebook: "https://www.facebook.com/lim.longfou",

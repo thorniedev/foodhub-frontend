@@ -679,7 +679,7 @@ export default function MealTimeJourneySection() {
 
         {/* stage */}
         <div className="relative z-20 flex h-full items-center justify-center px-4">
-          <div className="relative h-[38vh] w-[38vh] max-h-[330px] max-w-[330px] sm:max-h-[360px] sm:max-w-[360px]">
+          <div className="relative h-[42vh] w-[42vh] max-h-[360px] max-w-[360px] sm:max-h-[390px] sm:max-w-[390px] md:max-h-[420px] md:max-w-[420px]">
             {/* dial track */}
             <svg
               viewBox="0 0 200 200"
@@ -720,85 +720,95 @@ export default function MealTimeJourneySection() {
               <span className="absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-300 shadow-[0_0_20px_6px_rgba(250,204,21,0.45)]" />
             </motion.div>
 
-            {/* photo aperture - clickable link to food detail */}
-            <div className="absolute inset-0 overflow-hidden rounded-full shadow-2xl shadow-primary-950/60">
-              {resolvedMeals.map((m, i) => (
-                <Aperture
-                  key={m.id}
-                  meal={m}
-                  index={i}
-                  span={span}
-                  progress={progress}
-                  reduce={!!reduce}
+            {/* photo aperture - circular container with food photo & details INSIDE */}
+            <div className="group absolute inset-0 overflow-hidden rounded-full shadow-2xl shadow-primary-950/70 border-[2px] border-white/30 bg-primary-950">
+              {/* Active Dish Food Photo */}
+              <motion.div
+                key={currentActiveMeal.id + currentActiveMeal.img}
+                initial={{ opacity: 0, scale: 1.06 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                className="absolute inset-0 h-full w-full"
+              >
+                <Image
+                  src={currentActiveMeal.img}
+                  alt={currentActiveMeal.dish}
+                  fill
+                  unoptimized
+                  priority
+                  sizes="(max-width: 768px) 360px, 420px"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-              ))}
+              </motion.div>
+
+              {/* Gradient Scrim */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/25" />
+
+              {/* Sheen effect */}
               <motion.div
                 className="pointer-events-none absolute inset-0 rounded-full"
                 style={{ backgroundImage: reduce ? "none" : sheen }}
               />
-              <div className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-white/25" />
-            </div>
+              <div className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-white/20" />
 
-            {/* time chip */}
-            <div className="absolute -top-3.5 left-1/2 z-30 -translate-x-1/2 rounded-full border border-white/20 bg-primary-950/75 px-5 py-1 backdrop-blur-md shadow-lg">
-              <span className="font-mono text-base sm:text-lg tabular-nums text-accent-300 font-semibold tracking-wide">
-                {currentActiveMeal.time}
-              </span>
-            </div>
+              {/* Time Badge - Top Inside Circle */}
+              <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/25 bg-black/60 px-3.5 py-0.5 backdrop-blur-md shadow-md">
+                <span className="font-mono text-xs sm:text-sm tabular-nums text-accent-300 font-bold tracking-wider">
+                  {currentActiveMeal.time}
+                </span>
+              </div>
 
-            {/* dynamic info pill with real dish & link */}
-            {currentActiveMeal && (
+              {/* Matching Dish Information - Bottom Inside Circle */}
               <motion.div
                 key={currentActiveMeal.id + currentActiveMeal.dish}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="absolute -bottom-16 sm:-bottom-20 left-1/2 z-30 w-[90vw] max-w-[340px] -translate-x-1/2 rounded-2xl border border-white/20 bg-primary-950/80 px-4 py-2.5 sm:py-3 text-center shadow-xl shadow-primary-950/50 backdrop-blur-xl"
+                className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center px-4 pt-4 pb-5 sm:pb-6 text-center"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="inline-block rounded-full bg-accent-400/90 px-3 py-0.5 text-xs font-bold text-primary-950">
+                {/* Tag & Safety status */}
+                <div className="flex items-center gap-1.5 mb-1 flex-wrap justify-center">
+                  <span className="rounded-full bg-accent-400 px-2.5 py-0.5 text-[10px] sm:text-xs font-bold text-primary-950 shadow-sm">
                     {currentActiveMeal.label}
                   </span>
 
                   {currentActiveMeal.isSafe && (
-                    <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-300">
-                      <FaShieldAlt className="text-emerald-400 shrink-0" />
-                      <span>សុវត្ថិភាពសម្រាប់ {currentActiveMeal.profileName || "អ្នក"}</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-300 bg-emerald-950/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      <FaShieldAlt className="text-emerald-400 shrink-0 text-[9px]" />
+                      <span className="truncate max-w-[120px]">សុវត្ថិភាព {currentActiveMeal.profileName || ""}</span>
                     </span>
                   )}
                 </div>
 
-                <div className="mt-1.5 flex items-center justify-between gap-2 text-left">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm sm:text-base font-bold text-white">
-                      {currentActiveMeal.dish}
-                    </p>
-                    {currentActiveMeal.storeName && (
-                      <p className="flex items-center gap-1 truncate text-xs text-white/70">
-                        <FaStore className="shrink-0 text-accent-300 text-[10px]" />
-                        <span className="truncate">{currentActiveMeal.storeName}</span>
-                      </p>
+                {/* Dish Name */}
+                <p className="line-clamp-1 text-sm sm:text-base font-bold text-white drop-shadow-md">
+                  {currentActiveMeal.dish}
+                </p>
+
+                {/* Store & Price */}
+                {currentActiveMeal.storeName && (
+                  <p className="flex items-center justify-center gap-1 line-clamp-1 text-[11px] sm:text-xs text-white/80 mt-0.5">
+                    <FaStore className="shrink-0 text-accent-300 text-[10px]" />
+                    <span className="truncate max-w-[140px] sm:max-w-[180px]">{currentActiveMeal.storeName}</span>
+                    {currentActiveMeal.price && (
+                      <span className="font-extrabold text-accent-300 ml-1">· {currentActiveMeal.price}</span>
                     )}
-                  </div>
+                  </p>
+                )}
 
-                  {currentActiveMeal.price && (
-                    <span className="shrink-0 text-sm font-extrabold text-accent-300">
-                      {currentActiveMeal.price}
-                    </span>
-                  )}
-                </div>
-
+                {/* Action Link button */}
                 {currentActiveMeal.uuid && (
                   <Link
                     href={`/menu/${currentActiveMeal.uuid}`}
-                    className="mt-2 flex items-center justify-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 px-3 py-1 text-xs font-semibold text-white transition active:scale-[0.98]"
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 px-3.5 py-1 text-[11px] sm:text-xs font-bold text-white transition active:scale-95 shadow-md"
                   >
                     <span>មើលមុខម្ហូបនេះ</span>
-                    <FaArrowRight className="text-[10px]" />
+                    <FaArrowRight className="text-[9px]" />
                   </Link>
                 )}
               </motion.div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -853,78 +863,4 @@ export default function MealTimeJourneySection() {
   );
 }
 
-/* =========================================================
-   APERTURE VIEW
-========================================================= */
 
-type ResolvedMeal = {
-  id: string;
-  label: string;
-  dish: string;
-  time: string;
-  note: string;
-  img: string;
-  uuid: string | null;
-  price: string | null;
-  storeName: string | null;
-  isSafe: boolean;
-  profileName: string | null;
-};
-
-function Aperture({
-  meal,
-  index,
-  span,
-  progress,
-  reduce,
-}: {
-  meal: ResolvedMeal;
-  index: number;
-  span: number;
-  progress: MotionValue<number>;
-  reduce: boolean;
-}) {
-  const start = index === 0 ? -0.001 : index * span;
-  const end = index * span + span * 0.68;
-
-  const radius = useTransform(progress, [start, end], [0, 76]);
-  const clipPath = useTransform(radius, (r) => `circle(${r}% at 50% 50%)`);
-  const scale = useTransform(progress, [start, end + span * 0.3], [1.22, 1.02]);
-  const rotate = useTransform(progress, [start, end], [-5, 0]);
-
-  const content = (
-    <motion.div
-      className="absolute inset-0 cursor-pointer"
-      style={{
-        clipPath: reduce ? "circle(76% at 50% 50%)" : clipPath,
-        zIndex: index + 1,
-        willChange: "clip-path",
-      }}
-    >
-      <motion.div
-        className="relative h-full w-full"
-        style={{
-          scale: reduce ? 1 : scale,
-          rotate: reduce ? 0 : rotate,
-          willChange: "transform",
-        }}
-      >
-        <Image
-          src={meal.img}
-          alt={meal.dish}
-          fill
-          unoptimized
-          sizes="(max-width: 768px) 330px, 360px"
-          className="h-full w-full object-cover"
-        />
-      </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary-950/45" />
-    </motion.div>
-  );
-
-  if (meal.uuid) {
-    return <Link href={`/menu/${meal.uuid}`}>{content}</Link>;
-  }
-
-  return content;
-}
