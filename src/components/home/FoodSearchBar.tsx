@@ -350,7 +350,7 @@ export default function FoodSearchBar() {
             </motion.p>
           )}
           {paginatedFoods.map((food) => (
-            <Link key={food.id} href={`/menu-items/${food.id}`}>
+            <Link key={food.id} href={`/menu/${food.id}`}>
               <FoodCardComponent food={food} />
             </Link>
           ))}

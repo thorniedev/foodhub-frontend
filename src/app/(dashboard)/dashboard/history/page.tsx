@@ -85,7 +85,7 @@ function HistoryItemCard({ event }: { event: InteractionEventResponse }) {
 
   return (
     <Link
-      href={`/menu-items/${menuItemUuid}`}
+      href={`/menu/${menuItemUuid}`}
       className="group block overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">

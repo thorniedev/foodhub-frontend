@@ -302,7 +302,7 @@ export default function MealTimeRecommandSection({
           FOOD GRID
       ========================================== */}
 
-      <div className="container mx-auto mt-8 grid max-w-7xl grid-cols-1 gap-5 px-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+      <div className="container mx-auto mt-8 grid max-w-7xl grid-cols-2 gap-3 sm:gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-6 px-4">
         {/* Loading */}
         {isLoading && (
           <div className="col-span-full py-16 text-center">
@@ -355,13 +355,12 @@ export default function MealTimeRecommandSection({
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <Link
-                href={`/menu-items/${food.uuid}`}
+              <div
                 onClick={() => handleViewFood(food)}
                 className="block h-full"
               >
                 <FoodCard food={food} />
-              </Link>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>

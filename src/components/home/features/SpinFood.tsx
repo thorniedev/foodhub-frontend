@@ -337,7 +337,7 @@ function WinPopup({ food, reducedMotion, onClose }: WinPopupProps) {
             <IoClose className="text-lg" />
           </button>
 
-          <Link href={`/food/${food.uuid}`} onClick={onClose} className="block">
+          <Link href={`/menu/${food.uuid}`} onClick={onClose} className="block">
             <div className="relative h-[195px] overflow-hidden rounded-[18px]">
               <Image
                 fill
@@ -508,7 +508,7 @@ function CollectionSheet({ entries, onClose }: CollectionSheetProps) {
             {entries.map(({ food, count }) => (
               <Link
                 key={food.uuid}
-                href={`/food/${food.uuid}`}
+                href={`/menu/${food.uuid}`}
                 onClick={onClose}
                 className="group overflow-hidden rounded-[18px] border border-gray-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >

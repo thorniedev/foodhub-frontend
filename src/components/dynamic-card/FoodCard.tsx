@@ -782,27 +782,26 @@ export default function FoodCard({ food }: FoodCardProps) {
       ========================================== */}
 
       <Link
-        href={`/food/${itemUuid}`}
+        href={`/menu/${itemUuid}`}
         className="
           flex
           h-full
-          md:max-w-[300px]
+          w-full
           flex-col
+          rounded-[18px]
           sm:rounded-[24px]
           border
           border-gray-200
           bg-white
+          p-2.5
           sm:p-3.5
-          max-sm:p-2
-          max-sm:rounded-[18px]
-          shadow-sm
+          shadow-xs
           transition
           duration-200
           hover:-translate-y-1
           hover:shadow-md
           dark:border-gray-800
           dark:bg-gray-950
-          max-sm:max-w-[200px]
         "
       >
         {/* ========================================
@@ -823,12 +822,14 @@ export default function FoodCard({ food }: FoodCardProps) {
               }
             }}
             className="
-              sm:h-[190px]
-              max-sm:h-[100px]
+              h-[115px]
+              sm:h-[180px]
               w-full
-              rounded-[10px]
+              rounded-[12px]
+              sm:rounded-[16px]
               border
               border-gray-100
+              dark:border-gray-800
               object-cover
               pointer-events-none
             "
@@ -839,19 +840,19 @@ export default function FoodCard({ food }: FoodCardProps) {
             CONTENT
         ======================================== */}
 
-        <div className="flex shrink-0 flex-col gap-2 pt-2">
+        <div className="flex shrink-0 flex-col gap-1.5 sm:gap-2 pt-2">
           {/* STORE */}
 
-          <div className="flex items-center justify-between gap-2 text-secondary-400 w-full overflow-hidden">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <FaStore className="shrink-0 max-sm:text-md" />
-              <p className="truncate max-sm:mt-[2px] max-sm:text-sm sm:text-lg">
+          <div className="flex items-center justify-between gap-1 text-secondary-500 dark:text-secondary-400 w-full overflow-hidden text-xs sm:text-sm">
+            <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+              <FaStore className="shrink-0 text-xs sm:text-sm" />
+              <p className="truncate text-xs sm:text-sm font-medium">
                 {food.store?.name || "Unknown store"}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <FaClock className="max-sm:text-md" />
-              <p className="whitespace-nowrap max-sm:text-xs mt-0.5 sm:text-sm">
+              <FaClock className="text-[10px] sm:text-xs" />
+              <p className="whitespace-nowrap text-[10px] sm:text-xs">
                 {food.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
               </p>
             </div>
@@ -861,14 +862,14 @@ export default function FoodCard({ food }: FoodCardProps) {
               NAME + PRICE
           ====================================== */}
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-1 sm:gap-2">
             <p
               className="
                 min-w-0
                 line-clamp-1
-                sm:text-[24px]
-                max-sm:text-lg
-                font-medium
+                text-sm
+                sm:text-xl
+                font-bold
                 text-primary-900
                 dark:text-white
               "
@@ -879,12 +880,11 @@ export default function FoodCard({ food }: FoodCardProps) {
             <p
               className="
                 shrink-0
-                sm:text-[24px]
-                max-sm:text-lg
-                font-medium
+                text-sm
+                sm:text-xl
+                font-bold
                 text-primary-800
-                dark:text-primary-dark
-                dark:text-primary-300
+                dark:text-emerald-400
               "
             >
               {food.currencyCode === "USD"

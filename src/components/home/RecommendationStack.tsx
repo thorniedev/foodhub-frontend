@@ -154,7 +154,7 @@ export default function RecommendCardStack({ foods }: RecommendCardStackProps) {
 
 function FoodCard({ food }: { food: FoodItem }) {
   return (
-    <Link href={`/food/$`} className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200  shadow-sm rounded-[24px] p-2.5">
+    <Link href={`/menu/${food.id}`} className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200  shadow-sm rounded-[24px] p-2.5">
       <div className="relative bord flex-1 min-h-0">
         <Image
           width={285}

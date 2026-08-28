@@ -383,7 +383,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
 
   return (
     <Link
-      href={`/menu-items/${food.uuid}`}
+      href={`/menu/${food.uuid}`}
       draggable={false}
       onClick={() => {
         track({

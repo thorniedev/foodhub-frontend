@@ -532,11 +532,16 @@ export default function Navbar() {
     >
       <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-3 sm:px-2">
         {/* Logo */}
-        <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0">
+        <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0 flex items-center">
           <img
             src="/Image/foodHub-logo.png"
             alt="FoodHub logo"
-            className="block h-[40px] py-1 sm:h-[45px] md:h-[65px]"
+            className="block dark:hidden h-[46px] sm:h-[56px] md:h-[68px] w-auto object-contain transition-all"
+          />
+          <img
+            src="/Image/foodHub-logo-dark.png"
+            alt="FoodHub logo"
+            className="hidden dark:block h-[46px] sm:h-[56px] md:h-[68px] w-auto object-contain transition-all"
           />
         </Link>
 
@@ -591,33 +596,38 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          onClick={() => setOpen((current) => !current)}
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? "បិទម៉ឺនុយ" : "បើកម៉ឺនុយ"}
-          className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-primary-900 transition-colors duration-200 hover:bg-primary-800/10 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-white md:hidden"
-        >
-          <span
-            className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
-              open ? "rotate-45" : "-translate-y-[6px]"
-            }`}
-          />
+        {/* Mobile controls */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
 
-          <span
-            className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-200 ease-out motion-reduce:transition-none ${
-              open ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100"
-            }`}
-          />
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setOpen((current) => !current)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "បិទម៉ឺនុយ" : "បើកម៉ឺនុយ"}
+            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-primary-900 transition-colors duration-200 hover:bg-primary-800/10 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 dark:text-white"
+          >
+            <span
+              className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
+                open ? "rotate-45" : "-translate-y-[6px]"
+              }`}
+            />
 
-          <span
-            className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
-              open ? "-rotate-45" : "translate-y-[6px]"
-            }`}
-          />
-        </button>
+            <span
+              className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-200 ease-out motion-reduce:transition-none ${
+                open ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100"
+              }`}
+            />
+
+            <span
+              className={`absolute h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out motion-reduce:transition-none ${
+                open ? "-rotate-45" : "translate-y-[6px]"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -681,10 +691,18 @@ export default function Navbar() {
                 );
               })}
 
+              {/* Theme toggle row */}
+              <li className="mt-2 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+                <span className="text-[15px] font-medium text-slate-700 dark:text-slate-300">
+                  ប្តូរទម្រង់ពន្លឺ/ងងឹត
+                </span>
+                <ThemeToggle />
+              </li>
+
               {/* Logged-in mobile actions */}
               {isAuthenticated ? (
                 <>
-                  <li className="mt-2">
+                  <li className="mt-1">
                     <Link
                       href="/dashboard"
                       tabIndex={open ? 0 : -1}
@@ -710,7 +728,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <li className="mt-2">
+                  <li className="mt-1">
                     <Link
                       href="/api/auth/login"
                       tabIndex={open ? 0 : -1}
@@ -721,17 +739,6 @@ export default function Navbar() {
                       ចូលគណនី
                     </Link>
                   </li>
-
-                  {/* <li>
-                    <Link
-                      href="/register"
-                      tabIndex={open ? 0 : -1}
-                      onClick={() => setOpen(false)}
-                      className="block rounded-full bg-primary-800 px-4 py-3 text-center text-[16px] font-semibold text-white transition-transform duration-200 active:scale-[0.98] dark:bg-white dark:text-primary"
-                    >
-                      បង្កើតគណនី
-                    </Link>
-                  </li> */}
                 </>
               )}
             </ul>

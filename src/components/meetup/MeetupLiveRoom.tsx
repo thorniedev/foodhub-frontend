@@ -533,6 +533,31 @@ export default function MeetupLiveRoom({
     slateKey,
   ]);
 
+  /*
+   * An empty slate has three very different causes and the session's own
+   * counters tell them apart: nothing in the catalog matched the room, the
+   * group's combined allergy and diet rules blocked everything, or the dishes
+   * that survived carry no canonical food and so cannot be voted on.
+   */
+  const emptySlateReason = useMemo(() => {
+    if (!recommendationSession) {
+      return "មិនទាន់មានម្ហូបសម្រាប់បន្ទប់នេះទេ។ សូមចុច ផ្ទុកឡើងវិញ។";
+    }
+
+    const candidateCount = recommendationSession.candidateCount ?? 0;
+    const eligibleCount = recommendationSession.eligibleCount ?? 0;
+
+    if (candidateCount === 0) {
+      return "រកមិនឃើញម្ហូបក្នុងបញ្ជីសម្រាប់តំបន់ និងរង្វង់ស្វែងរកនេះទេ។ សូមពង្រីករង្វង់ស្វែងរក ឬប្ដូរទីតាំង។";
+    }
+
+    if (eligibleCount === 0) {
+      return `រកឃើញម្ហូប ${candidateCount} មុខ ប៉ុន្តែគ្មានមុខណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬដកសមាជិកដែលមានលក្ខខណ្ឌតឹងរ៉ឹងបំផុត។`;
+    }
+
+    return "ម្ហូបដែលឆ្លងកាត់សុវត្ថិភាព មិនមានព័ត៌មានម្ហូបគោលដើម្បីបោះឆ្នោតបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងបញ្ជីម្ហូប។";
+  }, [recommendationSession]);
+
   const getVoteCount = useCallback(
     (candidate: MeetupCandidate) =>
       (tally?.tally ?? []).find(
@@ -864,10 +889,19 @@ export default function MeetupLiveRoom({
             ) : slate.candidates.length === 0 ? (
               <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
                 <ChefHat className="h-9 w-9 text-slate-300 dark:text-slate-600" />
-                <p className="max-w-sm text-sm leading-6 text-slate-500">
-                  មិនទាន់មានម្ហូបដែលត្រូវនឹងលក្ខខណ្ឌរបស់បន្ទប់នេះទេ។
-                  សូមផ្ទុកឡើងវិញបន្ទាប់ពីមានអ្នកចូលរួមបន្ថែម។
+                <p className="max-w-md text-sm leading-6 text-slate-500">
+                  {emptySlateReason}
                 </p>
+                {/*
+                  * The session reports how far the funnel got. Showing it turns
+                  * a dead end into something the host can act on.
+                  */}
+                {recommendationSession && (
+                  <p className="text-xs font-semibold text-slate-400">
+                    ម្ហូបដែលរកឃើញ {recommendationSession.candidateCount ?? 0} ·
+                    ឆ្លងកាត់សុវត្ថិភាព {recommendationSession.eligibleCount ?? 0}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

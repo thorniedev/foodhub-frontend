@@ -1889,20 +1889,22 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
       .sort((first, second) => {
         let firstScore = 0;
         let secondScore = 0;
+        const foodCategoryCode = food?.food?.category?.code;
+        const foodCuisineCode = food?.food?.cuisine?.code;
 
-        if (first.food.category.code === food.food.category.code) {
+        if (foodCategoryCode && first.food?.category?.code === foodCategoryCode) {
           firstScore += 3;
         }
 
-        if (second.food.category.code === food.food.category.code) {
+        if (foodCategoryCode && second.food?.category?.code === foodCategoryCode) {
           secondScore += 3;
         }
 
-        if (first.food.cuisine.code === food.food.cuisine.code) {
+        if (foodCuisineCode && first.food?.cuisine?.code === foodCuisineCode) {
           firstScore += 2;
         }
 
-        if (second.food.cuisine.code === food.food.cuisine.code) {
+        if (foodCuisineCode && second.food?.cuisine?.code === foodCuisineCode) {
           secondScore += 2;
         }
 
@@ -1914,8 +1916,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
           secondScore += 0.5;
         }
 
-        firstScore += Math.max(0, first.store.averageRating) / 10;
-        secondScore += Math.max(0, second.store.averageRating) / 10;
+        firstScore += Math.max(0, Number(first.store?.averageRating ?? 0)) / 10;
+        secondScore += Math.max(0, Number(second.store?.averageRating ?? 0)) / 10;
 
         return secondScore - firstScore;
       })

@@ -134,7 +134,7 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-full dark:bg-slate-950   overflow-x-hidden flex flex-col"
+        className="min-h-full bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 overflow-x-hidden flex flex-col"
       >
         <PWARegister />
         {/* <AOSInit /> */}

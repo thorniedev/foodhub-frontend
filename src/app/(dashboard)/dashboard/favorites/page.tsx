@@ -102,7 +102,7 @@ function DishBookmarkCard({
       <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800 sm:mt-0 sm:border-0 sm:pt-0">
         {menuItemUuid && (
           <Link
-            href={`/menu-items/${menuItemUuid}`}
+            href={`/menu/${menuItemUuid}`}
             className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white"
           >
             <ExternalLink className="h-3.5 w-3.5" /> មើល
