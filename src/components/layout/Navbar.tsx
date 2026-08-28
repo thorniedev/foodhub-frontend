@@ -532,14 +532,18 @@ export default function Navbar() {
     >
       <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-3 sm:px-2">
         {/* Logo */}
-        <Link href="/" aria-label="ទៅកាន់ទំព័រដើម" className="shrink-0 flex items-center">
+        <Link
+          href="/"
+          aria-label="ទៅកាន់ទំព័រដើម"
+          className="shrink-0 flex items-center"
+        >
           <img
             src="/Image/foodHub-logo.png"
             alt="FoodHub logo"
             className="block dark:hidden h-[46px] sm:h-[56px] md:h-[68px] w-auto object-contain transition-all"
           />
           <img
-            src="/Image/foodHub-logo-dark.png"
+            src="/Image/foodHub-logo-dark1.png"
             alt="FoodHub logo"
             className="hidden dark:block h-[46px] sm:h-[56px] md:h-[68px] w-auto object-contain transition-all"
           />
