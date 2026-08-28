@@ -123,6 +123,7 @@ export const baseApi = createApi({
     "Notification",
     "PushSubscription",
     "ProximityNotification",
+    "Banner"
   ],
 
   endpoints: () => ({}),
