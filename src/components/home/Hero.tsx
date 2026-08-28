@@ -1863,10 +1863,44 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useGetMainBannersQuery } from "@/app/store/bannerApi";
+import { normalizeArrayPayload } from "@/app/store/utils/normalize";
 import { resolveBannerImageUrl } from "@/lib/banner-media";
+import type { BannerItem } from "@/types/banner";
+
+function HeroBannerCardImage({
+  src,
+  alt,
+  fallbackSrc,
+}: {
+  src: string;
+  alt: string;
+  fallbackSrc: string;
+}) {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      width={96}
+      height={96}
+      unoptimized={true}
+      className="h-full w-full object-cover"
+      onError={() => {
+        if (imgSrc !== fallbackSrc) {
+          setImgSrc(fallbackSrc);
+        }
+      }}
+    />
+  );
+}
 
 /* =========================================================
    EASINGS
@@ -2188,19 +2222,33 @@ const arrowLoop = (delay: number): Variants => ({
 export default function Hero() {
   const reduceMotion = useReducedMotion();
 
-  const { data: mainBanners = [] } = useGetMainBannersQuery();
+  const { data: rawMainBanners } = useGetMainBannersQuery();
+
+  const mainBanners = useMemo(() => {
+    return Array.isArray(rawMainBanners)
+      ? rawMainBanners
+      : normalizeArrayPayload<BannerItem>(rawMainBanners);
+  }, [rawMainBanners]);
 
   const firstBanner = mainBanners[0];
   const secondBanner = mainBanners[1] || mainBanners[0];
 
-  const card1Image = resolveBannerImageUrl(firstBanner, "/Image/food-picture/food 31.jpg");
+  const card1Image = resolveBannerImageUrl(
+    firstBanner,
+    "/Image/food-picture/food 31.jpg",
+  );
   const card1Title = firstBanner?.title || "២. ម្ហូបគ្រប់ប្រភេទ";
-  const card1Desc = firstBanner?.description || "មុខម្ហូបឈ្ងុយឆ្ងាញ់សម្រាប់ជ្រើសរើស";
+  const card1Desc =
+    firstBanner?.description || "មុខម្ហូបឈ្ងុយឆ្ងាញ់សម្រាប់ជ្រើសរើស";
   const card1Href = firstBanner?.location || "/menu";
 
-  const card2Image = resolveBannerImageUrl(secondBanner, "/Image/food-picture/food-32.jpg");
+  const card2Image = resolveBannerImageUrl(
+    secondBanner,
+    "/Image/food-picture/food-32.jpg",
+  );
   const card2Title = secondBanner?.title || "១. ម្ហូបគ្រប់ប្រភេទ";
-  const card2Desc = secondBanner?.description || "រសជាតិស្រស់ស្រាយគ្រប់ពេលវេលា";
+  const card2Desc =
+    secondBanner?.description || "រសជាតិស្រស់ស្រាយគ្រប់ពេលវេលា";
   const card2Href = secondBanner?.location || "/menu";
 
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
@@ -2737,17 +2785,10 @@ max-sm:hidden
                     md:w-24
                   "
                   >
-                    <Image
+                    <HeroBannerCardImage
                       src={card1Image}
                       alt={card1Title}
-                      width={96}
-                      height={96}
-                      unoptimized={true}
-                      className="
-                      h-full
-                      w-full
-                      object-cover
-                    "
+                      fallbackSrc="/Image/food-picture/food 31.jpg"
                     />
                   </div>
 
@@ -2879,17 +2920,10 @@ max-sm:hidden
                     md:w-24
                   "
                   >
-                    <Image
+                    <HeroBannerCardImage
                       src={card2Image}
                       alt={card2Title}
-                      width={96}
-                      height={96}
-                      unoptimized={true}
-                      className="
-                      h-full
-                      w-full
-                      object-cover
-                    "
+                      fallbackSrc="/Image/food-picture/food-32.jpg"
                     />
                   </div>
 

@@ -18,6 +18,7 @@ import { FaShieldAlt, FaStore, FaArrowRight } from "react-icons/fa";
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
 import { sortFoodsForProfile } from "@/lib/recommendation/profileFoodPreferences";
+import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 /* =========================================================
@@ -117,6 +118,43 @@ function getMealIndexByHour(hour: number): number {
 }
 
 /* =========================================================
+   DISH IMAGE COMPONENT WITH FALLBACK
+========================================================= */
+
+function MealDishImage({
+  src,
+  alt,
+  fallbackSrc,
+}: {
+  src: string;
+  alt: string;
+  fallbackSrc: string;
+}) {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      unoptimized
+      priority
+      sizes="(max-width: 768px) 360px, 420px"
+      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+      onError={() => {
+        if (imgSrc !== fallbackSrc) {
+          setImgSrc(fallbackSrc);
+        }
+      }}
+    />
+  );
+}
+
+/* =========================================================
    MAIN COMPONENT
 ========================================================= */
 
@@ -187,10 +225,11 @@ export default function MealTimeJourneySection() {
         : slot.defaultTime;
 
       const dishName = chosenFood?.localName || chosenFood?.name || slot.defaultDish;
-      const imageUrl =
+      const rawImage =
         chosenFood?.thumbnail ||
         (Array.isArray(chosenFood?.gallery) && chosenFood.gallery[0]) ||
         slot.fallbackImg;
+      const imageUrl = toFrontendApiAssetUrl(rawImage, slot.fallbackImg);
 
       return {
         id: slot.id,
@@ -199,6 +238,7 @@ export default function MealTimeJourneySection() {
         time: displayTime,
         note: slot.note,
         img: imageUrl,
+        fallbackImg: slot.fallbackImg,
         uuid: chosenFood?.uuid ?? null,
         price: chosenFood?.price != null ? `$${chosenFood.price}` : null,
         storeName: chosenFood?.store?.name || chosenFood?.store?.localName || null,
@@ -731,14 +771,10 @@ export default function MealTimeJourneySection() {
                 transition={{ duration: 0.45, ease: "easeOut" }}
                 className="absolute inset-0 h-full w-full"
               >
-                <Image
+                <MealDishImage
                   src={currentActiveMeal.img}
                   alt={currentActiveMeal.dish}
-                  fill
-                  unoptimized
-                  priority
-                  sizes="(max-width: 768px) 360px, 420px"
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  fallbackSrc={currentActiveMeal.fallbackImg}
                 />
               </motion.div>
 

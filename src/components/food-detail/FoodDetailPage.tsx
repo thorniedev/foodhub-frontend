@@ -2173,7 +2173,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               <StatTile
                 icon={<MdOutlineInventory2 />}
-                value={`${food.nutrition.calories} kcal`}
+                value={
+                  food.nutrition?.calories != null
+                    ? `${food.nutrition.calories} kcal`
+                    : "0"
+                }
                 label="កាឡូរី"
               />
             </div>
@@ -2425,10 +2429,34 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               {[
-                { label: "Calories", value: `${food.nutrition.calories} kcal` },
-                { label: "Protein", value: `${food.nutrition.proteinGrams} g` },
-                { label: "Carbs", value: `${food.nutrition.carbsGrams} g` },
-                { label: "Fat", value: `${food.nutrition.fatGrams} g` },
+                {
+                  label: "Calories",
+                  value:
+                    food.nutrition?.calories != null
+                      ? `${food.nutrition.calories} kcal`
+                      : "0",
+                },
+                {
+                  label: "Protein",
+                  value:
+                    food.nutrition?.proteinGrams != null
+                      ? `${food.nutrition.proteinGrams} g`
+                      : "0 g",
+                },
+                {
+                  label: "Carbs",
+                  value:
+                    food.nutrition?.carbsGrams != null
+                      ? `${food.nutrition.carbsGrams} g`
+                      : "0 g",
+                },
+                {
+                  label: "Fat",
+                  value:
+                    food.nutrition?.fatGrams != null
+                      ? `${food.nutrition.fatGrams} g`
+                      : "0 g",
+                },
               ].map((nutrition) => (
                 <div key={nutrition.label} className={TILE}>
                   <p className={TEXT_LABEL}>{nutrition.label}</p>
