@@ -1,6 +1,22 @@
-"use client";
-
+import type { Metadata } from "next";
 import FoodNavTabs from "@/components/food-page/FoodNavTabs";
+import { SITE_URL } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "ស្វែងរកមុខម្ហូប - Search Foods & Menu Items",
+  description:
+    "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ ហាងអាហារ និងការណែនាំពិសេសដែលត្រូវនឹងចំណូលចិត្តរបស់អ្នកនៅ FoodHub Cambodia.",
+  alternates: {
+    canonical: `${SITE_URL}/menu`,
+  },
+  openGraph: {
+    title: "ស្វែងរកមុខម្ហូប - Search Foods | FoodHub",
+    description:
+      "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ ហាងអាហារ និងការណែនាំពិសេសដែលត្រូវនឹងចំណូលចិត្តរបស់អ្នកនៅ FoodHub Cambodia.",
+    url: `${SITE_URL}/menu`,
+    type: "website",
+  },
+};
 
 export default function FoodLayout({
   children,

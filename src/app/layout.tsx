@@ -5,6 +5,8 @@ import "./globals.css";
 import Providers from "@/app/store/Providers";
 import Preloader from "@/components/ui/Preloader";
 import PWARegister from "@/components/providers/PWARegister";
+import JsonLd from "@/components/common/JsonLd";
+import { generateWebSiteSearchJsonLd } from "@/lib/seo";
 
 /* =========================================================
    LOCAL GOOGLE SANS FONT
@@ -197,6 +199,8 @@ export default function RootLayout({
         suppressHydrationWarning
         className="flex min-h-full flex-col overflow-x-hidden bg-white font-sans text-slate-900 antialiased transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100"
       >
+        <JsonLd data={generateWebSiteSearchJsonLd()} />
+
         <PWARegister />
 
         <Preloader />
