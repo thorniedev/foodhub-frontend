@@ -853,7 +853,7 @@ export default function FoodCard({ food }: FoodCardProps) {
               h-[115px]
               sm:h-[180px]
               w-fullff
-              rounded-[12px]
+              rounded-[12px] max-sm:rounded-[8px]
               sm:rounded-[16px]
               border
               border-gray-100
@@ -877,7 +877,7 @@ export default function FoodCard({ food }: FoodCardProps) {
               toggleFavorite();
             }}
             className={`
-              absolute right-2 top-2 z-10
+              absolute right-1 top-1 z-10
               flex h-7 w-7 sm:h-8 sm:w-8
               items-center justify-center
               rounded-full
@@ -905,16 +905,16 @@ export default function FoodCard({ food }: FoodCardProps) {
         <div className="flex shrink-0 flex-col gap-1.5 sm:gap-2 pt-2">
           {/* STORE */}
 
-          <div className="flex items-center justify-between gap-1 text-secondary-500 dark:text-secondary-400 w-full overflow-hidden text-xs sm:text-sm">
-            <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1 sm:gap-6 text-secondary-500 dark:text-secondary-400 w-full overflow-hidden text-xs sm:text-sm">
+            <div className="flex items-center gap-1 sm:gap-1 flex-1 min-w-0">
               <FaStore className="shrink-0 text-xs sm:text-lg" />
-              <p className="truncate  text-xs sm:text-lg ">
+              <p className="truncate pt-[2px] text-xs sm:text-lg ">
                 {food.store?.name || "Unknown store"}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <FaClock className="text-[10px] sm:text-lg" />
-              <p className="whitespace-nowrap mt-[2px] text-[10px] sm:text-lg">
+              <p className="whitespace-nowrap mt-[2px] text-[10px] sm:text-sm">
                 {food.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
               </p>
             </div>
@@ -1047,7 +1047,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                         px-2
                         py-1
                         text-center
-                        text-sm
+                        text-sm max-sm:text-[8px]
                         text-gray-100
                       "
                   >
@@ -1070,10 +1070,10 @@ export default function FoodCard({ food }: FoodCardProps) {
                       whitespace-nowrap
                       rounded-full
                       bg-primary-800
-                      px-2
+                      px-2 
                       py-1
                       text-center
-                      text-sm
+                      text-sm max-sm:text-[8px]
                       text-gray-100
                     "
                 >
@@ -1096,7 +1096,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                     bg-gray-100
                     py-1
                     text-center
-                    text-sm
+                    text-sm max-sm:text-[8px]
                     font-medium
                     text-gray-600
                     dark:bg-gray-800
@@ -1129,7 +1129,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                     px-2
                     py-1
                     text-center
-                    text-sm
+                    text-sm max-sm:text-[12px]
                     text-gray-100
                   "
                 >
