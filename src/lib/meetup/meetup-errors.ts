@@ -68,6 +68,18 @@ const MEETUP_ERROR_RULES: ReadonlyArray<{
     match: /either meetupuuid or sharetoken/i,
     message: "តំណអញ្ជើញមិនត្រឹមត្រូវទេ។",
   },
+  {
+    /* The recommendation session hit a database constraint (HTTP 409). */
+    match: /conflicts with existing data|data_integrity_violation/i,
+    message:
+      "FoodHub មិនអាចបង្កើតបញ្ជីម្ហូបបានទេ ដោយសារទិន្នន័យជាន់គ្នា។ សូមចុច ផ្ទុកឡើងវិញ។",
+  },
+  {
+    /* A room profile the viewer neither owns nor is friends with. */
+    match: /does not own this profile/i,
+    message:
+      "អ្នកមិនអាចប្រើប្រវត្តិរូបរបស់សមាជិកផ្សេងបានទេ។ FoodHub នឹងប្រើប្រវត្តិរូបរបស់អ្នកជំនួស។",
+  },
 ];
 
 /**

@@ -868,7 +868,7 @@ export default function HostMeetupCreate() {
               <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-950/60 dark:text-primary-400">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
-              <DialogTitle className="text-xl font-bold leading-normal text-slate-900 dark:text-white sm:text-2xl">
+              <DialogTitle className="text-xl! font-bold leading-normal text-slate-900 dark:text-white sm:text-2xl!">
                 បង្កើតការណាត់ជួបជោគជ័យ!
               </DialogTitle>
               <DialogDescription className="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">

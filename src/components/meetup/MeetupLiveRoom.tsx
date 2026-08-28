@@ -278,9 +278,9 @@ export default function MeetupLiveRoom({
   const myParticipantUuid = activeSession?.participantUuid ?? null;
 
   /*
-   * Everyone in the room votes on the same dishes, so the slate is requested
-   * from the meetup's own profiles rather than the viewer's. Identical inputs
-   * make the backend return an identical ranking to every client.
+   * Everyone in the room should vote on the same dishes, so the preferred
+   * slate is requested from the meetup's own profiles rather than the
+   * viewer's: identical inputs make the backend return an identical ranking.
    */
   const meetupProfileUuids = useMemo(
     () => collectMeetupProfileUuids(participants),
@@ -367,74 +367,170 @@ export default function MeetupLiveRoom({
     );
   }, [tally?.tally, tally?.winnerUuid]);
 
-  const missingGroupProfiles =
-    meetupProfileUuids.length === 0 && !isLoadingProfiles && Boolean(group);
+  /* Profiles the viewer owns are always accepted by the session endpoint. */
+  const ownProfileUuids = useMemo(() => {
+    const profiles = (profilePage?.contents ?? []).filter(
+      (profile) => profile.isActive && profile.uuid,
+    );
+
+    const preferred = profiles.find((profile) => profile.isDefault) ?? profiles[0];
+
+    return preferred?.uuid ? [preferred.uuid] : [];
+  }, [profilePage?.contents]);
+
+  const hasNoUsableProfile =
+    meetupProfileUuids.length === 0 &&
+    ownProfileUuids.length === 0 &&
+    !isLoadingProfiles &&
+    Boolean(group);
 
   const effectiveRecommendationError =
     recommendationError ||
-    (missingGroupProfiles
-      ? "មិនមានប្រវត្តិរូប FoodHub សកម្មក្នុងបន្ទប់នេះទេ។ សូមឲ្យសមាជិកដែលមានគណនីចូលរួម ដើម្បីទទួលការណែនាំដែលមានសុវត្ថិភាព។"
+    (hasNoUsableProfile
+      ? "មិនមានប្រវត្តិរូប FoodHub សកម្មសម្រាប់បង្កើតបញ្ជីម្ហូបទេ។ សូមចូលគណនី ឬឲ្យសមាជិកដែលមានគណនីបើកបន្ទប់នេះ។"
       : null);
 
-  useEffect(() => {
-    if (!meetupUuid || !group || meetupProfileUuids.length === 0) {
-      return;
-    }
-
-    const nextKey = JSON.stringify({
-      meetupUuid,
-      profileUuids: meetupProfileUuids,
-      radius: group.searchRadiusKm,
-      refresh: recommendationRefreshKey,
-    });
-
-    if (recommendationKeyRef.current === nextKey) {
-      return;
-    }
-
-    recommendationKeyRef.current = nextKey;
-    setRecommendationError(null);
-
-    void createRecommendationSession({
-      /*
-       * GROUP requires two or more distinct profiles; a room with one profile
-       * must use SINGLE or the backend rejects the session.
-       */
-      mode: meetupProfileUuids.length >= 2 ? "GROUP" : "SINGLE",
-      requestSource: "HOMEPAGE_AUTO",
-      requestedLimit: 12,
-      searchRadiusKm: group.searchRadiusKm ?? 5,
-      currencyCode: "USD",
-      contextData: {
+  /*
+   * The request only changes when the room's inputs change, so it is keyed on
+   * primitives rather than the polled group object — otherwise every poll
+   * would look like a new request.
+   */
+  const slateKey = useMemo(
+    () =>
+      JSON.stringify({
         meetupUuid,
-        audienceMode: group.audienceMode,
-        locationMode: group.locationMode,
-        targetAreaName: group.targetAreaName,
-        targetCity: group.targetCity,
-        targetProvince: group.targetProvince,
-        targetLat: group.targetLat,
-        targetLng: group.targetLng,
-      },
-      profiles: meetupProfileUuids.map((profileUuid, index) => ({
-        profileId: profileUuid,
-        isPrimary: index === 0,
-      })),
-    })
-      .unwrap()
-      .then(setRecommendationSession)
-      .catch((error) => {
-        console.error("Meetup recommendation request failed:", error);
-        recommendationKeyRef.current = "";
+        meetupProfileUuids,
+        ownProfileUuids,
+        radius: group?.searchRadiusKm ?? null,
+        refresh: recommendationRefreshKey,
+      }),
+    [
+      meetupUuid,
+      meetupProfileUuids,
+      ownProfileUuids,
+      group?.searchRadiusKm,
+      recommendationRefreshKey,
+    ],
+  );
+
+  const groupContext = useMemo(
+    () => ({
+      audienceMode: group?.audienceMode,
+      locationMode: group?.locationMode,
+      targetAreaName: group?.targetAreaName,
+      targetCity: group?.targetCity,
+      targetProvince: group?.targetProvince,
+      targetLat: group?.targetLat,
+      targetLng: group?.targetLng,
+      searchRadiusKm: group?.searchRadiusKm ?? 5,
+    }),
+    [group],
+  );
+
+  useEffect(() => {
+    if (!meetupUuid || !group) {
+      return;
+    }
+
+    if (recommendationKeyRef.current === slateKey) {
+      return;
+    }
+
+    recommendationKeyRef.current = slateKey;
+
+    /*
+     * The session endpoint only accepts profiles the requester owns, plus —
+     * in GROUP mode — profiles belonging to their friends. A room profile
+     * that fits neither is rejected, so the shared group slate is attempted
+     * first and the viewer's own profile is the guaranteed fallback.
+     */
+    const attempts: Array<{ uuids: string[]; mode: "GROUP" | "SINGLE" }> = [];
+
+    if (meetupProfileUuids.length >= 2) {
+      attempts.push({ uuids: meetupProfileUuids, mode: "GROUP" });
+    } else if (meetupProfileUuids.length === 1) {
+      attempts.push({ uuids: meetupProfileUuids, mode: "SINGLE" });
+    }
+
+    if (ownProfileUuids.length > 0) {
+      attempts.push({ uuids: ownProfileUuids, mode: "SINGLE" });
+    }
+
+    const uniqueAttempts = attempts.filter(
+      (attempt, index) =>
+        attempts.findIndex(
+          (other) =>
+            other.mode === attempt.mode &&
+            other.uuids.join() === attempt.uuids.join(),
+        ) === index,
+    );
+
+    if (uniqueAttempts.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadSlate() {
+      let lastError: unknown = null;
+
+      for (const attempt of uniqueAttempts) {
+        try {
+          const session = await createRecommendationSession({
+            mode: attempt.mode,
+            requestSource: "HOMEPAGE_AUTO",
+            requestedLimit: 12,
+            searchRadiusKm: groupContext.searchRadiusKm,
+            currencyCode: "USD",
+            contextData: { meetupUuid, ...groupContext },
+            profiles: attempt.uuids.map((profileUuid, index) => ({
+              profileId: profileUuid,
+              isPrimary: index === 0,
+            })),
+          }).unwrap();
+
+          if (!cancelled) {
+            setRecommendationError(null);
+            setRecommendationSession(session);
+          }
+
+          return;
+        } catch (error) {
+          console.error(
+            `Meetup slate attempt failed (${attempt.mode}):`,
+            error,
+          );
+          lastError = error;
+        }
+      }
+
+      if (!cancelled) {
+        /*
+         * Every attempt failed. The key is deliberately left in place so the
+         * room does not retry on its own — the refresh button drives retries.
+         */
         setRecommendationError(
-          "FoodHub មិនអាចផ្ទុកការណែនាំដែលមានសុវត្ថិភាពសម្រាប់ការណាត់ជួបនេះបានទេ។",
+          getMeetupErrorMessage(
+            lastError,
+            "FoodHub មិនអាចផ្ទុកបញ្ជីម្ហូបសម្រាប់ការណាត់ជួបនេះបានទេ។ សូមចុច ផ្ទុកឡើងវិញ។",
+          ),
         );
-      });
+      }
+    }
+
+    void loadSlate();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     createRecommendationSession,
     group,
+    groupContext,
     meetupProfileUuids,
     meetupUuid,
-    recommendationRefreshKey,
+    ownProfileUuids,
+    slateKey,
   ]);
 
   const getVoteCount = useCallback(
@@ -856,7 +952,7 @@ export default function MeetupLiveRoom({
       <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
         <DialogContent className="max-w-xs rounded-3xl bg-white p-6 text-center dark:bg-slate-900">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            <DialogTitle className="text-xl! font-bold text-slate-900 dark:text-white">
               ស្កេនដើម្បីចូលរួម
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-500">
