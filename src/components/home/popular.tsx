@@ -244,10 +244,9 @@ export default function PopularSection() {
         max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark 
       "
         >
-          បទពិសោធន៍ថ្មីក្នុង<br className="sm:hidden max-sm:block" />
-          <motion.span className="text-secondary-500">
-            ការស្វែងរកអាហារ
-          </motion.span>
+          មុខម្ហូបនិងភេសជ្ជៈ
+          <br className="sm:hidden max-sm:block" />
+          <motion.span className="text-secondary-500">ពេញនិយម</motion.span>
         </motion.p>
 
         {/* =====================================================

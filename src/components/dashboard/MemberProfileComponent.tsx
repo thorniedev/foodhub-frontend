@@ -609,7 +609,7 @@ export default function FamilyProfiles() {
   return (
     <>
       <section className="mx-auto w-full max-w-7xl p-4 ">
-        <div className="mb-8 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm sm:p-7">
+        <div className="mb-6 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm sm:p-7">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800">

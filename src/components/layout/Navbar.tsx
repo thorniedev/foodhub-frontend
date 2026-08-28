@@ -30,7 +30,7 @@ const NAV_LINKS = [
     icon: House,
   },
   {
-    href: "/food-page",
+    href: "/menu",
     label: "ម្ហូបអាហារ",
     mobileLabel: "ម្ហូប",
     icon: UtensilsCrossed,
