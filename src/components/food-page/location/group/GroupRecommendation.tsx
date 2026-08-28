@@ -354,12 +354,12 @@ export default function GroupRecommendation({
               {activeMode === "friends" ? (
                 <>
                   <Users className="h-5 w-5 text-primary-800 dark:text-emerald-400" />
-                  <span>រៀបចំការណាត់ជួបជាមួយមិត្តភក្តិ (Friend Meetup)</span>
+                  <span>រៀបចំការណាត់ជួបជាមួយមិត្តភក្តិ</span>
                 </>
               ) : (
                 <>
                   <Link2 className="h-5 w-5 text-primary-800 dark:text-emerald-400" />
-                  <span>រៀបចំការណាត់ជួបតាមតំណភ្ញៀវ (Guest Link Meetup)</span>
+                  <span>រៀបចំការណាត់ជួបតាមតំណភ្ញៀវ</span>
                 </>
               )}
             </h3>
@@ -379,7 +379,7 @@ export default function GroupRecommendation({
         {/* Meetup Title Input */}
         <div>
           <label className="block text-sm font-semibold text-primary-900 dark:text-slate-200">
-            ឈ្មោះការណាត់ជួប (Meetup Title)
+            ឈ្មោះការណាត់ជួប
           </label>
           <input
             type="text"
@@ -414,7 +414,7 @@ export default function GroupRecommendation({
               <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500 dark:border-slate-800">
                 <p className="font-medium">អ្នកមិនទាន់មានមិត្តភក្តិក្នុងបញ្ជីនៅឡើយទេ។</p>
                 <p className="mt-1 text-xs text-gray-400">
-                  សូមចូលទៅកាន់ទំព័រ <span className="font-bold text-primary-800 dark:text-emerald-400">មិត្តភក្តិ (Friends)</span> ដើម្បីស្កេន QR ឬបន្ថែមមិត្តភក្តិ!
+                  សូមចូលទៅកាន់ទំព័រ <span className="font-bold text-primary-800 dark:text-emerald-400">មិត្តភក្តិ</span> ដើម្បីស្កេន QR ឬបន្ថែមមិត្តភក្តិ!
                 </p>
               </div>
             ) : (
@@ -467,7 +467,7 @@ export default function GroupRecommendation({
             <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
               <span className="flex items-center gap-1.5">
                 <Compass className="h-4 w-4 text-primary-800" />
-                របៀបកំណត់ទីតាំង (Location Mode)
+                របៀបកំណត់ទីតាំង
               </span>
             </div>
 
@@ -482,7 +482,7 @@ export default function GroupRecommendation({
                 }`}
               >
                 <MapPin className="h-3.5 w-3.5" />
-                <span>ចំណុចផែនទី (GPS / PIN)</span>
+                <span>ចំណុចផែនទី</span>
               </button>
 
               <button
@@ -495,7 +495,7 @@ export default function GroupRecommendation({
                 }`}
               >
                 <Compass className="h-3.5 w-3.5" />
-                <span>តំបន់គោលដៅ (Area)</span>
+                <span>តំបន់គោលដៅ</span>
               </button>
             </div>
 
@@ -529,7 +529,7 @@ export default function GroupRecommendation({
         <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
-              <span>កាំស្វែងរកហាង (Search Radius)</span>
+              <span>កាំស្វែងរកហាង</span>
               <span className="text-primary-800 dark:text-emerald-400 font-bold">{searchRadiusKm} km</span>
             </div>
             <div className="grid grid-cols-5 gap-2">
@@ -556,10 +556,10 @@ export default function GroupRecommendation({
               <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
                 <span className="flex items-center gap-1.5">
                   <Clock className="h-4 w-4 text-primary-800" />
-                  រយៈពេលបោះឆ្នោត (Duration)
+                  រយៈពេលបោះឆ្នោត
                 </span>
                 <span className="text-xs text-gray-500">
-                  {durationMinutes === 0 ? "ម្ចាស់ក្រុមបិទផ្ទាល់ (Manual)" : `${durationMinutes} នាទី`}
+                  {durationMinutes === 0 ? "បិទដោយផ្ទាល់" : `${durationMinutes} នាទី`}
                 </span>
               </div>
               <div className="grid grid-cols-4 gap-2">
@@ -567,7 +567,7 @@ export default function GroupRecommendation({
                   { label: "15 នាទី", val: 15 },
                   { label: "30 នាទី", val: 30 },
                   { label: "1 ម៉ោង", val: 60 },
-                  { label: "Manual", val: 0 },
+                  { label: "បិទផ្ទាល់", val: 0 },
                 ].map((item) => (
                   <button
                     type="button"
@@ -587,34 +587,6 @@ export default function GroupRecommendation({
           )}
         </div>
 
-        {/* Voting Method Selector */}
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-primary-900 dark:text-slate-200">
-            វិធីសាស្ត្របោះឆ្នោត (Voting Method)
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { id: "SINGLE_PICK", label: "Single Pick (👍 បោះបាន 1)" },
-              { id: "RANKED_BORDA", label: "Ranked Borda (❤️ ដាក់ចំណាត់ថ្នាក់)" },
-            ].map((m) => (
-              <button
-                type="button"
-                key={m.id}
-                onClick={() =>
-                  setVotingMethod(m.id as "SINGLE_PICK" | "RANKED_BORDA")
-                }
-                className={`rounded-2xl border p-2.5 text-center text-xs font-bold transition ${
-                  votingMethod === m.id
-                    ? "border-primary-800 bg-primary-50 text-primary-900 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-300 shadow-xs"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Submit Button */}
         <button
           type="submit"
@@ -628,7 +600,7 @@ export default function GroupRecommendation({
           ) : (
             <>
               <Utensils className="h-5 w-5" />
-              {activeMode === "friends" ? "បង្កើត Meetup ជាមួយមិត្តភក្តិ" : "បង្កើតតំណភ្ជាប់ចែករំលែក (Generate Link)"}
+              {activeMode === "friends" ? "បង្កើត Meetup ជាមួយមិត្តភក្តិ" : "បង្កើតតំណភ្ជាប់ចែករំលែក"}
             </>
           )}
         </button>
@@ -715,7 +687,7 @@ export default function GroupRecommendation({
             <div className="space-y-4 my-4">
               <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-950/60">
                 <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 mb-1.5">
-                  តំណភ្ជាប់អញ្ជើញ (Invite Link)
+                  តំណភ្ជាប់អញ្ជើញ
                 </span>
                 <p className="font-mono text-xs font-semibold text-gray-800 dark:text-slate-200 truncate bg-white dark:bg-slate-900 py-2 px-3 rounded-xl border border-gray-200/80 dark:border-slate-800 select-all">
                   {shareUrl}
@@ -755,7 +727,7 @@ export default function GroupRecommendation({
                 onClick={() => router.push(`/meet/${createdMeetup.shareToken}`)}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-800 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-primary-900 active:scale-[0.99] dark:bg-emerald-600 dark:hover:bg-emerald-700 cursor-pointer"
               >
-                <span>ចូលបន្ទប់បោះឆ្នោតផ្ទាល់ (Enter Live Room)</span>
+                <span>ចូលបន្ទប់បោះឆ្នោតផ្ទាល់</span>
                 <span className="text-lg leading-none">&rarr;</span>
               </button>
             </div>

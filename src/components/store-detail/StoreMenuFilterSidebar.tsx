@@ -25,6 +25,7 @@ import {
   toggleStoreMenuFilterValue,
   toggleStoreMenuNumericFilterValue,
 } from "@/lib/store-menu-filter";
+import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 
 import type {
   StoreMenuFilterOptions,
@@ -232,6 +233,7 @@ export default function StoreMenuFilterSidebar({
   const [collapsed, setCollapsed] = useState(false);
 
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [categoryType, setCategoryType] = useState<CategoryFilterType>("ALL");
 
   const [ingredientQuery, setIngredientQuery] = useState("");
 
@@ -253,15 +255,19 @@ export default function StoreMenuFilterSidebar({
 
   const activeFilterCount = countActiveStoreMenuFilters(filters);
 
-  const visibleCategories = useMemo(
-    () =>
-      options.categories.filter((option) =>
-        normalizeStoreMenuText(option.name).includes(
-          normalizeStoreMenuText(categoryQuery),
-        ),
-      ),
-    [categoryQuery, options.categories],
-  );
+  const visibleCategories = useMemo(() => {
+    let list = options.categories;
+    if (categoryType === "FOOD") {
+      list = list.filter((cat) => isFoodCategory(cat));
+    } else if (categoryType === "DRINK") {
+      list = list.filter((cat) => isDrinkCategory(cat));
+    }
+    if (categoryQuery.trim()) {
+      const q = normalizeStoreMenuText(categoryQuery);
+      list = list.filter((cat) => normalizeStoreMenuText(cat.name).includes(q));
+    }
+    return list;
+  }, [categoryQuery, categoryType, options.categories]);
 
   const visibleIngredients = useMemo(
     () =>
@@ -500,18 +506,62 @@ export default function StoreMenuFilterSidebar({
 
           {options.categories.length > 0 && (
             <FilterSection
-              title="ប្រភេទម្ហូប"
+              title="ប្រភេទម្ហូប និងភេសជ្ជៈ"
               icon={<MdOutlineCategory />}
               isOpen={openSections.category}
               onToggle={() => toggleSection("category")}
             >
+              {/* Category Type Pills */}
+              <div className="mb-3 flex items-center rounded-xl bg-gray-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("ALL")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "ALL"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  ទាំងអស់
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("FOOD")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "FOOD"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  🍲 ម្ហូប
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("DRINK")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "DRINK"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  🥤 ភេសជ្ជៈ
+                </button>
+              </div>
+
+              {/* Keep Searchbox */}
               <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3">
                 <IoSearchOutline className="shrink-0 text-[20px] text-gray-400" />
 
                 <input
                   value={categoryQuery}
                   onChange={(event) => setCategoryQuery(event.target.value)}
-                  placeholder="ស្វែងរកប្រភេទម្ហូប"
+                  placeholder={
+                    categoryType === "FOOD"
+                      ? "ស្វែងរកប្រភេទម្ហូប"
+                      : categoryType === "DRINK"
+                        ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
+                        : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
+                  }
                   className="w-full bg-transparent text-[18px] text-gray-600 outline-none placeholder:text-gray-400"
                 />
               </div>

@@ -206,7 +206,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     }
 
     onClose();
-    router.push(`/menu-items/${itemUuid}`);
+    router.push(`/menu/${itemUuid}`);
   };
 
   const renderPriceLevel = (level?: number) => {

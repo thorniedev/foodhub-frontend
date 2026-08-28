@@ -1,8 +1,8 @@
-// }
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import FoodCard from "@/components/dynamic-card/FoodCard";
@@ -10,6 +10,8 @@ import FoodCard from "@/components/dynamic-card/FoodCard";
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+
+const ITEMS_PER_PAGE = 8;
 
 /* =========================================================
    TYPES
@@ -275,6 +277,8 @@ export default function FilterByMealTime({
   filters = EMPTY_FILTERS,
 }: FilterByMealTimeProps) {
   const [activeTab, setActiveTab] = useState<TabId>("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   const isManualOverride = useRef(false);
 
@@ -291,14 +295,12 @@ export default function FilterByMealTime({
   } = useGetMenuItemsQuery();
 
   /* =========================================================
-     DEBUG
+     RESET PAGE ON FILTER CHANGE
   ========================================================= */
 
   useEffect(() => {
-    if (!isLoading) {
-      console.log("Menu items from API:", menuItems);
-    }
-  }, [menuItems, isLoading]);
+    setCurrentPage(1);
+  }, [activeTab, filters]);
 
   /* =========================================================
      AUTOMATIC MEAL TIME
@@ -352,15 +354,10 @@ export default function FilterByMealTime({
   const filteredFoods = useMemo(() => {
     return menuItems
       .filter((menuItem) => menuItem.availabilityStatus === "AVAILABLE")
-
       .filter((menuItem) => matchesMealTime(menuItem, activeTab))
-
       .filter((menuItem) => matchesQuery(menuItem, filters.query))
-
       .filter((menuItem) => matchesDietaryTypes(menuItem, filters.dietaryTypes))
-
       .filter((menuItem) => matchesAgeGroups(menuItem, filters.ageGroups))
-
       .filter((menuItem) => matchesCuisines(menuItem, filters.cuisines));
   }, [
     menuItems,
@@ -372,29 +369,44 @@ export default function FilterByMealTime({
   ]);
 
   /* =========================================================
-     DEBUG FILTER
+     PAGINATION
   ========================================================= */
 
-  useEffect(() => {
-    console.log("Active meal tab:", activeTab);
+  const totalPages = Math.max(1, Math.ceil(filteredFoods.length / ITEMS_PER_PAGE));
 
-    console.log("Filtered foods:", filteredFoods);
+  const paginatedFoods = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFoods.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredFoods, currentPage]);
 
-    console.log(
-      "Meal types:",
-      menuItems.map((item) => ({
-        name: item.name,
-        mealTypes: item.food?.mealTypes ?? [],
-      })),
-    );
-  }, [activeTab, filteredFoods, menuItems]);
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    if (sectionRef.current) {
+      const top = sectionRef.current.getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
+  const visiblePages = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 2) {
+      return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+  }, [currentPage, totalPages]);
 
   /* =========================================================
      RENDER
   ========================================================= */
 
   return (
-    <div className="w-full">
+    <div ref={sectionRef} className="w-full">
       {/* =====================================================
           TITLE
       ===================================================== */}
@@ -434,7 +446,7 @@ export default function FilterByMealTime({
       ===================================================== */}
 
       <div className="container mx-auto max-w-7xl px-4">
-        <div className="flex gap-8 overflow-x-auto border-b border-gray-200">
+        <div className="flex gap-8 overflow-x-auto border-b border-gray-200 dark:border-slate-800">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
 
@@ -444,13 +456,12 @@ export default function FilterByMealTime({
                 type="button"
                 onClick={() => {
                   isManualOverride.current = true;
-
                   setActiveTab(tab.id);
                 }}
                 className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
                   isActive
-                    ? "text-primary-700 dark:text-[#22a447]"
-                    : "text-gray-400 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-400"
+                    ? "text-primary-700 dark:text-emerald-400"
+                    : "text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
                 }`}
               >
                 {tab.label}
@@ -458,7 +469,7 @@ export default function FilterByMealTime({
                 {isActive && (
                   <motion.div
                     layoutId="active-meal-tab-underline"
-                    className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700"
+                    className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700 dark:bg-emerald-500"
                     transition={{
                       type: "spring",
                       stiffness: 500,
@@ -476,12 +487,12 @@ export default function FilterByMealTime({
           FOOD GRID
       ===================================================== */}
 
-      <div className="container mx-auto max-w-7xl  sm:pb-6 sm:px-4 px-3.5">
+      <div className="container mx-auto max-w-7xl sm:pb-6 sm:px-4 px-3.5">
         <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {/* Loading */}
 
           {(isLoading || isFetching) && menuItems.length === 0 && (
-            <p className="col-span-full py-10 text-center text-gray-400">
+            <p className="col-span-full py-10 text-center text-gray-400 dark:text-slate-500">
               កំពុងផ្ទុក...
             </p>
           )}
@@ -519,7 +530,7 @@ export default function FilterByMealTime({
                 exit={{
                   opacity: 0,
                 }}
-                className="col-span-full py-10 text-center text-gray-400"
+                className="col-span-full py-10 text-center text-gray-400 dark:text-slate-500"
               >
                 រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
               </motion.p>
@@ -527,7 +538,7 @@ export default function FilterByMealTime({
 
             {!isLoading &&
               !isError &&
-              filteredFoods.map((food) => (
+              paginatedFoods.map((food) => (
                 <motion.div
                   layout
                   key={food.uuid}
@@ -553,6 +564,71 @@ export default function FilterByMealTime({
               ))}
           </AnimatePresence>
         </div>
+
+        {/* =====================================================
+            PAGINATION CONTROLS
+        ===================================================== */}
+
+        {!isLoading && !isError && totalPages > 1 && (
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6">
+            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
+              បង្ហាញ <span className="font-semibold text-primary-800 dark:text-emerald-400">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="font-semibold text-primary-800 dark:text-emerald-400">{Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}</span> នៃ <span className="font-semibold text-primary-800 dark:text-emerald-400">{filteredFoods.length}</span> មុខម្ហូប
+            </p>
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Previous page"
+              >
+                <IoChevronBackOutline className="text-[18px]" />
+              </button>
+
+              {visiblePages.map((page, idx) => {
+                if (page === "...") {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="flex h-10 w-8 items-center justify-center text-sm font-semibold text-gray-400 dark:text-slate-500"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+
+                const pageNum = Number(page);
+                const isSelected = pageNum === currentPage;
+
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`flex h-10 min-w-10 items-center justify-center rounded-xl px-2 text-sm font-bold transition ${
+                      isSelected
+                        ? "bg-primary-800 text-white shadow-sm dark:bg-emerald-600"
+                        : "border border-gray-200 bg-white text-gray-700 hover:border-primary-700 hover:bg-primary-50/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Next page"
+              >
+                <IoChevronForwardOutline className="text-[18px]" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

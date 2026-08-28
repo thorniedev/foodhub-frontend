@@ -1,166 +1,215 @@
 "use client";
 
+import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
-type AgeGroup = {
+interface AgeGroupConfig {
   id: string;
+  code: string;
+  name: string;
+  range: string;
   label: string;
-  dishCount: number;
-  icon: React.ReactNode;
-};
+  fallbackImage: string;
+  keywords: string[];
+}
 
-const ageGroups: AgeGroup[] = [
+const STANDARD_AGE_GROUPS: AgeGroupConfig[] = [
+  {
+    id: "toddler",
+    code: "TODDLER",
+    name: "កុមារតូច",
+    range: "(0-2)",
+    label: "កុមារតូច (0-2)",
+    fallbackImage: "/Image/food-picture/food 31.jpg",
+    keywords: ["កុមារតូច", "toddler", "infant", "0-2"],
+  },
   {
     id: "children",
-    label: "កុមារ",
-    dishCount: 236,
-    icon: <BabyIcon />,
+    code: "CHILDREN",
+    name: "កុមារ",
+    range: "(3-12)",
+    label: "កុមារ (3-12)",
+    fallbackImage: "/Image/food-picture/food-20.jpg",
+    keywords: ["កុមារ", "child", "children", "kid", "3-12"],
+  },
+  {
+    id: "youth",
+    code: "YOUTH",
+    name: "យុវវ័យ",
+    range: "(13-17)",
+    label: "យុវវ័យ (13-17)",
+    fallbackImage: "/Image/food-picture/drink 1.jpg",
+    keywords: ["យុវវ័យ", "យុវជន", "youth", "teen", "teenager", "13-17"],
   },
   {
     id: "adults",
-    label: "យុវវ័យ និងមនុស្សពេញវ័យ",
-    dishCount: 496,
-    icon: <AdultIcon />,
+    code: "ADULT",
+    name: "មនុស្សពេញវ័យ",
+    range: "(18-59)",
+    label: "មនុស្សពេញវ័យ (18-59)",
+    fallbackImage: "/Image/food-picture/food-21.webp",
+    keywords: ["មនុស្សពេញវ័យ", "adult", "adults", "18-59"],
   },
   {
     id: "elderly",
-    label: "មនុស្សវ័យចំណាស់",
-    dishCount: 386,
-    icon: <ElderlyIcon />,
+    code: "SENIOR",
+    name: "មនុស្សវ័យចំណាស់",
+    range: "(60+)",
+    label: "មនុស្សវ័យចំណាស់ (60+)",
+    fallbackImage: "/Image/food-picture/card 2.jpg",
+    keywords: ["មនុស្សវ័យចំណាស់", "វ័យចំណាស់", "senior", "elderly", "60+"],
   },
 ];
 
-export default function MealsByAgeSection() {
-  return (
-    <section className="relative w-full  ">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-        {/* Decorative arrow - top left */}
+interface AgeCardDisplay {
+  id: string;
+  name: string;
+  range: string;
+  label: string;
+  dishCount: number;
+  image: string;
+  fallbackImage: string;
+  dishName?: string;
+  href: string;
+}
 
+export default function MealsByAgeSection() {
+  const { data: menuItems = [], isLoading } = useGetMenuItemsQuery();
+  const [randomSeed, setRandomSeed] = useState<number>(() => Date.now());
+
+  // Randomize selected dishes on mount/update
+  useEffect(() => {
+    setRandomSeed(Date.now());
+  }, [menuItems.length]);
+
+  const ageCards = useMemo<AgeCardDisplay[]>(() => {
+    return STANDARD_AGE_GROUPS.map((group) => {
+      // Find all dishes matching this age group
+      const matchingFoods = menuItems.filter((item: CatalogMenuItem) => {
+        const itemAgeGroups = Array.isArray(item.food?.ageGroups)
+          ? item.food.ageGroups
+          : [];
+
+        if (itemAgeGroups.length === 0) return false;
+
+        return itemAgeGroups.some((ag) => {
+          const agCode = String(ag.code || "").trim().toLowerCase();
+          const agName = String(ag.name || "").trim().toLowerCase();
+
+          return group.keywords.some(
+            (k) => agCode.includes(k) || agName.includes(k),
+          );
+        });
+      });
+
+      const dishCount = matchingFoods.length;
+
+      // Select a random dish from matching items if available
+      let selectedDish: CatalogMenuItem | null = null;
+      if (matchingFoods.length > 0) {
+        const randomIndex = Math.floor(Math.random() * matchingFoods.length);
+        selectedDish = matchingFoods[randomIndex] || matchingFoods[0];
+      }
+
+      const rawImg =
+        selectedDish?.thumbnail ||
+        selectedDish?.food?.category?.code ||
+        group.fallbackImage;
+
+      const image = toFrontendApiAssetUrl(
+        typeof rawImg === "string" ? rawImg : group.fallbackImage,
+        group.fallbackImage,
+      );
+
+      return {
+        id: group.id,
+        name: group.name,
+        range: group.range,
+        label: group.label,
+        dishCount,
+        image,
+        fallbackImage: group.fallbackImage,
+        dishName: selectedDish?.localName || selectedDish?.name,
+        href: `/menu?ageGroups=${encodeURIComponent(group.name)}`,
+      };
+    });
+  }, [menuItems, randomSeed]);
+
+  return (
+    <section className="relative w-full py-12 sm:py-16">
+      <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <section className="flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
-          <p className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
+        <section className="container mx-auto flex max-w-7xl flex-col items-center justify-center max-md:gap-6 md:gap-12.5">
+          <p className="py-2 text-center text-2xl font-semibold text-primary-800 dark:text-primary-dark max-md:text-2xl md:text-4xl lg:text-6xl">
             ចំណីអាហារ
             <span className="text-secondary-500">ទៅតាមវ័យ</span>
           </p>
 
-          <p className="lg:text-[24px] md:text-[20px] text-center font-light text-gray-700 dark:text-gray-100 max-md:text-[16px]">
+          <p className="text-center text-[16px] font-light text-gray-700 dark:text-gray-100 md:text-[20px] lg:text-[24px]">
             ណែនាំមុខម្ហូបដែលសាកសមនឹងតម្រូវការអាហារូបត្ថម្ភ
-            <br className="lg:block max-md:hidden" />
+            <br className="max-md:hidden lg:block" />
             និងរបៀបរស់នៅរបស់មនុស្សគ្រប់វ័យ ចាប់ពីកុមារ មនុស្សពេញវ័យ
             រហូតដល់មនុស្សវ័យចំណាស់
           </p>
         </section>
 
-        {/* Cards grid */}
-        <div className="mt-12 py-0.5 sm:mt-14 lg:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
-          {ageGroups.map((group, i) => (
+        {/* 5 Cards Grid */}
+        <div className="mt-10 grid grid-cols-2 gap-3.5 py-0.5 sm:mt-14 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-5 lg:gap-5">
+          {ageCards.map((group, i) => (
             <motion.div
               key={group.id}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: i * 0.12, ease: "easeOut" }}
-              whileHover={{ y: -4 }}
-              className="group flex flex-col items-center text-center rounded-[2rem] border border-slate-200/80
-                         bg-white px-6 py-10 sm:py-12 shadow-sm hover:shadow-lg
-                         transition-shadow duration-300 cursor-pointer
-                         sm:[&:last-child]:col-span-2 lg:[&:last-child]:col-span-1"
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
+              whileHover={{ y: -6 }}
+              className="group flex cursor-pointer flex-col items-center justify-between rounded-[2rem] border border-slate-200/80 bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6"
             >
-              <div
-                className="flex h-32 w-32 sm:h-36 sm:w-36 items-center justify-center rounded-full
-                           bg-emerald-100/80 transition-transform duration-300
-                           group-hover:scale-105"
-              >
-                {/* {group.icon} */}
-              </div>
+              <Link href={group.href} className="flex h-full w-full flex-col items-center">
+                {/* Dynamic Image in Circle */}
+                <div
+                  className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-[3px] border-emerald-100 bg-emerald-50/80 shadow-inner transition-transform duration-500 group-hover:scale-105 dark:border-emerald-900/50 dark:bg-slate-800 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
+                >
+                  <Image
+                    src={group.image}
+                    alt={group.dishName || group.label}
+                    fill
+                    unoptimized
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (target.src !== group.fallbackImage) {
+                        target.src = group.fallbackImage;
+                      }
+                    }}
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  />
+                </div>
 
-              <h3 className="mt-6 text-lg sm:text-xl font-bold text-primary-800 dark:text-primary-dark">
-                {group.label}
-              </h3>
+                {/* Age Group Label with neat hierarchy and no awkward wrapping */}
+                <div className="mt-4 flex w-full flex-col items-center justify-center text-center">
+                  <h3 className="text-sm font-bold text-primary-800 transition-colors group-hover:text-secondary-500 dark:text-primary-dark sm:text-base lg:text-[16px] leading-snug">
+                    {group.name}
+                  </h3>
+                  <span className="mt-0.5 inline-block text-xs font-semibold text-secondary-600 dark:text-amber-400 sm:text-sm whitespace-nowrap">
+                    {group.range}
+                  </span>
+                </div>
 
-              <p className="mt-2 text-[18px]  text-slate-500">
-                ({group.dishCount} dishes)
-              </p>
+                {/* Real Dishes Count */}
+                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
+                  ({isLoading ? "..." : group.dishCount} មុខម្ហូប)
+                </p>
+              </Link>
             </motion.div>
           ))}
         </div>
-
-        {/* Decorative arrow - bottom right */}
       </div>
     </section>
   );
 }
 
-/* ---------------- Icons (line-art style, matching the reference) ---------------- */
-
-function BabyIcon() {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      className="h-16 w-16 sm:h-20 sm:w-20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="32" cy="34" r="18" />
-      <path d="M22 30c1.5-6 6-10 10-12" />
-      <path d="M32 18c3-3 8-3 8 2" />
-      <circle cx="26" cy="32" r="0.8" fill="currentColor" />
-      <path d="M23 35a4 4 0 0 0 6 0" />
-      <path d="M35 35a4 4 0 0 0 6 0" />
-      <path d="M28 41a5 5 0 0 0 8 0" />
-      <path d="M14 32c-2 0-3.5 1.5-3.5 3.5S12 39 14 39" />
-      <path d="M50 32c2 0 3.5 1.5 3.5 3.5S52 39 50 39" />
-    </svg>
-  );
-}
-
-function AdultIcon() {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      className="h-16 w-16 sm:h-20 sm:w-20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="32" cy="20" r="9" />
-      <path d="M20 22c0-4 2-9 5-11" />
-      <path d="M39 22c1-3 1-8-1-11" />
-      <path d="M24 15a10 10 0 0 1 16 0" />
-      <circle cx="28" cy="20" r="0.8" fill="currentColor" />
-      <circle cx="36" cy="20" r="0.8" fill="currentColor" />
-      <path d="M28 24a6 6 0 0 0 8 0" />
-      <path d="M14 52c0-9 8-16 18-16s18 7 18 16" />
-      <path d="M26 36l6 6 6-6" />
-    </svg>
-  );
-}
-
-function ElderlyIcon() {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      className="h-16 w-16 sm:h-20 sm:w-20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="32" cy="21" r="9" />
-      <path d="M23 18c0-6 4-10 9-10s9 4 9 10" />
-      <path d="M23 20c3 1 15 1 18 0" />
-      <rect x="25" y="22" width="6" height="3" rx="1.5" />
-      <rect x="33" y="22" width="6" height="3" rx="1.5" />
-      <path d="M31 23h2" />
-      <path d="M28 27a6 6 0 0 0 8 0" />
-      <path d="M14 52c0-9 8-16 18-16s18 7 18 16" />
-      <path d="M42 40c3 2 5 6 4 10" />
-    </svg>
-  );
-}

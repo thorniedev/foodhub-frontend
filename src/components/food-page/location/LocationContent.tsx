@@ -899,6 +899,36 @@ export default function LocationContent({
                     />
                   </div>
 
+                  {/* Search Radius for "For Me" mode */}
+                  <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
+                    <div className="flex items-center justify-between text-sm sm:text-base font-semibold text-primary-900 dark:text-slate-200">
+                      <span className="font-bold">កាំស្វែងរកហាង</span>
+                      <span className="text-primary-800 dark:text-emerald-400 font-bold">{singleRadiusKm} km</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5].map((r) => (
+                        <button
+                          type="button"
+                          key={r}
+                          onClick={() => {
+                            setSelectedRadiusKm(r);
+                            setFoodFilters((prev) => ({
+                              ...prev,
+                              maximumDistanceKm: r,
+                            }));
+                          }}
+                          className={`rounded-xl py-2.5 text-xs sm:text-sm font-bold transition ${
+                            singleRadiusKm === r
+                              ? "bg-primary-800 text-white shadow-xs dark:bg-emerald-700"
+                              : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-300"
+                          }`}
+                        >
+                          {r} km
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <SingleRecommendation
                     /* Same runtime shape, declared against @/types/manu1. */
                     menuItems={

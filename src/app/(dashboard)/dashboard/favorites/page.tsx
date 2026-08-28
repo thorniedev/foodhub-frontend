@@ -15,16 +15,12 @@ import {
   Layers,
 } from "lucide-react";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import { useGetMenuItemsQuery, useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import { useGetStoresQuery } from "@/app/store/locationApi";
+import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import type { BookmarkResponse } from "@/types/interaction";
-
-function getMediaUrl(value: string | null | undefined): string {
-  if (!value) return "/Image/default-food.png";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  if (value.startsWith("/api/v1/")) return `/api/${value.slice("/api/v1/".length)}`;
-  if (value.startsWith("/")) return value;
-  return `/${value}`;
-}
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import type { FoodStore } from "@/types/store-page";
 
 function formatDate(dateStr?: string | null): string {
   if (!dateStr) return "ថ្មីៗនេះ";
@@ -43,29 +39,51 @@ function formatDate(dateStr?: string | null): string {
 function DishBookmarkCard({
   bookmark,
   onRemove,
+  allMenuItems,
 }: {
   bookmark: BookmarkResponse;
   onRemove: (uuid: string) => void;
+  allMenuItems: CatalogMenuItem[];
 }) {
   const menuItemUuid = bookmark.menuItemUuid || bookmark.foodUuid || "";
-  const { data: itemDetail, isLoading } = useGetMenuItemByUuidQuery(menuItemUuid, {
+  const { data: itemDetail } = useGetMenuItemByUuidQuery(menuItemUuid, {
     skip: !menuItemUuid,
   });
 
+  const cachedItem = allMenuItems.find(
+    (m) =>
+      m.uuid === menuItemUuid ||
+      m.food?.uuid === menuItemUuid ||
+      m.name === menuItemUuid ||
+      m.localName === menuItemUuid,
+  );
+
   const title =
-    itemDetail?.localName || itemDetail?.name || "មុខម្ហូប";
-  const price = itemDetail?.price != null ? `$${Number(itemDetail.price).toFixed(2)}` : null;
-  const storeName = itemDetail?.store?.name || null;
-  const thumbnail = itemDetail?.thumbnail || "/Image/default-food.png";
+    itemDetail?.localName ||
+    itemDetail?.name ||
+    cachedItem?.localName ||
+    cachedItem?.name ||
+    "មុខម្ហូប";
+
+  const rawPrice = itemDetail?.price ?? cachedItem?.price;
+  const price = rawPrice != null ? `$${Number(rawPrice).toFixed(2)}` : null;
+
+  const storeName =
+    itemDetail?.store?.name || cachedItem?.store?.name || null;
+
+  const rawThumbnail =
+    itemDetail?.thumbnail || cachedItem?.thumbnail || "/Image/default-food.png";
+  const thumbnail = toFrontendApiAssetUrl(rawThumbnail, DEFAULT_FOOD_IMAGE);
 
   return (
     <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
       <div className="flex items-center gap-4">
         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
           <Image
-            src={getMediaUrl(thumbnail)}
+            src={thumbnail}
             alt={title}
             fill
+            unoptimized
             sizes="80px"
             className="object-cover transition duration-300 group-hover:scale-105"
           />
@@ -82,7 +100,7 @@ function DishBookmarkCard({
           </div>
 
           <h3 className="mt-1 truncate text-base font-bold text-slate-900 dark:text-white">
-            {isLoading ? "កំពុងផ្ទុកមុខម្ហូប..." : title}
+            {title}
           </h3>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
@@ -102,7 +120,7 @@ function DishBookmarkCard({
       <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800 sm:mt-0 sm:border-0 sm:pt-0">
         {menuItemUuid && (
           <Link
-            href={`/menu-items/${menuItemUuid}`}
+            href={`/menu/${menuItemUuid}`}
             className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white"
           >
             <ExternalLink className="h-3.5 w-3.5" /> មើល
@@ -125,18 +143,38 @@ function DishBookmarkCard({
 function StoreBookmarkCard({
   bookmark,
   onRemove,
+  allStores,
 }: {
   bookmark: BookmarkResponse;
   onRemove: (uuid: string) => void;
+  allStores: FoodStore[];
 }) {
   const storeUuid = bookmark.storeUuid || "";
+  const store = allStores.find((s) => s.uuid === storeUuid);
+  const storeName = store?.storeName || "ហាង";
+  const storeLogo = toFrontendApiAssetUrl(
+    store?.logoMediaUuid ? `/api/v1/media/${store.logoMediaUuid}` : undefined,
+    "/Image/default-food.png",
+  );
 
   return (
     <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-emerald-500/40 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
       <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-          <Store className="h-8 w-8" />
-        </div>
+        {store?.logoMediaUuid ? (
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-emerald-50">
+            <Image
+              src={storeLogo}
+              alt={storeName}
+              fill
+              unoptimized
+              className="object-cover"
+            />
+          </div>
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+            <Store className="h-8 w-8" />
+          </div>
+        )}
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -149,14 +187,15 @@ function StoreBookmarkCard({
           </div>
 
           <h3 className="mt-1 truncate text-base font-bold text-slate-900 dark:text-white">
-            ហាង
+            {storeName}
           </h3>
 
-          {bookmark.notes && (
-            <p className="mt-1 text-xs italic text-slate-400">
-              📝 {bookmark.notes}
-            </p>
-          )}
+          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            {store?.addressLine && <span>📍 {store.addressLine}</span>}
+            {bookmark.notes && (
+              <span className="italic text-slate-400">📝 {bookmark.notes}</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -186,6 +225,8 @@ function StoreBookmarkCard({
 function FavoritesContent() {
   const [filterTab, setFilterTab] = useState<"all" | "dishes" | "stores">("all");
   const { bookmarks, loading, activeProfile, removeBookmark } = useBookmarks();
+  const { data: allMenuItems = [] } = useGetMenuItemsQuery();
+  const { data: allStores = [] } = useGetStoresQuery();
 
   const dishes = useMemo(
     () => bookmarks.filter((b) => b.menuItemUuid || b.foodUuid),
@@ -319,12 +360,14 @@ function FavoritesContent() {
                 key={bookmark.uuid}
                 bookmark={bookmark}
                 onRemove={handleRemove}
+                allStores={allStores}
               />
             ) : (
               <DishBookmarkCard
                 key={bookmark.uuid}
                 bookmark={bookmark}
                 onRemove={handleRemove}
+                allMenuItems={allMenuItems}
               />
             )
           )}

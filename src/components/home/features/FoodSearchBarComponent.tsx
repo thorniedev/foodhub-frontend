@@ -2229,7 +2229,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IoSearchOutline } from "react-icons/io5";
+import {
+  IoSearchOutline,
+  IoChevronBackOutline,
+  IoChevronForwardOutline,
+} from "react-icons/io5";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import FoodCard from "@/components/dynamic-card/FoodCard";
@@ -2781,8 +2785,11 @@ function CheckIcon({ className }: { className?: string }) {
    COMPONENT
 ========================================================= */
 
+const ITEMS_PER_PAGE = 10;
+
 export default function FoodSearchBar() {
   const [searchInput, setSearchInput] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -2795,6 +2802,11 @@ export default function FoodSearchBar() {
   const [sortBy, setSortBy] = useState<SortOption>("default");
 
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Reset to page 1 whenever filters or search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchInput, selected, sortBy]);
 
   const {
     data: menuItems = [],
@@ -3072,6 +3084,49 @@ export default function FoodSearchBar() {
 
     return sortFoods(result, sortBy);
   }, [menuItems, searchInput, groupedSelected, sortBy]);
+
+  const totalPages = Math.ceil(filteredFoods.length / ITEMS_PER_PAGE) || 1;
+
+  const paginatedFoods = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFoods.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredFoods, currentPage]);
+
+  const visiblePages = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 2) {
+      return [
+        1,
+        "...",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    }
+    return [
+      1,
+      "...",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "...",
+      totalPages,
+    ];
+  }, [currentPage, totalPages]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    setCurrentPage(page);
+    if (wrapRef.current) {
+      wrapRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const count = selected.size;
 
@@ -3550,7 +3605,7 @@ mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-col
           {!isLoading &&
             !isFetching &&
             !isError &&
-            filteredFoods.map((food) => (
+            paginatedFoods.map((food) => (
               <motion.div
                 layout
                 key={food.uuid}
@@ -3576,6 +3631,83 @@ mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-col
             ))}
         </AnimatePresence>
       </div>
+
+      {/* ===================================================
+          PAGINATION CONTROLS (10 items / page)
+      =================================================== */}
+
+      {!isLoading && !isFetching && !isError && filteredFoods.length > 0 && totalPages > 1 && (
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 px-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6">
+          <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
+            បង្ហាញ{" "}
+            <span className="font-semibold text-primary-800 dark:text-emerald-400">
+              {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+            </span>{" "}
+            -{" "}
+            <span className="font-semibold text-primary-800 dark:text-emerald-400">
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}
+            </span>{" "}
+            នៃ{" "}
+            <span className="font-semibold text-primary-800 dark:text-emerald-400">
+              {filteredFoods.length}
+            </span>{" "}
+            មុខម្ហូប
+          </p>
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              aria-label="Previous page"
+            >
+              <IoChevronBackOutline className="text-[18px]" />
+            </button>
+
+            {visiblePages.map((page, idx) => {
+              if (page === "...") {
+                return (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="flex h-10 w-8 items-center justify-center text-sm font-semibold text-gray-400 dark:text-slate-500"
+                  >
+                    ...
+                  </span>
+                );
+              }
+
+              const pageNum = Number(page);
+              const isSelected = pageNum === currentPage;
+
+              return (
+                <button
+                  key={pageNum}
+                  type="button"
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`flex h-10 min-w-10 items-center justify-center rounded-xl px-2 text-sm font-bold transition ${
+                    isSelected
+                      ? "bg-primary-800 text-white shadow-sm dark:bg-emerald-600"
+                      : "border border-gray-200 bg-white text-gray-700 hover:border-primary-700 hover:bg-primary-50/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              aria-label="Next page"
+            >
+              <IoChevronForwardOutline className="text-[18px]" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ===================================================
           MOBILE SORT OVERLAY

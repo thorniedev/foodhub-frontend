@@ -16,8 +16,8 @@ type Props = {
 function FoodCard({ food }: { food: MenuItem }) {
   return (
     <Link
-      href={`/menu-items/${food.uuid}`}
-      className="flex flex-col w-full h-full gap-4 bg-white border border-gray-200 shadow-sm rounded-[24px] p-2.5"
+      href={`/menu/${food.uuid}`}
+      className="group flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-3.5 shadow-sm hover:shadow-md transition-all duration-300"
     >
       {/* Image */}
       <div className="relative flex-1 min-h-0">

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Filter, RotateCcw, Check, Flame, DollarSign, Clock, ShieldCheck, ChevronDown, User } from "lucide-react";
+import { X, Filter, RotateCcw, Check, Flame, DollarSign, Clock, ShieldCheck, ChevronDown, User, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
+import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 import type { CustomerSearchRequest, FilterItemOption } from "@/types/search";
 
 interface DiscoveryFilterSheetProps {
@@ -66,6 +67,8 @@ export default function DiscoveryFilterSheet({
     : profileResponse?.contents ?? [];
 
   const [draft, setDraft] = useState<CustomerSearchRequest>(filters);
+  const [categoryType, setCategoryType] = useState<CategoryFilterType>("ALL");
+  const [categoryQuery, setCategoryQuery] = useState("");
 
   // Sync draft state with props when modal opens
   useEffect(() => {
@@ -73,6 +76,17 @@ export default function DiscoveryFilterSheet({
       setDraft(filters);
     }
   }, [isOpen, filters]);
+
+  const filteredCategories = (filterOptions?.categories || []).filter((cat) => {
+    if (categoryType === "FOOD" && !isFoodCategory(cat)) return false;
+    if (categoryType === "DRINK" && !isDrinkCategory(cat)) return false;
+    if (categoryQuery.trim()) {
+      return (cat.name || "")
+        .toLowerCase()
+        .includes(categoryQuery.trim().toLowerCase());
+    }
+    return true;
+  });
 
   if (!isOpen) return null;
 
@@ -232,10 +246,65 @@ export default function DiscoveryFilterSheet({
                 {filterOptions?.categories && filterOptions.categories.length > 0 && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
-                      ប្រភេទម្ហូប
+                      ប្រភេទម្ហូប និងភេសជ្ជៈ
                     </label>
-                    <div className="flex flex-wrap gap-2">
-                      {filterOptions.categories.map((cat) => {
+
+                    {/* Category Type Pills */}
+                    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setCategoryType("ALL")}
+                        className={`flex-1 py-1 rounded-lg text-xs font-semibold transition ${
+                          categoryType === "ALL"
+                            ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-white shadow-sm"
+                            : "text-slate-500 dark:text-slate-400"
+                        }`}
+                      >
+                        ទាំងអស់
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCategoryType("FOOD")}
+                        className={`flex-1 py-1 rounded-lg text-xs font-semibold transition ${
+                          categoryType === "FOOD"
+                            ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-white shadow-sm"
+                            : "text-slate-500 dark:text-slate-400"
+                        }`}
+                      >
+                        🍲 ម្ហូប
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCategoryType("DRINK")}
+                        className={`flex-1 py-1 rounded-lg text-xs font-semibold transition ${
+                          categoryType === "DRINK"
+                            ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-white shadow-sm"
+                            : "text-slate-500 dark:text-slate-400"
+                        }`}
+                      >
+                        🥤 ភេសជ្ជៈ
+                      </button>
+                    </div>
+
+                    {/* Keep Searchbox */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                      <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                      <input
+                        value={categoryQuery}
+                        onChange={(e) => setCategoryQuery(e.target.value)}
+                        placeholder={
+                          categoryType === "FOOD"
+                            ? "ស្វែងរកប្រភេទម្ហូប..."
+                            : categoryType === "DRINK"
+                              ? "ស្វែងរកប្រភេទភេសជ្ជៈ..."
+                              : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ..."
+                        }
+                        className="w-full bg-transparent text-xs text-slate-700 dark:text-slate-200 outline-none placeholder:text-slate-400"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
+                      {filteredCategories.map((cat) => {
                         const selected = draft.categoryUuids?.includes(cat.uuid);
                         return (
                           <button
@@ -252,6 +321,9 @@ export default function DiscoveryFilterSheet({
                           </button>
                         );
                       })}
+                      {filteredCategories.length === 0 && (
+                        <p className="text-xs text-slate-400 py-1">រកមិនឃើញប្រភេទដែលត្រូវគ្នា</p>
+                      )}
                     </div>
                   </div>
                 )}

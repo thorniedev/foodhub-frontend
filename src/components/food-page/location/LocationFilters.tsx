@@ -22,6 +22,7 @@ import type {
 } from "@/types/location-food-filter";
 import { DEFAULT_LOCATION_FOOD_FILTERS } from "@/types/location-food-filter";
 import { countActiveLocationFoodFilters } from "@/lib/location/location-food-filter";
+import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 
 type Props = {
   menuItems: MenuItem[];
@@ -305,6 +306,7 @@ export default function LocationFilters({
   const isDrawer = Boolean(onClose);
   const [collapsed, setCollapsed] = useState(false);
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [categoryType, setCategoryType] = useState<CategoryFilterType>("ALL");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     OPEN_SECTION_DEFAULTS,
   );
@@ -548,9 +550,19 @@ export default function LocationFilters({
     [contextualItems],
   );
 
-  const visibleCategoryOptions = categoryOptions.filter((option) =>
-    option.name.toLowerCase().includes(categoryQuery.trim().toLowerCase()),
-  );
+  const visibleCategoryOptions = useMemo(() => {
+    let list = categoryOptions;
+    if (categoryType === "FOOD") {
+      list = list.filter((opt) => isFoodCategory(opt));
+    } else if (categoryType === "DRINK") {
+      list = list.filter((opt) => isDrinkCategory(opt));
+    }
+    if (categoryQuery.trim()) {
+      const q = categoryQuery.trim().toLowerCase();
+      list = list.filter((opt) => opt.name.toLowerCase().includes(q));
+    }
+    return list;
+  }, [categoryOptions, categoryType, categoryQuery]);
 
   const activeFilterCount = countActiveLocationFoodFilters(filters);
 
@@ -728,35 +740,85 @@ export default function LocationFilters({
             </FilterSection>
 
             <FilterSection
-              title="ប្រភេទម្ហូប"
+              title="ប្រភេទម្ហូប និងភេសជ្ជៈ"
               icon={<MdOutlineCategory />}
               isOpen={openSections.category}
               onToggle={() => toggleSection("category")}
             >
+              {/* Category Type Selector */}
+              <div className="mb-3 flex items-center rounded-xl bg-gray-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("ALL")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "ALL"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  ទាំងអស់
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("FOOD")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "FOOD"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  🍲 ម្ហូប
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryType("DRINK")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                    categoryType === "DRINK"
+                      ? "bg-white text-primary-800 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800"
+                  }`}
+                >
+                  🥤 ភេសជ្ជៈ
+                </button>
+              </div>
+
+              {/* Keep Searchbox */}
               <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 transition focus-within:border-primary-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-50">
                 <IoSearchOutline className="shrink-0 text-[20px] text-gray-400" />
                 <input
                   value={categoryQuery}
                   onChange={(event) => setCategoryQuery(event.target.value)}
-                  placeholder="ស្វែងរកប្រភេទម្ហូប"
+                  placeholder={
+                    categoryType === "FOOD"
+                      ? "ស្វែងរកប្រភេទម្ហូប"
+                      : categoryType === "DRINK"
+                        ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
+                        : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
+                  }
                   className="w-full bg-transparent text-[16px] text-gray-600 outline-none placeholder:text-gray-400"
                 />
               </div>
               <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
-                {visibleCategoryOptions.map((option) => (
-                  <CheckboxOption
-                    key={option.code}
-                    label={option.name}
-                    count={option.count}
-                    checked={filters.categoryCodes.includes(option.code)}
-                    onChange={() =>
-                      update(
-                        "categoryCodes",
-                        toggleInList(filters.categoryCodes, option.code),
-                      )
-                    }
-                  />
-                ))}
+                {visibleCategoryOptions.length > 0 ? (
+                  visibleCategoryOptions.map((option) => (
+                    <CheckboxOption
+                      key={option.code}
+                      label={option.name}
+                      count={option.count}
+                      checked={filters.categoryCodes.includes(option.code)}
+                      onChange={() =>
+                        update(
+                          "categoryCodes",
+                          toggleInList(filters.categoryCodes, option.code),
+                        )
+                      }
+                    />
+                  ))
+                ) : (
+                  <p className="py-2 text-center text-xs text-gray-400">
+                    រកមិនឃើញប្រភេទដែលត្រូវគ្នា
+                  </p>
+                )}
               </div>
             </FilterSection>
 

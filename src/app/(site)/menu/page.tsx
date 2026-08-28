@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -24,6 +25,7 @@ import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useDiscoverySearchMutation, useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
+import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 import type { CustomerSearchRequest, FilterItemOption, MenuItemDiscoveryResponse, SafetyStatusType } from "@/types/search";
 import {
   useGetMemberProfileByIdQuery,
@@ -261,6 +263,60 @@ function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
   }
 
   return a.name;
+}
+
+function findMatchingAgeGroup(
+  param: string,
+  options?: FilterItemOption[],
+): FilterItemOption | undefined {
+  if (!param || !options || options.length === 0) return undefined;
+  const decoded = decodeURIComponent(param).trim().toLowerCase();
+
+  return options.find((opt) => {
+    const optName = (opt.name || "").trim().toLowerCase();
+    const optCode = (opt.code || "").trim().toLowerCase();
+    const optUuid = (opt.uuid || "").trim().toLowerCase();
+
+    if (optUuid === decoded || optCode === decoded || optName === decoded) {
+      return true;
+    }
+    if (optName.includes(decoded) || decoded.includes(optName)) {
+      return true;
+    }
+    if (
+      decoded.includes("យុវវ័យ") &&
+      (optName.includes("យុវវ័យ") || optCode.includes("youth") || decoded.includes("13-17"))
+    ) {
+      return true;
+    }
+    if (
+      decoded.includes("កុមារតូច") &&
+      (optName.includes("កុមារតូច") || optCode.includes("toddler") || decoded.includes("0-2"))
+    ) {
+      return true;
+    }
+    if (
+      decoded.includes("កុមារ") &&
+      (optName.includes("កុមារ") || optCode.includes("child") || optCode.includes("children") || decoded.includes("3-12")) &&
+      !decoded.includes("តូច") &&
+      !optName.includes("តូច")
+    ) {
+      return true;
+    }
+    if (
+      decoded.includes("ពេញវ័យ") &&
+      (optName.includes("ពេញវ័យ") || optCode.includes("adult") || decoded.includes("18-59"))
+    ) {
+      return true;
+    }
+    if (
+      (decoded.includes("ចំណាស់") || decoded.includes("60+")) &&
+      (optName.includes("ចំណាស់") || optCode.includes("senior") || optCode.includes("elderly"))
+    ) {
+      return true;
+    }
+    return false;
+  });
 }
 
 function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
@@ -513,15 +569,56 @@ function applyCustomerSearchFilters(
     // 8. Age Groups
     if (req.ageGroupUuids && req.ageGroupUuids.length > 0) {
       const ageGroups = getAgeGroups(food);
-      const matchesAge = ageGroups.some(
-        (a) =>
-          req.ageGroupUuids!.includes(a.code) ||
-          req.ageGroupUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(a.name) ||
-              normalizeText(u) === normalizeText(a.code),
-          ),
-      );
+      const matchesAge = ageGroups.some((a) => {
+        const aName = normalizeText(a.name);
+        const aCode = normalizeText(a.code);
+        return req.ageGroupUuids!.some((u) => {
+          const normU = normalizeText(u);
+          if (
+            normU === aName ||
+            normU === aCode ||
+            (a.code && req.ageGroupUuids!.includes(a.code))
+          ) {
+            return true;
+          }
+          if (aName.includes(normU) || normU.includes(aName)) {
+            return true;
+          }
+          if (
+            (normU.includes("យុវវ័យ") || normU.includes("13-17")) &&
+            (aName.includes("យុវវ័យ") || aCode.includes("youth"))
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("កុមារតូច") || normU.includes("0-2")) &&
+            (aName.includes("កុមារតូច") || aCode.includes("toddler"))
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("កុមារ") || normU.includes("3-12")) &&
+            (aName.includes("កុមារ") || aCode.includes("child") || aCode.includes("children")) &&
+            !normU.includes("តូច") &&
+            !aName.includes("តូច")
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("ពេញវ័យ") || normU.includes("18-59")) &&
+            (aName.includes("ពេញវ័យ") || aCode.includes("adult"))
+          ) {
+            return true;
+          }
+          if (
+            (normU.includes("ចំណាស់") || normU.includes("60+")) &&
+            (aName.includes("ចំណាស់") || aCode.includes("senior") || aCode.includes("elderly"))
+          ) {
+            return true;
+          }
+          return false;
+        });
+      });
       if (!matchesAge) return false;
     }
 
@@ -734,14 +831,14 @@ function FilterSection({
   children,
 }: FilterSectionProps) {
   return (
-    <div className="border-t border-gray-100 py-4 first:border-t-0 first:pt-0">
+    <div className="border-t border-gray-100 dark:border-slate-800 py-4 first:border-t-0 first:pt-0">
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between text-left"
       >
-        <span className="flex items-center gap-2 text-[18px] font-semibold text-primary-900">
-          <span className="text-[20px] text-primary-700">{icon}</span>
+        <span className="flex items-center gap-2 text-[18px] font-semibold text-primary-900 dark:text-slate-100">
+          <span className="text-[20px] text-primary-700 dark:text-emerald-400">{icon}</span>
 
           {title}
         </span>
@@ -753,7 +850,7 @@ function FilterSection({
           transition={{
             duration: 0.2,
           }}
-          className="text-gray-400"
+          className="text-gray-400 dark:text-slate-500"
         >
           <IoChevronDown className="text-[20px]" />
         </motion.span>
@@ -802,20 +899,20 @@ function CheckboxOption({
   onChange,
 }: CheckboxOptionProps) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50">
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50 dark:hover:bg-slate-800/80">
       <span className="flex min-w-0 items-center gap-3">
         <input
           type="checkbox"
           checked={checked}
           onChange={onChange}
-          className="h-4 w-4 shrink-0 accent-primary-800"
+          className="h-4 w-4 shrink-0 accent-primary-800 dark:accent-emerald-500"
         />
 
-        <span className="truncate text-[18px] text-gray-600">{label}</span>
+        <span className="truncate text-[18px] text-gray-600 dark:text-slate-300">{label}</span>
       </span>
 
       {typeof count === "number" && (
-        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[18px] text-gray-500">
+        <span className="shrink-0 rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-0.5 text-[18px] text-gray-500 dark:text-slate-400">
           {count}
         </span>
       )}
@@ -851,8 +948,8 @@ function SingleChoice<T extends string | number>({
             onClick={() => onChange(isSelected ? null : option.value)}
             className={`rounded-full border px-3 py-2 text-[18px] transition ${
               isSelected
-                ? "border-primary-800 bg-primary-800 text-white"
-                : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50"
+                ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+                : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
             {option.label}
@@ -889,6 +986,7 @@ function FilterSidebar({
 
   const [collapsed, setCollapsed] = useState(false);
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [categoryType, setCategoryType] = useState<CategoryFilterType>("ALL");
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     profile: true,
@@ -910,6 +1008,19 @@ function FilterSidebar({
     province: false,
     city: false,
   });
+
+  // Auto-expand age group section if ageGroup filter is active
+  useEffect(() => {
+    if (
+      customerSearchRequest.ageGroupUuids &&
+      customerSearchRequest.ageGroupUuids.length > 0
+    ) {
+      setOpenSections((previous) => ({
+        ...previous,
+        ageGroup: true,
+      }));
+    }
+  }, [customerSearchRequest.ageGroupUuids]);
 
   const isCollapsed = mobile ? false : collapsed;
 
@@ -967,9 +1078,19 @@ function FilterSidebar({
     (customerSearchRequest.maxPreparationTimeMinutes !== undefined ? 1 : 0) +
     (customerSearchRequest.profileUuid ? 1 : 0);
 
-  const categories = (filterOptions?.categories || []).filter((cat) =>
-    normalizeText(cat.name).includes(normalizeText(categoryQuery)),
-  );
+  const categories = useMemo(() => {
+    let list = filterOptions?.categories || [];
+    if (categoryType === "FOOD") {
+      list = list.filter((cat) => isFoodCategory(cat));
+    } else if (categoryType === "DRINK") {
+      list = list.filter((cat) => isDrinkCategory(cat));
+    }
+    if (categoryQuery.trim()) {
+      const q = normalizeText(categoryQuery);
+      list = list.filter((cat) => normalizeText(cat.name).includes(q));
+    }
+    return list;
+  }, [filterOptions?.categories, categoryType, categoryQuery]);
 
   return (
     <motion.aside
@@ -988,13 +1109,13 @@ function FilterSidebar({
       }
     >
       <div
-        className={`flex h-full flex-col overflow-hidden bg-white ${
-          mobile ? "" : "rounded-[24px] border border-gray-100 shadow-sm"
+        className={`flex h-full flex-col overflow-hidden bg-white dark:bg-slate-900 ${
+          mobile ? "" : "rounded-[24px] border border-gray-100 dark:border-slate-800 shadow-sm"
         }`}
       >
         {/* Header */}
         <div
-          className={`shrink-0 border-b border-gray-100 bg-white ${
+          className={`shrink-0 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 ${
             isCollapsed ? "p-3" : "p-5"
           }`}
         >
@@ -1012,18 +1133,18 @@ function FilterSidebar({
                   exit={{ opacity: 0, x: -8 }}
                 >
                   <div className="flex items-center gap-2">
-                    <p className="text-[26px] font-semibold text-primary-900">
+                    <p className="text-[26px] font-semibold text-primary-900 dark:text-slate-100">
                       តម្រង
                     </p>
 
                     {activeFilterCount > 0 && (
-                      <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-primary-800 px-2 text-[16px] font-semibold text-white">
+                      <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-primary-800 dark:bg-emerald-600 px-2 text-[16px] font-semibold text-white">
                         {activeFilterCount}
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-1 text-[16px] leading-7 text-gray-400">
+                  <p className="mt-1 text-[16px] leading-7 text-gray-400 dark:text-slate-400">
                     ជ្រើសរើសតាមចំណូលចិត្ត
                   </p>
                 </motion.div>
@@ -1035,7 +1156,7 @@ function FilterSidebar({
                 type="button"
                 onClick={onClose}
                 aria-label="Close food filters"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-[26px] leading-none text-gray-500 transition hover:bg-gray-100"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-slate-800 text-[26px] leading-none text-gray-500 dark:text-slate-300 transition hover:bg-gray-100 dark:hover:bg-slate-700"
               >
                 ×
               </button>
@@ -1046,7 +1167,7 @@ function FilterSidebar({
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.9 }}
                 aria-label={isCollapsed ? "Expand filters" : "Collapse filters"}
-                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300 transition hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-700 dark:hover:text-emerald-400"
               >
                 <motion.span animate={{ rotate: isCollapsed ? 180 : 0 }}>
                   <IoChevronBack className="text-[21px]" />
@@ -1056,8 +1177,8 @@ function FilterSidebar({
           </div>
 
           {!isCollapsed && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2.5">
-              <p className="text-[16px] text-gray-500">
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 dark:bg-slate-800/80 px-3 py-2.5">
+              <p className="text-[16px] text-gray-500 dark:text-slate-300">
                 {activeFilterCount} តម្រងបានជ្រើស
               </p>
 
@@ -1065,7 +1186,7 @@ function FilterSidebar({
                 type="button"
                 disabled={activeFilterCount === 0}
                 onClick={() => onSearchRequestChange({ sort: "NEWEST" })}
-                className="cursor-pointer text-[16px] font-medium text-secondary-500 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+                className="cursor-pointer text-[16px] font-medium text-secondary-500 dark:text-amber-400 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
               >
                 សម្អាតទាំងអស់
               </button>
@@ -1075,7 +1196,7 @@ function FilterSidebar({
 
         {/* Sidebar Sections */}
         {!isCollapsed && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
             {/* PROFILE SAFETY EVALUATION */}
             {memberProfiles.length > 0 && (
               <FilterSection
@@ -1084,7 +1205,7 @@ function FilterSidebar({
                 isOpen={openSections.profile}
                 onToggle={() => toggleSection("profile")}
               >
-                <p className="mb-2 text-[14px] text-gray-500">
+                <p className="mb-2 text-[14px] text-gray-500 dark:text-slate-400">
                   ជ្រើសរើសប្រវត្តិរូបដើម្បីពិនិត្យអាលែហ្ស៊ី និងធាតុផ្សំដែលហាមឃាត់៖
                 </p>
                 <select
@@ -1095,7 +1216,7 @@ function FilterSidebar({
                       profileUuid: e.target.value || undefined,
                     })
                   }
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-700"
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
                 >
                   <option value="">-- មិនជ្រើសរើសប្រវត្តិរូប --</option>
                   {memberProfiles.map((p) => (
@@ -1122,7 +1243,7 @@ function FilterSidebar({
                     sort: e.target.value,
                   })
                 }
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-700"
+                className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
               >
                 <option value="NEWEST">✨ ថ្មីបំផុត</option>
                 <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
@@ -1132,8 +1253,8 @@ function FilterSidebar({
             </FilterSection>
 
             {/* OPEN NOW */}
-            <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
-              <span className="text-[16px] font-semibold text-gray-700">
+            <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/60 p-3">
+              <span className="text-[16px] font-semibold text-gray-700 dark:text-slate-200">
                 🏪 បើកដំណើរការឥឡូវនេះ
               </span>
               <input
@@ -1145,37 +1266,87 @@ function FilterSidebar({
                     openNow: e.target.checked,
                   })
                 }
-                className="h-5 w-5 accent-primary-800 rounded cursor-pointer"
+                className="h-5 w-5 accent-primary-800 dark:accent-emerald-500 rounded cursor-pointer"
               />
             </div>
 
             {/* CATEGORY */}
             {filterOptions?.categories && filterOptions.categories.length > 0 && (
               <FilterSection
-                title="ប្រភេទម្ហូប"
+                title="ប្រភេទម្ហូប និងភេសជ្ជៈ"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.category}
                 onToggle={() => toggleSection("category")}
               >
-                <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3">
-                  <IoSearchOutline className="shrink-0 text-[20px] text-gray-400" />
+                {/* Dynamic Type Selector (All / Food / Drink) */}
+                <div className="mb-3 flex items-center rounded-xl bg-gray-100 dark:bg-slate-800 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryType("ALL")}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                      categoryType === "ALL"
+                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    ទាំងអស់
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryType("FOOD")}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                      categoryType === "FOOD"
+                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    🍲 ម្ហូប
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryType("DRINK")}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                      categoryType === "DRINK"
+                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    🥤 ភេសជ្ជៈ
+                  </button>
+                </div>
+
+                {/* Keep Searchbox */}
+                <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3">
+                  <IoSearchOutline className="shrink-0 text-[20px] text-gray-400 dark:text-slate-500" />
                   <input
                     value={categoryQuery}
                     onChange={(event) => setCategoryQuery(event.target.value)}
-                    placeholder="ស្វែងរកប្រភេទម្ហូប"
-                    className="w-full bg-transparent text-[16px] text-gray-600 outline-none placeholder:text-gray-400"
+                    placeholder={
+                      categoryType === "FOOD"
+                        ? "ស្វែងរកប្រភេទម្ហូប"
+                        : categoryType === "DRINK"
+                          ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
+                          : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
+                    }
+                    className="w-full bg-transparent text-[16px] text-gray-600 dark:text-slate-200 outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                   />
                 </div>
 
                 <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
-                  {categories.map((cat) => (
-                    <CheckboxOption
-                      key={cat.uuid}
-                      label={cat.name}
-                      checked={Boolean(customerSearchRequest.categoryUuids?.includes(cat.uuid))}
-                      onChange={() => toggleArrayItem("categoryUuids", cat.uuid)}
-                    />
-                  ))}
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <CheckboxOption
+                        key={cat.uuid}
+                        label={cat.name}
+                        checked={Boolean(customerSearchRequest.categoryUuids?.includes(cat.uuid))}
+                        onChange={() => toggleArrayItem("categoryUuids", cat.uuid)}
+                      />
+                    ))
+                  ) : (
+                    <p className="py-2 text-center text-xs text-gray-400 dark:text-slate-500">
+                      រកមិនឃើញប្រភេទដែលត្រូវគ្នា
+                    </p>
+                  )}
                 </div>
               </FilterSection>
             )}
@@ -1230,7 +1401,7 @@ function FilterSidebar({
                 isOpen={openSections.allergens}
                 onToggle={() => toggleSection("allergens")}
               >
-                <p className="mb-2 text-[14px] text-orange-600">
+                <p className="mb-2 text-[14px] text-orange-600 dark:text-orange-400">
                   មុខម្ហូបដែលមានធាតុផ្សំអាឡែស៊ីដែលបានជ្រើសរើសនឹងត្រូវដកចេញ។
                 </p>
                 <div className="space-y-1">
@@ -1264,7 +1435,7 @@ function FilterSidebar({
                       minimumPrice: e.target.value ? Number(e.target.value) : undefined,
                     })
                   }
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] text-gray-700 focus:outline-none"
+                  className="rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] text-gray-700 dark:text-slate-200 focus:outline-none"
                 />
                 <input
                   type="number"
@@ -1276,7 +1447,7 @@ function FilterSidebar({
                       maximumPrice: e.target.value ? Number(e.target.value) : undefined,
                     })
                   }
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] text-gray-700 focus:outline-none"
+                  className="rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] text-gray-700 dark:text-slate-200 focus:outline-none"
                 />
               </div>
             </FilterSection>
@@ -1311,8 +1482,8 @@ function FilterSidebar({
                       }
                       className={`p-2 rounded-xl text-[14px] font-semibold border transition text-center ${
                         isSelected
-                          ? "bg-primary-800 text-white border-primary-800"
-                          : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                          ? "bg-primary-800 dark:bg-emerald-600 text-white border-primary-800 dark:border-emerald-600"
+                          : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                       }`}
                     >
                       🔥 {spice.label}
@@ -1347,8 +1518,8 @@ function FilterSidebar({
                     }
                     className={`flex-1 p-2 rounded-xl text-[14px] font-semibold border transition text-center ${
                       customerSearchRequest.maxPreparationTimeMinutes === pt.val
-                        ? "bg-primary-800 text-white border-primary-800"
-                        : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                        ? "bg-primary-800 dark:bg-emerald-600 text-white border-primary-800 dark:border-emerald-600"
+                        : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                     }`}
                   >
                     ⏱️ {pt.label}
@@ -1387,14 +1558,55 @@ function FilterSidebar({
                 onToggle={() => toggleSection("ageGroup")}
               >
                 <div className="space-y-1">
-                  {filterOptions.ageGroups.map((a) => (
-                    <CheckboxOption
-                      key={a.uuid}
-                      label={formatAgeGroupOptionLabel(a)}
-                      checked={Boolean(customerSearchRequest.ageGroupUuids?.includes(a.uuid))}
-                      onChange={() => toggleArrayItem("ageGroupUuids", a.uuid)}
-                    />
-                  ))}
+                  {filterOptions.ageGroups.map((a) => {
+                    const isChecked = Boolean(
+                      customerSearchRequest.ageGroupUuids?.includes(a.uuid) ||
+                      customerSearchRequest.ageGroupUuids?.includes(a.code) ||
+                      customerSearchRequest.ageGroupUuids?.includes(a.name) ||
+                      customerSearchRequest.ageGroupUuids?.some((u) => {
+                        const normU = normalizeText(u);
+                        const aName = normalizeText(a.name);
+                        const aCode = normalizeText(a.code);
+                        return (
+                          normU === aName ||
+                          normU === aCode ||
+                          (normU.includes("យុវវ័យ") && (aName.includes("យុវវ័យ") || aCode.includes("youth"))) ||
+                          (normU.includes("កុមារតូច") && (aName.includes("កុមារតូច") || aCode.includes("toddler"))) ||
+                          (normU.includes("កុមារ") && (aName.includes("កុមារ") || aCode.includes("child")) && !normU.includes("តូច") && !aName.includes("តូច")) ||
+                          (normU.includes("ពេញវ័យ") && (aName.includes("ពេញវ័យ") || aCode.includes("adult"))) ||
+                          (normU.includes("ចំណាស់") && (aName.includes("ចំណាស់") || aCode.includes("senior")))
+                        );
+                      }),
+                    );
+
+                    return (
+                      <CheckboxOption
+                        key={a.uuid}
+                        label={formatAgeGroupOptionLabel(a)}
+                        checked={isChecked}
+                        onChange={() => {
+                          if (isChecked) {
+                            // Uncheck: remove all representations of this group
+                            const current = customerSearchRequest.ageGroupUuids || [];
+                            const updated = current.filter(
+                              (u) =>
+                                u !== a.uuid &&
+                                u !== a.code &&
+                                u !== a.name &&
+                                !normalizeText(u).includes(normalizeText(a.name)) &&
+                                !normalizeText(a.name).includes(normalizeText(u)),
+                            );
+                            onSearchRequestChange({
+                              ...customerSearchRequest,
+                              ageGroupUuids: updated.length > 0 ? updated : undefined,
+                            });
+                          } else {
+                            toggleArrayItem("ageGroupUuids", a.uuid);
+                          }
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </FilterSection>
             )}
@@ -1602,8 +1814,8 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
         onClick={() => onChange([])}
         className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
           allSelected
-            ? "border-primary-800 bg-primary-800 text-white"
-            : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
+            ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+            : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
         }`}
       >
         ទាំងអស់
@@ -1625,8 +1837,8 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
             }
             className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
               isSelected
-                ? "border-primary-800 bg-primary-800 text-white"
-                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
+                ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
             }`}
           >
             {option.name}
@@ -1681,7 +1893,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid place-items-center grid-cols-1  max-w-4xl gap-10 gap-y-3 sm:grid-cols-2 xl:grid-cols-3"
+      className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -1744,8 +1956,19 @@ function LoadingState() {
    FOOD PAGE
 ========================================================= */
 
-export default function FoodPage() {
-  const [searchInput, setSearchInput] = useState("");
+function FoodPageContent() {
+  const searchParams = useSearchParams();
+  const rawAgeParam =
+    searchParams.get("ageGroups") ||
+    searchParams.get("ageGroup") ||
+    searchParams.get("age") ||
+    "";
+  const rawQueryParam =
+    searchParams.get("q") ||
+    searchParams.get("search") ||
+    "";
+
+  const [searchInput, setSearchInput] = useState(rawQueryParam);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
@@ -1758,6 +1981,57 @@ export default function FoodPage() {
     useDiscoverySearchMutation();
 
   const { data: discoveryFilterOptions } = useGetDiscoveryFiltersQuery();
+
+  // Synchronize URL age group search params with customerSearchRequest and filters
+  useEffect(() => {
+    if (!rawAgeParam) return;
+    const decoded = decodeURIComponent(rawAgeParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.ageGroups &&
+      discoveryFilterOptions.ageGroups.length > 0
+    ) {
+      const matched = findMatchingAgeGroup(
+        decoded,
+        discoveryFilterOptions.ageGroups,
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.ageGroupUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            ageGroupUuids: [matched.uuid],
+          };
+        });
+        setFilters((prev) => ({
+          ...prev,
+          ageGroupCodes: [matched.code || matched.name],
+        }));
+        return;
+      }
+    }
+
+    // Fallback: set the decoded query value directly
+    setCustomerSearchRequest((prev) => {
+      if (prev.ageGroupUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        ageGroupUuids: [decoded],
+      };
+    });
+    setFilters((prev) => ({
+      ...prev,
+      ageGroupCodes: [decoded],
+    }));
+  }, [rawAgeParam, discoveryFilterOptions?.ageGroups]);
+
+  // Synchronize search query param if provided
+  useEffect(() => {
+    if (rawQueryParam && !searchInput) {
+      setSearchInput(rawQueryParam);
+    }
+  }, [rawQueryParam]);
 
   useEffect(() => {
     executeDiscoverySearch({
@@ -2265,7 +2539,7 @@ function cleanKhmerLabel(label: string): string {
     <>
       {/* SEARCH */}
 
-      <section className="rounded-full border border-gray-100 bg-white p-1 shadow-sm">
+      <section className="rounded-2xl lg:rounded-full border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 sm:p-2.5 lg:p-1 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           {renderSearch()}
 
@@ -2283,6 +2557,7 @@ function cleanKhmerLabel(label: string): string {
               gap-2
               rounded-full
               bg-primary-800
+              dark:bg-emerald-600
               px-5
               text-[16px]
               font-semibold
@@ -2290,6 +2565,7 @@ function cleanKhmerLabel(label: string): string {
               shadow-sm
               transition
               hover:bg-primary-700
+              dark:hover:bg-emerald-700
               active:scale-[0.98]
               lg:hidden
             "
@@ -2299,12 +2575,12 @@ function cleanKhmerLabel(label: string): string {
             <span>តម្រង</span>
           </button>
 
-          <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3">
             <FaStar className="text-[20px] text-yellow-500" />
 
-            <p className="text-[16px] text-primary-800 dark:text-primary-dark">
+            <p className="text-[16px] text-primary-800 dark:text-emerald-400">
               រកឃើញ
-              <span className="font-semibold">{displayFoods.length}</span>
+              <span className="font-semibold px-1">{displayFoods.length}</span>
               មុខម្ហូប
             </p>
           </div>
@@ -2317,7 +2593,7 @@ function cleanKhmerLabel(label: string): string {
                 setCustomerSearchRequest({ sort: "NEWEST" });
                 setFilters(DEFAULT_FILTERS);
               }}
-              className="rounded-full border border-secondary-200 px-5 py-3 text-[16px] font-semibold text-secondary-500 transition hover:bg-secondary-50"
+              className="rounded-full border border-secondary-200 dark:border-slate-700 px-5 py-3 text-[16px] font-semibold text-secondary-500 dark:text-amber-400 transition hover:bg-secondary-50 dark:hover:bg-slate-800"
             >
               សម្អាតតម្រង {activeFilterCount}
             </button>
@@ -2462,5 +2738,13 @@ function cleanKhmerLabel(label: string): string {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+export default function FoodPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <FoodPageContent />
+    </Suspense>
   );
 }

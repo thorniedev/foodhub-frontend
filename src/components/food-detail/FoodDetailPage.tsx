@@ -1889,20 +1889,22 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
       .sort((first, second) => {
         let firstScore = 0;
         let secondScore = 0;
+        const foodCategoryCode = food?.food?.category?.code;
+        const foodCuisineCode = food?.food?.cuisine?.code;
 
-        if (first.food.category.code === food.food.category.code) {
+        if (foodCategoryCode && first.food?.category?.code === foodCategoryCode) {
           firstScore += 3;
         }
 
-        if (second.food.category.code === food.food.category.code) {
+        if (foodCategoryCode && second.food?.category?.code === foodCategoryCode) {
           secondScore += 3;
         }
 
-        if (first.food.cuisine.code === food.food.cuisine.code) {
+        if (foodCuisineCode && first.food?.cuisine?.code === foodCuisineCode) {
           firstScore += 2;
         }
 
-        if (second.food.cuisine.code === food.food.cuisine.code) {
+        if (foodCuisineCode && second.food?.cuisine?.code === foodCuisineCode) {
           secondScore += 2;
         }
 
@@ -1914,8 +1916,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
           secondScore += 0.5;
         }
 
-        firstScore += Math.max(0, first.store.averageRating) / 10;
-        secondScore += Math.max(0, second.store.averageRating) / 10;
+        firstScore += Math.max(0, Number(first.store?.averageRating ?? 0)) / 10;
+        secondScore += Math.max(0, Number(second.store?.averageRating ?? 0)) / 10;
 
         return secondScore - firstScore;
       })
@@ -2171,7 +2173,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               <StatTile
                 icon={<MdOutlineInventory2 />}
-                value={`${food.nutrition.calories} kcal`}
+                value={
+                  food.nutrition?.calories != null
+                    ? `${food.nutrition.calories} kcal`
+                    : "0"
+                }
                 label="កាឡូរី"
               />
             </div>
@@ -2423,10 +2429,34 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               {[
-                { label: "Calories", value: `${food.nutrition.calories} kcal` },
-                { label: "Protein", value: `${food.nutrition.proteinGrams} g` },
-                { label: "Carbs", value: `${food.nutrition.carbsGrams} g` },
-                { label: "Fat", value: `${food.nutrition.fatGrams} g` },
+                {
+                  label: "Calories",
+                  value:
+                    food.nutrition?.calories != null
+                      ? `${food.nutrition.calories} kcal`
+                      : "0",
+                },
+                {
+                  label: "Protein",
+                  value:
+                    food.nutrition?.proteinGrams != null
+                      ? `${food.nutrition.proteinGrams} g`
+                      : "0 g",
+                },
+                {
+                  label: "Carbs",
+                  value:
+                    food.nutrition?.carbsGrams != null
+                      ? `${food.nutrition.carbsGrams} g`
+                      : "0 g",
+                },
+                {
+                  label: "Fat",
+                  value:
+                    food.nutrition?.fatGrams != null
+                      ? `${food.nutrition.fatGrams} g`
+                      : "0 g",
+                },
               ].map((nutrition) => (
                 <div key={nutrition.label} className={TILE}>
                   <p className={TEXT_LABEL}>{nutrition.label}</p>

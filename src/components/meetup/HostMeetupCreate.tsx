@@ -868,20 +868,29 @@ export default function HostMeetupCreate() {
               <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-950/60 dark:text-primary-400">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
-              <DialogTitle className="text-xl! font-bold leading-normal text-slate-900 dark:text-white sm:text-2xl!">
+              {/*
+                * Khmer headings run tall and wrap awkwardly at large sizes, so
+                * this stays close to body size and balances across lines.
+                */}
+              <DialogTitle className="text-balance text-lg! font-bold leading-snug text-slate-900 dark:text-white">
                 បង្កើតការណាត់ជួបជោគជ័យ!
               </DialogTitle>
-              <DialogDescription className="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              <DialogDescription className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                 រក្សាទុកតំណនេះ — វានឹងមិនបង្ហាញម្ដងទៀតទេ។
               </DialogDescription>
             </DialogHeader>
 
-            <div className="my-4 space-y-4">
-              <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-950/60">
+            <div className="my-4 space-y-3">
+              <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-3 dark:border-slate-800 dark:bg-slate-950/60">
                 <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   តំណអញ្ជើញ
                 </span>
-                <p className="select-all truncate rounded-xl border border-gray-200/80 bg-white px-3 py-2 font-mono text-sm font-semibold text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                {/*
+                  * The token is long and has no spaces. Breaking on any
+                  * character keeps the whole link readable instead of
+                  * clipping it at the edge of the card.
+                  */}
+                <p className="max-h-24 overflow-y-auto break-all rounded-xl border border-gray-200/80 bg-white px-3 py-2 font-mono text-xs leading-5 font-semibold text-slate-800 select-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                   {shareUrl}
                 </p>
               </div>

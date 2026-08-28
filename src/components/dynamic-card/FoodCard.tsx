@@ -478,9 +478,10 @@ import {
   FaStore,
 } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
+import { IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
-
+import { useBookmarks } from "@/hooks/useBookmarks";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
 
@@ -562,8 +563,14 @@ export default function FoodCard({ food }: FoodCardProps) {
    * while discovery search returns category/cuisine at the menu-item root.
    * Support both response shapes without changing the card UI.
    */
-  const cuisine = food.food?.cuisine ?? food.cuisine ?? null;
-  const category = food.food?.category ?? food.category ?? null;
+  const foodAny = food as unknown as {
+    cuisine?: { code?: string; name: string } | null;
+    category?: { code?: string; name: string } | null;
+    imageUrl?: string | null;
+    primaryMediaUuid?: string | null;
+  };
+  const cuisine = food.food?.cuisine ?? foodAny.cuisine ?? null;
+  const category = food.food?.category ?? foodAny.category ?? null;
 
   /* =======================================================
      STATE
@@ -605,11 +612,9 @@ export default function FoodCard({ food }: FoodCardProps) {
 
   const rawImage =
     food.thumbnail ||
-    food.imageUrl ||
-    ((food as unknown as { primaryMediaUuid?: string }).primaryMediaUuid
-      ? `/api/v1/media/${
-          (food as unknown as { primaryMediaUuid?: string }).primaryMediaUuid
-        }`
+    foodAny.imageUrl ||
+    (foodAny.primaryMediaUuid
+      ? `/api/v1/media/${foodAny.primaryMediaUuid}`
       : undefined);
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>(
@@ -629,14 +634,21 @@ export default function FoodCard({ food }: FoodCardProps) {
   );
 
   /* =======================================================
-     FAVORITE INITIAL STATE
+     BOOKMARKS & FAVORITES
   ======================================================= */
+
+  const { bookmarks, addBookmark, removeBookmark, findBookmark } =
+    useBookmarks();
 
   useEffect(() => {
     const favoriteIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
 
-    setIsFavorite(favoriteIds.includes(food.uuid));
-  }, [food.uuid]);
+    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(food.uuid));
+  }, [food.uuid, food.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
      THUMBNAIL
@@ -647,13 +659,18 @@ export default function FoodCard({ food }: FoodCardProps) {
   }, [rawImage]);
 
   /* =======================================================
-     FAVORITE TOGGLE
+     FAVORITE / BOOKMARK TOGGLE
   ======================================================= */
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     const currentIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
 
-    const isAlreadyFavorite = currentIds.includes(food.uuid);
+    const isAlreadyFavorite =
+      isFavorite || Boolean(serverBookmark) || currentIds.includes(food.uuid);
 
     const nextIds = isAlreadyFavorite
       ? currentIds.filter((id) => id !== food.uuid)
@@ -671,9 +688,24 @@ export default function FoodCard({ food }: FoodCardProps) {
       );
     }
 
-    setIsFavorite(nextIds.includes(food.uuid));
-
+    setIsFavorite(!isAlreadyFavorite);
     window.dispatchEvent(new Event("foodhub-favorites-updated"));
+
+    try {
+      if (isAlreadyFavorite) {
+        if (serverBookmark) {
+          await removeBookmark(serverBookmark.uuid);
+        }
+      } else {
+        await addBookmark({
+          menuItemUuid: food.uuid,
+          foodUuid: food.food?.uuid,
+          storeUuid: food.store?.uuid,
+        });
+      }
+    } catch (err) {
+      console.warn("[BOOKMARK SYNC ERROR]", err);
+    }
   };
 
   /* =======================================================
@@ -778,27 +810,26 @@ export default function FoodCard({ food }: FoodCardProps) {
       ========================================== */}
 
       <Link
-        href={`/food/${itemUuid}`}
+        href={`/menu/${itemUuid}`}
         className="
           flex
           h-full
-          md:max-w-[300px]
+          w-full
           flex-col
+          rounded-[18px]
           sm:rounded-[24px]
           border
           border-gray-200
           bg-white
+          p-2.5
           sm:p-3.5
-          max-sm:p-2
-          max-sm:rounded-[18px]
-          shadow-sm
+          shadow-xs
           transition
           duration-200
           hover:-translate-y-1
           hover:shadow-md
           dark:border-gray-800
           dark:bg-gray-950
-          max-sm:max-w-[200px]
         "
       >
         {/* ========================================
@@ -819,35 +850,71 @@ export default function FoodCard({ food }: FoodCardProps) {
               }
             }}
             className="
-              sm:h-[190px]
-              max-sm:h-[100px]
-              w-full
-              rounded-[10px]
+              h-[115px]
+              sm:h-[180px]
+              w-fullff
+              rounded-[12px] max-sm:rounded-[8px]
+              sm:rounded-[16px]
               border
               border-gray-100
+              dark:border-gray-800
               object-cover
               pointer-events-none
             "
           />
+
+          {/* Top-Right Bookmark Button */}
+          <button
+            type="button"
+            aria-label={
+              isFavorite
+                ? "ដកចេញពីបញ្ជីចំណូលចិត្ត"
+                : "រក្សាទុកក្នុងបញ្ជីចំណូលចិត្ត"
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite();
+            }}
+            className={`
+              absolute right-1 top-1 z-10
+              flex h-7 w-7 sm:h-8 sm:w-8
+              items-center justify-center
+              rounded-full
+              backdrop-blur-md transition-all duration-200
+              shadow-sm hover:scale-110 active:scale-95
+              ${
+                isFavorite
+                  ? "bg-secondary-500 text-white shadow-secondary-500/30"
+                  : "bg-white/85 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
+              }
+            `}
+          >
+            {isFavorite ? (
+              <IoBookmark className="text-sm sm:text-base text-white" />
+            ) : (
+              <IoBookmarkOutline className="text-sm sm:text-base" />
+            )}
+          </button>
         </div>
 
         {/* ========================================
             CONTENT
         ======================================== */}
 
-        <div className="flex shrink-0 flex-col gap-2 pt-2">
+        <div className="flex shrink-0 flex-col gap-1.5 sm:gap-2 pt-2">
           {/* STORE */}
 
-          <div className="flex items-center justify-between gap-2 text-secondary-400 w-full overflow-hidden">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <FaStore className="shrink-0 max-sm:text-md" />
-              <p className="truncate max-sm:mt-[2px] max-sm:text-sm sm:text-lg">
+          <div className="flex items-center justify-between gap-1 sm:gap-6 text-secondary-500 dark:text-secondary-400 w-full overflow-hidden text-xs sm:text-sm">
+            <div className="flex items-center gap-1 sm:gap-1 flex-1 min-w-0">
+              <FaStore className="shrink-0 text-xs sm:text-lg" />
+              <p className="truncate pt-[2px] text-xs sm:text-lg ">
                 {food.store?.name || "Unknown store"}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <FaClock className="max-sm:text-md" />
-              <p className="whitespace-nowrap max-sm:text-xs mt-0.5 sm:text-sm">
+              <FaClock className="text-[10px] sm:text-lg" />
+              <p className="whitespace-nowrap mt-[2px] text-[10px] sm:text-sm">
                 {food.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
               </p>
             </div>
@@ -857,13 +924,13 @@ export default function FoodCard({ food }: FoodCardProps) {
               NAME + PRICE
           ====================================== */}
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-1 sm:gap-2">
             <p
               className="
                 min-w-0
                 line-clamp-1
-                sm:text-[24px]
-                max-sm:text-lg
+                text-sm
+                sm:text-2xl
                 font-medium
                 text-primary-900
                 dark:text-white
@@ -875,12 +942,11 @@ export default function FoodCard({ food }: FoodCardProps) {
             <p
               className="
                 shrink-0
-                sm:text-[24px]
-                max-sm:text-lg
-                font-medium
+                text-sm
+                sm:text-xl
+                font-bold
                 text-primary-800
-                dark:text-primary-dark
-                dark:text-primary-300
+                dark:text-emerald-400
               "
             >
               {food.currencyCode === "USD"
@@ -981,7 +1047,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                         px-2
                         py-1
                         text-center
-                        text-sm
+                        text-sm max-sm:text-[8px]
                         text-gray-100
                       "
                   >
@@ -1004,10 +1070,10 @@ export default function FoodCard({ food }: FoodCardProps) {
                       whitespace-nowrap
                       rounded-full
                       bg-primary-800
-                      px-2
+                      px-2 
                       py-1
                       text-center
-                      text-sm
+                      text-sm max-sm:text-[8px]
                       text-gray-100
                     "
                 >
@@ -1030,7 +1096,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                     bg-gray-100
                     py-1
                     text-center
-                    text-sm
+                    text-sm max-sm:text-[8px]
                     font-medium
                     text-gray-600
                     dark:bg-gray-800
@@ -1063,7 +1129,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                     px-2
                     py-1
                     text-center
-                    text-sm
+                    text-sm max-sm:text-[12px]
                     text-gray-100
                   "
                 >

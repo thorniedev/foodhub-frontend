@@ -183,7 +183,7 @@ export default function RecommandSection({
       </div>
 
       {/* Grid */}
-      <div className="lg:max-w-7xl md:max-w-3xl md:gap-4 container items-center place-items-center mx-auto grid lg:grid-cols-4 md:grid-cols-3 grid-cols-1 md:gap-4 max-md:gap-4 lg:gap-6">
+      <div className="lg:max-w-7xl md:max-w-3xl container items-center place-items-center mx-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 px-4">
         {isLoading && (
           <p className="col-span-full text-center text-gray-400 py-10">
             កំពុងផ្ទុក...
@@ -207,7 +207,7 @@ export default function RecommandSection({
             </motion.p>
           )}
           {paginatedFoods.map((food) => (
-            <Link key={food.id} href={`/food/${food.id}`}>
+            <Link key={food.id} href={`/menu/${food.id}`}>
               <FoodCardComponent food={food} />
             </Link>
           ))}

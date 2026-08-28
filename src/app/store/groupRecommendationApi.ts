@@ -1,5 +1,9 @@
 import { baseApi } from "./baseApi";
-import { normalizePageResponse, normalizePayload } from "./utils/normalize";
+import {
+  normalizeArrayPayload,
+  normalizePageResponse,
+  normalizePayload,
+} from "./utils/normalize";
 
 import {
   normalizeMeetupActionResponse,
@@ -30,6 +34,7 @@ import type {
   UpdateMeetupParticipantLocationArgs,
   MeetupWinningCardResponse,
 } from "@/types/meetup-api";
+import type { RecommendationItem } from "@/types/recommendation";
 
 function toCreateMeetupBody(body: CreateMeetupRequest) {
   return {
@@ -392,6 +397,25 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
       ],
     }),
 
+    /**
+     * GET /api/v1/meetup/groups/share/{token}/candidates
+     *
+     * The meetup's own food slate. Resolved server-side against every
+     * participating profile, so a guest — who cannot open a recommendation
+     * session — gets the same group-safe list as everyone else.
+     */
+    getMeetupCandidates: builder.query<RecommendationItem[], string>({
+      query: (shareToken) => ({
+        url: `/meetup/groups/share/${encodeURIComponent(shareToken)}/candidates`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<RecommendationItem>(response),
+      providesTags: (_result, _error, shareToken) => [
+        { type: "GroupRecommendation", id: `CANDIDATES-${shareToken}` },
+      ],
+    }),
+
     /** GET /api/v1/meetup/groups/share/{token}/result */
     getMeetupResult: builder.query<MeetupResultResponse, string>({
       query: (shareToken) => ({
@@ -437,6 +461,7 @@ export const {
   useDeleteMeetupGroupMutation,
   useCompleteMeetupVotingMutation,
   useGetMeetupResultQuery,
+  useGetMeetupCandidatesQuery,
   useTriggerGroupMeetupInviteMutation,
   // Participants
   useJoinMeetupParticipantMutation,

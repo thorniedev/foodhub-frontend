@@ -2,10 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { EASE_SOFT, VIEWPORT, group, riseReveal } from "@/lib/reveal";
 import { useGetPopularBannersQuery } from "@/app/store/bannerApi";
+import { normalizeArrayPayload } from "@/app/store/utils/normalize";
 import { resolveBannerImageUrl } from "@/lib/banner-media";
+import type { BannerItem } from "@/types/banner";
 
 /* =========================================================
    THE STACK CONFIGURATION & ORIGINAL FALLBACKS
@@ -17,42 +20,46 @@ const DEFAULT_CARDS = [
     rotate: -10,
     fit: "object-cover",
     layout: "z-7 sm:mt-6 max-sm:mt-3",
-    title: "Popular Dish 1",
+    title: "ការស្វែងរកអាហារ 1",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/drink 1.jpg",
     rotate: -3,
     fit: "object-cover",
     layout: "z-6 sm:-mt-6 max-sm:-mt-3 -ml-10",
-    title: "Popular Drink 1",
+    title: "ភេសជ្ជៈពេញនិយម 1",
   },
   {
     src: "/Image/food-picture/card 2.jpg",
-    rotate: -1,
     fit: "object-fill",
     layout: "z-5 -ml-10",
-    title: "Popular Dish 2",
+    title: "ការស្វែងរកអាហារ 2",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/card 3.jpg",
     rotate: 2,
     fit: "object-cover",
     layout: "z-4 sm:-mt-6 max-sm:-mt-3 -ml-10",
-    title: "Popular Dish 3",
+    title: "ការស្វែងរកអាហារ 3",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/drink 2.jpg",
     rotate: 5,
     fit: "object-cover",
     layout: "z-2 sm:mt-4 max-sm:mt-2 -ml-10",
-    title: "Popular Drink 2",
+    title: "ភេសជ្ជៈពេញនិយម 2",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/card 6.jpg",
     rotate: 10,
     fit: "object-cover",
     layout: "z-1 -ml-10",
-    title: "Popular Dish 4",
+    title: "ការស្វែងរកអាហារ 4",
+    href: "/menu",
   },
 ];
 
@@ -96,6 +103,7 @@ interface PopularCardItemProps {
     id: string;
     src: string;
     fallbackSrc: string;
+    href?: string;
     rotate: number;
     fit: string;
     layout: string;
@@ -138,32 +146,36 @@ function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
       }}
       className={`relative shrink-0 cursor-pointer ${card.layout}`}
     >
-      <Image
-        width={235}
-        height={285}
-        className={`
-          sm:border-6
-          ${card.fit}
-          lg:w-[235px]
-          lg:h-[285px]
-          md:w-[170px]
-          md:h-[220px]
-          max-md:h-[130px]
-          max-md:w-[100px]
-          border-white
-          shadow-md
-          max-sm:rounded-md
-          sm:rounded-[24px]
-        `}
-        src={imgSrc}
-        alt={card.title}
-        unoptimized
-        onError={() => {
-          if (imgSrc !== card.fallbackSrc) {
-            setImgSrc(card.fallbackSrc);
-          }
-        }}
-      />
+      <Link href={card.href || "/menu"}>
+        <Image
+          width={235}
+          height={285}
+          className={`
+            sm:border-6
+            ${card.fit}
+            lg:w-[235px]
+            lg:h-[285px]
+            md:w-[170px]
+            md:h-[220px]
+            max-md:h-[130px]
+            max-md:w-[100px]
+            border-white
+            shadow-md
+            max-sm:rounded-md
+            sm:rounded-[24px]
+            transition-transform
+            duration-200
+          `}
+          src={imgSrc}
+          alt={card.title}
+          unoptimized
+          onError={() => {
+            if (imgSrc !== card.fallbackSrc) {
+              setImgSrc(card.fallbackSrc);
+            }
+          }}
+        />
+      </Link>
     </motion.div>
   );
 }
@@ -173,17 +185,25 @@ export default function PopularSection() {
   const { data: bannerData } = useGetPopularBannersQuery();
 
   const cards = useMemo(() => {
-    if (bannerData && bannerData.length > 0) {
-      return bannerData.map((banner, index) => {
+    const list = Array.isArray(bannerData)
+      ? bannerData
+      : normalizeArrayPayload<BannerItem>(bannerData);
+
+    if (list && list.length > 0) {
+      const activeBanners = list.filter((b) => b.isPublished !== false);
+      const displayBanners = activeBanners.length > 0 ? activeBanners : list;
+      const sliced = displayBanners.slice(0, 6);
+
+      return sliced.map((banner, index) => {
         const preset = LAYOUT_PRESETS[index % LAYOUT_PRESETS.length];
-        const defaultFallback =
-          DEFAULT_CARDS[index % DEFAULT_CARDS.length].src;
+        const defaultFallback = DEFAULT_CARDS[index % DEFAULT_CARDS.length].src;
         const resolvedUrl = resolveBannerImageUrl(banner, defaultFallback);
 
         return {
           id: String(banner.id || `popular-banner-${index}`),
           src: resolvedUrl,
           fallbackSrc: defaultFallback,
+          href: banner.location || "/menu",
           rotate: preset.rotate,
           fit: preset.fit,
           layout: preset.layout,
@@ -192,10 +212,12 @@ export default function PopularSection() {
         };
       });
     }
+
     return DEFAULT_CARDS.map((card, idx) => ({
       ...card,
       id: `default-popular-${idx}`,
       fallbackSrc: card.src,
+      href: "/menu",
     }));
   }, [bannerData]);
 

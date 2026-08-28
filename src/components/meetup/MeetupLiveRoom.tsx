@@ -26,6 +26,7 @@ import {
   useGetMeetupParticipantsQuery,
   useGetMeetupVoteTallyQuery,
   useGetMeetupVotesQuery,
+  useGetMeetupCandidatesQuery,
   useLeaveMeetupParticipantMutation,
   useRemoveMeetupParticipantMutation,
   useResolveMeetupShareTokenQuery,
@@ -33,7 +34,10 @@ import {
   useSubmitMeetupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
-import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
+import {
+  useCreateRecommendationSessionMutation,
+  useGetRecommendationSafetyChecksQuery,
+} from "@/app/store/recommendationApi";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +53,7 @@ import {
 import {
   getMeetupErrorMessage,
   isAlreadyVotedError,
+  isConflictError,
 } from "@/lib/meetup/meetup-errors";
 import {
   useStoredMeetupSession,
@@ -59,7 +64,9 @@ import type { RecommendationSession } from "@/types/recommendation";
 import type { MeetupWinningCardResponse } from "@/types/meetup-api";
 import GuestJoinSafetySheet from "./GuestJoinSafetySheet";
 import MeetupCandidateCard from "./MeetupCandidateCard";
-import MeetupParticipantsPanel from "./MeetupParticipantsPanel";
+import MeetupParticipantsPanel, {
+  toDisplayName,
+} from "./MeetupParticipantsPanel";
 import MeetupRoomHeader from "./MeetupRoomHeader";
 import MeetupTallyPanel from "./MeetupTallyPanel";
 import MeetupWinnerCelebration from "./MeetupWinnerCelebration";
@@ -191,6 +198,18 @@ export default function MeetupLiveRoom({
     { skip: !meetupUuid, pollingInterval: isRoomLive ? 4000 : 0 },
   );
 
+  /*
+   * Preferred source: the meetup resolves its own slate from the share token,
+   * which works for guests and gives every member the same list. The
+   * per-viewer session below is the fallback for a host who opened the room by
+   * uuid and therefore has no token.
+   */
+  const {
+    data: sharedCandidates,
+    isFetching: isFetchingSharedCandidates,
+    refetch: refetchSharedCandidates,
+  } = useGetMeetupCandidatesQuery(shareToken ?? "", { skip: !shareToken });
+
   const [createRecommendationSession, { isLoading: isLoadingRecommendations }] =
     useCreateRecommendationSessionMutation();
   const [submitVote] = useSubmitMeetupVoteMutation();
@@ -287,9 +306,21 @@ export default function MeetupLiveRoom({
     [participants],
   );
 
+  const slateItems = useMemo(
+    () =>
+      shareToken
+        ? (sharedCandidates ?? [])
+        : (recommendationSession?.items ?? []),
+    [shareToken, sharedCandidates, recommendationSession?.items],
+  );
+
+  const isSlateLoading = shareToken
+    ? isFetchingSharedCandidates && !sharedCandidates
+    : isLoadingRecommendations;
+
   const slate = useMemo(
-    () => buildMeetupSlate(recommendationSession?.items ?? [], activeSession),
-    [recommendationSession?.items, activeSession],
+    () => buildMeetupSlate(slateItems, activeSession),
+    [slateItems, activeSession],
   );
 
   const inviteUrl =
@@ -432,6 +463,15 @@ export default function MeetupLiveRoom({
       return;
     }
 
+    /*
+     * With a share token the meetup serves its own slate, so the per-viewer
+     * session below is unnecessary — and impossible for a guest, who has no
+     * account to open one with.
+     */
+    if (shareToken) {
+      return;
+    }
+
     if (recommendationKeyRef.current === slateKey) {
       return;
     }
@@ -475,32 +515,50 @@ export default function MeetupLiveRoom({
       let lastError: unknown = null;
 
       for (const attempt of uniqueAttempts) {
-        try {
-          const session = await createRecommendationSession({
-            mode: attempt.mode,
-            requestSource: "HOMEPAGE_AUTO",
-            requestedLimit: 12,
-            searchRadiusKm: groupContext.searchRadiusKm,
-            currencyCode: "USD",
-            contextData: { meetupUuid, ...groupContext },
-            profiles: attempt.uuids.map((profileUuid, index) => ({
-              profileId: profileUuid,
-              isPrimary: index === 0,
-            })),
-          }).unwrap();
+        /*
+         * A 409 from session creation is a transient write conflict — several
+         * people opening the same room at once — rather than a rejection of
+         * this request. One retry clears it; anything else falls through to
+         * the next attempt immediately.
+         */
+        for (let tryCount = 0; tryCount < 2; tryCount += 1) {
+          try {
+            const session = await createRecommendationSession({
+              mode: attempt.mode,
+              requestSource: "HOMEPAGE_AUTO",
+              requestedLimit: 12,
+              searchRadiusKm: groupContext.searchRadiusKm,
+              currencyCode: "USD",
+              contextData: { meetupUuid, ...groupContext },
+              profiles: attempt.uuids.map((profileUuid, index) => ({
+                profileId: profileUuid,
+                isPrimary: index === 0,
+              })),
+            }).unwrap();
 
-          if (!cancelled) {
-            setRecommendationError(null);
-            setRecommendationSession(session);
+            if (!cancelled) {
+              setRecommendationError(null);
+              setRecommendationSession(session);
+            }
+
+            return;
+          } catch (error) {
+            console.error(
+              `Meetup slate attempt failed (${attempt.mode}):`,
+              error,
+            );
+            lastError = error;
+
+            if (cancelled || !isConflictError(error) || tryCount === 1) {
+              break;
+            }
+
+            await new Promise((resolve) => window.setTimeout(resolve, 400));
           }
+        }
 
+        if (cancelled) {
           return;
-        } catch (error) {
-          console.error(
-            `Meetup slate attempt failed (${attempt.mode}):`,
-            error,
-          );
-          lastError = error;
         }
       }
 
@@ -532,6 +590,88 @@ export default function MeetupLiveRoom({
     ownProfileUuids,
     slateKey,
   ]);
+
+  /*
+   * When the group's rules blocked every dish, the session's safety checks say
+   * which profile did it. Fetched only in that case — it is a per-item table
+   * and there is nothing to explain while the room has food to vote on.
+   */
+  const blockedEverything =
+    Boolean(recommendationSession) &&
+    (recommendationSession?.candidateCount ?? 0) > 0 &&
+    (recommendationSession?.eligibleCount ?? 0) === 0;
+
+  const { data: safetyChecks } = useGetRecommendationSafetyChecksQuery(
+    recommendationSession?.uuid ?? "",
+    { skip: !blockedEverything || !recommendationSession?.uuid },
+  );
+
+  /**
+   * Members whose profile blocked dishes, worst first, so the host knows whose
+   * restrictions to look at rather than guessing.
+   */
+  const blockingMembers = useMemo(() => {
+    if (!safetyChecks?.length) {
+      return [];
+    }
+
+    const blocksByProfileId = new Map<number, number>();
+
+    for (const check of safetyChecks) {
+      if (check.result?.toUpperCase() !== "BLOCKED" || check.profileId === null) {
+        continue;
+      }
+
+      blocksByProfileId.set(
+        check.profileId,
+        (blocksByProfileId.get(check.profileId) ?? 0) + 1,
+      );
+    }
+
+    return [...blocksByProfileId.entries()]
+      .map(([profileId, blockedCount]) => {
+        const participant = participants.find(
+          (candidate) => candidate.profileId === profileId,
+        );
+
+        return {
+          profileId,
+          blockedCount,
+          name: toDisplayName(participant?.nickname ?? null, "សមាជិក"),
+        };
+      })
+      .sort((left, right) => right.blockedCount - left.blockedCount);
+  }, [safetyChecks, participants]);
+
+  /*
+   * An empty slate has three very different causes and the session's own
+   * counters tell them apart: nothing in the catalog matched the room, the
+   * group's combined allergy and diet rules blocked everything, or the dishes
+   * that survived carry no canonical food and so cannot be voted on.
+   */
+  const emptySlateReason = useMemo(() => {
+    if (shareToken) {
+      /* The shared slate returns items only, so the cause stays general. */
+      return "គ្មានម្ហូបណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ក្នុងបន្ទប់នេះទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬបន្ថែមម្ហូបក្នុងបញ្ជី។";
+    }
+
+    if (!recommendationSession) {
+      return "មិនទាន់មានម្ហូបសម្រាប់បន្ទប់នេះទេ។ សូមចុច ផ្ទុកឡើងវិញ។";
+    }
+
+    const candidateCount = recommendationSession.candidateCount ?? 0;
+    const eligibleCount = recommendationSession.eligibleCount ?? 0;
+
+    if (candidateCount === 0) {
+      return "រកមិនឃើញម្ហូបក្នុងបញ្ជីសម្រាប់តំបន់ និងរង្វង់ស្វែងរកនេះទេ។ សូមពង្រីករង្វង់ស្វែងរក ឬប្ដូរទីតាំង។";
+    }
+
+    if (eligibleCount === 0) {
+      return `រកឃើញម្ហូប ${candidateCount} មុខ ប៉ុន្តែគ្មានមុខណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬដកសមាជិកដែលមានលក្ខខណ្ឌតឹងរ៉ឹងបំផុត។`;
+    }
+
+    return "ម្ហូបដែលឆ្លងកាត់សុវត្ថិភាព មិនមានព័ត៌មានម្ហូបគោលដើម្បីបោះឆ្នោតបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងបញ្ជីម្ហូប។";
+  }, [recommendationSession, shareToken]);
 
   const getVoteCount = useCallback(
     (candidate: MeetupCandidate) =>
@@ -683,8 +823,14 @@ export default function MeetupLiveRoom({
   };
 
   const handleRefreshRecommendations = () => {
-    recommendationKeyRef.current = "";
     setRecommendationError(null);
+
+    if (shareToken) {
+      void refetchSharedCandidates();
+      return;
+    }
+
+    recommendationKeyRef.current = "";
     setRecommendationSession(null);
     setRecommendationRefreshKey((current) => current + 1);
   };
@@ -721,6 +867,28 @@ export default function MeetupLiveRoom({
             <ArrowRight className="h-4 w-4" />
           </Link>
         </section>
+      </main>
+    );
+  }
+
+  /*
+   * An invited friend is already a participant, so their identity is adopted
+   * from the roster rather than joined again. Waiting for the profile and
+   * participant lists before offering the join sheet stops them being pushed
+   * into a join the backend then rejects as "only accepted friends can join".
+   */
+  const isResolvingIdentity =
+    !activeSession &&
+    Boolean(user) &&
+    (isLoadingProfiles || participants.length === 0);
+
+  if (isResolvingIdentity) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-3 text-slate-500">
+          <Loader2 className="h-7 w-7 animate-spin text-primary-600" />
+          <p className="text-sm font-bold">កំពុងពិនិត្យការចូលរួមរបស់អ្នក...</p>
+        </div>
       </main>
     );
   }
@@ -822,11 +990,11 @@ export default function MeetupLiveRoom({
               <button
                 type="button"
                 onClick={handleRefreshRecommendations}
-                disabled={isLoadingRecommendations}
+                disabled={isSlateLoading}
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <RefreshCw
-                  className={`h-4 w-4 ${isLoadingRecommendations ? "animate-spin" : ""}`}
+                  className={`h-4 w-4 ${isSlateLoading ? "animate-spin" : ""}`}
                 />
                 ផ្ទុកឡើងវិញ
               </button>
@@ -840,7 +1008,7 @@ export default function MeetupLiveRoom({
               </p>
             )}
 
-            {isLoadingRecommendations ? (
+            {isSlateLoading ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <CandidateSkeleton />
                 <CandidateSkeleton />
@@ -864,10 +1032,38 @@ export default function MeetupLiveRoom({
             ) : slate.candidates.length === 0 ? (
               <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
                 <ChefHat className="h-9 w-9 text-slate-300 dark:text-slate-600" />
-                <p className="max-w-sm text-sm leading-6 text-slate-500">
-                  មិនទាន់មានម្ហូបដែលត្រូវនឹងលក្ខខណ្ឌរបស់បន្ទប់នេះទេ។
-                  សូមផ្ទុកឡើងវិញបន្ទាប់ពីមានអ្នកចូលរួមបន្ថែម។
+                <p className="max-w-md text-sm leading-6 text-slate-500">
+                  {emptySlateReason}
                 </p>
+                {/*
+                  * The session reports how far the funnel got. Showing it turns
+                  * a dead end into something the host can act on.
+                  */}
+                {recommendationSession && (
+                  <p className="text-xs font-semibold text-slate-400">
+                    ម្ហូបដែលរកឃើញ {recommendationSession.candidateCount ?? 0} ·
+                    ឆ្លងកាត់សុវត្ថិភាព {recommendationSession.eligibleCount ?? 0}
+                  </p>
+                )}
+
+                {blockingMembers.length > 0 && (
+                  <div className="w-full max-w-sm space-y-1.5 rounded-2xl bg-slate-50 p-3 text-left dark:bg-slate-950/60">
+                    <p className="text-xs font-black text-slate-600 dark:text-slate-300">
+                      ច្បាប់សុវត្ថិភាពដែលបានហាមឃាត់
+                    </p>
+                    {blockingMembers.map((member) => (
+                      <p
+                        key={member.profileId}
+                        className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500"
+                      >
+                        <span className="truncate capitalize">{member.name}</span>
+                        <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 font-black text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
+                          {member.blockedCount}
+                        </span>
+                      </p>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

@@ -1,4 +1,5 @@
 import { baseApi } from "./baseApi";
+import { normalizeArrayPayload } from "./utils/normalize";
 import type { BannerItem } from "@/types/banner";
 
 function extractBannerPayload(response: unknown): BannerItem[] {
@@ -26,7 +27,8 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/season",
         method: "GET",
       }),
-      transformResponse: extractBannerPayload,
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<BannerItem>(response),
       providesTags: [{ type: "Banner" as const, id: "SEASON" }],
     }),
 
@@ -39,7 +41,8 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/popular",
         method: "GET",
       }),
-      transformResponse: extractBannerPayload,
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<BannerItem>(response),
       providesTags: [{ type: "Banner" as const, id: "POPULAR" }],
     }),
 
@@ -52,7 +55,8 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/main",
         method: "GET",
       }),
-      transformResponse: extractBannerPayload,
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<BannerItem>(response),
       providesTags: [{ type: "Banner" as const, id: "MAIN" }],
     }),
 
@@ -65,11 +69,12 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/locations",
         method: "GET",
       }),
-      transformResponse: extractBannerPayload,
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<BannerItem>(response),
       providesTags: [{ type: "Banner" as const, id: "LOCATIONS" }],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {

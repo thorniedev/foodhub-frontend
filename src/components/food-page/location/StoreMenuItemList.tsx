@@ -203,7 +203,7 @@ export default function StoreMenuItemList({
                   </button>
 
                   <Link
-                    href={`/menu-items/${card.menuItemUuid}`}
+                    href={`/menu/${card.menuItemUuid}`}
                     onClick={(e) => e.stopPropagation()}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition"
                   >
