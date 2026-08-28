@@ -65,12 +65,14 @@ export default function Aside() {
 
             const dynamicBadge =
               item.href === "/dashboard/favorites"
-                ? (bookmarkCount > 0 ? bookmarkCount : undefined)
+                ? bookmarkCount > 0
+                  ? bookmarkCount
+                  : undefined
                 : item.href === "/dashboard/notifications"
-                  ? (unreadNotificationCount > 0
-                      ? unreadNotificationCount
-                      : undefined)
-                : item.badge;
+                  ? unreadNotificationCount > 0
+                    ? unreadNotificationCount
+                    : undefined
+                  : item.badge;
 
             return (
               <Link

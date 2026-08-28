@@ -422,7 +422,7 @@ export default function FilterByMealTime({
         md:text-5xl
         max-md:text-3xl leading-2 dark:text-primary-dark"
         >
-          បទពិសោធន៍ថ្មីក្នុង <br className="sm:hidden max-sm:block" />
+          បទពិសោធន៍ថ្មីក្នុង<br className="sm:hidden max-sm:block" />
           <TypingAnimation
             words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
             blinkCursor

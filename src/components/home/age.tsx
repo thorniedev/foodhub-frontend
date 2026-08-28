@@ -19,14 +19,23 @@ interface AgeGroupConfig {
 }
 
 const STANDARD_AGE_GROUPS: AgeGroupConfig[] = [
+  // {
+  //   id: "infant",
+  //   code: "INFANT",
+  //   name: "ទារក",
+  //   range: "(0-1)",
+  //   label: "ទារក (0-1)",
+  //   fallbackImage: "/Image/food-picture/baby-food.jpg",
+  //   keywords: ["ទារក", "infant", "baby", "0-1"],
+  // },
   {
     id: "toddler",
     code: "TODDLER",
     name: "កុមារតូច",
-    range: "(0-2)",
-    label: "កុមារតូច (0-2)",
+    range: "(1-2)",
+    label: "កុមារតូច (1-2)",
     fallbackImage: "/Image/food-picture/food 31.jpg",
-    keywords: ["កុមារតូច", "toddler", "infant", "0-2"],
+    keywords: ["កុមារតូច", "toddler", "1-2"],
   },
   {
     id: "children",
@@ -49,7 +58,7 @@ const STANDARD_AGE_GROUPS: AgeGroupConfig[] = [
   {
     id: "adults",
     code: "ADULT",
-    name: "មនុស្សពេញវ័យ",
+    name: "ពេញវ័យ",
     range: "(18-59)",
     label: "មនុស្សពេញវ័យ (18-59)",
     fallbackImage: "/Image/food-picture/food-21.webp",
@@ -58,12 +67,58 @@ const STANDARD_AGE_GROUPS: AgeGroupConfig[] = [
   {
     id: "elderly",
     code: "SENIOR",
-    name: "មនុស្សវ័យចំណាស់",
+    name: "វ័យចំណាស់",
     range: "(60+)",
     label: "មនុស្សវ័យចំណាស់ (60+)",
     fallbackImage: "/Image/food-picture/card 2.jpg",
     keywords: ["មនុស្សវ័យចំណាស់", "វ័យចំណាស់", "senior", "elderly", "60+"],
   },
+
+  // {
+  //   id: "toddler",
+  //   code: "TODDLER",
+  //   name: "កុមារតូច",
+  //   range: "(0-2)",
+  //   label: "កុមារតូច (0-2)",
+  //   fallbackImage: "/Image/food-picture/food 31.jpg",
+  //   keywords: ["កុមារតូច", "toddler", "infant", "0-2"],
+  // },
+  // {
+  //   id: "children",
+  //   code: "CHILDREN",
+  //   name: "កុមារ",
+  //   range: "(3-12)",
+  //   label: "កុមារ (3-12)",
+  //   fallbackImage: "/Image/food-picture/food-20.jpg",
+  //   keywords: ["កុមារ", "child", "children", "kid", "3-12"],
+  // },
+  // {
+  //   id: "youth",
+  //   code: "YOUTH",
+  //   name: "យុវវ័យ",
+  //   range: "(13-17)",
+  //   label: "យុវវ័យ (13-17)",
+  //   fallbackImage: "/Image/food-picture/drink 1.jpg",
+  //   keywords: ["យុវវ័យ", "យុវជន", "youth", "teen", "teenager", "13-17"],
+  // },
+  // {
+  //   id: "adults",
+  //   code: "ADULT",
+  //   name: "ពេញវ័យ",
+  //   range: "(18-59)",
+  //   label: "មនុស្សពេញវ័យ (18-59)",
+  //   fallbackImage: "/Image/food-picture/food-21.webp",
+  //   keywords: ["មនុស្សពេញវ័យ", "adult", "adults", "18-59"],
+  // },
+  // {
+  //   id: "elderly",
+  //   code: "SENIOR",
+  //   name: "វ័យចំណាស់",
+  //   range: "(60+)",
+  //   label: "មនុស្សវ័យចំណាស់ (60+)",
+  //   fallbackImage: "/Image/food-picture/card 2.jpg",
+  //   keywords: ["មនុស្សវ័យចំណាស់", "វ័យចំណាស់", "senior", "elderly", "60+"],
+  // },
 ];
 
 interface AgeCardDisplay {
@@ -98,8 +153,12 @@ export default function MealsByAgeSection() {
         if (itemAgeGroups.length === 0) return false;
 
         return itemAgeGroups.some((ag) => {
-          const agCode = String(ag.code || "").trim().toLowerCase();
-          const agName = String(ag.name || "").trim().toLowerCase();
+          const agCode = String(ag.code || "")
+            .trim()
+            .toLowerCase();
+          const agName = String(ag.name || "")
+            .trim()
+            .toLowerCase();
 
           return group.keywords.some(
             (k) => agCode.includes(k) || agName.includes(k),
@@ -168,13 +227,14 @@ export default function MealsByAgeSection() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
               whileHover={{ y: -6 }}
-              className="group flex cursor-pointer flex-col items-center justify-between rounded-[2rem] border border-slate-200/80 bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+              className="group border border-gray-100/80 flex cursor-pointer flex-col items-center justify-between rounded-[2rem]  bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6"
             >
-              <Link href={group.href} className="flex h-full w-full flex-col items-center">
+              <Link
+                href={group.href}
+                className="flex h-full w-full flex-col items-center"
+              >
                 {/* Dynamic Image in Circle */}
-                <div
-                  className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-[3px] border-emerald-100 bg-emerald-50/80 shadow-inner transition-transform duration-500 group-hover:scale-105 dark:border-emerald-900/50 dark:bg-slate-800 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
-                >
+                <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-primary-700 border-[2px]  bg-emerald-50/80 shadow-inner transition-transform duration-500 group-hover:scale-105 dark:border-emerald-900/50 dark:bg-slate-800 sm:h-28 sm:w-28 lg:h-32 lg:w-32">
                   <Image
                     src={group.image}
                     alt={group.dishName || group.label}
@@ -212,4 +272,3 @@ export default function MealsByAgeSection() {
     </section>
   );
 }
-
