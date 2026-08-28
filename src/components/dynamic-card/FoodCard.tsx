@@ -852,7 +852,7 @@ export default function FoodCard({ food }: FoodCardProps) {
             className="
               h-[115px]
               sm:h-[180px]
-              w-full
+              w-fullff
               rounded-[12px]
               sm:rounded-[16px]
               border
@@ -866,7 +866,11 @@ export default function FoodCard({ food }: FoodCardProps) {
           {/* Top-Right Bookmark Button */}
           <button
             type="button"
-            aria-label={isFavorite ? "ដកចេញពីបញ្ជីចំណូលចិត្ត" : "រក្សាទុកក្នុងបញ្ជីចំណូលចិត្ត"}
+            aria-label={
+              isFavorite
+                ? "ដកចេញពីបញ្ជីចំណូលចិត្ត"
+                : "រក្សាទុកក្នុងបញ្ជីចំណូលចិត្ត"
+            }
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -903,14 +907,14 @@ export default function FoodCard({ food }: FoodCardProps) {
 
           <div className="flex items-center justify-between gap-1 text-secondary-500 dark:text-secondary-400 w-full overflow-hidden text-xs sm:text-sm">
             <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-              <FaStore className="shrink-0 text-xs sm:text-sm" />
-              <p className="truncate text-xs sm:text-sm font-medium">
+              <FaStore className="shrink-0 text-xs sm:text-lg" />
+              <p className="truncate  text-xs sm:text-lg ">
                 {food.store?.name || "Unknown store"}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <FaClock className="text-[10px] sm:text-xs" />
-              <p className="whitespace-nowrap text-[10px] sm:text-xs">
+              <FaClock className="text-[10px] sm:text-lg" />
+              <p className="whitespace-nowrap mt-[2px] text-[10px] sm:text-lg">
                 {food.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
               </p>
             </div>
@@ -926,8 +930,8 @@ export default function FoodCard({ food }: FoodCardProps) {
                 min-w-0
                 line-clamp-1
                 text-sm
-                sm:text-xl
-                font-bold
+                sm:text-2xl
+                font-medium
                 text-primary-900
                 dark:text-white
               "
