@@ -24,7 +24,7 @@ export interface CreateSessionRequest {
   maximumPrice?: number;
   currencyCode?: string;
   requestedLimit?: number;
-  contextData?: Record<string, any>;
+  contextData?: Record<string, unknown>;
   profiles: ProfileItemRequest[];
 }
 
@@ -39,7 +39,7 @@ export interface SessionResponse {
   requestedLimit: number;
   candidateCount: number;
   eligibleCount: number;
-  contextData?: Record<string, any>;
+  contextData?: Record<string, unknown>;
   startedAt: string;
   completedAt?: string;
 }

@@ -26,6 +26,7 @@ import {
   useGetMeetupParticipantsQuery,
   useGetMeetupVoteTallyQuery,
   useGetMeetupVotesQuery,
+  useGetMeetupCandidatesQuery,
   useLeaveMeetupParticipantMutation,
   useRemoveMeetupParticipantMutation,
   useResolveMeetupShareTokenQuery,
@@ -197,6 +198,18 @@ export default function MeetupLiveRoom({
     { skip: !meetupUuid, pollingInterval: isRoomLive ? 4000 : 0 },
   );
 
+  /*
+   * Preferred source: the meetup resolves its own slate from the share token,
+   * which works for guests and gives every member the same list. The
+   * per-viewer session below is the fallback for a host who opened the room by
+   * uuid and therefore has no token.
+   */
+  const {
+    data: sharedCandidates,
+    isFetching: isFetchingSharedCandidates,
+    refetch: refetchSharedCandidates,
+  } = useGetMeetupCandidatesQuery(shareToken ?? "", { skip: !shareToken });
+
   const [createRecommendationSession, { isLoading: isLoadingRecommendations }] =
     useCreateRecommendationSessionMutation();
   const [submitVote] = useSubmitMeetupVoteMutation();
@@ -293,9 +306,21 @@ export default function MeetupLiveRoom({
     [participants],
   );
 
+  const slateItems = useMemo(
+    () =>
+      shareToken
+        ? (sharedCandidates ?? [])
+        : (recommendationSession?.items ?? []),
+    [shareToken, sharedCandidates, recommendationSession?.items],
+  );
+
+  const isSlateLoading = shareToken
+    ? isFetchingSharedCandidates && !sharedCandidates
+    : isLoadingRecommendations;
+
   const slate = useMemo(
-    () => buildMeetupSlate(recommendationSession?.items ?? [], activeSession),
-    [recommendationSession?.items, activeSession],
+    () => buildMeetupSlate(slateItems, activeSession),
+    [slateItems, activeSession],
   );
 
   const inviteUrl =
@@ -435,6 +460,15 @@ export default function MeetupLiveRoom({
 
   useEffect(() => {
     if (!meetupUuid || !group) {
+      return;
+    }
+
+    /*
+     * With a share token the meetup serves its own slate, so the per-viewer
+     * session below is unnecessary — and impossible for a guest, who has no
+     * account to open one with.
+     */
+    if (shareToken) {
       return;
     }
 
@@ -616,6 +650,11 @@ export default function MeetupLiveRoom({
    * that survived carry no canonical food and so cannot be voted on.
    */
   const emptySlateReason = useMemo(() => {
+    if (shareToken) {
+      /* The shared slate returns items only, so the cause stays general. */
+      return "គ្មានម្ហូបណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ក្នុងបន្ទប់នេះទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬបន្ថែមម្ហូបក្នុងបញ្ជី។";
+    }
+
     if (!recommendationSession) {
       return "មិនទាន់មានម្ហូបសម្រាប់បន្ទប់នេះទេ។ សូមចុច ផ្ទុកឡើងវិញ។";
     }
@@ -632,7 +671,7 @@ export default function MeetupLiveRoom({
     }
 
     return "ម្ហូបដែលឆ្លងកាត់សុវត្ថិភាព មិនមានព័ត៌មានម្ហូបគោលដើម្បីបោះឆ្នោតបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងបញ្ជីម្ហូប។";
-  }, [recommendationSession]);
+  }, [recommendationSession, shareToken]);
 
   const getVoteCount = useCallback(
     (candidate: MeetupCandidate) =>
@@ -784,8 +823,14 @@ export default function MeetupLiveRoom({
   };
 
   const handleRefreshRecommendations = () => {
-    recommendationKeyRef.current = "";
     setRecommendationError(null);
+
+    if (shareToken) {
+      void refetchSharedCandidates();
+      return;
+    }
+
+    recommendationKeyRef.current = "";
     setRecommendationSession(null);
     setRecommendationRefreshKey((current) => current + 1);
   };
@@ -945,11 +990,11 @@ export default function MeetupLiveRoom({
               <button
                 type="button"
                 onClick={handleRefreshRecommendations}
-                disabled={isLoadingRecommendations}
+                disabled={isSlateLoading}
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <RefreshCw
-                  className={`h-4 w-4 ${isLoadingRecommendations ? "animate-spin" : ""}`}
+                  className={`h-4 w-4 ${isSlateLoading ? "animate-spin" : ""}`}
                 />
                 ផ្ទុកឡើងវិញ
               </button>
@@ -963,7 +1008,7 @@ export default function MeetupLiveRoom({
               </p>
             )}
 
-            {isLoadingRecommendations ? (
+            {isSlateLoading ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <CandidateSkeleton />
                 <CandidateSkeleton />
