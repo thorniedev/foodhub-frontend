@@ -1861,8 +1861,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { useEffect, useState } from "react";
+
+import { useGetMainBannersQuery } from "@/app/store/bannerApi";
+import { resolveBannerImageUrl } from "@/lib/banner-media";
 
 /* =========================================================
    EASINGS
@@ -2183,6 +2187,21 @@ const arrowLoop = (delay: number): Variants => ({
 
 export default function Hero() {
   const reduceMotion = useReducedMotion();
+
+  const { data: mainBanners = [] } = useGetMainBannersQuery();
+
+  const firstBanner = mainBanners[0];
+  const secondBanner = mainBanners[1] || mainBanners[0];
+
+  const card1Image = resolveBannerImageUrl(firstBanner, "/Image/food-picture/food 31.jpg");
+  const card1Title = firstBanner?.title || "២. ម្ហូបគ្រប់ប្រភេទ";
+  const card1Desc = firstBanner?.description || "មុខម្ហូបឈ្ងុយឆ្ងាញ់សម្រាប់ជ្រើសរើស";
+  const card1Href = firstBanner?.location || "/menu";
+
+  const card2Image = resolveBannerImageUrl(secondBanner, "/Image/food-picture/food-32.jpg");
+  const card2Title = secondBanner?.title || "១. ម្ហូបគ្រប់ប្រភេទ";
+  const card2Desc = secondBanner?.description || "រសជាតិស្រស់ស្រាយគ្រប់ពេលវេលា";
+  const card2Href = secondBanner?.location || "/menu";
 
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [showSecondSection, setShowSecondSection] = useState(false);
@@ -2655,7 +2674,8 @@ max-sm:hidden
                   willChange: "transform",
                 }}
               >
-                <div
+                <Link
+                  href={card1Href}
                   className="
                   flex
                   aspect-3/3.5
@@ -2718,14 +2738,14 @@ max-sm:hidden
                   "
                   >
                     <Image
-                      src="/Image/food-picture/food 31.jpg"
-                      alt="Food"
+                      src={card1Image}
+                      alt={card1Title}
                       width={96}
                       height={96}
+                      unoptimized={true}
                       className="
                       h-full
                       w-full
-                      scale-150
                       object-cover
                     "
                     />
@@ -2734,15 +2754,15 @@ max-sm:hidden
                   {/* Text */}
 
                   <div className="mt-2 text-center text-primary-500">
-                    <p className="text-sm font-bold md:text-lg">
-                      2.ម្ហូបគ្រប់ប្រភេទ
+                    <p className="line-clamp-1 text-sm font-bold md:text-lg">
+                      {card1Title}
                     </p>
 
-                    <p className="mt-1 text-[10px] md:text-base">
-                      23 422 មុខសម្រាប់ជ្រើសរើស
+                    <p className="line-clamp-1 mt-1 text-[10px] md:text-base">
+                      {card1Desc}
                     </p>
                   </div>
-                </div>
+                </Link>
               </motion.div>
             </motion.div>
 
@@ -2796,7 +2816,8 @@ max-sm:hidden
                   willChange: "transform",
                 }}
               >
-                <div
+                <Link
+                  href={card2Href}
                   className="
                   flex
                   aspect-3/3.5
@@ -2859,14 +2880,14 @@ max-sm:hidden
                   "
                   >
                     <Image
-                      src="/Image/food-picture/food-32.jpg"
-                      alt="Food"
+                      src={card2Image}
+                      alt={card2Title}
                       width={96}
                       height={96}
+                      unoptimized={true}
                       className="
                       h-full
                       w-full
-                      scale-150
                       object-cover
                     "
                     />
@@ -2875,15 +2896,15 @@ max-sm:hidden
                   {/* Text */}
 
                   <div className="mt-2 text-center text-primary-500">
-                    <p className="text-sm font-bold md:text-lg">
-                      1.ម្ហូបគ្រប់ប្រភេទ
+                    <p className="line-clamp-1 text-sm font-bold md:text-lg">
+                      {card2Title}
                     </p>
 
-                    <p className="mt-1 text-[10px] md:text-base">
-                      23 422 មុខសម្រាប់ជ្រើសរើស
+                    <p className="line-clamp-1 mt-1 text-[10px] md:text-base">
+                      {card2Desc}
                     </p>
                   </div>
-                </div>
+                </Link>
               </motion.div>
             </motion.div>
           </div>

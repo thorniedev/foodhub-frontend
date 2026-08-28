@@ -734,14 +734,14 @@ function FilterSection({
   children,
 }: FilterSectionProps) {
   return (
-    <div className="border-t border-gray-100 py-4 first:border-t-0 first:pt-0">
+    <div className="border-t border-gray-100 dark:border-slate-800 py-4 first:border-t-0 first:pt-0">
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between text-left"
       >
-        <span className="flex items-center gap-2 text-[18px] font-semibold text-primary-900">
-          <span className="text-[20px] text-primary-700">{icon}</span>
+        <span className="flex items-center gap-2 text-[18px] font-semibold text-primary-900 dark:text-slate-100">
+          <span className="text-[20px] text-primary-700 dark:text-emerald-400">{icon}</span>
 
           {title}
         </span>
@@ -753,7 +753,7 @@ function FilterSection({
           transition={{
             duration: 0.2,
           }}
-          className="text-gray-400"
+          className="text-gray-400 dark:text-slate-500"
         >
           <IoChevronDown className="text-[20px]" />
         </motion.span>
@@ -802,20 +802,20 @@ function CheckboxOption({
   onChange,
 }: CheckboxOptionProps) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50">
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50 dark:hover:bg-slate-800/80">
       <span className="flex min-w-0 items-center gap-3">
         <input
           type="checkbox"
           checked={checked}
           onChange={onChange}
-          className="h-4 w-4 shrink-0 accent-primary-800"
+          className="h-4 w-4 shrink-0 accent-primary-800 dark:accent-emerald-500"
         />
 
-        <span className="truncate text-[18px] text-gray-600">{label}</span>
+        <span className="truncate text-[18px] text-gray-600 dark:text-slate-300">{label}</span>
       </span>
 
       {typeof count === "number" && (
-        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[18px] text-gray-500">
+        <span className="shrink-0 rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-0.5 text-[18px] text-gray-500 dark:text-slate-400">
           {count}
         </span>
       )}
@@ -851,8 +851,8 @@ function SingleChoice<T extends string | number>({
             onClick={() => onChange(isSelected ? null : option.value)}
             className={`rounded-full border px-3 py-2 text-[18px] transition ${
               isSelected
-                ? "border-primary-800 bg-primary-800 text-white"
-                : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50"
+                ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+                : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
             {option.label}
@@ -988,13 +988,13 @@ function FilterSidebar({
       }
     >
       <div
-        className={`flex h-full flex-col overflow-hidden bg-white ${
-          mobile ? "" : "rounded-[24px] border border-gray-100 shadow-sm"
+        className={`flex h-full flex-col overflow-hidden bg-white dark:bg-slate-900 ${
+          mobile ? "" : "rounded-[24px] border border-gray-100 dark:border-slate-800 shadow-sm"
         }`}
       >
         {/* Header */}
         <div
-          className={`shrink-0 border-b border-gray-100 bg-white ${
+          className={`shrink-0 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 ${
             isCollapsed ? "p-3" : "p-5"
           }`}
         >
@@ -1012,18 +1012,18 @@ function FilterSidebar({
                   exit={{ opacity: 0, x: -8 }}
                 >
                   <div className="flex items-center gap-2">
-                    <p className="text-[26px] font-semibold text-primary-900">
+                    <p className="text-[26px] font-semibold text-primary-900 dark:text-slate-100">
                       តម្រង
                     </p>
 
                     {activeFilterCount > 0 && (
-                      <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-primary-800 px-2 text-[16px] font-semibold text-white">
+                      <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-primary-800 dark:bg-emerald-600 px-2 text-[16px] font-semibold text-white">
                         {activeFilterCount}
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-1 text-[16px] leading-7 text-gray-400">
+                  <p className="mt-1 text-[16px] leading-7 text-gray-400 dark:text-slate-400">
                     ជ្រើសរើសតាមចំណូលចិត្ត
                   </p>
                 </motion.div>
@@ -1035,7 +1035,7 @@ function FilterSidebar({
                 type="button"
                 onClick={onClose}
                 aria-label="Close food filters"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-[26px] leading-none text-gray-500 transition hover:bg-gray-100"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-slate-800 text-[26px] leading-none text-gray-500 dark:text-slate-300 transition hover:bg-gray-100 dark:hover:bg-slate-700"
               >
                 ×
               </button>
@@ -1046,7 +1046,7 @@ function FilterSidebar({
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.9 }}
                 aria-label={isCollapsed ? "Expand filters" : "Collapse filters"}
-                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300 transition hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-700 dark:hover:text-emerald-400"
               >
                 <motion.span animate={{ rotate: isCollapsed ? 180 : 0 }}>
                   <IoChevronBack className="text-[21px]" />
@@ -1056,8 +1056,8 @@ function FilterSidebar({
           </div>
 
           {!isCollapsed && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2.5">
-              <p className="text-[16px] text-gray-500">
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 dark:bg-slate-800/80 px-3 py-2.5">
+              <p className="text-[16px] text-gray-500 dark:text-slate-300">
                 {activeFilterCount} តម្រងបានជ្រើស
               </p>
 
@@ -1065,7 +1065,7 @@ function FilterSidebar({
                 type="button"
                 disabled={activeFilterCount === 0}
                 onClick={() => onSearchRequestChange({ sort: "NEWEST" })}
-                className="cursor-pointer text-[16px] font-medium text-secondary-500 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+                className="cursor-pointer text-[16px] font-medium text-secondary-500 dark:text-amber-400 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
               >
                 សម្អាតទាំងអស់
               </button>
@@ -1075,7 +1075,7 @@ function FilterSidebar({
 
         {/* Sidebar Sections */}
         {!isCollapsed && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
             {/* PROFILE SAFETY EVALUATION */}
             {memberProfiles.length > 0 && (
               <FilterSection
@@ -1084,7 +1084,7 @@ function FilterSidebar({
                 isOpen={openSections.profile}
                 onToggle={() => toggleSection("profile")}
               >
-                <p className="mb-2 text-[14px] text-gray-500">
+                <p className="mb-2 text-[14px] text-gray-500 dark:text-slate-400">
                   ជ្រើសរើសប្រវត្តិរូបដើម្បីពិនិត្យអាលែហ្ស៊ី និងធាតុផ្សំដែលហាមឃាត់៖
                 </p>
                 <select
@@ -1095,7 +1095,7 @@ function FilterSidebar({
                       profileUuid: e.target.value || undefined,
                     })
                   }
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-700"
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
                 >
                   <option value="">-- មិនជ្រើសរើសប្រវត្តិរូប --</option>
                   {memberProfiles.map((p) => (
@@ -1122,7 +1122,7 @@ function FilterSidebar({
                     sort: e.target.value,
                   })
                 }
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-700"
+                className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
               >
                 <option value="NEWEST">✨ ថ្មីបំផុត</option>
                 <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
@@ -1132,8 +1132,8 @@ function FilterSidebar({
             </FilterSection>
 
             {/* OPEN NOW */}
-            <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
-              <span className="text-[16px] font-semibold text-gray-700">
+            <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/60 p-3">
+              <span className="text-[16px] font-semibold text-gray-700 dark:text-slate-200">
                 🏪 បើកដំណើរការឥឡូវនេះ
               </span>
               <input
@@ -1145,7 +1145,7 @@ function FilterSidebar({
                     openNow: e.target.checked,
                   })
                 }
-                className="h-5 w-5 accent-primary-800 rounded cursor-pointer"
+                className="h-5 w-5 accent-primary-800 dark:accent-emerald-500 rounded cursor-pointer"
               />
             </div>
 
@@ -1157,13 +1157,13 @@ function FilterSidebar({
                 isOpen={openSections.category}
                 onToggle={() => toggleSection("category")}
               >
-                <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3">
-                  <IoSearchOutline className="shrink-0 text-[20px] text-gray-400" />
+                <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3">
+                  <IoSearchOutline className="shrink-0 text-[20px] text-gray-400 dark:text-slate-500" />
                   <input
                     value={categoryQuery}
                     onChange={(event) => setCategoryQuery(event.target.value)}
                     placeholder="ស្វែងរកប្រភេទម្ហូប"
-                    className="w-full bg-transparent text-[16px] text-gray-600 outline-none placeholder:text-gray-400"
+                    className="w-full bg-transparent text-[16px] text-gray-600 dark:text-slate-200 outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                   />
                 </div>
 
@@ -1230,7 +1230,7 @@ function FilterSidebar({
                 isOpen={openSections.allergens}
                 onToggle={() => toggleSection("allergens")}
               >
-                <p className="mb-2 text-[14px] text-orange-600">
+                <p className="mb-2 text-[14px] text-orange-600 dark:text-orange-400">
                   មុខម្ហូបដែលមានធាតុផ្សំអាឡែស៊ីដែលបានជ្រើសរើសនឹងត្រូវដកចេញ។
                 </p>
                 <div className="space-y-1">
@@ -1264,7 +1264,7 @@ function FilterSidebar({
                       minimumPrice: e.target.value ? Number(e.target.value) : undefined,
                     })
                   }
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] text-gray-700 focus:outline-none"
+                  className="rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] text-gray-700 dark:text-slate-200 focus:outline-none"
                 />
                 <input
                   type="number"
@@ -1276,7 +1276,7 @@ function FilterSidebar({
                       maximumPrice: e.target.value ? Number(e.target.value) : undefined,
                     })
                   }
-                  className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-[15px] text-gray-700 focus:outline-none"
+                  className="rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] text-gray-700 dark:text-slate-200 focus:outline-none"
                 />
               </div>
             </FilterSection>
@@ -1311,8 +1311,8 @@ function FilterSidebar({
                       }
                       className={`p-2 rounded-xl text-[14px] font-semibold border transition text-center ${
                         isSelected
-                          ? "bg-primary-800 text-white border-primary-800"
-                          : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                          ? "bg-primary-800 dark:bg-emerald-600 text-white border-primary-800 dark:border-emerald-600"
+                          : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                       }`}
                     >
                       🔥 {spice.label}
@@ -1347,8 +1347,8 @@ function FilterSidebar({
                     }
                     className={`flex-1 p-2 rounded-xl text-[14px] font-semibold border transition text-center ${
                       customerSearchRequest.maxPreparationTimeMinutes === pt.val
-                        ? "bg-primary-800 text-white border-primary-800"
-                        : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                        ? "bg-primary-800 dark:bg-emerald-600 text-white border-primary-800 dark:border-emerald-600"
+                        : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                     }`}
                   >
                     ⏱️ {pt.label}
@@ -1602,8 +1602,8 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
         onClick={() => onChange([])}
         className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
           allSelected
-            ? "border-primary-800 bg-primary-800 text-white"
-            : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
+            ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+            : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
         }`}
       >
         ទាំងអស់
@@ -1625,8 +1625,8 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
             }
             className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
               isSelected
-                ? "border-primary-800 bg-primary-800 text-white"
-                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
+                ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
             }`}
           >
             {option.name}
@@ -1681,7 +1681,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full"
+      className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -2265,7 +2265,7 @@ function cleanKhmerLabel(label: string): string {
     <>
       {/* SEARCH */}
 
-      <section className="rounded-full border border-gray-100 bg-white p-1 shadow-sm">
+      <section className="rounded-2xl lg:rounded-full border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 sm:p-2.5 lg:p-1 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           {renderSearch()}
 
@@ -2283,6 +2283,7 @@ function cleanKhmerLabel(label: string): string {
               gap-2
               rounded-full
               bg-primary-800
+              dark:bg-emerald-600
               px-5
               text-[16px]
               font-semibold
@@ -2290,6 +2291,7 @@ function cleanKhmerLabel(label: string): string {
               shadow-sm
               transition
               hover:bg-primary-700
+              dark:hover:bg-emerald-700
               active:scale-[0.98]
               lg:hidden
             "
@@ -2299,12 +2301,12 @@ function cleanKhmerLabel(label: string): string {
             <span>តម្រង</span>
           </button>
 
-          <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 px-5 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3">
             <FaStar className="text-[20px] text-yellow-500" />
 
-            <p className="text-[16px] text-primary-800 dark:text-primary-dark">
+            <p className="text-[16px] text-primary-800 dark:text-emerald-400">
               រកឃើញ
-              <span className="font-semibold">{displayFoods.length}</span>
+              <span className="font-semibold px-1">{displayFoods.length}</span>
               មុខម្ហូប
             </p>
           </div>
@@ -2317,7 +2319,7 @@ function cleanKhmerLabel(label: string): string {
                 setCustomerSearchRequest({ sort: "NEWEST" });
                 setFilters(DEFAULT_FILTERS);
               }}
-              className="rounded-full border border-secondary-200 px-5 py-3 text-[16px] font-semibold text-secondary-500 transition hover:bg-secondary-50"
+              className="rounded-full border border-secondary-200 dark:border-slate-700 px-5 py-3 text-[16px] font-semibold text-secondary-500 dark:text-amber-400 transition hover:bg-secondary-50 dark:hover:bg-slate-800"
             >
               សម្អាតតម្រង {activeFilterCount}
             </button>

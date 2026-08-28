@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { EASE_SOFT, VIEWPORT, group } from "@/lib/reveal";
 import { useGetPopularBannersQuery } from "@/app/store/bannerApi";
@@ -18,6 +19,7 @@ const DEFAULT_CARDS = [
     fit: "object-cover",
     layout: "z-7 sm:mt-6 max-sm:mt-3",
     title: "ការស្វែងរកអាហារ 1",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/drink 1.jpg",
@@ -25,6 +27,7 @@ const DEFAULT_CARDS = [
     fit: "object-cover",
     layout: "z-6 sm:-mt-6 max-sm:-mt-3 -ml-10",
     title: "ភេសជ្ជៈពេញនិយម 1",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/card 2.jpg",
@@ -32,6 +35,7 @@ const DEFAULT_CARDS = [
     fit: "object-fill",
     layout: "z-5 -ml-10",
     title: "ការស្វែងរកអាហារ 2",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/card 3.jpg",
@@ -39,6 +43,7 @@ const DEFAULT_CARDS = [
     fit: "object-cover",
     layout: "z-4 sm:-mt-6 max-sm:-mt-3 -ml-10",
     title: "ការស្វែងរកអាហារ 3",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/drink 2.jpg",
@@ -46,6 +51,7 @@ const DEFAULT_CARDS = [
     fit: "object-cover",
     layout: "z-2 sm:mt-4 max-sm:mt-2 -ml-10",
     title: "ភេសជ្ជៈពេញនិយម 2",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/card 6.jpg",
@@ -53,6 +59,7 @@ const DEFAULT_CARDS = [
     fit: "object-cover",
     layout: "z-1 -ml-10",
     title: "ការស្វែងរកអាហារ 4",
+    href: "/menu",
   },
 ];
 
@@ -96,6 +103,7 @@ interface PopularCardItemProps {
     id: string;
     src: string;
     fallbackSrc: string;
+    href?: string;
     rotate: number;
     fit: string;
     layout: string;
@@ -104,43 +112,6 @@ interface PopularCardItemProps {
   from: number;
   reduceMotion: boolean | null;
 }
-
-// function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
-//   const [imgSrc, setImgSrc] = useState(card.src);
-
-//   return (
-//     <motion.div
-//       key={card.id}
-//       custom={{ rotate: card.rotate, from }}
-//       variants={cardReveal}
-//       whileHover={
-//         reduceMotion
-//           ? undefined
-//           : {
-//               y: -14,
-//               scale: 1.04,
-//               transition: { duration: 0.35, ease: EASE_SOFT },
-//             }
-//       }
-//       style={{ willChange: "transform" }}
-//       className={`shrink-0 ${card.layout}`}
-//     >
-//       <Image
-//         width={235}
-//         height={285}
-//         className={`sm:border-6 ${card.fit} lg:w-[235px] lg:h-[285px] md:w-[170px] md:h-[220px] max-md:h-[130px] max-md:w-[100px] border-white shadow-md max-sm:rounded-md sm:rounded-[24px]`}
-//         src={imgSrc}
-//         alt={card.title}
-//         unoptimized
-//         onError={() => {
-//           if (imgSrc !== card.fallbackSrc) {
-//             setImgSrc(card.fallbackSrc);
-//           }
-//         }}
-//       />
-//     </motion.div>
-//   );
-// }
 
 function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
   const [imgSrc, setImgSrc] = useState(card.src);
@@ -171,32 +142,36 @@ function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
       }}
       className={`relative shrink-0 cursor-pointer ${card.layout}`}
     >
-      <Image
-        width={235}
-        height={285}
-        className={`
-          sm:border-6
-          ${card.fit}
-          lg:w-[235px]
-          lg:h-[285px]
-          md:w-[170px]
-          md:h-[220px]
-          max-md:h-[130px]
-          max-md:w-[100px]
-          border-white
-          shadow-md
-          max-sm:rounded-md
-          sm:rounded-[24px]
-        `}
-        src={imgSrc}
-        alt={card.title}
-        unoptimized
-        onError={() => {
-          if (imgSrc !== card.fallbackSrc) {
-            setImgSrc(card.fallbackSrc);
-          }
-        }}
-      />
+      <Link href={card.href || "/menu"}>
+        <Image
+          width={235}
+          height={285}
+          className={`
+            sm:border-6
+            ${card.fit}
+            lg:w-[235px]
+            lg:h-[285px]
+            md:w-[170px]
+            md:h-[220px]
+            max-md:h-[130px]
+            max-md:w-[100px]
+            border-white
+            shadow-md
+            max-sm:rounded-md
+            sm:rounded-[24px]
+            transition-transform
+            duration-200
+          `}
+          src={imgSrc}
+          alt={card.title}
+          unoptimized
+          onError={() => {
+            if (imgSrc !== card.fallbackSrc) {
+              setImgSrc(card.fallbackSrc);
+            }
+          }}
+        />
+      </Link>
     </motion.div>
   );
 }
@@ -206,14 +181,19 @@ export default function PopularSection() {
   const { data: bannerData } = useGetPopularBannersQuery();
 
   const cards = useMemo(() => {
-    if (bannerData && bannerData.length > 0) {
-      return bannerData.map((banner, index) => {
+    if (bannerData && Array.isArray(bannerData) && bannerData.length > 0) {
+      const activeBanners = bannerData.filter((b) => b.isPublished !== false);
+      const displayBanners = activeBanners.length > 0 ? activeBanners : bannerData;
+      const sliced = displayBanners.slice(0, 6);
+
+      return sliced.map((banner, index) => {
         const preset = LAYOUT_PRESETS[index % LAYOUT_PRESETS.length];
         const defaultFallback = DEFAULT_CARDS[index % DEFAULT_CARDS.length].src;
         return {
           id: String(banner.id || `popular-banner-${index}`),
           src: resolveBannerImageUrl(banner, defaultFallback),
           fallbackSrc: defaultFallback,
+          href: banner.location || "/menu",
           rotate: preset.rotate,
           fit: preset.fit,
           layout: preset.layout,
@@ -222,10 +202,12 @@ export default function PopularSection() {
         };
       });
     }
+
     return DEFAULT_CARDS.map((card, idx) => ({
       ...card,
       id: `default-popular-${idx}`,
       fallbackSrc: card.src,
+      href: "/menu",
     }));
   }, [bannerData]);
 

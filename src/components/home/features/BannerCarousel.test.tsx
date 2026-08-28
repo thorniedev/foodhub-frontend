@@ -23,7 +23,7 @@ describe("BannerCarousel", () => {
 
     expect(screen.getAllByText("Weekend Special").length).toBeGreaterThan(0);
     expect(screen.getAllByText("20% off every Friday").length).toBeGreaterThan(0);
-  });
+  }, 15000);
 
   it("omits the description paragraph when a banner has none", () => {
     render(

@@ -439,8 +439,8 @@ export default function FoodSearch({
 
   return (
     <div ref={wrapperRef} className="relative flex-1">
-      <div className="flex min-h-[56px] items-center gap-3 rounded-full border border-gray-200 bg-white px-5 transition focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
-        <IoSearchOutline className="shrink-0 text-[22px] text-primary-700" />
+      <div className="flex min-h-[56px] items-center gap-3 rounded-full border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 transition focus-within:border-primary-700 dark:focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-primary-50 dark:focus-within:ring-emerald-950/40">
+        <IoSearchOutline className="shrink-0 text-[22px] text-primary-700 dark:text-emerald-400" />
 
         <input
           type="search"
@@ -450,22 +450,8 @@ export default function FoodSearch({
           placeholder="ស្វែងរកម្ហូប តម្លៃ រដូវ បុណ្យ ខេត្ត អាកាសធាតុ ឬទីតាំង..."
           aria-label="Search all food information"
           autoComplete="off"
-          className="w-full bg-transparent text-[16px] text-gray-700 dark:text-gray-100 outline-none placeholder:text-gray-400"
+          className="w-full bg-transparent text-[16px] text-gray-700 dark:text-gray-100 outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
         />
-
-        {/* {value && (
-          <button
-            type="button"
-            aria-label="Clear search"
-            onClick={() => {
-              onChange("");
-              setIsFocused(false);
-            }}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-red-50 hover:text-red-500"
-          >
-            <IoClose className="text-[20px]" />
-          </button>
-        )} */}
       </div>
 
       <AnimatePresence>
@@ -489,27 +475,27 @@ export default function FoodSearch({
             transition={{
               duration: 0.2,
             }}
-            className="absolute left-0 right-0 top-[64px] z-50 overflow-hidden rounded-[22px] border border-gray-100 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.14)]"
+            className="absolute left-0 right-0 top-[64px] z-50 overflow-hidden rounded-[22px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.25)]"
           >
-            <div className="border-b border-gray-100 px-4 py-3">
-              <p className="text-[16px] font-semibold text-primary-900">
+            <div className="border-b border-gray-100 dark:border-slate-800 px-4 py-3">
+              <p className="text-[16px] font-semibold text-primary-900 dark:text-white">
                 លទ្ធផលស្វែងរក
               </p>
 
-              <p className="mt-1 text-[16px] text-gray-500">
+              <p className="mt-1 text-[16px] text-gray-500 dark:text-slate-400">
                 រកឃើញ  {suggestions.length}  ជម្រើសសម្រាប់ “{value}”
               </p>
             </div>
 
             {suggestions.length === 0 ? (
               <div className="px-5 py-10 text-center">
-                <IoSearchOutline className="mx-auto text-[34px] text-gray-300" />
+                <IoSearchOutline className="mx-auto text-[34px] text-gray-300 dark:text-slate-600" />
 
-                <p className="mt-3 text-[16px] font-medium text-gray-600">
+                <p className="mt-3 text-[16px] font-medium text-gray-600 dark:text-slate-300">
                   រកមិនឃើញលទ្ធផល
                 </p>
 
-                <p className="mt-1 text-[16px] leading-7 text-gray-400">
+                <p className="mt-1 text-[16px] leading-7 text-gray-400 dark:text-slate-500">
                   សូមសាកល្បងឈ្មោះ តម្លៃ រដូវកាល បុណ្យ ខេត្ត អាកាសធាតុ
                   ឬទីតាំងផ្សេងទៀត។
                 </p>
@@ -526,6 +512,7 @@ export default function FoodSearch({
                   [&::-webkit-scrollbar-track]:bg-transparent
                   [&::-webkit-scrollbar-thumb]:rounded-full
                   [&::-webkit-scrollbar-thumb]:bg-gray-300
+                  dark:[&::-webkit-scrollbar-thumb]:bg-slate-700
                 "
               >
                 {suggestions.map(({ food, score }) => (
@@ -533,9 +520,9 @@ export default function FoodSearch({
                     key={food.uuid}
                     href={`/menu/${food.uuid}`}
                     onClick={() => setIsFocused(false)}
-                    className="flex items-center gap-3 rounded-[16px] p-3 transition hover:bg-primary-50"
+                    className="flex items-center gap-3 rounded-[16px] p-3 transition hover:bg-primary-50 dark:hover:bg-slate-800/80"
                   >
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-gray-100">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-gray-100 dark:bg-slate-800">
                       <Image
                         fill
                         src={food.thumbnail ?? "/images/placeholder-food.webp"}
@@ -548,11 +535,11 @@ export default function FoodSearch({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-[16px] font-semibold text-primary-900">
+                          <p className="truncate text-[16px] font-semibold text-primary-900 dark:text-white">
                             {food.localName || food.name}
                           </p>
 
-                          <div className="mt-1 flex items-center gap-2 text-[16px] text-gray-500">
+                          <div className="mt-1 flex items-center gap-2 text-[16px] text-gray-500 dark:text-slate-400">
                             <FaStore className="shrink-0 text-secondary-500" />
 
                             <span className="truncate">
@@ -561,7 +548,7 @@ export default function FoodSearch({
                           </div>
                         </div>
 
-                        <p className="shrink-0 text-[16px] dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
+                        <p className="shrink-0 text-[16px] dark:text-emerald-400 font-semibold text-primary-800">
                           {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency: food.currencyCode || "USD",
