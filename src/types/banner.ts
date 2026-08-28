@@ -15,3 +15,5 @@ export interface BannerItem {
 }
 
 export type BannerResponse = BannerItem[];
+export type PublicBannerResponse = BannerItem;
+export const bannerCategories = ["MAIN", "POPULAR", "LOCATION", "SEASON"] as const;

@@ -1,6 +1,20 @@
 import { baseApi } from "./baseApi";
 import type { BannerItem } from "@/types/banner";
 
+function extractBannerPayload(response: unknown): BannerItem[] {
+  if (Array.isArray(response)) {
+    return response as BannerItem[];
+  }
+  if (
+    response &&
+    typeof response === "object" &&
+    Array.isArray((response as Record<string, unknown>).payload)
+  ) {
+    return (response as { payload: BannerItem[] }).payload;
+  }
+  return [];
+}
+
 export const bannerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // =========================================================
@@ -12,6 +26,7 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/season",
         method: "GET",
       }),
+      transformResponse: extractBannerPayload,
       providesTags: [{ type: "Banner" as const, id: "SEASON" }],
     }),
 
@@ -24,6 +39,7 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/popular",
         method: "GET",
       }),
+      transformResponse: extractBannerPayload,
       providesTags: [{ type: "Banner" as const, id: "POPULAR" }],
     }),
 
@@ -36,6 +52,7 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/main",
         method: "GET",
       }),
+      transformResponse: extractBannerPayload,
       providesTags: [{ type: "Banner" as const, id: "MAIN" }],
     }),
 
@@ -48,6 +65,7 @@ export const bannerApi = baseApi.injectEndpoints({
         url: "/banners/public/locations",
         method: "GET",
       }),
+      transformResponse: extractBannerPayload,
       providesTags: [{ type: "Banner" as const, id: "LOCATIONS" }],
     }),
   }),
