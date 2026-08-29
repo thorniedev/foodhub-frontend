@@ -188,7 +188,7 @@ export function generateFoodMetadata(food: FoodSeoData, uuid: string): Metadata 
     food.thumbnail ||
     (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null);
   const imageUrl = toAbsoluteMediaUrl(primaryImage);
-  const canonical = `${SITE_URL}/menu/${uuid}`;
+  const canonical = `/menu/${uuid}`;
 
   return {
     title,
@@ -244,7 +244,7 @@ export function generateStoreMetadata(store: StoreSeoData, uuid: string): Metada
     `ស្វែងរកមុខម្ហូប និងកុម្ម៉ង់អាហារពី ${storeName} ${location ? `នៅ ${location}` : ""}. ពិន្ទុ ${store.averageRating ? `⭐ ${store.averageRating.toFixed(1)}` : "ខ្ពស់"}`;
 
   const imageUrl = toAbsoluteMediaUrl(store.coverMediaUuid || store.logoMediaUuid);
-  const canonical = `${SITE_URL}/stores/${uuid}`;
+  const canonical = `/stores/${uuid}`;
 
   return {
     title,
