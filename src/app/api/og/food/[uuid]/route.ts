@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BACKEND_API_URL, SITE_URL } from "@/lib/seo";
+import sharp from "sharp";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const OG_WIDTH = 1200;
+const OG_HEIGHT = 630;
 
 export async function GET(
   _request: NextRequest,
@@ -26,23 +30,28 @@ export async function GET(
       return NextResponse.redirect(`${SITE_URL}/og-image.jpeg`);
     }
 
-    const contentType = res.headers.get("content-type") || "image/jpeg";
-    const imageBuffer = await res.arrayBuffer();
+    const inputBuffer = Buffer.from(await res.arrayBuffer());
 
-    return new Response(imageBuffer, {
+    // Resize and crop to exactly 1200x630 for Telegram/Facebook/Twitter
+    const resized = await sharp(inputBuffer)
+      .resize(OG_WIDTH, OG_HEIGHT, {
+        fit: "cover",       // crop to fill, keeping aspect ratio
+        position: "centre", // center crop
+      })
+      .jpeg({ quality: 90 })
+      .toBuffer();
+
+    return new Response(new Uint8Array(resized), {
       status: 200,
       headers: {
-        "Content-Type": contentType,
-        "Content-Length": String(imageBuffer.byteLength),
+        "Content-Type": "image/jpeg",
+        "Content-Length": String(resized.byteLength),
         "Cache-Control":
           "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800",
-        // Tell Telegram/Social crawlers the real dimensions
-        "X-Image-Width": "736",
-        "X-Image-Height": "736",
       },
     });
   } catch (error) {
-    console.error("[OG FOOD IMAGE] Failed to fetch image:", error);
+    console.error("[OG FOOD IMAGE] Failed to process image:", error);
     return NextResponse.redirect(`${SITE_URL}/og-image.jpeg`);
   }
 }
