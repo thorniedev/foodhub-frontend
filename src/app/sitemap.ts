@@ -4,9 +4,16 @@ import { SITE_URL } from "@/lib/seo";
 const BACKEND_API_URL =
   process.env.BACKEND_API_URL || "https://api.mhoubahar.store/api/v1";
 
+export const revalidate = 86400;
+
 async function fetchJson<T>(url: string): Promise<T | null> {
   try {
-    const res = await fetch(url, { next: { revalidate: 86400 } });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(url, {
+      signal: controller.signal,
+      next: { revalidate: 86400 },
+    }).finally(() => clearTimeout(timeoutId));
     if (!res.ok) return null;
     const json = await res.json();
     return (json?.payload ?? json?.data ?? json) as T;

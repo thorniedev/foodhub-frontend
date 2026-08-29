@@ -6,7 +6,7 @@ import Providers from "@/app/store/Providers";
 import Preloader from "@/components/ui/Preloader";
 import PWARegister from "@/components/providers/PWARegister";
 import JsonLd from "@/components/common/JsonLd";
-import { generateWebSiteSearchJsonLd } from "@/lib/seo";
+import { generateOrganizationJsonLd, generateWebSiteSearchJsonLd } from "@/lib/seo";
 
 /* =========================================================
    LOCAL GOOGLE SANS FONT
@@ -101,16 +101,24 @@ export const metadata: Metadata = {
   metadataBase: getSafeSiteUrl(),
 
   title: {
-    default: "មូបអាហារ - FoodHub",
-    template: "%s | មូបអាហារ FoodHub",
+    default: "ម្ហូបអាហារ (FoodHub) - កម្មវិធីស្វែងរក និងណែនាំអាហារ | mhoubahar.store",
+    template: "%s | ម្ហូបអាហារ FoodHub",
   },
 
   description:
-    "ដែនាំអាហារដែលត្រូវនឹងចំណូលចិត្តរបស់អ្នក! Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
+    "ស្វែងរកមុខម្ហូប និងហាងអាហារឆ្ងាញ់ៗនៅកម្ពុជាជាមួយ ម្ហូបអាហារ (FoodHub - mhoubahar.store)។ ណែនាំអាហារឆ្លាតវៃតាមចំណូលចិត្ត សុខភាព និងទីតាំងរបស់អ្នក។",
 
   keywords: [
+    "mhoubahar.store",
+    "mhoubahar",
+    "mhou bahar",
+    "mhoub ahar",
+    "ម្ហូបអាហារ",
+    "មហូបអាហារ",
     "FoodHub",
     "ម្ហូបអាហារ",
+    "FoodHub Cambodia",
+    "Food Hub",
     "food recommendation",
     "Cambodia food",
     "អាហារខ្មែរ",
@@ -143,25 +151,25 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://www.mhoubahar.store",
-    siteName: "មូបអាហារ - FoodHub",
-    title: "មូបអាហារ - FoodHub",
+    siteName: "ម្ហូបអាហារ - FoodHub",
+    title: "ម្ហូបអាហារ (FoodHub) - mhoubahar.store",
     description:
-      "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
+      "ស្វែងរកមុខម្ហូប និងហាងអាហារឆ្ងាញ់ៗនៅកម្ពុជាជាមួយ ម្ហូបអាហារ (FoodHub - mhoubahar.store)។ ណែនាំអាហារឆ្លាតវៃតាមចំណូលចិត្ត សុខភាព និងទីតាំងរបស់អ្នក។",
     images: [
       {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "មូបអាហារ - FoodHub",
+        alt: "ម្ហូបអាហារ - FoodHub",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "មូបអាហារ - FoodHub",
+    title: "ម្ហូបអាហារ (FoodHub) - mhoubahar.store",
     description:
-      "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
+      "ស្វែងរកមុខម្ហូប និងហាងអាហារឆ្ងាញ់ៗនៅកម្ពុជាជាមួយ ម្ហូបអាហារ (FoodHub - mhoubahar.store)។",
     images: ["/og-image.jpeg"],
   },
 
@@ -203,6 +211,7 @@ export default function RootLayout({
         className="flex min-h-full flex-col overflow-x-hidden bg-white font-sans text-slate-900 antialiased transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100"
       >
         <JsonLd data={generateWebSiteSearchJsonLd()} />
+        <JsonLd data={generateOrganizationJsonLd()} />
 
         <PWARegister />
 

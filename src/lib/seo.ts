@@ -14,7 +14,7 @@ export const SITE_URL =
       : `https://${process.env.NEXT_PUBLIC_SITE_URL}`
     : "https://www.mhoubahar.store";
 
-export const SITE_NAME = "មូបអាហារ - FoodHub";
+export const SITE_NAME = "ម្ហូបអាហារ - FoodHub";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpeg`;
 
 const BACKEND_API_URL =
@@ -289,6 +289,14 @@ export function generateWebSiteSearchJsonLd(): object {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
+    alternateName: [
+      "mhoubahar.store",
+      "mhoubahar",
+      "មហូបអាហារ",
+      "FoodHub",
+      "FoodHub Cambodia",
+      "Food Hub",
+    ],
     url: SITE_URL,
     potentialAction: {
       "@type": "SearchAction",
@@ -298,6 +306,30 @@ export function generateWebSiteSearchJsonLd(): object {
       },
       "query-input": "required name=search_term_string",
     },
+  };
+}
+
+/**
+ * Google Organization Schema for Knowledge Graph
+ */
+export function generateOrganizationJsonLd(): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    alternateName: [
+      "mhoubahar.store",
+      "mhoubahar",
+      "មហូបអាហារ",
+      "FoodHub",
+      "FoodHub Cambodia",
+    ],
+    url: SITE_URL,
+    logo: `${SITE_URL}/og-image.jpeg`,
+    sameAs: [
+      "https://facebook.com",
+      "https://t.me",
+    ],
   };
 }
 
