@@ -2247,8 +2247,7 @@ export default function Hero() {
     "/Image/food-picture/food-32.jpg",
   );
   const card2Title = secondBanner?.title || "១. ម្ហូបគ្រប់ប្រភេទ";
-  const card2Desc =
-    secondBanner?.description || "រសជាតិស្រស់ស្រាយគ្រប់ពេលវេលា";
+  const card2Desc = secondBanner?.description || "រសជាតិស្រស់ស្រាយគ្រប់ពេលវេលា";
   const card2Href = secondBanner?.location || "/menu";
 
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
@@ -3058,7 +3057,8 @@ max-sm:hidden
         max-md:text-3xl 
       "
           >
-            បទពិសោធន៍ថ្មីក្នុង <br className="sm:hidden max-sm:block" />
+            បទពិសោធន៍ថ្មីក្នុង
+            <br className="sm:hidden max-sm:block" />
             <motion.span variants={fadeIn} className="text-secondary-500">
               ការស្វែងរកអាហារ
             </motion.span>

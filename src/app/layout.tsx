@@ -116,6 +116,7 @@ export const metadata: Metadata = {
     "ម្ហូបអាហារ",
     "មហូបអាហារ",
     "FoodHub",
+    "ម្ហូបអាហារ",
     "FoodHub Cambodia",
     "Food Hub",
     "food recommendation",
@@ -134,6 +135,9 @@ export const metadata: Metadata = {
     "food guide",
     "food map",
     "food app",
+    "Mhoub",
+    "Mhoub ahar",
+    "Mhoubahar",
     "food service",
   ],
 
