@@ -854,7 +854,7 @@ export default function FoodCard({ food }: FoodCardProps) {
               sm:h-[180px]
               w-fullff
               rounded-[12px] max-sm:rounded-[8px]
-              sm:rounded-[16px]
+              sm:rounded-[10px]
               border
               border-gray-100
               dark:border-gray-800

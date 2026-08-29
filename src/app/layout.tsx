@@ -110,7 +110,7 @@ export const metadata: Metadata = {
 
   keywords: [
     "FoodHub",
-    "មូបអាហារ",
+    "ម្ហូបអាហារ",
     "food recommendation",
     "Cambodia food",
     "អាហារខ្មែរ",
@@ -127,6 +127,9 @@ export const metadata: Metadata = {
     "food guide",
     "food map",
     "food app",
+    "Mhoub",
+    "Mhoub ahar",
+    "Mhoubahar",
     "food service",
   ],
 

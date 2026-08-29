@@ -173,7 +173,7 @@ export default function EventSection() {
           className="flex h-full flex-col justify-between"
         >
           <div className="mb-6 pl-0.5">
-            <p className="mb-4 text-[26px]​  font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[20px] lg:text-[30px]  ">
+            <p className="mb-4 text-[26px]​  max-sm:text-2xl font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[20px] lg:text-[30px]  ">
               ចំណីអាហារស្រប
               <br />
               <span className="text-secondary-500">តាមរដូវកាលខ្មែរ</span>
