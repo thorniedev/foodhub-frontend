@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -422,9 +421,9 @@ export default function FilterByMealTime({
         md:text-5xl
         max-md:text-3xl leading-2 dark:text-primary-dark"
         >
-          បទពិសោធន៍ថ្មីក្នុង <br className="sm:hidden max-sm:block" />
+          ណែនាំចំណីអាហារ<br className="sm:hidden max-sm:block" />
           <TypingAnimation
-            words={["ការស្វែងរកអាហារ", "ការស្វែងរកអាហារ"]}
+            words={["សម្រាប់អ្នក", "តាមពេលវេលា"]}
             blinkCursor
             pauseDelay={2000}
             loop

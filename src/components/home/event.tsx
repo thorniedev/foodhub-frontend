@@ -110,12 +110,20 @@ export default function EventSection() {
   const { data: seasonBanners } = useGetSeasonBannersQuery();
 
   const items = useMemo<SeasonalItemData[]>(() => {
-    if (seasonBanners && Array.isArray(seasonBanners) && seasonBanners.length > 0) {
-      const activeBanners = seasonBanners.filter((b) => b.isPublished !== false);
-      const displayBanners = activeBanners.length > 0 ? activeBanners : seasonBanners;
+    if (
+      seasonBanners &&
+      Array.isArray(seasonBanners) &&
+      seasonBanners.length > 0
+    ) {
+      const activeBanners = seasonBanners.filter(
+        (b) => b.isPublished !== false,
+      );
+      const displayBanners =
+        activeBanners.length > 0 ? activeBanners : seasonBanners;
 
       return displayBanners.map((b, idx) => {
-        const defaultFallback = DEFAULT_SEASON_CARDS[idx % DEFAULT_SEASON_CARDS.length];
+        const defaultFallback =
+          DEFAULT_SEASON_CARDS[idx % DEFAULT_SEASON_CARDS.length];
         return {
           id: b.id || `season-b-${idx}`,
           title: b.title || defaultFallback.title,
@@ -165,8 +173,9 @@ export default function EventSection() {
           className="flex h-full flex-col justify-between"
         >
           <div className="mb-6 pl-0.5">
-            <p className="mb-4 text-[26px] font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[22px] lg:text-[36px]">
-              ចំណីអាហារស្រស់ <br />
+            <p className="mb-4 text-[26px]​  font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[20px] lg:text-[30px]  ">
+              ចំណីអាហារស្រប
+              <br />
               <span className="text-secondary-500">តាមរដូវកាលខ្មែរ</span>
             </p>
 

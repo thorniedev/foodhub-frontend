@@ -25,9 +25,7 @@ export default function MarqueeSection() {
       <div className="flex animate-marquee whitespace-nowrap">
         {[...marqueeItems, ...marqueeItems].map((item, i) => (
           <div key={i} className="flex items-center gap-8 shrink-0 mx-4">
-            <span className="font-['Kantumruy_Pro',sans-serif] text-white text-xl">
-              {item}
-            </span>
+            <span className=" text-white text-xl">{item}</span>
             <DiamondIcon />
           </div>
         ))}

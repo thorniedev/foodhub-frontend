@@ -899,4 +899,3 @@ export default function MealTimeJourneySection() {
   );
 }
 
-

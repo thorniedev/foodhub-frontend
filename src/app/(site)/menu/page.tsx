@@ -24,9 +24,21 @@ import FoodCard from "@/components/dynamic-card/FoodCard";
 import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
-import { useDiscoverySearchMutation, useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
-import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
-import type { CustomerSearchRequest, FilterItemOption, MenuItemDiscoveryResponse, SafetyStatusType } from "@/types/search";
+import {
+  useDiscoverySearchMutation,
+  useGetDiscoveryFiltersQuery,
+} from "@/app/store/searchApi";
+import {
+  isDrinkCategory,
+  isFoodCategory,
+  type CategoryFilterType,
+} from "@/lib/category-filter";
+import type {
+  CustomerSearchRequest,
+  FilterItemOption,
+  MenuItemDiscoveryResponse,
+  SafetyStatusType,
+} from "@/types/search";
 import {
   useGetMemberProfileByIdQuery,
   useGetMemberProfilesQuery,
@@ -237,28 +249,50 @@ function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
   if (min !== undefined && min !== null && max !== undefined && max !== null) {
     return `${a.name} (${min}-${max})`;
   }
-  if (min !== undefined && min !== null && (max === undefined || max === null)) {
+  if (
+    min !== undefined &&
+    min !== null &&
+    (max === undefined || max === null)
+  ) {
     return `${a.name} (${min}+)`;
   }
-  if ((min === undefined || min === null) && max !== undefined && max !== null) {
+  if (
+    (min === undefined || min === null) &&
+    max !== undefined &&
+    max !== null
+  ) {
     return `${a.name} (≤${max})`;
   }
 
   // Fallback ranges for standard FoodHub age groups if not returned from backend
   const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
-  if (key.includes("កុមារតូច") || key.includes("toddler") || key.includes("infant")) {
+  if (
+    key.includes("កុមារតូច") ||
+    key.includes("toddler") ||
+    key.includes("infant")
+  ) {
     return `${a.name} (0-2)`;
   }
   if (key.includes("កុមារ") || key.includes("child") || key.includes("kid")) {
     return `${a.name} (3-12)`;
   }
-  if (key.includes("យុវវ័យ") || key.includes("យុវជន") || key.includes("teen") || key.includes("youth")) {
+  if (
+    key.includes("យុវវ័យ") ||
+    key.includes("យុវជន") ||
+    key.includes("teen") ||
+    key.includes("youth")
+  ) {
     return `${a.name} (13-17)`;
   }
   if (key.includes("មនុស្សពេញវ័យ") || key.includes("adult")) {
     return `${a.name} (18-59)`;
   }
-  if (key.includes("មនុស្សវ័យចំណាស់") || key.includes("វ័យចំណាស់") || key.includes("senior") || key.includes("elderly")) {
+  if (
+    key.includes("មនុស្សវ័យចំណាស់") ||
+    key.includes("វ័យចំណាស់") ||
+    key.includes("senior") ||
+    key.includes("elderly")
+  ) {
     return `${a.name} (60+)`;
   }
 
@@ -285,19 +319,26 @@ function findMatchingAgeGroup(
     }
     if (
       decoded.includes("យុវវ័យ") &&
-      (optName.includes("យុវវ័យ") || optCode.includes("youth") || decoded.includes("13-17"))
+      (optName.includes("យុវវ័យ") ||
+        optCode.includes("youth") ||
+        decoded.includes("13-17"))
     ) {
       return true;
     }
     if (
       decoded.includes("កុមារតូច") &&
-      (optName.includes("កុមារតូច") || optCode.includes("toddler") || decoded.includes("0-2"))
+      (optName.includes("កុមារតូច") ||
+        optCode.includes("toddler") ||
+        decoded.includes("0-2"))
     ) {
       return true;
     }
     if (
       decoded.includes("កុមារ") &&
-      (optName.includes("កុមារ") || optCode.includes("child") || optCode.includes("children") || decoded.includes("3-12")) &&
+      (optName.includes("កុមារ") ||
+        optCode.includes("child") ||
+        optCode.includes("children") ||
+        decoded.includes("3-12")) &&
       !decoded.includes("តូច") &&
       !optName.includes("តូច")
     ) {
@@ -305,13 +346,17 @@ function findMatchingAgeGroup(
     }
     if (
       decoded.includes("ពេញវ័យ") &&
-      (optName.includes("ពេញវ័យ") || optCode.includes("adult") || decoded.includes("18-59"))
+      (optName.includes("ពេញវ័យ") ||
+        optCode.includes("adult") ||
+        decoded.includes("18-59"))
     ) {
       return true;
     }
     if (
       (decoded.includes("ចំណាស់") || decoded.includes("60+")) &&
-      (optName.includes("ចំណាស់") || optCode.includes("senior") || optCode.includes("elderly"))
+      (optName.includes("ចំណាស់") ||
+        optCode.includes("senior") ||
+        optCode.includes("elderly"))
     ) {
       return true;
     }
@@ -598,7 +643,9 @@ function applyCustomerSearchFilters(
           }
           if (
             (normU.includes("កុមារ") || normU.includes("3-12")) &&
-            (aName.includes("កុមារ") || aCode.includes("child") || aCode.includes("children")) &&
+            (aName.includes("កុមារ") ||
+              aCode.includes("child") ||
+              aCode.includes("children")) &&
             !normU.includes("តូច") &&
             !aName.includes("តូច")
           ) {
@@ -612,7 +659,9 @@ function applyCustomerSearchFilters(
           }
           if (
             (normU.includes("ចំណាស់") || normU.includes("60+")) &&
-            (aName.includes("ចំណាស់") || aCode.includes("senior") || aCode.includes("elderly"))
+            (aName.includes("ចំណាស់") ||
+              aCode.includes("senior") ||
+              aCode.includes("elderly"))
           ) {
             return true;
           }
@@ -838,7 +887,9 @@ function FilterSection({
         className="flex w-full cursor-pointer items-center justify-between text-left"
       >
         <span className="flex items-center gap-2 text-[18px] font-semibold text-primary-900 dark:text-slate-100">
-          <span className="text-[20px] text-primary-700 dark:text-emerald-400">{icon}</span>
+          <span className="text-[20px] text-primary-700 dark:text-emerald-400">
+            {icon}
+          </span>
 
           {title}
         </span>
@@ -908,7 +959,9 @@ function CheckboxOption({
           className="h-4 w-4 shrink-0 accent-primary-800 dark:accent-emerald-500"
         />
 
-        <span className="truncate text-[18px] text-gray-600 dark:text-slate-300">{label}</span>
+        <span className="truncate text-[18px] text-gray-600 dark:text-slate-300">
+          {label}
+        </span>
       </span>
 
       {typeof count === "number" && (
@@ -982,7 +1035,7 @@ function FilterSidebar({
 
   const memberProfiles = Array.isArray(profileResponse)
     ? profileResponse
-    : profileResponse?.contents ?? [];
+    : (profileResponse?.contents ?? []);
 
   const [collapsed, setCollapsed] = useState(false);
   const [categoryQuery, setCategoryQuery] = useState("");
@@ -1044,7 +1097,10 @@ function FilterSidebar({
     });
   };
 
-  const toggleNumberItem = (key: keyof CustomerSearchRequest, value: number) => {
+  const toggleNumberItem = (
+    key: keyof CustomerSearchRequest,
+    value: number,
+  ) => {
     const currentArray = (customerSearchRequest[key] as number[]) || [];
     const exists = currentArray.includes(value);
     const updated = exists
@@ -1073,8 +1129,14 @@ function FilterSidebar({
     (customerSearchRequest.cities?.length || 0) +
     (customerSearchRequest.featuredOnly ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
-    (customerSearchRequest.minimumPrice !== undefined || customerSearchRequest.maximumPrice !== undefined ? 1 : 0) +
-    (customerSearchRequest.minimumSpiceLevel !== undefined || customerSearchRequest.maximumSpiceLevel !== undefined ? 1 : 0) +
+    (customerSearchRequest.minimumPrice !== undefined ||
+    customerSearchRequest.maximumPrice !== undefined
+      ? 1
+      : 0) +
+    (customerSearchRequest.minimumSpiceLevel !== undefined ||
+    customerSearchRequest.maximumSpiceLevel !== undefined
+      ? 1
+      : 0) +
     (customerSearchRequest.maxPreparationTimeMinutes !== undefined ? 1 : 0) +
     (customerSearchRequest.profileUuid ? 1 : 0);
 
@@ -1110,7 +1172,9 @@ function FilterSidebar({
     >
       <div
         className={`flex h-full flex-col overflow-hidden bg-white dark:bg-slate-900 ${
-          mobile ? "" : "rounded-[24px] border border-gray-100 dark:border-slate-800 shadow-sm"
+          mobile
+            ? ""
+            : "rounded-[24px] border border-gray-100 dark:border-slate-800 shadow-sm"
         }`}
       >
         {/* Header */}
@@ -1206,7 +1270,8 @@ function FilterSidebar({
                 onToggle={() => toggleSection("profile")}
               >
                 <p className="mb-2 text-[14px] text-gray-500 dark:text-slate-400">
-                  ជ្រើសរើសប្រវត្តិរូបដើម្បីពិនិត្យអាលែហ្ស៊ី និងធាតុផ្សំដែលហាមឃាត់៖
+                  ជ្រើសរើសប្រវត្តិរូបដើម្បីពិនិត្យអាលែហ្ស៊ី
+                  និងធាតុផ្សំដែលហាមឃាត់៖
                 </p>
                 <select
                   value={customerSearchRequest.profileUuid || ""}
@@ -1221,7 +1286,8 @@ function FilterSidebar({
                   <option value="">-- មិនជ្រើសរើសប្រវត្តិរូប --</option>
                   {memberProfiles.map((p) => (
                     <option key={p.uuid} value={p.uuid}>
-                      👤 {p.profileName || (p as any).name} {p.relationship ? `(${p.relationship})` : ""}
+                      👤 {p.profileName || (p as any).name}{" "}
+                      {p.relationship ? `(${p.relationship})` : ""}
                     </option>
                   ))}
                 </select>
@@ -1271,85 +1337,92 @@ function FilterSidebar({
             </div>
 
             {/* CATEGORY */}
-            {filterOptions?.categories && filterOptions.categories.length > 0 && (
-              <FilterSection
-                title="ប្រភេទម្ហូប និងភេសជ្ជៈ"
-                icon={<MdOutlineCategory />}
-                isOpen={openSections.category}
-                onToggle={() => toggleSection("category")}
-              >
-                {/* Dynamic Type Selector (All / Food / Drink) */}
-                <div className="mb-3 flex items-center rounded-xl bg-gray-100 dark:bg-slate-800 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setCategoryType("ALL")}
-                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
-                      categoryType === "ALL"
-                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
-                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    ទាំងអស់
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCategoryType("FOOD")}
-                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
-                      categoryType === "FOOD"
-                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
-                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    🍲 ម្ហូប
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCategoryType("DRINK")}
-                    className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
-                      categoryType === "DRINK"
-                        ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
-                        : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    🥤 ភេសជ្ជៈ
-                  </button>
-                </div>
+            {filterOptions?.categories &&
+              filterOptions.categories.length > 0 && (
+                <FilterSection
+                  title="ប្រភេទម្ហូប និងភេសជ្ជៈ"
+                  icon={<MdOutlineCategory />}
+                  isOpen={openSections.category}
+                  onToggle={() => toggleSection("category")}
+                >
+                  {/* Dynamic Type Selector (All / Food / Drink) */}
+                  <div className="mb-3 flex items-center rounded-xl bg-gray-100 dark:bg-slate-800 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setCategoryType("ALL")}
+                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                        categoryType === "ALL"
+                          ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                          : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                      }`}
+                    >
+                      ទាំងអស់
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCategoryType("FOOD")}
+                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                        categoryType === "FOOD"
+                          ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                          : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                      }`}
+                    >
+                      🍲 ម្ហូប
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCategoryType("DRINK")}
+                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                        categoryType === "DRINK"
+                          ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
+                          : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
+                      }`}
+                    >
+                      🥤 ភេសជ្ជៈ
+                    </button>
+                  </div>
 
-                {/* Keep Searchbox */}
-                <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3">
-                  <IoSearchOutline className="shrink-0 text-[20px] text-gray-400 dark:text-slate-500" />
-                  <input
-                    value={categoryQuery}
-                    onChange={(event) => setCategoryQuery(event.target.value)}
-                    placeholder={
-                      categoryType === "FOOD"
-                        ? "ស្វែងរកប្រភេទម្ហូប"
-                        : categoryType === "DRINK"
-                          ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
-                          : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
-                    }
-                    className="w-full bg-transparent text-[16px] text-gray-600 dark:text-slate-200 outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
-                  />
-                </div>
+                  {/* Keep Searchbox */}
+                  <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3">
+                    <IoSearchOutline className="shrink-0 text-[20px] text-gray-400 dark:text-slate-500" />
+                    <input
+                      value={categoryQuery}
+                      onChange={(event) => setCategoryQuery(event.target.value)}
+                      placeholder={
+                        categoryType === "FOOD"
+                          ? "ស្វែងរកប្រភេទម្ហូប"
+                          : categoryType === "DRINK"
+                            ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
+                            : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
+                      }
+                      className="w-full bg-transparent text-[16px] text-gray-600 dark:text-slate-200 outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                    />
+                  </div>
 
-                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
-                  {categories.length > 0 ? (
-                    categories.map((cat) => (
-                      <CheckboxOption
-                        key={cat.uuid}
-                        label={cat.name}
-                        checked={Boolean(customerSearchRequest.categoryUuids?.includes(cat.uuid))}
-                        onChange={() => toggleArrayItem("categoryUuids", cat.uuid)}
-                      />
-                    ))
-                  ) : (
-                    <p className="py-2 text-center text-xs text-gray-400 dark:text-slate-500">
-                      រកមិនឃើញប្រភេទដែលត្រូវគ្នា
-                    </p>
-                  )}
-                </div>
-              </FilterSection>
-            )}
+                  <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                    {categories.length > 0 ? (
+                      categories.map((cat) => (
+                        <CheckboxOption
+                          key={cat.uuid}
+                          label={cat.name}
+                          checked={Boolean(
+                            customerSearchRequest.categoryUuids?.includes(
+                              cat.uuid,
+                            ),
+                          )}
+                          onChange={() =>
+                            toggleArrayItem("categoryUuids", cat.uuid)
+                          }
+                        />
+                      ))
+                    ) : (
+                      <p className="py-2 text-center text-xs text-gray-400 dark:text-slate-500">
+                        រកមិនឃើញប្រភេទដែលត្រូវគ្នា
+                      </p>
+                    )}
+                  </div>
+                </FilterSection>
+              )}
 
             {/* CUISINE */}
             {filterOptions?.cuisines && filterOptions.cuisines.length > 0 && (
@@ -1364,7 +1437,9 @@ function FilterSidebar({
                     <CheckboxOption
                       key={c.uuid}
                       label={c.name}
-                      checked={Boolean(customerSearchRequest.cuisineUuids?.includes(c.uuid))}
+                      checked={Boolean(
+                        customerSearchRequest.cuisineUuids?.includes(c.uuid),
+                      )}
                       onChange={() => toggleArrayItem("cuisineUuids", c.uuid)}
                     />
                   ))}
@@ -1373,25 +1448,32 @@ function FilterSidebar({
             )}
 
             {/* DIETARY TYPES */}
-            {filterOptions?.dietaryTypes && filterOptions.dietaryTypes.length > 0 && (
-              <FilterSection
-                title="របបអាហារ"
-                icon={<IoNutritionOutline />}
-                isOpen={openSections.dietary}
-                onToggle={() => toggleSection("dietary")}
-              >
-                <div className="space-y-1">
-                  {filterOptions.dietaryTypes.map((d) => (
-                    <CheckboxOption
-                      key={d.uuid}
-                      label={d.name}
-                      checked={Boolean(customerSearchRequest.dietaryTypeUuids?.includes(d.uuid))}
-                      onChange={() => toggleArrayItem("dietaryTypeUuids", d.uuid)}
-                    />
-                  ))}
-                </div>
-              </FilterSection>
-            )}
+            {filterOptions?.dietaryTypes &&
+              filterOptions.dietaryTypes.length > 0 && (
+                <FilterSection
+                  title="របបអាហារ"
+                  icon={<IoNutritionOutline />}
+                  isOpen={openSections.dietary}
+                  onToggle={() => toggleSection("dietary")}
+                >
+                  <div className="space-y-1">
+                    {filterOptions.dietaryTypes.map((d) => (
+                      <CheckboxOption
+                        key={d.uuid}
+                        label={d.name}
+                        checked={Boolean(
+                          customerSearchRequest.dietaryTypeUuids?.includes(
+                            d.uuid,
+                          ),
+                        )}
+                        onChange={() =>
+                          toggleArrayItem("dietaryTypeUuids", d.uuid)
+                        }
+                      />
+                    ))}
+                  </div>
+                </FilterSection>
+              )}
 
             {/* ALLERGEN EXCLUSIONS */}
             {filterOptions?.allergens && filterOptions.allergens.length > 0 && (
@@ -1409,8 +1491,14 @@ function FilterSidebar({
                     <CheckboxOption
                       key={alg.uuid}
                       label={`គ្មាន ${alg.name}`}
-                      checked={Boolean(customerSearchRequest.excludeAllergenUuids?.includes(alg.uuid))}
-                      onChange={() => toggleArrayItem("excludeAllergenUuids", alg.uuid)}
+                      checked={Boolean(
+                        customerSearchRequest.excludeAllergenUuids?.includes(
+                          alg.uuid,
+                        ),
+                      )}
+                      onChange={() =>
+                        toggleArrayItem("excludeAllergenUuids", alg.uuid)
+                      }
                     />
                   ))}
                 </div>
@@ -1432,7 +1520,9 @@ function FilterSidebar({
                   onChange={(e) =>
                     onSearchRequestChange({
                       ...customerSearchRequest,
-                      minimumPrice: e.target.value ? Number(e.target.value) : undefined,
+                      minimumPrice: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
                     })
                   }
                   className="rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] text-gray-700 dark:text-slate-200 focus:outline-none"
@@ -1444,7 +1534,9 @@ function FilterSidebar({
                   onChange={(e) =>
                     onSearchRequestChange({
                       ...customerSearchRequest,
-                      maximumPrice: e.target.value ? Number(e.target.value) : undefined,
+                      maximumPrice: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
                     })
                   }
                   className="rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] text-gray-700 dark:text-slate-200 focus:outline-none"
@@ -1513,7 +1605,10 @@ function FilterSidebar({
                       onSearchRequestChange({
                         ...customerSearchRequest,
                         maxPreparationTimeMinutes:
-                          customerSearchRequest.maxPreparationTimeMinutes === pt.val ? undefined : pt.val,
+                          customerSearchRequest.maxPreparationTimeMinutes ===
+                          pt.val
+                            ? undefined
+                            : pt.val,
                       })
                     }
                     className={`flex-1 p-2 rounded-xl text-[14px] font-semibold border transition text-center ${
@@ -1541,7 +1636,9 @@ function FilterSidebar({
                     <CheckboxOption
                       key={m.uuid}
                       label={m.name}
-                      checked={Boolean(customerSearchRequest.mealTypeUuids?.includes(m.uuid))}
+                      checked={Boolean(
+                        customerSearchRequest.mealTypeUuids?.includes(m.uuid),
+                      )}
                       onChange={() => toggleArrayItem("mealTypeUuids", m.uuid)}
                     />
                   ))}
@@ -1570,11 +1667,23 @@ function FilterSidebar({
                         return (
                           normU === aName ||
                           normU === aCode ||
-                          (normU.includes("យុវវ័យ") && (aName.includes("យុវវ័យ") || aCode.includes("youth"))) ||
-                          (normU.includes("កុមារតូច") && (aName.includes("កុមារតូច") || aCode.includes("toddler"))) ||
-                          (normU.includes("កុមារ") && (aName.includes("កុមារ") || aCode.includes("child")) && !normU.includes("តូច") && !aName.includes("តូច")) ||
-                          (normU.includes("ពេញវ័យ") && (aName.includes("ពេញវ័យ") || aCode.includes("adult"))) ||
-                          (normU.includes("ចំណាស់") && (aName.includes("ចំណាស់") || aCode.includes("senior")))
+                          (normU.includes("យុវវ័យ") &&
+                            (aName.includes("យុវវ័យ") ||
+                              aCode.includes("youth"))) ||
+                          (normU.includes("កុមារតូច") &&
+                            (aName.includes("កុមារតូច") ||
+                              aCode.includes("toddler"))) ||
+                          (normU.includes("កុមារ") &&
+                            (aName.includes("កុមារ") ||
+                              aCode.includes("child")) &&
+                            !normU.includes("តូច") &&
+                            !aName.includes("តូច")) ||
+                          (normU.includes("ពេញវ័យ") &&
+                            (aName.includes("ពេញវ័យ") ||
+                              aCode.includes("adult"))) ||
+                          (normU.includes("ចំណាស់") &&
+                            (aName.includes("ចំណាស់") ||
+                              aCode.includes("senior")))
                         );
                       }),
                     );
@@ -1587,18 +1696,24 @@ function FilterSidebar({
                         onChange={() => {
                           if (isChecked) {
                             // Uncheck: remove all representations of this group
-                            const current = customerSearchRequest.ageGroupUuids || [];
+                            const current =
+                              customerSearchRequest.ageGroupUuids || [];
                             const updated = current.filter(
                               (u) =>
                                 u !== a.uuid &&
                                 u !== a.code &&
                                 u !== a.name &&
-                                !normalizeText(u).includes(normalizeText(a.name)) &&
-                                !normalizeText(a.name).includes(normalizeText(u)),
+                                !normalizeText(u).includes(
+                                  normalizeText(a.name),
+                                ) &&
+                                !normalizeText(a.name).includes(
+                                  normalizeText(u),
+                                ),
                             );
                             onSearchRequestChange({
                               ...customerSearchRequest,
-                              ageGroupUuids: updated.length > 0 ? updated : undefined,
+                              ageGroupUuids:
+                                updated.length > 0 ? updated : undefined,
                             });
                           } else {
                             toggleArrayItem("ageGroupUuids", a.uuid);
@@ -1624,7 +1739,9 @@ function FilterSidebar({
                     <CheckboxOption
                       key={s.uuid}
                       label={s.name}
-                      checked={Boolean(customerSearchRequest.seasonUuids?.includes(s.uuid))}
+                      checked={Boolean(
+                        customerSearchRequest.seasonUuids?.includes(s.uuid),
+                      )}
                       onChange={() => toggleArrayItem("seasonUuids", s.uuid)}
                     />
                   ))}
@@ -1645,7 +1762,9 @@ function FilterSidebar({
                     <CheckboxOption
                       key={ev.uuid}
                       label={ev.name}
-                      checked={Boolean(customerSearchRequest.eventUuids?.includes(ev.uuid))}
+                      checked={Boolean(
+                        customerSearchRequest.eventUuids?.includes(ev.uuid),
+                      )}
                       onChange={() => toggleArrayItem("eventUuids", ev.uuid)}
                     />
                   ))}
@@ -1654,76 +1773,94 @@ function FilterSidebar({
             )}
 
             {/* SUITABLE WEATHER */}
-            {filterOptions?.suitableWeather && filterOptions.suitableWeather.length > 0 && (
-              <FilterSection
-                title="អាកាសធាតុសមស្រប"
-                icon={<MdOutlineCategory />}
-                isOpen={openSections.weather}
-                onToggle={() => toggleSection("weather")}
-              >
-                <div className="space-y-1">
-                  {filterOptions.suitableWeather.map((w) => (
-                    <CheckboxOption
-                      key={w.uuid}
-                      label={w.name}
-                      checked={Boolean(customerSearchRequest.weatherConditionUuids?.includes(w.uuid))}
-                      onChange={() => toggleArrayItem("weatherConditionUuids", w.uuid)}
-                    />
-                  ))}
-                </div>
-              </FilterSection>
-            )}
+            {filterOptions?.suitableWeather &&
+              filterOptions.suitableWeather.length > 0 && (
+                <FilterSection
+                  title="អាកាសធាតុសមស្រប"
+                  icon={<MdOutlineCategory />}
+                  isOpen={openSections.weather}
+                  onToggle={() => toggleSection("weather")}
+                >
+                  <div className="space-y-1">
+                    {filterOptions.suitableWeather.map((w) => (
+                      <CheckboxOption
+                        key={w.uuid}
+                        label={w.name}
+                        checked={Boolean(
+                          customerSearchRequest.weatherConditionUuids?.includes(
+                            w.uuid,
+                          ),
+                        )}
+                        onChange={() =>
+                          toggleArrayItem("weatherConditionUuids", w.uuid)
+                        }
+                      />
+                    ))}
+                  </div>
+                </FilterSection>
+              )}
 
             {/* STORE PRICE LEVEL */}
-            {filterOptions?.storePriceLevels && filterOptions.storePriceLevels.length > 0 && (
-              <FilterSection
-                title="កម្រិតតម្លៃហាង"
-                icon={<IoPricetagOutline />}
-                isOpen={openSections.storePrice}
-                onToggle={() => toggleSection("storePrice")}
-              >
-                <div className="flex flex-wrap gap-2">
-                  {filterOptions.storePriceLevels.map((level) => {
-                    const selected = customerSearchRequest.storePriceLevels?.includes(level);
-                    return (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => toggleNumberItem("storePriceLevels", level)}
-                        className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition ${
-                          selected
-                            ? "border-primary-800 bg-primary-800 text-white"
-                            : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
-                        }`}
-                      >
-                        {"$".repeat(level)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </FilterSection>
-            )}
+            {filterOptions?.storePriceLevels &&
+              filterOptions.storePriceLevels.length > 0 && (
+                <FilterSection
+                  title="កម្រិតតម្លៃហាង"
+                  icon={<IoPricetagOutline />}
+                  isOpen={openSections.storePrice}
+                  onToggle={() => toggleSection("storePrice")}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {filterOptions.storePriceLevels.map((level) => {
+                      const selected =
+                        customerSearchRequest.storePriceLevels?.includes(level);
+                      return (
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() =>
+                            toggleNumberItem("storePriceLevels", level)
+                          }
+                          className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition ${
+                            selected
+                              ? "border-primary-800 bg-primary-800 text-white"
+                              : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                          }`}
+                        >
+                          {"$".repeat(level)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </FilterSection>
+              )}
 
             {/* AVAILABILITY */}
-            {filterOptions?.availabilityStatuses && filterOptions.availabilityStatuses.length > 0 && (
-              <FilterSection
-                title="ស្ថានភាពលក់"
-                icon={<MdOutlineCategory />}
-                isOpen={openSections.availability}
-                onToggle={() => toggleSection("availability")}
-              >
-                <div className="space-y-1">
-                  {filterOptions.availabilityStatuses.map((status) => (
-                    <CheckboxOption
-                      key={status}
-                      label={AVAILABILITY_LABELS[status] ?? status}
-                      checked={Boolean(customerSearchRequest.availabilityStatuses?.includes(status))}
-                      onChange={() => toggleArrayItem("availabilityStatuses", status)}
-                    />
-                  ))}
-                </div>
-              </FilterSection>
-            )}
+            {filterOptions?.availabilityStatuses &&
+              filterOptions.availabilityStatuses.length > 0 && (
+                <FilterSection
+                  title="ស្ថានភាពលក់"
+                  icon={<MdOutlineCategory />}
+                  isOpen={openSections.availability}
+                  onToggle={() => toggleSection("availability")}
+                >
+                  <div className="space-y-1">
+                    {filterOptions.availabilityStatuses.map((status) => (
+                      <CheckboxOption
+                        key={status}
+                        label={AVAILABILITY_LABELS[status] ?? status}
+                        checked={Boolean(
+                          customerSearchRequest.availabilityStatuses?.includes(
+                            status,
+                          ),
+                        )}
+                        onChange={() =>
+                          toggleArrayItem("availabilityStatuses", status)
+                        }
+                      />
+                    ))}
+                  </div>
+                </FilterSection>
+              )}
 
             {/* FEATURED ONLY */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
@@ -1756,7 +1893,9 @@ function FilterSidebar({
                     <CheckboxOption
                       key={prov}
                       label={prov}
-                      checked={Boolean(customerSearchRequest.provinces?.includes(prov))}
+                      checked={Boolean(
+                        customerSearchRequest.provinces?.includes(prov),
+                      )}
                       onChange={() => toggleArrayItem("provinces", prov)}
                     />
                   ))}
@@ -1777,7 +1916,9 @@ function FilterSidebar({
                     <CheckboxOption
                       key={city}
                       label={city}
-                      checked={Boolean(customerSearchRequest.cities?.includes(city))}
+                      checked={Boolean(
+                        customerSearchRequest.cities?.includes(city),
+                      )}
                       onChange={() => toggleArrayItem("cities", city)}
                     />
                   ))}
@@ -1790,7 +1931,6 @@ function FilterSidebar({
     </motion.aside>
   );
 }
-
 
 /* =========================================================
    CATEGORY TABS
@@ -1964,21 +2104,22 @@ function FoodPageContent() {
     searchParams.get("age") ||
     "";
   const rawQueryParam =
-    searchParams.get("q") ||
-    searchParams.get("search") ||
-    "";
+    searchParams.get("q") || searchParams.get("search") || "";
 
   const [searchInput, setSearchInput] = useState(rawQueryParam);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
 
-  const [customerSearchRequest, setCustomerSearchRequest] = useState<CustomerSearchRequest>({
-    sort: "NEWEST",
-  });
+  const [customerSearchRequest, setCustomerSearchRequest] =
+    useState<CustomerSearchRequest>({
+      sort: "NEWEST",
+    });
 
-  const [executeDiscoverySearch, { data: discoveryResult, isLoading: isDiscoveryLoading }] =
-    useDiscoverySearchMutation();
+  const [
+    executeDiscoverySearch,
+    { data: discoveryResult, isLoading: isDiscoveryLoading },
+  ] = useDiscoverySearchMutation();
 
   const { data: discoveryFilterOptions } = useGetDiscoveryFiltersQuery();
 
@@ -2080,7 +2221,7 @@ function FoodPageContent() {
     () =>
       Array.isArray(profileResponse)
         ? profileResponse
-        : profileResponse?.contents ?? [],
+        : (profileResponse?.contents ?? []),
     [profileResponse],
   );
 
@@ -2092,9 +2233,7 @@ function FoodPageContent() {
         ) ?? null
       );
     }
-    return (
-      memberProfiles.find((p: MemberProfile) => p.isDefault) ?? null
-    );
+    return memberProfiles.find((p: MemberProfile) => p.isDefault) ?? null;
   }, [customerSearchRequest.profileUuid, memberProfiles]);
 
   /* =======================================================
@@ -2118,10 +2257,10 @@ function FoodPageContent() {
      OPTIONS FROM CURRENT API RESPONSE
   ======================================================= */
 
-function cleanKhmerLabel(label: string): string {
-  if (!label) return "";
-  return label.replace(/\s*\([A-Za-z0-9\s&,/-]+\)/g, "").trim();
-}
+  function cleanKhmerLabel(label: string): string {
+    if (!label) return "";
+    return label.replace(/\s*\([A-Za-z0-9\s&,/-]+\)/g, "").trim();
+  }
 
   const categoryOptions = useMemo(
     () =>
@@ -2296,9 +2435,7 @@ function cleanKhmerLabel(label: string): string {
           legacyId: matchingCatalogItem?.legacyId ?? 0,
           name: item.name || matchingCatalogItem?.name || "",
           localName:
-            item.food?.localName ||
-            matchingCatalogItem?.localName ||
-            item.name,
+            item.food?.localName || matchingCatalogItem?.localName || item.name,
           description:
             item.description || matchingCatalogItem?.description || null,
           localDescription: matchingCatalogItem?.localDescription || null,
@@ -2355,8 +2492,7 @@ function cleanKhmerLabel(label: string): string {
             events: [],
             suitableWeather: [],
           },
-          allergenDeclarations:
-            matchingCatalogItem?.allergenDeclarations || [],
+          allergenDeclarations: matchingCatalogItem?.allergenDeclarations || [],
           ingredients: matchingCatalogItem?.ingredients || [],
           beveragePairings: matchingCatalogItem?.beveragePairings || [],
           nutrition: matchingCatalogItem?.nutrition || {
@@ -2366,10 +2502,8 @@ function cleanKhmerLabel(label: string): string {
             proteinGrams: 0,
           },
           recommendation: matchingCatalogItem?.recommendation || null,
-          createdAt:
-            matchingCatalogItem?.createdAt || new Date().toISOString(),
-          updatedAt:
-            matchingCatalogItem?.updatedAt || new Date().toISOString(),
+          createdAt: matchingCatalogItem?.createdAt || new Date().toISOString(),
+          updatedAt: matchingCatalogItem?.updatedAt || new Date().toISOString(),
           origin: matchingCatalogItem?.origin || {
             countryCode: "KH",
             countryName: "Cambodia",
@@ -2394,22 +2528,19 @@ function cleanKhmerLabel(label: string): string {
     return [];
   }, [discoveryItems, menuItems]);
 
-  const apiCategoryOptions: FilterOption[] = useMemo(
-    () => {
-      if (
-        discoveryFilterOptions?.categories &&
-        discoveryFilterOptions.categories.length > 0
-      ) {
-        return discoveryFilterOptions.categories.map((category) => ({
-          code: category.uuid,
-          name: cleanKhmerLabel(category.name),
-          count: 0,
-        }));
-      }
-      return categoryOptions;
-    },
-    [discoveryFilterOptions, categoryOptions],
-  );
+  const apiCategoryOptions: FilterOption[] = useMemo(() => {
+    if (
+      discoveryFilterOptions?.categories &&
+      discoveryFilterOptions.categories.length > 0
+    ) {
+      return discoveryFilterOptions.categories.map((category) => ({
+        code: category.uuid,
+        name: cleanKhmerLabel(category.name),
+        count: 0,
+      }));
+    }
+    return categoryOptions;
+  }, [discoveryFilterOptions, categoryOptions]);
 
   // If discovery returned items, display them. Otherwise fall back to filteredFoods
   // so all menu items are shown when no filter is active, and client filters work smoothly.
@@ -2485,7 +2616,9 @@ function cleanKhmerLabel(label: string): string {
       <div className="flex items-center gap-3 min-w-0">
         <IoSearchOutline className="shrink-0 text-[22px] text-primary-700 dark:text-emerald-400" />
         <span className="text-[16px] text-gray-500 dark:text-gray-400 truncate">
-          {searchInput ? `ស្វែងរក: "${searchInput}"` : "ស្វែងរកហាង ឬ មុខម្ហូប..."}
+          {searchInput
+            ? `ស្វែងរក: "${searchInput}"`
+            : "ស្វែងរកហាង ឬ មុខម្ហូប..."}
         </span>
       </div>
       <kbd className="hidden sm:inline-block rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 dark:bg-slate-800 dark:text-gray-400">

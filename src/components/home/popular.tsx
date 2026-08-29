@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import { EASE_SOFT, VIEWPORT, group } from "@/lib/reveal";
+import { EASE_SOFT, VIEWPORT, group, riseReveal } from "@/lib/reveal";
 import { useGetPopularBannersQuery } from "@/app/store/bannerApi";
 import { normalizeArrayPayload } from "@/app/store/utils/normalize";
 import { resolveBannerImageUrl } from "@/lib/banner-media";
@@ -29,11 +29,9 @@ const DEFAULT_CARDS = [
     fit: "object-cover",
     layout: "z-6 sm:-mt-6 max-sm:-mt-3 -ml-10",
     title: "ភេសជ្ជៈពេញនិយម 1",
-    href: "/menu",
   },
   {
     src: "/Image/food-picture/card 2.jpg",
-    rotate: -1,
     fit: "object-fill",
     layout: "z-5 -ml-10",
     title: "ការស្វែងរកអាហារ 2",
@@ -199,9 +197,11 @@ export default function PopularSection() {
       return sliced.map((banner, index) => {
         const preset = LAYOUT_PRESETS[index % LAYOUT_PRESETS.length];
         const defaultFallback = DEFAULT_CARDS[index % DEFAULT_CARDS.length].src;
+        const resolvedUrl = resolveBannerImageUrl(banner, defaultFallback);
+
         return {
           id: String(banner.id || `popular-banner-${index}`),
-          src: resolveBannerImageUrl(banner, defaultFallback),
+          src: resolvedUrl,
           fallbackSrc: defaultFallback,
           href: banner.location || "/menu",
           rotate: preset.rotate,
@@ -233,6 +233,7 @@ export default function PopularSection() {
         className="  max-sm:px-2.5 flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full"
       >
         <motion.p
+          variants={riseReveal}
           className="
        text-center
         font-semibold
@@ -240,13 +241,12 @@ export default function PopularSection() {
 
         lg:text-6xl  py-2
         md:text-5xl
-        max-md:text-3xl dark:text-primary-dark 
+        max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark 
       "
         >
-          បទពិសោធន៍ថ្មីក្នុង <br className="sm:hidden max-sm:block" />
-          <motion.span className="text-secondary-500">
-            ការស្វែងរកអាហារ
-          </motion.span>
+          មុខម្ហូបនិងភេសជ្ជៈ
+          <br className="sm:hidden max-sm:block" />
+          <motion.span className="text-secondary-500">ពេញនិយម</motion.span>
         </motion.p>
 
         {/* =====================================================
@@ -254,6 +254,7 @@ export default function PopularSection() {
     ====================================================== */}
 
         <motion.p
+          variants={riseReveal}
           className="
         text-center
         font-light
