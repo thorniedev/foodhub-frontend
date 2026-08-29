@@ -17,8 +17,16 @@ export const SITE_URL =
 export const SITE_NAME = "ម្ហូបអាហារ - FoodHub";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpeg`;
 
-const BACKEND_API_URL =
-  process.env.BACKEND_API_URL || "https://api.mhoubahar.store/api/v1";
+function getBackendApiV1Url(): string {
+  const raw = (process.env.BACKEND_API_URL || "https://api.mhoubahar.store")
+    .trim()
+    .replace(/\/+$/, "");
+  if (raw.endsWith("/api/v1")) return raw;
+  if (raw.endsWith("/api")) return `${raw}/v1`;
+  return `${raw}/api/v1`;
+}
+
+export const BACKEND_API_URL = getBackendApiV1Url();
 
 /* ================================================================
    MEDIA URL RESOLVER (Absolute URLs for Open Graph & JSON-LD)

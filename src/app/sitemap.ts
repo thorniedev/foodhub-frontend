@@ -1,8 +1,17 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 
-const BACKEND_API_URL =
-  process.env.BACKEND_API_URL || "https://api.mhoubahar.store/api/v1";
+const rawBackendUrl = (
+  process.env.BACKEND_API_URL || "https://api.mhoubahar.store"
+)
+  .trim()
+  .replace(/\/+$/, "");
+
+const BACKEND_API_URL = rawBackendUrl.endsWith("/api/v1")
+  ? rawBackendUrl
+  : rawBackendUrl.endsWith("/api")
+    ? `${rawBackendUrl}/v1`
+    : `${rawBackendUrl}/api/v1`;
 
 export const revalidate = 86400;
 
