@@ -43,11 +43,11 @@ export function toAbsoluteMediaUrl(
   }
 
   if (source.startsWith("/api/v1/")) {
-    return `${BACKEND_API_URL}${source.slice("/api/v1".length)}`;
+    return `https://api.mhoubahar.store${source}`;
   }
 
   if (source.startsWith("/api/")) {
-    return `${BACKEND_API_URL}${source.slice("/api".length)}`;
+    return `https://api.mhoubahar.store/api/v1${source.slice("/api".length)}`;
   }
 
   if (source.startsWith("/")) {
@@ -189,7 +189,7 @@ export function generateFoodMetadata(food: FoodSeoData, uuid: string): Metadata 
       canonical,
     },
     openGraph: {
-      type: "article",
+      type: "website",
       url: canonical,
       title: `${displayName} | FoodHub`,
       description,
@@ -197,6 +197,7 @@ export function generateFoodMetadata(food: FoodSeoData, uuid: string): Metadata 
       images: [
         {
           url: imageUrl,
+          secureUrl: imageUrl,
           width: 1200,
           height: 630,
           alt: `${displayName} - FoodHub`,
@@ -244,7 +245,7 @@ export function generateStoreMetadata(store: StoreSeoData, uuid: string): Metada
       canonical,
     },
     openGraph: {
-      type: "article",
+      type: "website",
       url: canonical,
       title: `${storeName} | FoodHub`,
       description,
@@ -252,6 +253,7 @@ export function generateStoreMetadata(store: StoreSeoData, uuid: string): Metada
       images: [
         {
           url: imageUrl,
+          secureUrl: imageUrl,
           width: 1200,
           height: 630,
           alt: `${storeName} - FoodHub`,
