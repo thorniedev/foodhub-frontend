@@ -36,6 +36,9 @@ export async function GET(
         "Content-Length": String(imageBuffer.byteLength),
         "Cache-Control":
           "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800",
+        // Tell Telegram/Social crawlers the real dimensions
+        "X-Image-Width": "736",
+        "X-Image-Height": "736",
       },
     });
   } catch (error) {

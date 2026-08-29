@@ -202,8 +202,8 @@ export function generateFoodMetadata(food: FoodSeoData, uuid: string): Metadata 
       images: [
         {
           url: imageUrl,
-          width: 1200,
-          height: 630,
+          width: 736,
+          height: 736,
           alt: `${displayName} - FoodHub`,
         },
       ],
