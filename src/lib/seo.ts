@@ -184,7 +184,7 @@ export function generateFoodMetadata(food: FoodSeoData, uuid: string): Metadata 
     food.description?.trim() ||
     `ស្វែងរក ${displayName} ឆ្ងាញ់ៗ ${storeName ? `ពី ${storeName}` : "នៅ FoodHub Cambodia"}. តម្លៃ ${priceFormatted}`;
 
-  const imageUrl = `${SITE_URL}/api/og/food/${uuid}`;
+  const imageUrl = `/api/og/food/${uuid}`;
   const canonical = `/menu/${uuid}`;
 
   return {
@@ -202,7 +202,6 @@ export function generateFoodMetadata(food: FoodSeoData, uuid: string): Metadata 
       images: [
         {
           url: imageUrl,
-          secureUrl: imageUrl,
           width: 1200,
           height: 630,
           alt: `${displayName} - FoodHub`,
@@ -240,7 +239,7 @@ export function generateStoreMetadata(store: StoreSeoData, uuid: string): Metada
     store.description?.trim() ||
     `ស្វែងរកមុខម្ហូប និងកុម្ម៉ង់អាហារពី ${storeName} ${location ? `នៅ ${location}` : ""}. ពិន្ទុ ${store.averageRating ? `⭐ ${store.averageRating.toFixed(1)}` : "ខ្ពស់"}`;
 
-  const imageUrl = `${SITE_URL}/api/og/store/${uuid}`;
+  const imageUrl = `/api/og/store/${uuid}`;
   const canonical = `/stores/${uuid}`;
 
   return {
