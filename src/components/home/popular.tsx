@@ -14,6 +14,17 @@ import type { BannerItem } from "@/types/banner";
    THE STACK CONFIGURATION & ORIGINAL FALLBACKS
 ========================================================= */
 
+interface PopularCard {
+  id: string;
+  src: string;
+  fallbackSrc: string;
+  href: string;
+  rotate: number;
+  fit: string;
+  layout: string;
+  title: string;
+}
+
 const DEFAULT_CARDS = [
   {
     src: "/Image/food-picture/card 4.jpg",
@@ -29,9 +40,11 @@ const DEFAULT_CARDS = [
     fit: "object-cover",
     layout: "z-6 sm:-mt-6 max-sm:-mt-3 -ml-10",
     title: "ភេសជ្ជៈពេញនិយម 1",
+    href: "/menu",
   },
   {
     src: "/Image/food-picture/card 2.jpg",
+    rotate: -1,
     fit: "object-fill",
     layout: "z-5 -ml-10",
     title: "ការស្វែងរកអាហារ 2",
@@ -99,16 +112,7 @@ const cardReveal: Variants = {
 };
 
 interface PopularCardItemProps {
-  card: {
-    id: string;
-    src: string;
-    fallbackSrc: string;
-    href?: string;
-    rotate: number;
-    fit: string;
-    layout: string;
-    title: string;
-  };
+  card: PopularCard;
   from: number;
   reduceMotion: boolean | null;
 }
@@ -184,7 +188,7 @@ export default function PopularSection() {
   const reduceMotion = useReducedMotion();
   const { data: bannerData } = useGetPopularBannersQuery();
 
-  const cards = useMemo(() => {
+  const cards = useMemo<PopularCard[]>(() => {
     const list = Array.isArray(bannerData)
       ? bannerData
       : normalizeArrayPayload<BannerItem>(bannerData);
@@ -217,7 +221,7 @@ export default function PopularSection() {
       ...card,
       id: `default-popular-${idx}`,
       fallbackSrc: card.src,
-      href: "/menu",
+      href: card.href || "/menu",
     }));
   }, [bannerData]);
 
