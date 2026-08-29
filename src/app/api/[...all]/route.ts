@@ -332,6 +332,77 @@ async function forwardRequest(
         response: errorText,
       });
 
+      // RESILIENT RECOVERY: Auto-sync user if user/profile returns 404 (e.g. fresh Google login)
+      if (
+        backendResponse.status === 404 &&
+        (backendPath === "profiles" ||
+          backendPath === "users/me" ||
+          backendPath.startsWith("profiles/")) &&
+        accessToken
+      ) {
+        console.log(
+          "[FOODHUB PROXY RECOVERY] User or profile returned 404. Attempting automatic user sync...",
+        );
+        try {
+          const syncRes = await fetch(`${backendApiUrl}/users/me/sync`, {
+            method: "PUT",
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            cache: "no-store",
+          });
+
+          if (syncRes.ok) {
+            console.log(
+              "[FOODHUB PROXY RECOVERY] User synced successfully! Retrying request:",
+              targetUrl.toString(),
+            );
+            const retryRes = await fetch(targetUrl, {
+              method: request.method,
+              headers: requestHeaders,
+              body:
+                requestBody && requestBody.byteLength > 0
+                  ? requestBody
+                  : undefined,
+              cache: "no-store",
+            });
+
+            if (retryRes.ok) {
+              const retryBody =
+                request.method === "HEAD"
+                  ? null
+                  : await retryRes.arrayBuffer();
+              return new NextResponse(retryBody, {
+                status: retryRes.status,
+                headers: retryRes.headers,
+              });
+            }
+          }
+        } catch (syncErr) {
+          console.warn("[FOODHUB PROXY RECOVERY SYNC ERROR]", syncErr);
+        }
+
+        // If GET /profiles returns 404 for a newly synced user with no members yet, return empty list
+        if (backendPath === "profiles" && request.method === "GET") {
+          console.log(
+            "[FOODHUB PROXY RECOVERY] Returning empty profile page for new user.",
+          );
+          return NextResponse.json(
+            {
+              contents: [],
+              totalElements: 0,
+              totalPages: 0,
+              page: 0,
+              size: 20,
+            },
+            {
+              status: 200,
+            },
+          );
+        }
+      }
+
       // RESILIENT RECOVERY: If backend catalog/menu-items hits broken entity in batch query
       if (backendPath === "catalog/menu-items" && request.method === "GET") {
         console.warn(
@@ -380,7 +451,6 @@ async function forwardRequest(
           console.error("[FOODHUB PROXY RECOVERY FAILED]", recoveryErr);
         }
       }
-
     }
 
     const status = backendResponse.status;
