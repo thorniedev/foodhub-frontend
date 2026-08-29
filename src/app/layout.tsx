@@ -148,6 +148,12 @@ export const metadata: Metadata = {
   },
 
   keywords: [
+    "mhoubahar.store",
+    "mhoubahar",
+    "mhou bahar",
+    "mhoub ahar",
+    "ម្ហូបអាហារ",
+    "មហូបអាហារ",
     "FoodHub",
 
     "មូបអាហារ",
