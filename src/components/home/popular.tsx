@@ -236,7 +236,7 @@ export default function PopularSection() {
         variants={group()}
         className="  max-sm:px-2.5 flex flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full"
       >
-        <motion.p
+        <motion.h2
           variants={riseReveal}
           className="
        text-center
@@ -251,7 +251,7 @@ export default function PopularSection() {
           មុខម្ហូបនិងភេសជ្ជៈ
           <br className="sm:hidden max-sm:block" />
           <motion.span className="text-secondary-500">ពេញនិយម</motion.span>
-        </motion.p>
+        </motion.h2>
 
         {/* =====================================================
         DESCRIPTION

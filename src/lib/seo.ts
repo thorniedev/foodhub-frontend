@@ -13,7 +13,7 @@ export const SITE_URL = (
     : `https://${RAW_SITE_URL}`
 ).replace(/\/+$/, "");
 
-export const SITE_NAME = "មូបអាហារ - FoodHub";
+export const SITE_NAME = "ម្ហូបអាហារ";
 
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpeg`;
 
@@ -791,7 +791,7 @@ export function generateWebSiteJsonLd(): object {
 //     : `https://${process.env.NEXT_PUBLIC_SITE_URL}`
 //   : "https://www.mhoubahar.store";
 
-// export const SITE_NAME = "មូបអាហារ - FoodHub";
+// export const SITE_NAME = "ម្ហូបអាហារ";
 // export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpeg`;
 
 // const BACKEND_API_URL =

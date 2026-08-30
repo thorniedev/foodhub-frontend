@@ -2779,9 +2779,9 @@ function FoodPageContent() {
           <section className="mt-6">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
+                <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
                   ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
-                </p>
+                </h1>
               </div>
 
               <p className="text-[16px] text-gray-500 dark:text-gray-50">
@@ -2793,9 +2793,9 @@ function FoodPageContent() {
           </section>
 
           <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
-            <p className="text-[28px] font-semibold md:text-[36px]">
+            <h2 className="text-[28px] font-semibold md:text-[36px]">
               បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
-            </p>
+            </h2>
 
             <p className="mx-auto mt-3 max-w-2xl text-[16px]  lg:text-xl leading-8 text-white/80">
               ស្វែងរកមុខម្ហូបដែលសមនឹងចំណូលចិត្ត តម្លៃ ពេលរៀបចំ ប្រភេទម្ហូប

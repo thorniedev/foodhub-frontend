@@ -135,7 +135,7 @@ export const metadata: Metadata = {
   metadataBase: getSafeSiteUrl(),
 
   title: {
-    default: "មូបអាហារ - FoodHub",
+    default: "ម្ហូបអាហារ",
 
     template: "%s | មូបអាហារ FoodHub",
   },
@@ -226,9 +226,9 @@ export const metadata: Metadata = {
 
     url: "/",
 
-    siteName: "មូបអាហារ - FoodHub",
+    siteName: "ម្ហូបអាហារ",
 
-    title: "មូបអាហារ - FoodHub",
+    title: "ម្ហូបអាហារ",
 
     description:
       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
@@ -241,7 +241,7 @@ export const metadata: Metadata = {
 
         height: 630,
 
-        alt: "មូបអាហារ - FoodHub",
+        alt: "ម្ហូបអាហារ",
       },
     ],
   },
@@ -249,7 +249,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
 
-    title: "មូបអាហារ - FoodHub",
+    title: "ម្ហូបអាហារ",
 
     description:
       "Discover personalized food recommendations, restaurants, and meals with FoodHub Cambodia.",
@@ -412,7 +412,7 @@ export default function RootLayout({
 //   metadataBase: getSafeSiteUrl(),
 
 //   title: {
-//     default: "មូបអាហារ - FoodHub",
+//     default: "ម្ហូបអាហារ",
 //     template: "%s | មូបអាហារ FoodHub",
 //   },
 
@@ -457,8 +457,8 @@ export default function RootLayout({
 //   openGraph: {
 //     type: "website",
 //     url: "https://www.mhoubahar.store",
-//     siteName: "មូបអាហារ - FoodHub",
-//     title: "មូបអាហារ - FoodHub",
+//     siteName: "ម្ហូបអាហារ",
+//     title: "ម្ហូបអាហារ",
 //     description:
 //       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
 //     images: [
@@ -466,14 +466,14 @@ export default function RootLayout({
 //         url: "/og-image.jpeg",
 //         width: 1200,
 //         height: 630,
-//         alt: "មូបអាហារ - FoodHub",
+//         alt: "ម្ហូបអាហារ",
 //       },
 //     ],
 //   },
 
 //   twitter: {
 //     card: "summary_large_image",
-//     title: "មូបអាហារ - FoodHub",
+//     title: "ម្ហូបអាហារ",
 //     description:
 //       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
 //     images: ["/og-image.jpeg"],
@@ -571,7 +571,7 @@ export default function RootLayout({
 // //   metadataBase: getSafeSiteUrl(),
 
 // //   title: {
-// //     default: "មូបអាហារ - FoodHub",
+// //     default: "ម្ហូបអាហារ",
 // //     template: "%s | មូបអាហារ FoodHub",
 // //   },
 
@@ -610,8 +610,8 @@ export default function RootLayout({
 // //   openGraph: {
 // //     type: "website",
 // //     url: "https://www.mhoubahar.store",
-// //     siteName: "មូបអាហារ - FoodHub",
-// //     title: "មូបអាហារ - FoodHub",
+// //     siteName: "ម្ហូបអាហារ",
+// //     title: "ម្ហូបអាហារ",
 // //     description:
 // //       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
 // //     images: [
@@ -619,14 +619,14 @@ export default function RootLayout({
 // //         url: "/og-image.jpeg",
 // //         width: 1200,
 // //         height: 630,
-// //         alt: "មូបអាហារ - FoodHub",
+// //         alt: "ម្ហូបអាហារ",
 // //       },
 // //     ],
 // //   },
 
 // //   twitter: {
 // //     card: "summary_large_image",
-// //     title: "មូបអាហារ - FoodHub",
+// //     title: "ម្ហូបអាហារ",
 // //     description:
 // //       "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
 // //     images: ["/og-image.jpeg"],

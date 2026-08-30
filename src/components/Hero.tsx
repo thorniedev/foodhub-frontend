@@ -553,23 +553,17 @@ function HeroStage({ reduceMotion }: { reduceMotion: boolean }) {
               : {
                   opacity: 0,
                   y: 36,
-                  clipPath: "inset(100% 0 0 0)",
-                }
-          }
-          animate={{
-            opacity: 1,
-            y: 0,
-            clipPath: "inset(0% 0 0 0)",
-          }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{
-            duration: 0.95,
+            duration: 0.8,
             delay: 0.7,
             ease: [0.22, 1, 0.36, 1],
           }}
           className="relative z-20 -mt-4 max-w-[850px] dark:text-white text-balance text-center text-[36px] font-extrabold leading-[1.35] text-primary-800 dark:text-primary-dark sm:text-[44px] md:-mt-10 md:text-[50px] lg:-mt-14 lg:ml-48 lg:text-left lg:text-[54px]"
         >
-          ណែនាំអាហារដែលត្រូវនឹង
-          <br className="hidden md:block" /> ចំណូលចិត្តរបស់អ្នក !
+          ស្វែងរកអាហារដែលស័ក្តិសម
+          <br className="hidden md:block" /> បំផុតសម្រាប់អ្នក !
         </motion.h1>
 
         <motion.div
@@ -656,14 +650,14 @@ function ExperienceSection({ reduceMotion }: { reduceMotion: boolean }) {
 
       <div className="container relative z-20 mx-auto flex w-full max-w-7xl flex-col items-center px-5 sm:px-8 lg:px-10">
         <motion.h2
-          initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="text-balance text-center text-3xl font-semibold sm:text-4xl md:text-5xl lg:text-6xl  py-2"
         >
-          បទពិសោធន៍ថ្មីក្នុង
-          <span className="text-secondary-500">ការស្វែងរកអាហារ</span>
+          បទពិសោធន៍ថ្មីក្នុងការ
+          <span className="text-secondary-500">ស្វែងរកម្ហូបអាហារ (Mhoub)</span>
         </motion.h2>
 
         <motion.p
@@ -673,7 +667,7 @@ function ExperienceSection({ reduceMotion }: { reduceMotion: boolean }) {
           transition={{ duration: 0.7, delay: 0.08 }}
           className="mt-6 max-w-4xl text-balance text-center text-base font-light leading-8 text-accent-50 sm:text-lg md:text-xl lg:text-2xl"
         >
-          ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈប្រព័ន្ធណែនាំឆ្លាតវៃ
+          ស្វែងរកម្ហូបអាហារ និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈប្រព័ន្ធណែនាំម្ហូបអាហារឆ្លាតវៃ
           ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា និងទីតាំងរបស់អ្នក
         </motion.p>
 

@@ -2,6 +2,7 @@ import UserDashboard from "@/components/dashboard/UserDashboard";
 
 export const metadata = {
   title: "ផ្ទាំងព័ត៌មាន | FoodHub",
+  description: "គ្រប់គ្រងប្រវត្តិរូប និងការកំណត់ចំណូលចិត្តរបស់អ្នកនៅលើ FoodHub។",
 };
 
 export default function DashboardPage() {

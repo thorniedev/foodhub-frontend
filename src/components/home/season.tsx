@@ -54,13 +54,13 @@ export default function SeasonSection() {
         variants={group()}
         className=" z-0 flex pt-8  flex-col items-center justify-center md:gap-12.5 max-md:gap-6 container  max-7-xl mx-auto   relative z-20   w-full"
       >
-        <motion.p
+        <motion.h2
           variants={riseReveal}
           className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark"
         >
           ចំណីអាហារ
           <span className="text-secondary-500">ប្រចាំតំបន់</span>
-        </motion.p>
+        </motion.h2>
         <motion.p
           variants={riseReveal}
           className="lg:text-[24px] md:text-[20px] text-center  font-light text-gray-700 dark:text-gray-100 max-md:text-[16px]"
