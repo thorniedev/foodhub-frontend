@@ -107,7 +107,7 @@ function SeasonalCard({
 }
 
 export default function EventSection() {
-  const { data: seasonBanners } = useGetSeasonBannersQuery();
+  const { data: seasonBanners, isLoading } = useGetSeasonBannersQuery();
 
   const items = useMemo<SeasonalItemData[]>(() => {
     if (
@@ -144,112 +144,93 @@ export default function EventSection() {
 
   return (
     <div className="py-12.5 max-sm:py-6">
-      {/* =========================================
-          SEASONAL FOOD GRID
-      ========================================== */}
-      <div
-        data-aos="fade-up"
-        data-aos-delay="150"
-        className="
-          container
-          mx-auto
-          grid
-          max-w-7xl
-          grid-cols-2
-          items-center
-          gap-4
-          px-4
-          sm:grid-cols-2
-          md:grid-cols-5
-          lg:px-0 max-sm:pt-4
-        "
-      >
-        {/* ======================================
-            LEFT CONTENT (COLUMN 1)
-        ======================================= */}
+      {isLoading ? (
+        /* ============ SKELETON — mirrors 5-col grid ============ */
         <div
-          data-aos="fade-right"
+          className="
+            container mx-auto grid max-w-7xl
+            grid-cols-2 items-center gap-4 px-4
+            sm:grid-cols-2 md:grid-cols-5 lg:px-0 max-sm:pt-4
+            animate-pulse
+          "
+        >
+          {/* Col 1: text block + short card */}
+          <div className="flex h-full flex-col justify-between gap-4">
+            <div className="mb-6 space-y-3 pl-0.5">
+              <div className="h-8 w-3/4 rounded-lg bg-gray-200 dark:bg-gray-700" />
+              <div className="h-8 w-1/2 rounded-lg bg-gray-200 dark:bg-gray-700" />
+              <div className="mt-2 h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
+              <div className="h-4 w-4/5 rounded bg-gray-200 dark:bg-gray-700" />
+            </div>
+            <div className="h-40 w-full rounded-2xl bg-gray-200 dark:bg-gray-700" />
+          </div>
+
+          {/* Col 2: two stacked cards */}
+          <div className="flex flex-col gap-4">
+            <div className="h-40 w-full rounded-2xl bg-gray-200 dark:bg-gray-700" />
+            <div className="h-[160px] w-full rounded-2xl bg-gray-200 dark:bg-gray-700" />
+          </div>
+
+          {/* Col 3: tall card */}
+          <div className="h-full">
+            <div className="h-40 sm:h-[340px] w-full rounded-2xl bg-gray-200 dark:bg-gray-700" />
+          </div>
+
+          {/* Col 4: tall card */}
+          <div className="h-full">
+            <div className="h-40 sm:h-[340px] w-full rounded-2xl bg-gray-200 dark:bg-gray-700" />
+          </div>
+
+          {/* Col 5: tall card (spans 2 cols on mobile) */}
+          <div className="md:h-[340px] max-sm:col-span-2">
+            <div className="h-40 sm:h-[340px] w-full rounded-2xl bg-gray-200 dark:bg-gray-700" />
+          </div>
+        </div>
+      ) : (
+        /* ============ REAL GRID ============ */
+        <div
+          data-aos="fade-up"
           data-aos-delay="150"
-          className="flex h-full flex-col justify-between"
+          className="
+            container mx-auto grid max-w-7xl
+            grid-cols-2 items-center gap-4 px-4
+            sm:grid-cols-2 md:grid-cols-5 lg:px-0 max-sm:pt-4
+          "
         >
-          <div className="mb-6 pl-0.5">
-            <p className="mb-4 text-[26px]​  max-sm:text-2xl font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[20px] lg:text-[30px]  ">
-              ចំណីអាហារស្រប
-              <br />
-              <span className="text-secondary-500">តាមរដូវកាលខ្មែរ</span>
-            </p>
-
-            <p className="text-xl text-gray-500 dark:text-gray-300 max-lg:text-[16px]">
-              ស្វែងរកមុខម្ហូបដែលសមស្របនឹងរដូវកាលនីមួយៗ
-            </p>
+          <div data-aos="fade-right" data-aos-delay="150" className="flex h-full flex-col justify-between">
+            <div className="mb-6 pl-0.5">
+              <p className="mb-4 text-[26px]​  max-sm:text-2xl font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[20px] lg:text-[30px]  ">
+                ចំណីអាហារស្រប
+                <br />
+                <span className="text-secondary-500">តាមរដូវកាលខ្មែរ</span>
+              </p>
+              <p className="text-xl text-gray-500 dark:text-gray-300 max-lg:text-[16px]">
+                ស្វែងរកមុខម្ហូបដែលសមស្របនឹងរដូវកាលនីមួយៗ
+              </p>
+            </div>
+            <SeasonalCard item={items[0]} imgClassName="h-40" titleSize="text-lg" />
           </div>
 
-          {/* ITEM 0 */}
-          <SeasonalCard
-            item={items[0]}
-            imgClassName="h-40"
-            titleSize="text-lg"
-          />
-        </div>
+          <div data-aos="fade-up" data-aos-delay="250">
+            <div className="flex flex-col justify-between gap-4 overflow-hidden rounded-2xl">
+              <SeasonalCard item={items[1]} imgClassName="h-40" titleSize="text-lg" />
+              <SeasonalCard item={items[2]} imgClassName="h-[160px]" titleSize="text-lg" />
+            </div>
+          </div>
 
-        {/* ======================================
-            COLUMN 2 (ITEMS 1 & 2)
-        ======================================= */}
-        <div data-aos="fade-up" data-aos-delay="250">
-          <div className="flex flex-col justify-between gap-4 overflow-hidden rounded-2xl">
-            {/* ITEM 1 */}
-            <SeasonalCard
-              item={items[1]}
-              imgClassName="h-40"
-              titleSize="text-lg"
-            />
+          <div data-aos="zoom-in" data-aos-delay="300" className="h-full">
+            <SeasonalCard item={items[3]} imgClassName="sm:h-[340px] max-sm:h-40" titleSize="text-xl" />
+          </div>
 
-            {/* ITEM 2 */}
-            <SeasonalCard
-              item={items[2]}
-              imgClassName="h-[160px]"
-              titleSize="text-lg"
-            />
+          <div data-aos="zoom-in" data-aos-delay="400" className="h-full">
+            <SeasonalCard item={items[4]} imgClassName="sm:h-[340px] max-sm:h-40" titleSize="text-xl" />
+          </div>
+
+          <div data-aos="zoom-in" data-aos-delay="400" className="md:h-[340px] max-sm:col-span-2">
+            <SeasonalCard item={items[5]} imgClassName="sm:h-[340px] max-sm:h-40" titleSize="text-xl" />
           </div>
         </div>
-
-        {/* ======================================
-            COLUMN 3 (ITEM 3)
-        ======================================= */}
-        <div data-aos="zoom-in" data-aos-delay="300" className="h-full">
-          <SeasonalCard
-            item={items[3]}
-            imgClassName="sm:h-[340px] max-sm:h-40"
-            titleSize="text-xl"
-          />
-        </div>
-
-        {/* ======================================
-            COLUMN 4 (ITEM 4)
-        ======================================= */}
-        <div data-aos="zoom-in" data-aos-delay="400" className="h-full">
-          <SeasonalCard
-            item={items[4]}
-            imgClassName="sm:h-[340px] max-sm:h-40"
-            titleSize="text-xl"
-          />
-        </div>
-
-        {/* ======================================
-            COLUMN 5 (ITEM 5)
-        ======================================= */}
-        <div
-          data-aos="zoom-in"
-          data-aos-delay="400"
-          className="md:h-[340px] max-sm:col-span-2"
-        >
-          <SeasonalCard
-            item={items[5]}
-            imgClassName="sm:h-[340px] max-sm:h-40"
-            titleSize="text-xl"
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 }

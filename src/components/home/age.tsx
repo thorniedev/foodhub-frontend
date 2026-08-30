@@ -219,7 +219,18 @@ export default function MealsByAgeSection() {
 
         {/* 5 Cards Grid */}
         <div className="mt-10 grid grid-cols-2 gap-3.5 py-0.5 sm:mt-14 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-5 lg:gap-5">
-          {ageCards.map((group, i) => (
+          {isLoading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={`skeleton-age-${i}`}
+                  className="group border border-gray-100/80 flex flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6 animate-pulse"
+                >
+                  <div className="h-24 w-24 rounded-full bg-gray-200 dark:bg-gray-700 sm:h-28 sm:w-28 lg:h-32 lg:w-32" />
+                  <div className="mt-4 h-5 w-24 rounded bg-gray-200 dark:bg-gray-700 sm:mt-6 sm:h-6 sm:w-28" />
+                  <div className="mt-2 h-4 w-16 rounded bg-gray-200 dark:bg-gray-700 sm:mt-3" />
+                </div>
+              ))
+            : ageCards.map((group, i) => (
             <motion.div
               key={group.id}
               initial={{ opacity: 0, y: 24 }}

@@ -186,7 +186,7 @@ function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
 
 export default function PopularSection() {
   const reduceMotion = useReducedMotion();
-  const { data: bannerData } = useGetPopularBannersQuery();
+  const { data: bannerData, isLoading } = useGetPopularBannersQuery();
 
   const cards = useMemo<PopularCard[]>(() => {
     const list = Array.isArray(bannerData)
@@ -275,22 +275,46 @@ export default function PopularSection() {
         </motion.p>
       </motion.section>
 
-      <motion.div
-        initial={reduceMotion ? false : "hidden"}
-        whileInView="show"
-        viewport={VIEWPORT}
-        variants={group(0.09, 0.06)}
-        className="flex max-sm:pt-12 sm:pt-20 justify-center lg:max-w-7xl  max-sm:w-fit px-3 mx-auto"
-      >
-        {cards.map((card, index) => (
-          <PopularCardItem
-            key={card.id}
-            card={card}
-            from={gather(index)}
-            reduceMotion={reduceMotion}
-          />
-        ))}
-      </motion.div>
+      {/* ============ SKELETON while fetching ============ */}
+      {isLoading ? (
+        <div className="flex max-sm:pt-12 sm:pt-20 justify-center lg:max-w-7xl max-sm:w-fit px-3 mx-auto">
+          {LAYOUT_PRESETS.map((preset, index) => (
+            <div
+              key={index}
+              className={`relative shrink-0 animate-pulse ${preset.layout}`}
+              style={{ rotate: `${preset.rotate}deg` }}
+            >
+              <div
+                className="
+                  bg-gray-200 dark:bg-gray-700
+                  lg:w-[235px] lg:h-[285px]
+                  md:w-[170px] md:h-[220px]
+                  max-md:w-[100px] max-md:h-[130px]
+                  sm:rounded-[24px] max-sm:rounded-md
+                  border-4 sm:border-6 border-white shadow-md
+                "
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          initial={reduceMotion ? false : "hidden"}
+          whileInView="show"
+          viewport={VIEWPORT}
+          variants={group(0.09, 0.06)}
+          className="flex max-sm:pt-12 sm:pt-20 justify-center lg:max-w-7xl  max-sm:w-fit px-3 mx-auto"
+        >
+          {cards.map((card, index) => (
+            <PopularCardItem
+              key={card.id}
+              card={card}
+              from={gather(index)}
+              reduceMotion={reduceMotion}
+            />
+          ))}
+        </motion.div>
+      )}
     </div>
   );
 }

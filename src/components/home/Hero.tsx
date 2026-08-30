@@ -2222,7 +2222,16 @@ const arrowLoop = (delay: number): Variants => ({
 export default function Hero() {
   const reduceMotion = useReducedMotion();
 
-  const { data: rawMainBanners } = useGetMainBannersQuery();
+  const { data: rawMainBanners, isLoading } = useGetMainBannersQuery();
+
+  const SkeletonHeroCard = () => (
+    <div className="w-full h-full flex flex-col items-center animate-pulse pt-2">
+      <div className="h-7 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg mb-2" />
+      <div className="h-7 w-1/2 bg-gray-200 dark:bg-gray-700 rounded-lg mb-6" />
+      <div className="h-4 w-5/6 bg-gray-200 dark:bg-gray-700 rounded mb-auto" />
+      <div className="h-14 w-[80%] bg-gray-200 dark:bg-gray-700 rounded-[2rem] mt-6" />
+    </div>
+  );
 
   const mainBanners = useMemo(() => {
     return Array.isArray(rawMainBanners)
@@ -3110,7 +3119,7 @@ max-sm:hidden
       "
           >
             {/* ===================================================
-          TOP LEFT DECORATION
+          TOP LEFT DECOR
       ==================================================== */}
 
             <motion.div
@@ -3167,106 +3176,100 @@ max-sm:hidden
           shadow-xs
         "
             >
-              {/* Heading */}
-
-              <motion.h3
-                variants={itemUp}
-                className="
-            mb-2
-            text-xl
-            font-black
-            uppercase
-            leading-tight
-            text-primary-800
-
-            dark:text-primary-dark
-
-            md:text-2xl
-          "
-              >
-                កំណត់ចំណង់ចំណូលចិត្ត
-                <br />
-                របស់លោកអ្នក
-              </motion.h3>
-
-              {/* Description */}
-
-              <motion.p
-                variants={fadeIn}
-                className="
-            mb-auto
-            font-bold
-            text-black/60
-          "
-              >
-                ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
-              </motion.p>
-
-              {/* =================================================
-            PROFILE PILL
-        ================================================== */}
-
-              <motion.div
-                variants={pillUp}
-                className="
-            relative mt-6
-            flex w-full
-            justify-center
-          "
-              >
-                <div
-                  className="
-              relative z-10
-              flex items-center
-              rounded-full
-              bg-primary-600
-              p-2 pr-16
-              text-white
-              shadow-lg
-            "
-                >
-                  <div
+              {isLoading ? (
+                <SkeletonHeroCard />
+              ) : (
+                <>
+                  <motion.h3
+                    variants={itemUp}
                     className="
-                mr-3
-                h-8 w-8
-                shrink-0
-                overflow-hidden
-                rounded-full
-                border
-                border-white/30
-                bg-[#D2B48C]
+                mb-2
+                text-xl
+                font-black
+                uppercase
+                leading-tight
+                text-primary-800
+
+                dark:text-primary-dark
+
+                md:text-2xl
               "
                   >
-                    <img
-                      src="https://i.pinimg.com/736x/c7/f9/cd/c7f9cd69787cfb858d686150d097597f.jpg"
-                      alt="Avatar"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
+                    កំណត់ចំណង់ចំណូលចិត្ត
+                    <br />
+                    របស់លោកអ្នក
+                  </motion.h3>
 
-                  <div className="text-left">
-                    <p className="text-[14px] font-bold leading-none">
-                      Default profile
-                    </p>
+                  <motion.p
+                    variants={fadeIn}
+                    className="
+                mb-auto
+                font-bold
+                text-black/60
+              "
+                  >
+                    ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
+                  </motion.p>
 
-                    <p
+                  <motion.div
+                    variants={pillUp}
+                    className="
+                relative mt-6
+                flex w-full
+                justify-center
+              "
+                  >
+                    <div
                       className="
+                  relative z-10
+                  flex items-center
+                  rounded-full
+                  bg-primary-600
+                  p-2 pr-16
+                  text-white
+                  shadow-lg
+                "
+                    >
+                      <div
+                        className="
+                    mr-3
+                    h-8 w-8
+                    shrink-0
+                    overflow-hidden
+                    rounded-full
+                    border
+                    border-white/30
+                    bg-[#D2B48C]
+                  "
+                      >
+                        <img
+                          src="https://i.pinimg.com/736x/c7/f9/cd/c7f9cd69787cfb858d686150d097597f.jpg"
+                          alt="Avatar"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+
+                      <div className="text-left">
+                        <p className="text-[14px] font-bold leading-none">
+                          Default profile
+                        </p>
+
+                        <p
+                          className="
                   mt-1
                   text-[12px]
                   leading-none
                   text-white/70
                 "
-                    >
-                      23 422 points
-                    </p>
-                  </div>
-                </div>
+                        >
+                          23 422 points
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Add preference label */}
-
-                <motion.div
-                  variants={labelIn}
-                  className="
+                    <motion.div
+                      variants={labelIn}
+                      className="
               absolute
               lg:right-2 top-1/2 z-20
               -translate-y-1/2 md:right-44
@@ -3278,10 +3281,12 @@ max-sm:hidden
               text-white
               shadow-md max-sm:right-5 max-sm:mt-3
             "
-                >
-                  add preferences
-                </motion.div>
-              </motion.div>
+                    >
+                      add preferences
+                    </motion.div>
+                  </motion.div>
+                </>
+              )}
 
               {/* =================================================
             ARROW TO CARD 2
@@ -3342,113 +3347,113 @@ max-sm:hidden
           shadow-xs
         "
             >
-              <motion.h3
-                variants={itemUp}
-                className="
-            mb-2
-            text-xl
-            font-black
-            uppercase
-            leading-tight
-            text-primary-800
-
-            dark:text-primary-dark
-
-            md:text-2xl
-          "
-              >
-                កំណត់ចំណង់ចំណូលចិត្ត
-                <br />
-                របស់លោកអ្នក
-              </motion.h3>
-
-              <motion.p
-                variants={fadeIn}
-                className="
-            mb-auto
-            font-bold
-            text-black/60
-          "
-              >
-                ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
-              </motion.p>
-
-              {/* =================================================
-            SWIPE PILL
-        ================================================== */}
-
-              <motion.div
-                variants={pillUp}
-                className="
-            relative mt-6
-            flex w-full
-            justify-center
-          "
-              >
-                <div
-                  className="
-              flex items-center
-              rounded-full
-              bg-primary-600
-              p-1.5
-              text-white
-              shadow-lg
-            "
-                >
-                  <div
+              {isLoading ? (
+                <SkeletonHeroCard />
+              ) : (
+                <>
+                  <motion.h3
+                    variants={itemUp}
                     className="
-                mr-2
-                rounded-full
-                bg-white/20
-                px-4 py-2
-                text-sm
-                font-bold
-                text-white
+                mb-2
+                text-xl
+                font-black
+                uppercase
+                leading-tight
+                text-primary-800
+
+                dark:text-primary-dark
+
+                md:text-2xl
               "
                   >
-                    play with
-                  </div>
+                    កំណត់ចំណង់ចំណូលចិត្ត
+                    <br />
+                    របស់លោកអ្នក
+                  </motion.h3>
 
-                  <div className="px-4 text-base font-bold">swipe style</div>
-                </div>
+                  <motion.p
+                    variants={fadeIn}
+                    className="
+                mb-auto
+                font-bold
+                text-black/60
+              "
+                  >
+                    ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
+                  </motion.p>
 
-                {/* Floating orange button */}
+                  <motion.div
+                    variants={pillUp}
+                    className="
+                relative mt-6
+                flex w-full
+                justify-center
+              "
+                  >
+                    <div
+                      className="
+                  flex items-center
+                  rounded-full
+                  bg-primary-600
+                  p-1.5
+                  text-white
+                  shadow-lg
+                "
+                    >
+                      <div
+                        className="
+                    mr-2
+                    rounded-full
+                    bg-white/20
+                    px-4 py-2
+                    text-sm
+                    font-bold
+                    text-white
+                  "
+                      >
+                        play with
+                      </div>
 
-                <motion.div
-                  variants={orangeButtonIn}
-                  className="
+                      <div className="px-4 text-base font-bold">swipe style</div>
+                    </div>
+
+                    <motion.div
+                      variants={orangeButtonIn}
+                      className="
               absolute
               -bottom-6
               right-1/3
               z-20
             "
-                >
-                  <motion.div
-                    variants={reduceMotion ? undefined : orangeButtonLoop}
-                    className="
+                    >
+                      <motion.div
+                        variants={reduceMotion ? undefined : orangeButtonLoop}
+                        className="
                 rounded-full
                 bg-secondary-400
                 p-2.5
                 shadow-lg
               "
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="
                   h-4 w-4
                   stroke-current
                   text-white
                 "
-                      fill="none"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M7 17L17 7M17 7H7M17 7V17" />
-                    </svg>
+                          fill="none"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M7 17L17 7M17 7H7M17 7V17" />
+                        </svg>
+                      </motion.div>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              </motion.div>
+                </>
+              )}
 
               {/* =================================================
             ARROW TO CARD 3
@@ -3507,84 +3512,84 @@ max-sm:hidden
           shadow-xs
         "
             >
-              <motion.h3
-                variants={itemUp}
-                className="
-            mb-2
-            text-xl
-            font-black
-            uppercase
-            leading-tight
-            text-primary-800
+              {isLoading ? (
+                <SkeletonHeroCard />
+              ) : (
+                <>
+                  <motion.h3
+                    variants={itemUp}
+                    className="
+                mb-2
+                text-xl
+                font-black
+                uppercase
+                leading-tight
+                text-primary-800
 
-            dark:text-primary-dark
+                dark:text-primary-dark
 
-            md:text-2xl
-          "
-              >
-                កំណត់ចំណង់ចំណូលចិត្ត
-                <br />
-                របស់លោកអ្នក
-              </motion.h3>
+                md:text-2xl
+              "
+                  >
+                    កំណត់ចំណង់ចំណូលចិត្ត
+                    <br />
+                    របស់លោកអ្នក
+                  </motion.h3>
 
-              <motion.p
-                variants={fadeIn}
-                className="
-            mb-auto
-            font-bold
-            text-black/60
-          "
-              >
-                ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
-              </motion.p>
+                  <motion.p
+                    variants={fadeIn}
+                    className="
+                mb-auto
+                font-bold
+                text-black/60
+              "
+                  >
+                    ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
+                  </motion.p>
 
-              {/* =================================================
-            FINAL RESULT CARD
-        ================================================== */}
+                  <motion.div
+                    variants={resultCardIn}
+                    className="
+                relative mt-6
+                flex w-full
+                max-w-[200px]
+                flex-col
+                items-center
+                rounded-[2rem]
+                bg-primary-600
+                px-6 py-4
+                text-white
+                shadow-lg
+              "
+                  >
+                    <p
+                      className="
+                  mb-1
+                  text-[9px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                "
+                    >
+                      EST. Monthly $CLUB
+                    </p>
 
-              <motion.div
-                variants={resultCardIn}
-                className="
-            relative mt-6
-            flex w-full
-            max-w-[200px]
-            flex-col
-            items-center
-            rounded-[2rem]
-            bg-primary-600
-            px-6 py-4
-            text-white
-            shadow-lg
-          "
-              >
-                <p
-                  className="
-              mb-1
-              text-[9px]
-              font-bold
-              uppercase
-              tracking-wider
-            "
-                >
-                  EST. Monthly $CLUB
-                </p>
+                    <motion.p variants={fadeIn} className="text-xl font-black">
+                      188.34257
+                    </motion.p>
 
-                <motion.p variants={fadeIn} className="text-xl font-black">
-                  188.34257
-                </motion.p>
-
-                {/* Speech bubble tail */}
-
-                <div
-                  className="
-              absolute
-              -bottom-2 left-8
-              h-5 w-5
-              rotate-45
-              bg-primary-600
-            "
-                />
-              </motion.div>
+                    <div
+                      className="
+                  absolute
+                  -bottom-2 left-8
+                  h-5 w-5
+                  rotate-45
+                  bg-primary-600
+                "
+                    />
+                  </motion.div>
+                </>
+              )}
             </motion.div>
           </motion.div>
         </motion.section>
