@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  AUTH_COOKIES,
+  refreshKeycloakTokens,
+  setAuthCookies,
+  type KeycloakTokenResponse,
+} from "@/lib/auth/keycloak";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -214,27 +220,49 @@ async function forwardRequest(
   targetUrl.search = request.nextUrl.search;
 
   const incomingAuthorization = request.headers.get("authorization");
-  const accessToken = request.cookies.get("foodhub_access_token")?.value;
+  let accessToken = request.cookies.get("foodhub_access_token")?.value;
+  const refreshToken = request.cookies.get("foodhub_refresh_token")?.value;
+  let refreshedTokens: KeycloakTokenResponse | null = null;
+
+  // 1. Silent Refresh if access token is missing but refresh token exists
+  if (!accessToken && refreshToken && requiresAuthentication(backendPath, request.method)) {
+    console.log("[FOODHUB PROXY] Access token missing. Attempting silent token refresh...");
+    refreshedTokens = await refreshKeycloakTokens(refreshToken);
+    if (refreshedTokens?.access_token) {
+      accessToken = refreshedTokens.access_token;
+      console.log("[FOODHUB PROXY] Silent token refresh succeeded!");
+    }
+  }
 
   if (
     requiresAuthentication(backendPath, request.method) &&
     !incomingAuthorization &&
     !accessToken
   ) {
-    console.warn("[FOODHUB PROXY] Authentication required:", {
-      path: backendPath,
-    });
+    // Try refreshing once more if we have a refresh token
+    if (refreshToken && !refreshedTokens) {
+      refreshedTokens = await refreshKeycloakTokens(refreshToken);
+      if (refreshedTokens?.access_token) {
+        accessToken = refreshedTokens.access_token;
+      }
+    }
 
-    return NextResponse.json(
-      {
-        status: 401,
-        errorCode: "UNAUTHORIZED",
-        message: "Authentication is required.",
-      },
-      {
-        status: 401,
-      },
-    );
+    if (!incomingAuthorization && !accessToken) {
+      console.warn("[FOODHUB PROXY] Authentication required:", {
+        path: backendPath,
+      });
+
+      return NextResponse.json(
+        {
+          status: 401,
+          errorCode: "UNAUTHORIZED",
+          message: "Authentication is required.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
   }
 
   const requestHeaders = new Headers();
@@ -280,7 +308,7 @@ async function forwardRequest(
       hasAuthorization: requestHeaders.has("Authorization"),
     });
 
-    const backendResponse = await fetch(targetUrl, {
+    let backendResponse = await fetch(targetUrl, {
       method: request.method,
       headers: requestHeaders,
       body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
@@ -289,7 +317,24 @@ async function forwardRequest(
       signal: controller.signal,
     });
 
-    const responseBody =
+    // 2. If 401 received and we have a refresh token, perform silent refresh & retry once
+    if (backendResponse.status === 401 && refreshToken && !refreshedTokens) {
+      console.log("[FOODHUB PROXY] 401 returned from backend. Attempting silent token refresh & retry...");
+      refreshedTokens = await refreshKeycloakTokens(refreshToken);
+      if (refreshedTokens?.access_token) {
+        accessToken = refreshedTokens.access_token;
+        requestHeaders.set("Authorization", `Bearer ${accessToken}`);
+        backendResponse = await fetch(targetUrl, {
+          method: request.method,
+          headers: requestHeaders,
+          body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
+          cache: "no-store",
+          redirect: "manual",
+        });
+      }
+    }
+
+    let responseBody =
       request.method === "HEAD" ? null : await backendResponse.arrayBuffer();
 
     const responseHeaders = new Headers();
@@ -332,16 +377,16 @@ async function forwardRequest(
         response: errorText,
       });
 
-      // RESILIENT RECOVERY: Auto-sync user if user/profile returns 404 (e.g. fresh Google login)
-      if (
+      // RESILIENT RECOVERY: Auto-sync user if user is missing in backend (e.g. fresh Google login)
+      const isUserMissingError =
         backendResponse.status === 404 &&
-        (backendPath === "profiles" ||
-          backendPath === "users/me" ||
-          backendPath.startsWith("profiles/")) &&
-        accessToken
-      ) {
+        (requiresAuthentication(backendPath, request.method) ||
+          errorText.includes("User not found") ||
+          errorText.includes("User"));
+
+      if (isUserMissingError && accessToken) {
         console.log(
-          "[FOODHUB PROXY RECOVERY] User or profile returned 404. Attempting automatic user sync...",
+          "[FOODHUB PROXY RECOVERY] User not found (404). Attempting automatic user sync...",
         );
         try {
           const syncRes = await fetch(`${backendApiUrl}/users/me/sync`, {
@@ -353,7 +398,7 @@ async function forwardRequest(
             cache: "no-store",
           });
 
-          if (syncRes.ok) {
+          if (syncRes.ok || syncRes.status === 409) {
             console.log(
               "[FOODHUB PROXY RECOVERY] User synced successfully! Retrying request:",
               targetUrl.toString(),
@@ -373,10 +418,14 @@ async function forwardRequest(
                 request.method === "HEAD"
                   ? null
                   : await retryRes.arrayBuffer();
-              return new NextResponse(retryBody, {
+              const nextResponse = new NextResponse(retryBody, {
                 status: retryRes.status,
                 headers: retryRes.headers,
               });
+              if (refreshedTokens) {
+                setAuthCookies(nextResponse, refreshedTokens);
+              }
+              return nextResponse;
             }
           }
         } catch (syncErr) {
@@ -388,7 +437,7 @@ async function forwardRequest(
           console.log(
             "[FOODHUB PROXY RECOVERY] Returning empty profile page for new user.",
           );
-          return NextResponse.json(
+          const nextResponse = NextResponse.json(
             {
               contents: [],
               totalElements: 0,
@@ -400,6 +449,10 @@ async function forwardRequest(
               status: 200,
             },
           );
+          if (refreshedTokens) {
+            setAuthCookies(nextResponse, refreshedTokens);
+          }
+          return nextResponse;
         }
       }
 
@@ -451,6 +504,38 @@ async function forwardRequest(
           console.error("[FOODHUB PROXY RECOVERY FAILED]", recoveryErr);
         }
       }
+
+      // RESILIENT RECOVERY: If notifications endpoints fail (e.g. fresh user with no notifications or backend error)
+      if (backendPath === "notifications" && request.method === "GET") {
+        console.warn(
+          "[FOODHUB PROXY RECOVERY] /notifications returned error. Returning empty notification feed fallback.",
+        );
+        return NextResponse.json({
+          data: [],
+          meta: {
+            page: 0,
+            pageSize: 20,
+            totalPages: 0,
+            limit: 20,
+            total: 0,
+            unreadCount: 0,
+          },
+        }, { status: 200 });
+      }
+
+      if (backendPath === "notifications/unread-count" && request.method === "GET") {
+        console.warn(
+          "[FOODHUB PROXY RECOVERY] /notifications/unread-count returned error. Returning count: 0 fallback.",
+        );
+        return NextResponse.json({ count: 0 }, { status: 200 });
+      }
+
+      if (backendPath === "notifications/push-subscriptions" && request.method === "GET") {
+        console.warn(
+          "[FOODHUB PROXY RECOVERY] /notifications/push-subscriptions returned error. Returning empty subscriptions fallback.",
+        );
+        return NextResponse.json([], { status: 200 });
+      }
     }
 
     const status = backendResponse.status;
@@ -461,10 +546,19 @@ async function forwardRequest(
       status === 205 ||
       status === 304;
 
-    return new Response(mustNotHaveBody ? null : responseBody, {
-      status,
-      headers: responseHeaders,
-    });
+    const finalResponse = new NextResponse(
+      mustNotHaveBody ? null : responseBody,
+      {
+        status,
+        headers: responseHeaders,
+      },
+    );
+
+    if (refreshedTokens) {
+      setAuthCookies(finalResponse, refreshedTokens);
+    }
+
+    return finalResponse;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       console.error("[FOODHUB PROXY TIMEOUT]", targetUrl.toString());

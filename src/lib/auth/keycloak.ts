@@ -361,3 +361,46 @@ export function clearAllAuthCookies(response: NextResponse) {
   clearAuthCookies(response);
   clearLoginCookies(response);
 }
+
+export async function refreshKeycloakTokens(
+  refreshToken: string,
+): Promise<KeycloakTokenResponse | null> {
+  if (!refreshToken) return null;
+
+  try {
+    const config = getAuthConfig();
+    const endpoints = getKeycloakEndpoints();
+
+    const body = new URLSearchParams();
+    body.set("grant_type", "refresh_token");
+    body.set("client_id", config.clientId);
+    if (config.clientSecret) {
+      body.set("client_secret", config.clientSecret);
+    }
+    body.set("refresh_token", refreshToken);
+
+    const tokenResponse = await fetch(endpoints.token, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
+      body,
+      cache: "no-store",
+    });
+
+    if (!tokenResponse.ok) {
+      return null;
+    }
+
+    const tokens = (await tokenResponse.json()) as KeycloakTokenResponse;
+    if (!tokens.access_token) {
+      return null;
+    }
+
+    return tokens;
+  } catch (err) {
+    console.error("[KEYCLOAK REFRESH HELPER ERROR]", err);
+    return null;
+  }
+}

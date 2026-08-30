@@ -90,43 +90,28 @@ export async function GET(
       "S256",
     );
 
-    const response =
-      NextResponse.redirect(
-        authorizationUrl,
-      );
+    const kcIdpHint = request.nextUrl.searchParams.get("kc_idp_hint");
+    if (kcIdpHint) {
+      authorizationUrl.searchParams.set("kc_idp_hint", kcIdpHint);
+    }
 
-    const cookieOptions =
-      getAuthCookieOptions();
+    const response = NextResponse.redirect(authorizationUrl);
+    const cookieOptions = getAuthCookieOptions();
 
-    response.cookies.set(
-      AUTH_COOKIES.oauthState,
-      state,
-      {
-        ...cookieOptions,
+    response.cookies.set(AUTH_COOKIES.oauthState, state, {
+      ...cookieOptions,
+      maxAge: 60 * 30, // 30 minutes
+    });
 
-        maxAge: 60 * 10,
-      },
-    );
+    response.cookies.set(AUTH_COOKIES.codeVerifier, codeVerifier, {
+      ...cookieOptions,
+      maxAge: 60 * 30, // 30 minutes
+    });
 
-    response.cookies.set(
-      AUTH_COOKIES.codeVerifier,
-      codeVerifier,
-      {
-        ...cookieOptions,
-
-        maxAge: 60 * 10,
-      },
-    );
-
-    response.cookies.set(
-      AUTH_COOKIES.returnTo,
-      returnTo,
-      {
-        ...cookieOptions,
-
-        maxAge: 60 * 10,
-      },
-    );
+    response.cookies.set(AUTH_COOKIES.returnTo, returnTo, {
+      ...cookieOptions,
+      maxAge: 60 * 30, // 30 minutes
+    });
 
     console.log(
       "[KEYCLOAK LOGIN START]",
