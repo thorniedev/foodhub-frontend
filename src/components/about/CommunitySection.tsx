@@ -511,7 +511,7 @@ function MemberCard({
 
         <motion.p
           className="
-            font-['Kantumruy_Pro',sans-serif]
+            
             text-lg
             font-semibold
             text-[#1E2E3E]
@@ -776,18 +776,22 @@ export default function CommunitySection() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="px-4 py-12 sm:px-8 md:pb-12.5">
+    <section className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:pb-12.5">
       <div className="mx-auto max-w-7xl">
         {/* Heading */}
 
         <div className="mb-12 text-center sm:mb-16">
           <motion.h2
             className="
-              text-3xl
-              font-extrabold
-              tracking-wide
-              sm:text-4xl
-              md:text-[48px]
+              text-center
+              font-semibold
+              text-primary-800
+              lg:text-6xl
+              py-2
+              md:text-5xl
+              max-md:text-3xl
+              dark:text-[#22a447]
+              dark:text-primary-dark
             "
             initial={
               reduceMotion

@@ -1047,7 +1047,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                         px-2
                         py-1
                         text-center
-                        text-sm max-sm:text-[8px]
+                        text-sm max-sm:text-[12px]
                         text-gray-100
                       "
                   >

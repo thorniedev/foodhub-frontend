@@ -1068,6 +1068,7 @@ export default function FoodHubHero01({
 
           <h1 className="text-balance text-3xl font-semibold leading-[1.45] text-primary-800 dark:text-primary-dark sm:text-4xl md:text-5xl lg:text-[56px] dark:text-primary-dark">
             បទពិសោធន៍ថ្មីក្នុង
+            <br className="hidden max-sm:block" />
             <TypingAnimation
               words={["ការស្វែងរកអាហារ", "ការជ្រើសរើសមុខម្ហូប"]}
               blinkCursor

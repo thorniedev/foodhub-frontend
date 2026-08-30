@@ -1311,17 +1311,17 @@ function FilterSidebar({
                 }
                 className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
               >
-                <option value="NEWEST">✨ ថ្មីបំផុត</option>
-                <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
-                <option value="PRICE_ASC">💵 តម្លៃទាបទៅខ្ពស់</option>
-                <option value="PRICE_DESC">💰 តម្លៃខ្ពស់ទៅទាប</option>
+                <option value="NEWEST"> ថ្មីបំផុត</option>
+                <option value="DISTANCE_ASC"> ចំងាយជិតបំផុត</option>
+                <option value="PRICE_ASC"> តម្លៃទាបទៅខ្ពស់</option>
+                <option value="PRICE_DESC"> តម្លៃខ្ពស់ទៅទាប</option>
               </select>
             </FilterSection>
 
             {/* OPEN NOW */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/60 p-3">
               <span className="text-[16px] font-semibold text-gray-700 dark:text-slate-200">
-                🏪 បើកដំណើរការឥឡូវនេះ
+                បើកដំណើរការឥឡូវនេះ
               </span>
               <input
                 type="checkbox"
@@ -1367,7 +1367,7 @@ function FilterSidebar({
                           : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
                       }`}
                     >
-                      🍲 ម្ហូប
+                      ម្ហូប
                     </button>
                     <button
                       type="button"
@@ -1378,7 +1378,7 @@ function FilterSidebar({
                           : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
                       }`}
                     >
-                      🥤 ភេសជ្ជៈ
+                      ភេសជ្ជៈ
                     </button>
                   </div>
 
@@ -1578,7 +1578,7 @@ function FilterSidebar({
                           : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                       }`}
                     >
-                      🔥 {spice.label}
+                      {spice.label}
                     </button>
                   );
                 })}
@@ -1865,7 +1865,7 @@ function FilterSidebar({
             {/* FEATURED ONLY */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
               <span className="text-[16px] font-semibold text-gray-700">
-                ⭐ តែមុខម្ហូបពិសេស
+                តែមុខម្ហូបពិសេស
               </span>
               <input
                 type="checkbox"
@@ -2033,7 +2033,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full"
+      className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (

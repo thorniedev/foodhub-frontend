@@ -366,29 +366,7 @@ body {
   }
 }
 
-h1 {
-  @apply text-[68px]  tracking-tight;
-}
 
-h2 {
-  @apply text-5xl  tracking-tight;
-}
-
-h3 {
-  @apply text-3xl;
-}
-
-h4 {
-  @apply text-2xl;
-}
-
-h5 {
-  @apply text-xl;
-}
-
-h6 {
-  @apply text-lg;
-}
 
 .scrollbar-hide {
   -ms-overflow-style: none;
