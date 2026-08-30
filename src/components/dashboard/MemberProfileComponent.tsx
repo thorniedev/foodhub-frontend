@@ -561,17 +561,49 @@ export default function FamilyProfiles() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 ">
-        <div className="flex min-h-[320px] items-center justify-center rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
-          <div className="text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-800/10">
-              <LoaderCircle className="h-8 w-8 animate-spin text-primary-800" />
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+        {/* Header Skeleton */}
+        <div className="mb-6 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm sm:p-7 animate-pulse">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4 w-full">
+              <div className="h-14 w-14 shrink-0 rounded-2xl bg-slate-200" />
+              <div className="space-y-3 w-full max-w-xl">
+                <div className="h-8 w-48 rounded-lg bg-slate-200 sm:w-64" />
+                <div className="h-4 w-full rounded bg-slate-100" />
+                <div className="h-4 w-3/4 rounded bg-slate-100" />
+              </div>
             </div>
-
-            <p className="mt-4 text-lg font-medium text-slate-500">
-              កំពុងទាញយកគណនី...
-            </p>
+            <div className="h-12 w-full shrink-0 rounded-full bg-slate-200 lg:w-40" />
           </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
+            <div className="h-12 w-12 rounded-2xl bg-slate-200" />
+            <div className="space-y-2">
+              <div className="h-4 w-20 rounded bg-slate-100" />
+              <div className="h-5 w-24 rounded bg-slate-200" />
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Cards Skeleton */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((idx) => (
+            <div key={idx} className="h-[260px] rounded-[28px] border border-slate-200/80 bg-white shadow-sm animate-pulse flex flex-col p-3">
+              <div className="flex min-h-[126px] items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                <div className="h-[76px] w-[76px] shrink-0 rounded-full bg-slate-200" />
+                <div className="space-y-3 w-full">
+                  <div className="h-6 w-3/4 rounded bg-slate-200" />
+                  <div className="h-4 w-1/2 rounded bg-slate-100" />
+                </div>
+              </div>
+              <div className="mt-4 px-2 space-y-4">
+                <div className="flex justify-between">
+                  <div className="h-5 w-1/3 rounded bg-slate-200" />
+                  <div className="h-5 w-1/4 rounded bg-slate-100" />
+                </div>
+                <div className="h-11 w-full rounded-full bg-slate-100 mt-2" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

@@ -1999,9 +1999,33 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
 
 type FoodGridProps = {
   foods: CatalogMenuItem[];
+  isLoading?: boolean;
 };
 
-function FoodGrid({ foods }: FoodGridProps) {
+function FoodGrid({ foods, isLoading }: FoodGridProps) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full">
+        {Array.from({ length: 9 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="flex flex-col w-full gap-4 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm rounded-[24px] p-2.5 animate-pulse"
+          >
+            <div className="rounded-[14px] w-full h-[150px] md:h-37.5 lg:h-46.25 bg-gray-200 dark:bg-gray-700" />
+            <div className="flex flex-col gap-2 px-1 pb-2">
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+              <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+              <div className="flex justify-between items-center mt-2">
+                <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-6 w-1/5 rounded-full bg-gray-200 dark:bg-gray-700" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (foods.length === 0) {
     return (
       <motion.div
@@ -2631,9 +2655,7 @@ function FoodPageContent() {
      RENDER
   ======================================================= */
 
-  if (isLoading && menuItems.length === 0) {
-    return <LoadingState />;
-  }
+  // Loading state is now handled by FoodGrid instead of an early return
 
   if (isError) {
     return (
@@ -2767,7 +2789,7 @@ function FoodPageContent() {
               </p>
             </div>
 
-            <FoodGrid foods={displayFoods} />
+            <FoodGrid foods={displayFoods} isLoading={isLoading && menuItems.length === 0} />
           </section>
 
           <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
