@@ -198,8 +198,25 @@ export function applyStoreFilters(
           Number(second.totalReviews ?? 0) - Number(first.totalReviews ?? 0)
         );
       case "default":
-      default:
+      default: {
+        const time1 = first.createdAt
+          ? new Date(first.createdAt).getTime()
+          : first.updatedAt
+            ? new Date(first.updatedAt).getTime()
+            : 0;
+        const time2 = second.createdAt
+          ? new Date(second.createdAt).getTime()
+          : second.updatedAt
+            ? new Date(second.updatedAt).getTime()
+            : 0;
+
+        if (time1 > 0 || time2 > 0) {
+          if (time1 !== time2 && !Number.isNaN(time1) && !Number.isNaN(time2)) {
+            return time2 - time1; // Newest first
+          }
+        }
         return 0;
+      }
     }
   });
 }

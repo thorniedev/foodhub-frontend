@@ -53,6 +53,8 @@ export interface StoreListItem {
   operatingStatus: StoreOperatingStatus;
   isOpenNow: boolean;
   logoMediaUuid: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 /** Keep the existing StoreCard/StoreGrid import name. */

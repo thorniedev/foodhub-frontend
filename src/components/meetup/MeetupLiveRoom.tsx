@@ -1157,8 +1157,21 @@ export default function MeetupLiveRoom({
           </DialogHeader>
           {inviteUrl && (
             <>
-              <div className="my-4 flex justify-center rounded-2xl bg-white p-3">
-                <QRCodeSVG value={inviteUrl} size={200} />
+              <div className="my-4 flex justify-center overflow-hidden rounded-2xl bg-white p-3 shadow-inner">
+                <QRCodeSVG
+                  value={inviteUrl}
+                  size={240}
+                  level="H"
+                  includeMargin={true}
+                  imageSettings={{
+                    src: "/auth/mhoubahar-brand.png",
+                    x: undefined,
+                    y: undefined,
+                    height: 44,
+                    width: 44,
+                    excavate: true,
+                  }}
+                />
               </div>
               <p className="truncate font-mono text-xs text-slate-400">
                 {inviteUrl}
