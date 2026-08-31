@@ -243,7 +243,7 @@ export default function PopularSection() {
         font-semibold
         text-primary-800
 
-        lg:text-6xl  py-2
+        lg:text-6xl  py-2 lg:pb-5
         md:text-5xl
         max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark 
       "

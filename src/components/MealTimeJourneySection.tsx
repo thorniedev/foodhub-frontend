@@ -69,7 +69,14 @@ const MEAL_SLOTS: MealSlotConfig[] = [
     defaultTime: "២១:០០",
     defaultDish: "បង្អែមខ្មែរផ្អែមស្រទន់",
     note: "ស្រាលស្រទន់ រសជាតិផ្អែមល្ហែមមុនចូលដំណេក",
-    mealCodes: ["SNACK", "DESSERT", "LATE_NIGHT", "សម្រន់", "អាហារសម្រន់", "បង្អែម"],
+    mealCodes: [
+      "SNACK",
+      "DESSERT",
+      "LATE_NIGHT",
+      "សម្រន់",
+      "អាហារសម្រន់",
+      "បង្អែម",
+    ],
     fallbackImg: "/Image/food/food9.png",
   },
 ];
@@ -198,12 +205,16 @@ export default function MealTimeJourneySection() {
       // 1. Look for safe items matching this slot's meal codes
       const matched = safeFoods.find((item) => {
         if (usedUuids.has(item.uuid)) return false;
-        const types = Array.isArray(item.food?.mealTypes) ? item.food.mealTypes : [];
+        const types = Array.isArray(item.food?.mealTypes)
+          ? item.food.mealTypes
+          : [];
         return types.some((t) => {
           const code = String(t.code ?? "").toUpperCase();
           const name = String(t.name ?? "").toUpperCase();
           return slot.mealCodes.some(
-            (mc) => code.includes(mc.toUpperCase()) || name.includes(mc.toUpperCase()),
+            (mc) =>
+              code.includes(mc.toUpperCase()) ||
+              name.includes(mc.toUpperCase()),
           );
         });
       });
@@ -224,7 +235,8 @@ export default function MealTimeJourneySection() {
         ? formatKhmerTime(currentTime)
         : slot.defaultTime;
 
-      const dishName = chosenFood?.localName || chosenFood?.name || slot.defaultDish;
+      const dishName =
+        chosenFood?.localName || chosenFood?.name || slot.defaultDish;
       const rawImage =
         chosenFood?.thumbnail ||
         (Array.isArray(chosenFood?.gallery) && chosenFood.gallery[0]) ||
@@ -241,7 +253,8 @@ export default function MealTimeJourneySection() {
         fallbackImg: slot.fallbackImg,
         uuid: chosenFood?.uuid ?? null,
         price: chosenFood?.price != null ? `$${chosenFood.price}` : null,
-        storeName: chosenFood?.store?.name || chosenFood?.store?.localName || null,
+        storeName:
+          chosenFood?.store?.name || chosenFood?.store?.localName || null,
         isSafe: Boolean(activeProfile),
         profileName: activeProfile?.profileName || null,
       };
@@ -779,7 +792,7 @@ export default function MealTimeJourneySection() {
               </motion.div>
 
               {/* Gradient Scrim */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/25" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
               {/* Sheen effect */}
               <motion.div
@@ -789,11 +802,11 @@ export default function MealTimeJourneySection() {
               <div className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-white/20" />
 
               {/* Time Badge - Top Inside Circle */}
-              <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/25 bg-black/60 px-3.5 py-0.5 backdrop-blur-md shadow-md">
+              {/* <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/25 bg-black/80 px-3.5 py-0.5 backdrop-blur-md shadow-md">
                 <span className="font-mono text-xs sm:text-sm tabular-nums text-accent-300 font-bold tracking-wider">
                   {currentActiveMeal.time}
                 </span>
-              </div>
+              </div> */}
 
               {/* Matching Dish Information - Bottom Inside Circle */}
               <motion.div
@@ -810,20 +823,22 @@ export default function MealTimeJourneySection() {
                   </span>
 
                   {currentActiveMeal.isSafe && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-300 bg-emerald-950/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-500/30">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-300 bg-emerald-950/90 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-500/30">
                       <FaShieldAlt className="text-emerald-400 shrink-0 text-[9px]" />
-                      <span className="truncate max-w-[120px]">សុវត្ថិភាព {currentActiveMeal.profileName || ""}</span>
+                      <span className="truncate max-w-[120px]">
+                        សុវត្ថិភាព {currentActiveMeal.profileName || ""}
+                      </span>
                     </span>
                   )}
                 </div>
 
                 {/* Dish Name */}
-                <p className="line-clamp-1 text-sm sm:text-base font-bold text-white drop-shadow-md">
+                {/* <p className="line-clamp-1 text-sm sm:text-base font-bold text-white drop-shadow-md">
                   {currentActiveMeal.dish}
-                </p>
+                </p> */}
 
                 {/* Store & Price */}
-                {currentActiveMeal.storeName && (
+                {/* {currentActiveMeal.storeName && (
                   <p className="flex items-center justify-center gap-1 line-clamp-1 text-[11px] sm:text-xs text-white/80 mt-0.5">
                     <FaStore className="shrink-0 text-accent-300 text-[10px]" />
                     <span className="truncate max-w-[140px] sm:max-w-[180px]">{currentActiveMeal.storeName}</span>
@@ -831,10 +846,10 @@ export default function MealTimeJourneySection() {
                       <span className="font-extrabold text-accent-300 ml-1">· {currentActiveMeal.price}</span>
                     )}
                   </p>
-                )}
+                )} */}
 
                 {/* Action Link button */}
-                {currentActiveMeal.uuid && (
+                {/* {currentActiveMeal.uuid && (
                   <Link
                     href={`/menu/${currentActiveMeal.uuid}`}
                     className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 px-3.5 py-1 text-[11px] sm:text-xs font-bold text-white transition active:scale-95 shadow-md"
@@ -842,7 +857,7 @@ export default function MealTimeJourneySection() {
                     <span>មើលមុខម្ហូបនេះ</span>
                     <FaArrowRight className="text-[9px]" />
                   </Link>
-                )}
+                )} */}
               </motion.div>
             </div>
           </div>
@@ -898,4 +913,3 @@ export default function MealTimeJourneySection() {
     </div>
   );
 }
-

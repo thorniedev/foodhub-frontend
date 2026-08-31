@@ -396,7 +396,7 @@ export default function Navbar() {
           md:backdrop-blur-[4px]
           md:dark:bg-gray-950/1
 
-          ${showScrollNavigation ? "md:translate-y-0" : "md:-translate-y-full"}
+          ${showScrollNavigation ? "md:translate-y-0" : "md:-translate-y-full lg:translate-y-0"}
         `}
       >
         <div
@@ -428,7 +428,7 @@ export default function Navbar() {
             className="
               flex
               shrink-0
-              items-center
+              items-center 
             "
           >
             {/* Light logo */}
@@ -443,7 +443,7 @@ export default function Navbar() {
                 w-auto
                 object-contain
                 transition-all
-
+p-1
                 dark:hidden
 
                 sm:h-[48px]
@@ -466,7 +466,7 @@ export default function Navbar() {
                 transition-all
  
                 dark:block
-
+p-1
                 sm:h-[48px]
 
                 md:h-[68px]
