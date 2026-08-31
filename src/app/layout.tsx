@@ -135,103 +135,116 @@ export const metadata: Metadata = {
   metadataBase: getSafeSiteUrl(),
 
   title: {
-    default: "ម្ហូបអាហារ Mhoubahar | FoodHub",
-    template: "%s | FoodHub",
+    default: "ម្ហូបអាហារ Mhoubahar — FoodHub Cambodia",
+    template: "%s | Mhoubahar FoodHub",
   },
 
   description:
-    "ណែនាំអាហារដែលត្រូវនឹងចំណូលចិត្តរបស់អ្នក! Discover personalized food recommendations, restaurants, and meals with FoodHub Cambodia.",
+    "Mhoubahar FoodHub (ម្ហូបអាហារ) — ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន ម្ហូប Halal vegetarian ដែលសមស្របតាមចំណូលចិត្ត អាឡែស៊ី ជំនឿ និងទីតាំងរបស់អ្នកនៅ Cambodia.",
 
+  /* ── Hreflang: bilingual km + en ── */
   alternates: {
     canonical: "https://www.mhoubahar.store",
+    languages: {
+      "km-KH": "https://www.mhoubahar.store",
+      "en-US": "https://www.mhoubahar.store",
+      "x-default": "https://www.mhoubahar.store",
+    },
   },
 
   authors: [
-    {
-      name: "FoodHub Team",
-    },
+    { name: "Mhoubahar FoodHub Team", url: "https://www.mhoubahar.store/about" },
   ],
 
-  creator: "FoodHub Team",
+  creator: "Mhoubahar FoodHub",
 
-  publisher: "FoodHub",
+  publisher: "Mhoubahar FoodHub",
 
-  applicationName: "ម្ហូបអាហារ",
+  applicationName: "Mhoubahar FoodHub",
+
+  generator: "Next.js",
 
   category: "Food & Drink",
 
+  referrer: "origin-when-cross-origin",
+
   robots: {
     index: true,
-
     follow: true,
-
+    nocache: false,
     googleBot: {
       index: true,
-
       follow: true,
-
+      noimageindex: false,
       "max-image-preview": "large",
-
       "max-snippet": -1,
-
       "max-video-preview": -1,
     },
   },
 
   openGraph: {
     type: "website",
-
     url: "https://www.mhoubahar.store",
-
-    siteName: "ម្ហូបអាហារ",
-
-    title: "ម្ហូបអាហារ Mhoubahar | FoodHub",
-
+    siteName: "Mhoubahar FoodHub",
+    locale: "km_KH",
+    alternateLocale: ["en_US"],
+    title: "ម្ហូបអាហារ Mhoubahar — FoodHub Cambodia",
     description:
-      "Discover personalized food recommendations, explore restaurants, and find meals that match your taste with FoodHub Cambodia.",
-
+      "Mhoubahar FoodHub (ម្ហូបអាហារ) — Discover personalized Khmer food, restaurants, Halal food, and vegetarian meals tailored to your taste, allergies, religion, and location in Cambodia.",
     images: [
       {
-        url: "/og-image.jpeg",
-
+        url: "https://www.mhoubahar.store/og-image.jpeg",
+        secureUrl: "https://www.mhoubahar.store/og-image.jpeg",
         width: 1200,
-
         height: 630,
-
-        alt: "ម្ហូបអាហារ Mhoubahar - FoodHub Cambodia",
+        alt: "Mhoubahar FoodHub — ម្ហូបអាហារ Cambodia",
+        type: "image/jpeg",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-
-    title: "ម្ហូបអាហារ Mhoubahar | FoodHub",
-
+    site: "@mhoubahar",
+    creator: "@mhoubahar",
+    title: "Mhoubahar FoodHub — ម្ហូបអាហារ Cambodia",
     description:
-      "Discover personalized food recommendations, restaurants, and meals with FoodHub Cambodia.",
-
-    images: ["/og-image.jpeg"],
+      "ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន ម្ហូប Halal vegetarian ដែលសមស្របតាមចំណូលចិត្ត អាឡែស៊ី ជំនឿ — Personalized food recommendations in Cambodia.",
+    images: ["https://www.mhoubahar.store/og-image.jpeg"],
   },
 
   icons: {
-    icon: "/favicon.ico",
-
-    apple: "/icons/pwa-192x192.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/icon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/icon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
   },
+
+  manifest: "/manifest.json",
 
   appleWebApp: {
     capable: true,
-
-    title: "ម្ហូបអាហារ",
-
-    statusBarStyle: "default",
+    title: "Mhoubahar FoodHub",
+    statusBarStyle: "black-translucent",
   },
 
   other: {
     "mobile-web-app-capable": "yes",
-
     "msapplication-TileColor": "#166534",
+    "msapplication-config": "/browserconfig.xml",
+    "geo.region": "KH",
+    "geo.placename": "Phnom Penh, Cambodia",
+    "language": "Khmer, English",
+    "revisit-after": "7 days",
+    "rating": "general",
+    "copyright": "© 2025 Mhoubahar FoodHub. All rights reserved.",
   },
 };
 
