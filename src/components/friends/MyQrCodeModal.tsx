@@ -14,7 +14,7 @@ import {
   useRefreshQrCodeMutation,
 } from "@/app/store/friendsApi";
 import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
-import { QrCode, RefreshCw, Share2, Check, User } from "lucide-react";
+import { QrCode, RefreshCw, Download, Check, User, Copy } from "lucide-react";
 
 interface MyQrCodeModalProps {
   isOpen: boolean;
@@ -28,12 +28,13 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
   const { data: user } = useGetCurrentUserQuery();
   const [refreshQrCode, { isLoading: isRefreshing }] = useRefreshQrCodeMutation();
   const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
 
   const origin =
     typeof window !== "undefined" && window.location.origin
       ? window.location.origin
-      : "https://foodhub.app";
+      : "https://www.mhoubahar.store";
 
   const shareUrl = qrData?.qrCodeToken
     ? `${origin}/friends?token=${encodeURIComponent(qrData.qrCodeToken)}`
@@ -49,30 +50,63 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
   const handleRefresh = async () => {
     try {
       await refreshQrCode().unwrap();
-      setRefreshMessage("បានបង្កើត QR ថ្មីរួចរាល់។");
-      setTimeout(() => setRefreshMessage(null), 3000);
+      setRefreshMessage("បានបង្កើត QR ថ្មីរួចរាល់ (QR ចាស់ត្រូវបានបិទចោល)។");
+      setTimeout(() => setRefreshMessage(null), 3500);
     } catch {
       // refetch query if mutation fails
       refetch();
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `បន្ថែម ${displayName} នៅម្ហូបអាហារ`,
-          text: `ស្កេន QR របស់ខ្ញុំ ឬចុចតំណ ដើម្បីភ្ជាប់ជាមួយ @${displayName}`,
-          url: shareUrl,
-        });
-        return;
-      } catch {
-        // Fallback to clipboard
-      }
-    }
+  const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleDownload = () => {
+    try {
+      setIsDownloading(true);
+      const svgElement = document.getElementById("my-friend-qr-svg");
+      if (!svgElement) {
+        setIsDownloading(false);
+        return;
+      }
+
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+
+      const size = 600;
+      canvas.width = size;
+      canvas.height = size;
+
+      img.onload = () => {
+        if (ctx) {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, size, size);
+          ctx.drawImage(img, 0, 0, size, size);
+          const pngFile = canvas.toDataURL("image/png");
+          const downloadLink = document.createElement("a");
+          downloadLink.download = `mhoubahar-qr-${displayName}.png`;
+          downloadLink.href = pngFile;
+          downloadLink.click();
+        }
+        setIsDownloading(false);
+      };
+
+      img.onerror = () => {
+        setIsDownloading(false);
+      };
+
+      img.src =
+        "data:image/svg+xml;base64," +
+        btoa(unescape(encodeURIComponent(svgData)));
+    } catch (error) {
+      console.error("Failed to download QR code:", error);
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -86,7 +120,7 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
             QR មិត្តភក្តិរបស់ខ្ញុំ
           </DialogTitle>
           <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">
-            ឱ្យមិត្តភក្តិស្កេនកូដនេះ ដើម្បីភ្ជាប់គ្នាបានភ្លាមៗ។
+            ឱ្យមិត្តភក្តិស្កេនកូដនេះ ដើម្បីភ្ជាប់គ្នាបានភ្លាមៗ (គ្មានពេលកំណត់)។
           </DialogDescription>
         </DialogHeader>
 
@@ -99,6 +133,7 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
             ) : (
               <div className="relative overflow-hidden rounded-2xl bg-white p-2">
                 <QRCodeSVG
+                  id="my-friend-qr-svg"
                   value={qrValue}
                   size={280}
                   level="H"
@@ -133,32 +168,44 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={handleRefresh}
-            disabled={isRefreshing || isLoading}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            onClick={handleCopyLink}
+            className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
-            <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin text-emerald-600" : ""}`}
-            />
-            បង្កើត QR ថ្មី
+            {copied ? (
+              <>
+                <Check className="h-4 w-4 text-emerald-600" />
+                បានចម្លងតំណ
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4" />
+                ចម្លងតំណ
+              </>
+            )}
           </button>
 
           <button
             type="button"
-            onClick={handleShare}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-700 active:scale-95"
+            onClick={handleDownload}
+            disabled={isDownloading || isLoading}
+            className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
           >
-            {copied ? (
-              <>
-                <Check className="h-4 w-4" />
-                បានចម្លង
-              </>
-            ) : (
-              <>
-                <Share2 className="h-4 w-4" />
-                ចែករំលែក QR
-              </>
-            )}
+            <Download className="h-4 w-4" />
+            {isDownloading ? "កំពុងទាញយក..." : "ទាញយក QR"}
+          </button>
+        </div>
+
+        <div className="mt-3 text-center">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+          >
+            <RefreshCw
+              className={`h-3 w-3 ${isRefreshing ? "animate-spin text-emerald-600" : ""}`}
+            />
+            បង្កើត QR ថ្មីឡើងវិញ (បើសង្ស័យថាបែកធ្លាយ)
           </button>
         </div>
       </DialogContent>
