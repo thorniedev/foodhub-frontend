@@ -2,22 +2,37 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
+import {
+  IoChevronBackOutline,
+  IoChevronForwardOutline,
+  IoRestaurantOutline,
+  IoWineOutline,
+} from "react-icons/io5";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import FoodCard from "@/components/dynamic-card/FoodCard";
 
-import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useGetMenuItemsQuery, useGetMealTypesQuery } from "@/app/store/menuApi";
+import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
+import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
+import { useEnrichedRecommendationItems } from "@/hooks/useEnrichedRecommendationItems";
 
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 const ITEMS_PER_PAGE = 8;
+
+// The recommendation session is fetched once per (meal tab, food/drink
+// filter) and paginated client-side, same as the catalog fallback — the
+// backend caps requestedLimit at 100, so that's the most this can ever ask
+// for regardless of how many pages the user scrolls through.
+const RECOMMENDATION_LIMIT = 100;
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 type TabId = "all" | "MORNING" | "LUNCH" | "DINNER";
+type RootCategoryFilter = "ALL" | "FOOD" | "DRINK";
 
 type RecommendationFilters = {
   query?: string;
@@ -53,6 +68,28 @@ const tabs: {
   {
     id: "DINNER",
     label: "ពេលល្ងាច",
+  },
+];
+
+const rootCategoryTabs: {
+  id: RootCategoryFilter;
+  label: string;
+  icon: typeof IoRestaurantOutline;
+}[] = [
+  {
+    id: "ALL",
+    label: "ទាំងអស់",
+    icon: IoRestaurantOutline,
+  },
+  {
+    id: "FOOD",
+    label: "អាហារ",
+    icon: IoRestaurantOutline,
+  },
+  {
+    id: "DRINK",
+    label: "ភេសជ្ជៈ",
+    icon: IoWineOutline,
   },
 ];
 
@@ -189,6 +226,14 @@ function matchesMealTime(menuItem: CatalogMenuItem, activeTab: TabId): boolean {
 
   const mealTypes = getMealTypes(menuItem);
 
+  // No meal-time tag at all means "available anytime," not "excluded from
+  // every tab" — most of the live catalog isn't tagged yet (measured ~40%
+  // untagged), and treating a missing tag as exclusion made every specific
+  // tab look almost empty. An item WITH tags must still match the active one.
+  if (mealTypes.length === 0) {
+    return true;
+  }
+
   return mealTypes.some((mealType) => {
     const mealCode = String(mealType.code ?? "")
       .trim()
@@ -277,22 +322,104 @@ export default function FilterByMealTime({
   filters = EMPTY_FILTERS,
 }: FilterByMealTimeProps) {
   const [activeTab, setActiveTab] = useState<TabId>("all");
+  const [rootCategoryFilter, setRootCategoryFilter] =
+    useState<RootCategoryFilter>("ALL");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const isManualOverride = useRef(false);
 
   /* =========================================================
-     FETCH MENU ITEMS
+     PERSONALIZATION: this session's own default profile only —
+     never a "first active profile" fallback, and never another
+     profile the user owns.
+  ========================================================= */
+
+  const { data: profilesData } = useGetMemberProfilesQuery();
+
+  const defaultProfile = useMemo(() => {
+    const list = Array.isArray(profilesData)
+      ? profilesData
+      : profilesData?.contents ?? [];
+    return (
+      list.find(
+        (profile) => profile.isDefault && profile.isActive !== false,
+      ) ?? null
+    );
+  }, [profilesData]);
+
+  const isPersonalized = Boolean(defaultProfile);
+
+  /* =========================================================
+     REAL MEAL-TYPE IDS (tabs are hardcoded labels; the session
+     request needs the backend's actual numeric ids)
+  ========================================================= */
+
+  const { data: mealTypes } = useGetMealTypesQuery();
+
+  const activeMealTypeId = useMemo(() => {
+    if (activeTab === "all") {
+      return undefined;
+    }
+    return mealTypes?.find(
+      (mealType) => mealType.code.trim().toUpperCase() === activeTab,
+    )?.id;
+  }, [mealTypes, activeTab]);
+
+  const rootCategoryCode =
+    rootCategoryFilter === "ALL" ? undefined : rootCategoryFilter;
+
+  /* =========================================================
+     PERSONALIZED SOURCE: a real, safety-checked recommendation
+     session for the default profile, re-created whenever the meal
+     tab or the food/drink filter changes.
+  ========================================================= */
+
+  const [createSession, { data: session, isLoading: isSessionLoading }] =
+    useCreateRecommendationSessionMutation();
+
+  useEffect(() => {
+    if (!isPersonalized || !defaultProfile) {
+      return;
+    }
+
+    void createSession({
+      mode: "SINGLE",
+      requestSource: "HOMEPAGE_AUTO",
+      requestedLimit: RECOMMENDATION_LIMIT,
+      mealTypeId: activeMealTypeId,
+      rootCategoryCode,
+      profiles: [
+        {
+          profileId: defaultProfile.uuid,
+          isPrimary: true,
+        },
+      ],
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPersonalized, defaultProfile?.uuid, activeMealTypeId, rootCategoryCode]);
+
+  const sessionItems = useMemo(() => session?.items ?? [], [session]);
+
+  const { enrichedItems: recommendedFoods, isEnriching } =
+    useEnrichedRecommendationItems(session, sessionItems);
+
+  /* =========================================================
+     FALLBACK SOURCE: today's public catalog browse, used when
+     there's no verified default profile to personalize for —
+     never claims these items are personally safe.
   ========================================================= */
 
   const {
-    data: menuItems = [],
-    isLoading,
-    isFetching,
-    isError,
+    data: catalogMenuItems = [],
+    isLoading: isCatalogLoading,
+    isFetching: isCatalogFetching,
+    isError: isCatalogError,
     refetch,
-  } = useGetMenuItemsQuery();
+  } = useGetMenuItemsQuery(
+    { rootCategoryCode },
+    { skip: isPersonalized },
+  );
 
   /* =========================================================
      RESET PAGE ON FILTER CHANGE
@@ -300,7 +427,7 @@ export default function FilterByMealTime({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, filters]);
+  }, [activeTab, filters, rootCategoryFilter]);
 
   /* =========================================================
      AUTOMATIC MEAL TIME
@@ -349,24 +476,42 @@ export default function FilterByMealTime({
 
   /* =========================================================
      FILTER MENU ITEMS
+     The meal-time tab is enforced here client-side even for the
+     personalized source: the session's mealTypeId is only a
+     ranking boost on the backend, not a hard filter, so without
+     this the "Breakfast" tab could still show non-breakfast items.
   ========================================================= */
 
+  const sourceItems = isPersonalized ? recommendedFoods : catalogMenuItems;
+
   const filteredFoods = useMemo(() => {
-    return menuItems
-      .filter((menuItem) => menuItem.availabilityStatus === "AVAILABLE")
+    return sourceItems
+      .filter(
+        (menuItem) =>
+          !menuItem.availabilityStatus ||
+          menuItem.availabilityStatus === "AVAILABLE",
+      )
       .filter((menuItem) => matchesMealTime(menuItem, activeTab))
       .filter((menuItem) => matchesQuery(menuItem, filters.query))
       .filter((menuItem) => matchesDietaryTypes(menuItem, filters.dietaryTypes))
       .filter((menuItem) => matchesAgeGroups(menuItem, filters.ageGroups))
       .filter((menuItem) => matchesCuisines(menuItem, filters.cuisines));
   }, [
-    menuItems,
+    sourceItems,
     activeTab,
     filters.query,
     filters.dietaryTypes,
     filters.ageGroups,
     filters.cuisines,
   ]);
+
+  const isLoading = isPersonalized
+    ? isSessionLoading || isEnriching
+    : isCatalogLoading;
+  const isFetching = isPersonalized
+    ? isSessionLoading || isEnriching
+    : isCatalogFetching;
+  const isError = isPersonalized ? false : isCatalogError;
 
   /* =========================================================
      PAGINATION
@@ -439,6 +584,12 @@ export default function FilterByMealTime({
           ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
         </p>
+
+        {isPersonalized && (
+          <p className="mt-3 text-center text-[15px] font-medium text-primary-700 dark:text-emerald-400">
+            ✓ ណែនាំសម្រាប់ប្រវត្តិរូបលំនាំដើមរបស់អ្នក ដោយឆ្លងកាត់ការត្រួតពិនិត្យសុវត្ថិភាព
+          </p>
+        )}
       </section>
 
       {/* =====================================================
@@ -446,40 +597,68 @@ export default function FilterByMealTime({
       ===================================================== */}
 
       <div className="container mx-auto max-w-7xl px-4">
-        <div className="flex gap-8 overflow-x-auto border-b border-gray-200 dark:border-slate-800">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 dark:border-slate-800">
+          <div className="flex gap-8 overflow-x-auto">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
 
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  isManualOverride.current = true;
-                  setActiveTab(tab.id);
-                }}
-                className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
-                  isActive
-                    ? "text-primary-700 dark:text-emerald-400"
-                    : "text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-              >
-                {tab.label}
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    isManualOverride.current = true;
+                    setActiveTab(tab.id);
+                  }}
+                  className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
+                    isActive
+                      ? "text-primary-700 dark:text-emerald-400"
+                      : "text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {tab.label}
 
-                {isActive && (
-                  <motion.div
-                    layoutId="active-meal-tab-underline"
-                    className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700 dark:bg-emerald-500"
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 40,
-                    }}
-                  />
-                )}
-              </button>
-            );
-          })}
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-meal-tab-underline"
+                      className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700 dark:bg-emerald-500"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 40,
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Food / Drink switch — recommendation and catalog both mix
+              food and drink items, so this is a real hard filter, not a
+              cosmetic one. */}
+          <div className="mb-2 flex shrink-0 gap-1 rounded-full bg-gray-100 p-1 dark:bg-slate-800">
+            {rootCategoryTabs.map((tab) => {
+              const isActive = rootCategoryFilter === tab.id;
+              const Icon = tab.icon;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setRootCategoryFilter(tab.id)}
+                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                    isActive
+                      ? "bg-white text-primary-800 shadow-sm dark:bg-slate-900 dark:text-emerald-400"
+                      : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <Icon className="text-base" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -491,7 +670,7 @@ export default function FilterByMealTime({
         <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {/* Loading */}
 
-          {(isLoading || isFetching) && menuItems.length === 0 &&
+          {(isLoading || isFetching) && sourceItems.length === 0 &&
             Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={`skeleton-fbm-${i}`}

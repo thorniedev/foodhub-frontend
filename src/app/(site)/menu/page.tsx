@@ -15,6 +15,7 @@ import {
   IoSearchOutline,
   IoSwapVerticalOutline,
   IoTimeOutline,
+  IoGridOutline,
 } from "react-icons/io5";
 
 import { FaFire, FaStar } from "react-icons/fa";
@@ -1952,7 +1953,7 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
       <button
         type="button"
         onClick={() => onChange([])}
-        className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
+        className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
           allSelected
             ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
             : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
@@ -1975,7 +1976,7 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
                   : [...selectedCodes, option.code],
               )
             }
-            className={`shrink-0 rounded-full border px-5 py-2.5 text-[16px] font-semibold transition ${
+            className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
               isSelected
                 ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
                 : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
@@ -2635,7 +2636,7 @@ function FoodPageContent() {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event("open-global-search"))}
-      className="flex min-h-[56px] flex-1 items-center justify-between gap-3 rounded-full border border-gray-200 bg-white px-5 text-left transition hover:border-primary-700 hover:bg-gray-50/80 focus:outline-none dark:border-slate-800 dark:bg-slate-900"
+      className="flex min-h-[56px] w-full flex-1 items-center justify-between gap-3 rounded-2xl lg:rounded-full border border-gray-100 bg-white px-5 text-left transition hover:border-primary-700 hover:bg-gray-50/80 focus:outline-none shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       <div className="flex items-center gap-3 min-w-0">
         <IoSearchOutline className="shrink-0 text-[22px] text-primary-700 dark:text-emerald-400" />
@@ -2694,43 +2695,34 @@ function FoodPageContent() {
     <>
       {/* SEARCH */}
 
-      <section className="rounded-2xl lg:rounded-full border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 sm:p-2.5 lg:p-1 shadow-sm">
+      <section className="lg:rounded-full lg:border lg:border-gray-100 dark:lg:border-slate-800 lg:bg-white dark:lg:bg-slate-900 lg:p-1 lg:shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           {renderSearch()}
 
-          {/* Mobile / tablet Food filter button */}
-          <button
-            type="button"
-            onClick={() => setMobileFiltersOpen(true)}
-            className="
-              relative
-              flex
-              min-h-[56px]
-              shrink-0
-              items-center
-              justify-center
-              gap-2
-              rounded-full
-              bg-primary-800
-              dark:bg-emerald-600
-              px-5
-              text-[16px]
-              font-semibold
-              text-white
-              shadow-sm
-              transition
-              hover:bg-primary-700
-              dark:hover:bg-emerald-700
-              active:scale-[0.98]
-              lg:hidden
-            "
-            aria-label="Open food filters"
-          >
-            <IoFilterOutline className="text-[21px]" />
-            <span>តម្រង</span>
-          </button>
+          {/* Mobile / tablet Action Buttons */}
+          <div className="flex w-full items-center gap-3 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
+              aria-label="Sort options"
+            >
+              <IoSwapVerticalOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
+              <span>តម្រៀប</span>
+            </button>
 
-          <div className="flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3">
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
+              aria-label="Filter options"
+            >
+              <IoGridOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
+              <span>តម្រង</span>
+            </button>
+          </div>
+
+          <div className="hidden lg:flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3">
             <FaStar className="text-[20px] text-yellow-500" />
 
             <p className="text-[16px] text-primary-800 dark:text-emerald-400">

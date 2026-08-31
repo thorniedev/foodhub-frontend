@@ -8,6 +8,8 @@ import {
   Info,
   LogIn,
   UtensilsCrossed,
+  Store,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -35,6 +37,12 @@ const NAV_LINKS = [
     label: "ម្ហូបអាហារ",
     mobileLabel: "ម្ហូប",
     icon: UtensilsCrossed,
+  },
+  {
+    href: "/store",
+    label: "ហាងអាហារ",
+    mobileLabel: "ហាង",
+    icon: Store,
   },
   {
     href: "/about",
@@ -106,7 +114,8 @@ function MobileNavItem({
       <span
         className={`
           absolute
-          inset-1
+          inset-y-1
+          inset-x-3
           rounded-[18px]
           transition-all
           duration-300
@@ -759,82 +768,22 @@ p-1
             active={pathname.startsWith("/food-page")}
           />
 
+
+          {/* STORE */}
+          <MobileNavItem
+            href="/store"
+            label="ហាង"
+            icon={Store}
+            active={pathname.startsWith("/store")}
+          />
+
           {/* ABOUT */}
           <MobileNavItem
             href="/about"
             label="អំពីយើង"
-            icon={Info}
+            icon={Users}
             active={pathname.startsWith("/about")}
           />
-
-          {/* ACCOUNT */}
-          {isAuthenticated ? (
-            <MobileNavItem
-              href="/dashboard"
-              label="គណនី"
-              icon={CircleUserRound}
-              active={pathname.startsWith("/dashboard")}
-            />
-          ) : (
-            <Link
-              href="/api/auth/login"
-              aria-label="ចូលគណនី"
-              className="
-                group
-                relative
-                flex
-                h-full
-                min-w-0
-                flex-1
-                flex-col
-                items-center
-                justify-center
-                gap-1
-                rounded-[20px]
-                px-1
-                py-1.5
-                text-slate-500
-                outline-none
-                transition-all
-                duration-200
-
-                active:scale-95
-
-                dark:text-slate-400
-              "
-            >
-              <span
-                className="
-                  flex
-                  h-7
-                  items-center
-                  justify-center
-                  transition-colors
-
-                  group-hover:text-primary-800
-
-                  dark:group-hover:text-primary-400
-                "
-              >
-                <CircleUserRound
-                  className="h-[21px] w-[21px]"
-                  strokeWidth={2}
-                />
-              </span>
-
-              <span
-                className="
-                  max-w-full
-                  truncate
-                  text-[10px]
-                  font-medium
-                  leading-none
-                "
-              >
-                ចូលគណនី
-              </span>
-            </Link>
-          )}
         </div>
       </nav>
     </>

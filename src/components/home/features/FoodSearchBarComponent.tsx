@@ -3258,8 +3258,14 @@ gap-3
           >
             <IoSearchOutline className="shrink-0 text-[21px] text-primary-700" />
 
+            <label htmlFor="foodSearchInput" className="sr-only">
+              ស្វែងរកមុខម្ហូប
+            </label>
             <input
+              id="foodSearchInput"
+              name="search"
               type="search"
+              aria-label="ស្វែងរកមុខម្ហូប"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="ស្វែងរកមុខម្ហូប..."

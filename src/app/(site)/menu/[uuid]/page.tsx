@@ -31,15 +31,18 @@ export async function generateMetadata({
 
   if (!food) {
     return {
-      title:
-        "រកមិនឃើញមុខម្ហូប",
-
-      description:
-        "មិនអាចរកឃើញព័ត៌មានមុខម្ហូបនេះនៅ FoodHub បានទេ។",
-
-      robots: {
-        index: false,
-        follow: false,
+      title: "ព័ត៌មានមុខម្ហូប - FoodHub",
+      description: "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ និងការណែនាំពិសេសនៅ FoodHub Cambodia.",
+      openGraph: {
+        title: "ព័ត៌មានមុខម្ហូប - FoodHub",
+        description: "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ និងការណែនាំពិសេសនៅ FoodHub Cambodia.",
+        images: ["https://www.mhoubahar.store/og-image.jpeg"],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "ព័ត៌មានមុខម្ហូប - FoodHub",
+        description: "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ និងការណែនាំពិសេសនៅ FoodHub Cambodia.",
+        images: ["https://www.mhoubahar.store/og-image.jpeg"],
       },
     };
   }

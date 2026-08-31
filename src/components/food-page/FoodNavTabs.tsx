@@ -31,12 +31,12 @@ const TABS: {
     href: "/menu/location",
     icon: <IoLocationOutline className="text-[23px]" />,
   },
-  {
-    id: "store",
-    label: "ហាងអាហារ",
-    href: "/menu/store",
-    icon: <IoStorefrontOutline className="text-[23px]" />,
-  },
+  // {
+  //   id: "store",
+  //   label: "ហាងអាហារ",
+  //   href: "/menu/store",
+  //   icon: <IoStorefrontOutline className="text-[23px]" />,
+  // },
 ];
 
 function getActiveTab(pathname: string): FoodPageTab {

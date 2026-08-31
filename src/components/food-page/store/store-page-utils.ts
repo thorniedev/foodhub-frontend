@@ -10,6 +10,7 @@ export const DEFAULT_STORE_FILTERS: StorePageFilters = {
   operatingStatuses: [],
   openNowOnly: false,
   minimumRating: null,
+  maxDistanceKm: null,
   sortBy: "default",
 };
 
@@ -119,6 +120,7 @@ export function applyStoreFilters(
   stores: FoodStore[],
   searchQuery: string,
   filters: StorePageFilters,
+  distanceByStoreUuid?: Record<string, number>,
 ): FoodStore[] {
   const filteredStores = stores.filter((store) => {
     if (!matchesStoreSearch(store, searchQuery)) {
@@ -158,11 +160,33 @@ export function applyStoreFilters(
       return false;
     }
 
+    if (
+      filters.maxDistanceKm !== null &&
+      filters.maxDistanceKm !== undefined
+    ) {
+      const dist =
+        distanceByStoreUuid?.[store.uuid] ?? getBackendDistanceKm(store);
+      if (dist === null || dist === undefined || dist > filters.maxDistanceKm) {
+        return false;
+      }
+    }
+
     return true;
   });
 
   return [...filteredStores].sort((first, second) => {
     switch (filters.sortBy) {
+      case "nearest": {
+        const d1 =
+          distanceByStoreUuid?.[first.uuid] ??
+          getBackendDistanceKm(first) ??
+          Infinity;
+        const d2 =
+          distanceByStoreUuid?.[second.uuid] ??
+          getBackendDistanceKm(second) ??
+          Infinity;
+        return d1 - d2;
+      }
       case "name-asc":
         return first.storeName.localeCompare(second.storeName);
       case "rating":
@@ -174,8 +198,25 @@ export function applyStoreFilters(
           Number(second.totalReviews ?? 0) - Number(first.totalReviews ?? 0)
         );
       case "default":
-      default:
+      default: {
+        const time1 = first.createdAt
+          ? new Date(first.createdAt).getTime()
+          : first.updatedAt
+            ? new Date(first.updatedAt).getTime()
+            : 0;
+        const time2 = second.createdAt
+          ? new Date(second.createdAt).getTime()
+          : second.updatedAt
+            ? new Date(second.updatedAt).getTime()
+            : 0;
+
+        if (time1 > 0 || time2 > 0) {
+          if (time1 !== time2 && !Number.isNaN(time1) && !Number.isNaN(time2)) {
+            return time2 - time1; // Newest first
+          }
+        }
         return 0;
+      }
     }
   });
 }
@@ -187,6 +228,7 @@ export function countActiveStoreFilters(filters: StorePageFilters): number {
     filters.operatingStatuses.length +
     (filters.openNowOnly ? 1 : 0) +
     (filters.minimumRating !== null ? 1 : 0) +
+    (filters.maxDistanceKm !== null && filters.maxDistanceKm !== undefined ? 1 : 0) +
     (filters.sortBy !== "default" ? 1 : 0)
   );
 }

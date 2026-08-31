@@ -2347,7 +2347,7 @@ export default function Hero() {
             >
               <Image
                 src="/Image/decorate.png"
-                alt=""
+                alt="FoodHub Brand Decoration"
                 width={80}
                 height={80}
                 className="h-auto w-full"
@@ -2405,7 +2405,7 @@ export default function Hero() {
     lg:-mt-6 max-sm:px-4
   "
                 src="/Image/foodhub-image-new.png"
-                alt="FOODHUB"
+                alt="FoodHub - ស្វែងរក និងណែនាំម្ហូបអាហារ (Mhoubahar)"
                 width={950}
                 height={450}
                 priority
@@ -2471,7 +2471,7 @@ max-sm:hidden
               
               "
                   src="/Image/left-vector.png"
-                  alt=""
+                  alt="FoodHub Visual Accent Vector"
                   width={103}
                   height={97}
                 />
@@ -2533,7 +2533,7 @@ max-sm:hidden
                 max-w-[110px] max-sm:w-30 
               "
                   src="/Image/right-vector.png"
-                  alt=""
+                  alt="FoodHub Graphic Accent"
                   width={131}
                   height={114}
                 />
@@ -2574,7 +2574,7 @@ max-sm:hidden
           >
             <Image
               src="/Image/blur-green.png"
-              alt=""
+              alt="FoodHub Background Glow"
               width={577}
               height={542}
               className="max-sm:w-100"
@@ -3054,7 +3054,7 @@ max-sm:hidden
         TITLE
     ====================================================== */}
 
-          <motion.p
+          <motion.h2
             variants={fadeUp}
             className="
         text-center
@@ -3071,7 +3071,7 @@ max-sm:hidden
             <motion.span variants={fadeIn} className="text-secondary-500">
               ការស្វែងរកអាហារ
             </motion.span>
-          </motion.p>
+          </motion.h2>
 
           {/* =====================================================
         DESCRIPTION
@@ -3137,7 +3137,7 @@ max-sm:hidden
                   height={50}
                   className="h-[50px] w-[40px]"
                   src="/Image/decorate.png"
-                  alt=""
+                  alt="FoodHub Feature Icon Decor"
                 />
               </motion.div>
             </motion.div>
@@ -3306,7 +3306,7 @@ max-sm:hidden
               >
                 <motion.img
                   src="/Image/arr.png"
-                  alt=""
+                  alt="Arrow Navigation Indicator"
                   variants={reduceMotion ? undefined : arrowLoop(0)}
                   className="h-full w-full object-contain"
                 />
@@ -3471,7 +3471,7 @@ max-sm:hidden
               >
                 <motion.img
                   src="/Image/arr.png"
-                  alt=""
+                  alt="Feature Navigation Arrow"
                   variants={reduceMotion ? undefined : arrowLoop(0.35)}
                   className="h-full w-full object-contain"
                 />

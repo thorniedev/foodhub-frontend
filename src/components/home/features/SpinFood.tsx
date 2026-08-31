@@ -570,6 +570,15 @@ export type SpinFoodProps = {
 export default function SpinFood({ foods, isLoading: isExternalLoading }: SpinFoodProps = {}) {
   const reducedMotion = useReducedMotion() ?? false;
 
+  /*
+   * `foods` being an EMPTY array (as opposed to not passed at all) means the
+   * caller ran a real AI recommendation and it genuinely found nothing —
+   * that must show an empty wheel, not silently fall back to the full,
+   * un-personalized, non-safety-checked catalog. Only the standalone
+   * catalog-spin usage (no `foods` prop at all) should fetch the catalog.
+   */
+  const isFoodsControlled = foods !== undefined;
+
   const {
     data: menuItems = [],
     isLoading: isCatalogLoading,
@@ -578,11 +587,11 @@ export default function SpinFood({ foods, isLoading: isExternalLoading }: SpinFo
     error,
     refetch,
   } = useGetMenuItemsQuery(undefined, {
-    skip: Boolean(foods && foods.length > 0),
+    skip: isFoodsControlled,
   });
 
-  const isLoading = isExternalLoading ?? (foods ? false : isCatalogLoading);
-  const rawItems = foods && foods.length > 0 ? foods : menuItems;
+  const isLoading = isExternalLoading ?? (isFoodsControlled ? false : isCatalogLoading);
+  const rawItems = isFoodsControlled ? foods! : menuItems;
 
   const items = useMemo(
     () =>

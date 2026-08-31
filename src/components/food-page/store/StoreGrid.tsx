@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -9,9 +9,8 @@ import {
   IoChevronForward,
   IoLocationOutline,
   IoNavigateOutline,
-  IoRestaurantOutline,
-  IoSearchOutline,
   IoTimeOutline,
+  IoSearchOutline,
 } from "react-icons/io5";
 
 import type { FoodStore } from "@/types/store-page";
@@ -34,27 +33,61 @@ type StoreGridProps = {
 
 const AUTO_PLAY_DELAY = 5000;
 const MAX_FEATURED_STORES = 6;
+const ITEMS_PER_PAGE = 9;
 
 function getRating(store: FoodStore): number {
   return Number.isFinite(store.averageRating) ? store.averageRating : 0;
 }
 
-function getFeaturedStores(stores: FoodStore[]): FoodStore[] {
-  /**
-   * List response has no accountStatus/reviewStatus.
-   * Rank using only fields that actually exist on StoreListItem.
-   */
+function getNearestFeaturedStores(
+  stores: FoodStore[],
+  distanceByStoreUuid?: Record<string, number>,
+): FoodStore[] {
+  const hasDistances =
+    distanceByStoreUuid &&
+    Object.values(distanceByStoreUuid).some((d) => Number.isFinite(d));
+
   return [...stores]
     .sort((first, second) => {
-      const openNowDifference =
-        Number(second.isOpenNow) - Number(first.isOpenNow);
+      if (hasDistances) {
+        const d1 =
+          distanceByStoreUuid?.[first.uuid] ??
+          getBackendDistanceKm(first) ??
+          Infinity;
+        const d2 =
+          distanceByStoreUuid?.[second.uuid] ??
+          getBackendDistanceKm(second) ??
+          Infinity;
 
-      if (openNowDifference !== 0) {
-        return openNowDifference;
+        // If one has valid distance and the other does not
+        if (Number.isFinite(d1) && !Number.isFinite(d2)) return -1;
+        if (!Number.isFinite(d1) && Number.isFinite(d2)) return 1;
+
+        // If distance difference is significant (> 0.2km), closer store ranks first
+        if (Math.abs(d1 - d2) > 0.2) {
+          return d1 - d2;
+        }
+
+        // For stores at roughly the same distance, open store comes first
+        const openNowDifference =
+          Number(second.isOpenNow) - Number(first.isOpenNow);
+        if (openNowDifference !== 0) {
+          return openNowDifference;
+        }
+
+        if (d1 !== d2) {
+          return d1 - d2;
+        }
+      } else {
+        // Fallback when user location is not active: open stores first
+        const openNowDifference =
+          Number(second.isOpenNow) - Number(first.isOpenNow);
+        if (openNowDifference !== 0) {
+          return openNowDifference;
+        }
       }
 
       const ratingDifference = getRating(second) - getRating(first);
-
       if (ratingDifference !== 0) {
         return ratingDifference;
       }
@@ -93,202 +126,158 @@ function FeaturedStoreBanner({
     distanceKm ?? getBackendDistanceKm(store),
   );
 
-  const isOpen = store.isOpenNow === true;
-
-  const isClosed = !isOpen;
-
   return (
-    <motion.article
-      key={store.uuid}
-      initial={{
-        opacity: 0,
-        x: 26,
-      }}
-      animate={{
-        opacity: 1,
-        x: 0,
-      }}
-      exit={{
-        opacity: 0,
-        x: -26,
-      }}
-      transition={{
-        duration: 0.34,
-        ease: "easeOut",
-      }}
-      className="
-        overflow-hidden
-        rounded-[22px]
-        border border-gray-100
-        bg-white
-        shadow-sm
-      "
+    <Link
+      href={`/store/${store.uuid}`}
+      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-[32px]"
     >
-      <div
+      <motion.article
+        key={store.uuid}
+        initial={{
+          opacity: 0,
+          x: 26,
+        }}
+        animate={{
+          opacity: 1,
+          x: 0,
+        }}
+        exit={{
+          opacity: 0,
+          x: -26,
+        }}
+        transition={{
+          duration: 0.34,
+          ease: "easeOut",
+        }}
         className="
-          grid grid-cols-1
-
-          md:grid-cols-[0.9fr_1.1fr]
+          group
+          cursor-pointer
+          overflow-hidden
+          rounded-[32px]
+          border border-gray-100/60
+          bg-white
+          shadow-[0_8px_30px_rgb(0,0,0,0.06)]
+          transition-all duration-300
+          hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]
+          hover:-translate-y-1
         "
       >
-        {/* Banner image */}
         <div
           className="
-            relative
-            h-[205px]
-            bg-primary-50
+            grid grid-cols-1
 
-            sm:h-[230px]
-            md:h-[270px]
+            md:grid-cols-[0.9fr_1.1fr]
           "
         >
-          <StoreImage store={store} />
-
+          {/* Banner image */}
           <div
             className="
-              absolute inset-0
-              bg-gradient-to-t
-              from-black/20
-              via-transparent
-              to-transparent
-            "
-          />
+              relative
+              h-[205px]
+              bg-primary-50
 
-          <div className="absolute left-4 top-4">
-            <span
-              className={`
-                inline-flex
-                rounded-full
-                px-3 py-1.5
-                text-[18px]
-                font-semibold
-                shadow-sm
-
-                ${
-                  isOpen
-                    ? "bg-emerald-100 text-emerald-700"
-                    : isClosed
-                      ? "bg-red-100 text-red-600"
-                      : "bg-white/95 text-gray-600"
-                }
-              `}
-            >
-              {statusLabel}
-            </span>
-          </div>
-        </div>
-
-        {/* Banner content */}
-        <div
-          className="
-            flex min-w-0
-            flex-col justify-center
-            p-5
-
-            sm:p-6
-            lg:p-7
-          "
-        >
-          <p
-            className="
-              text-[18px]
-              font-semibold
-              text-secondary-500
+              sm:h-[230px]
+              md:h-[270px]
             "
           >
-            ជម្រើសសម្រាប់អ្នក
-          </p>
+            <StoreImage store={store} />
 
-          {/* Store name: always one line */}
-          <p
-            className="
-              mt-2
-              truncate
-              whitespace-nowrap
-              text-[24px]
-              font-bold
-              leading-8
-              text-primary-900
-
-              sm:text-[26px]
-            "
-          >
-            {displayName}
-          </p>
-
-          {/* Address: always one line */}
-          <div
-            className="
-              mt-4
-              flex min-w-0
-              items-center gap-2
-              text-gray-500
-            "
-          >
-            <IoLocationOutline
+            <div
               className="
-                shrink-0
-                text-[20px]
-                text-primary-500
+                absolute inset-0
+                bg-gradient-to-t
+                from-black/20
+                via-transparent
+                to-transparent
               "
             />
+          </div>
 
+          {/* Banner content */}
+          <div
+            className="
+              flex min-w-0
+              flex-col justify-center
+              p-5
+
+              sm:p-6
+              lg:p-7
+            "
+          >
             <p
               className="
-                min-w-0 flex-1
-                truncate
-                whitespace-nowrap
+                text-[18px]
+                font-semibold
+                text-secondary-500
+              "
+            >
+              ជម្រើសសម្រាប់អ្នក
+            </p>
+
+            <h2
+              className="
+                mt-1 truncate
+                text-[24px]
+                font-bold
+                text-primary-900
+                transition-colors
+                group-hover:text-primary-700
+
+                sm:text-[28px]
+              "
+            >
+              {displayName}
+            </h2>
+
+            <div className="mt-3 flex items-start gap-2 text-gray-500">
+              <IoLocationOutline className="mt-1 shrink-0 text-[19px] text-gray-400" />
+
+              <p className="line-clamp-2 text-[18px] leading-6">{addressLabel}</p>
+            </div>
+
+            <div
+              className="
+                mt-4 flex
+                flex-wrap items-center
+                gap-x-5 gap-y-2
                 text-[18px]
               "
             >
-              {addressLabel}
-            </p>
-          </div>
+              <span className="inline-flex items-center gap-1.5 font-medium text-gray-600">
+                <IoTimeOutline className="text-[20px] text-gray-400" />
+                {statusLabel}
+              </span>
 
-          <div
-            className="
-              mt-4
-              flex min-w-0
-              flex-wrap
-              items-center
-              gap-x-5 gap-y-2
-              text-[18px]
-            "
-          >
-            <span
-              className={`
-                inline-flex
-                items-center gap-2
-                whitespace-nowrap
+              <span className="inline-flex items-center gap-1.5 font-medium text-primary-700">
+                <IoNavigateOutline className="text-[20px]" />
+                {distanceLabel}
+              </span>
+            </div>
 
-                ${
-                  isOpen
-                    ? "text-emerald-600"
-                    : isClosed
-                      ? "text-red-500"
-                      : "text-gray-400"
-                }
-              `}
-            >
-              <IoTimeOutline className="text-[20px]" />
-              {statusLabel}
-            </span>
-
-            <span
-              className="
-                inline-flex
-                items-center gap-2
-                whitespace-nowrap
-                text-primary-600
-              "
-            >
-              <IoNavigateOutline className="text-[20px]" />
-              {distanceLabel}
-            </span>
+            <div className="mt-5">
+              <span
+                className="
+                  inline-flex min-h-11
+                  items-center justify-center
+                  rounded-full
+                  bg-primary-800
+                  px-5
+                  text-[18px]
+                  font-semibold
+                  text-white
+                  shadow-sm
+                  transition
+                  group-hover:bg-primary-700
+                  active:scale-95
+                "
+              >
+                ចូលមើលហាង
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    </motion.article>
+      </motion.article>
+    </Link>
   );
 }
 
@@ -298,10 +287,26 @@ export default function StoreGrid({
   distanceByStoreUuid = {},
 }: StoreGridProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-
   const [isPaused, setIsPaused] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const allStoresSectionRef = useRef<HTMLDivElement>(null);
 
-  const featuredStores = useMemo(() => getFeaturedStores(stores), [stores]);
+  // Reset to page 1 when stores list changes (e.g. after filter change)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [stores]);
+
+  const hasUserDistance = useMemo(() => {
+    return (
+      distanceByStoreUuid &&
+      Object.values(distanceByStoreUuid).some((d) => Number.isFinite(d))
+    );
+  }, [distanceByStoreUuid]);
+
+  const featuredStores = useMemo(
+    () => getNearestFeaturedStores(stores, distanceByStoreUuid),
+    [stores, distanceByStoreUuid],
+  );
 
   useEffect(() => {
     if (featuredStores.length <= 1 || isPaused) {
@@ -350,52 +355,85 @@ export default function StoreGrid({
     );
   };
 
+  /* =========================================================
+     PAGINATION
+  ========================================================= */
+
+  const totalPages = Math.max(1, Math.ceil(stores.length / ITEMS_PER_PAGE));
+
+  const paginatedStores = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return stores.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [stores, currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    if (allStoresSectionRef.current) {
+      const top =
+        allStoresSectionRef.current.getBoundingClientRect().top +
+        window.scrollY -
+        90;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
+  const visiblePages = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 2) {
+      return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+  }, [currentPage, totalPages]);
+
   if (stores.length === 0) {
     return (
       <motion.div
         initial={{
           opacity: 0,
-          y: 10,
+          y: 12,
         }}
         animate={{
           opacity: 1,
           y: 0,
         }}
+        transition={{
+          duration: 0.22,
+        }}
         className="
           rounded-[22px]
           border border-dashed border-gray-200
           bg-white
-          px-5 py-12
+          px-5 py-14
           text-center
-          shadow-sm
         "
       >
         <div
           className="
-            mx-auto
-            flex h-14 w-14
+            mx-auto flex h-14 w-14
             items-center justify-center
             rounded-full
             bg-primary-50
+            text-primary-700
           "
         >
-          <IoSearchOutline
-            className="
-              text-[28px]
-              text-primary-700
-            "
-          />
+          <IoSearchOutline className="text-[26px]" />
         </div>
 
         <p
           className="
             mt-4
             text-[21px]
-            font-semibold
+            font-bold
             text-primary-900
           "
         >
-          រកមិនឃើញហាងអាហារ
+          រកមិនឃើញហាងអាហារដែលត្រូវនឹងតម្រងទេ
         </p>
 
         <p
@@ -407,7 +445,7 @@ export default function StoreGrid({
             text-gray-500
           "
         >
-          សូមសាកល្បងផ្លាស់ប្តូរពាក្យស្វែងរក ឬសម្អាតតម្រងមួយចំនួន។
+          សូមសាកល្បងផ្លាស់ប្តូរតម្រងស្វែងរក ឬសម្អាតតម្រងទាំងអស់ដើម្បីមើលហាងទាំងអស់ឡើងវិញ។
         </p>
 
         <button
@@ -420,7 +458,7 @@ export default function StoreGrid({
             gap-2
             rounded-full
             bg-primary-800
-            px-5
+            px-6
             text-[18px]
             font-semibold
             text-white
@@ -429,8 +467,7 @@ export default function StoreGrid({
             active:scale-95
           "
         >
-          <IoRestaurantOutline className="text-[20px]" />
-          បង្ហាញហាងទាំងអស់
+          សម្អាតតម្រងទាំងអស់
         </button>
       </motion.div>
     );
@@ -459,9 +496,11 @@ export default function StoreGrid({
                   text-[18px]
                   font-semibold
                   text-secondary-500
+                  flex items-center gap-1.5
                 "
               >
-                ជម្រើសសម្រាប់អ្នក
+                <IoNavigateOutline className="text-[18px]" />
+                {hasUserDistance ? "ហាងនៅជិតអ្នកបំផុត" : "ជម្រើសសម្រាប់អ្នក"}
               </p>
 
               <p
@@ -474,7 +513,9 @@ export default function StoreGrid({
                   sm:text-[24px]
                 "
               >
-                ហាងអាហារដែលគួរសាកល្បង
+                {hasUserDistance
+                  ? "ហាងអាហារនៅជិតអ្នកដែលគួរសាកល្បង"
+                  : "ហាងអាហារដែលគួរសាកល្បង"}
               </p>
             </div>
 
@@ -576,7 +617,7 @@ export default function StoreGrid({
       )}
 
       {/* All stores */}
-      <section>
+      <section ref={allStoresSectionRef}>
         <div
           className="
             mb-5
@@ -637,7 +678,7 @@ export default function StoreGrid({
           "
         >
           <AnimatePresence mode="popLayout">
-            {stores.map((store) => (
+            {paginatedStores.map((store) => (
               <Link
                 key={store.uuid}
                 href={`/store/${store.uuid}`}
@@ -652,6 +693,68 @@ export default function StoreGrid({
             ))}
           </AnimatePresence>
         </motion.div>
+
+        {/* Pagination controls */}
+        {totalPages > 1 && (
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-6 sm:flex-row dark:border-slate-800">
+            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
+              បង្ហាញ <span className="font-semibold text-primary-800 dark:text-emerald-400">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="font-semibold text-primary-800 dark:text-emerald-400">{Math.min(currentPage * ITEMS_PER_PAGE, stores.length)}</span> នៃ <span className="font-semibold text-primary-800 dark:text-emerald-400">{stores.length}</span> ហាង
+            </p>
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:border-primary-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Previous page"
+              >
+                <IoChevronBack className="text-[18px]" />
+              </button>
+
+              {visiblePages.map((page, idx) => {
+                if (page === "...") {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="flex h-10 w-8 items-center justify-center text-sm font-semibold text-gray-400 dark:text-slate-500"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+
+                const pageNum = Number(page);
+                const isSelected = pageNum === currentPage;
+
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`flex h-10 min-w-10 items-center justify-center rounded-xl px-2 text-sm font-bold transition ${
+                      isSelected
+                        ? "bg-primary-800 text-white shadow-sm dark:bg-emerald-600"
+                        : "border border-gray-200 bg-white text-gray-700 hover:border-primary-700 hover:bg-primary-50/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:border-primary-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Next page"
+              >
+                <IoChevronForward className="text-[18px]" />
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

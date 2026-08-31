@@ -86,6 +86,9 @@ export interface CreateRecommendationSessionRequest {
   maximumPrice?: number;
   currencyCode?: string;
   searchRadiusKm?: number;
+  mealTypeId?: number;
+  /** Hard filter to only the FOOD or only the DRINK category hierarchy; omit for both. */
+  rootCategoryCode?: "FOOD" | "DRINK";
   /** Free-form request context, e.g. `{ userPrompt: "spicy noodles under $5" }`. */
   contextData?: Record<string, unknown>;
   profiles: RecommendationProfileRequest[];

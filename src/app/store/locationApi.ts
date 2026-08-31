@@ -128,6 +128,8 @@ function normalizeStoreListItem(value: unknown): FoodStore | null {
     operatingStatus: normalizeOperatingStatus(value.operatingStatus),
     isOpenNow: asBoolean(value.isOpenNow),
     logoMediaUuid: asNullableString(value.logoMediaUuid),
+    createdAt: asNullableString(value.createdAt ?? value.created_at),
+    updatedAt: asNullableString(value.updatedAt ?? value.updated_at),
   };
 }
 

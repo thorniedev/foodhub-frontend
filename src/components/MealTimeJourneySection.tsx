@@ -817,7 +817,7 @@ export default function MealTimeJourneySection() {
                 className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center px-4 pt-4 pb-5 sm:pb-6 text-center"
               >
                 {/* Tag & Safety status */}
-                <div className="flex items-center gap-1.5 mb-1 flex-wrap justify-center">
+                <div className="flex flex-col items-center gap-2 mb-2 p-2 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
                   <span className="rounded-full bg-accent-400 px-2.5 py-0.5 text-[10px] sm:text-xs font-bold text-primary-950 shadow-sm">
                     {currentActiveMeal.label}
                   </span>

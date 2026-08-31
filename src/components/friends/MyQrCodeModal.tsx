@@ -90,25 +90,25 @@ export default function MyQrCodeModal({ isOpen, onClose }: MyQrCodeModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="my-6 flex flex-col items-center justify-center">
-          <div className="relative flex items-center justify-center rounded-3xl border-4 border-emerald-500/20 bg-white p-6 shadow-lg dark:border-emerald-500/30">
+        <div className="my-5 flex flex-col items-center justify-center">
+          <div className="relative flex items-center justify-center rounded-3xl border-4 border-emerald-500/20 bg-white p-4 shadow-xl dark:border-emerald-500/30 sm:p-6">
             {isLoading ? (
-              <div className="flex h-56 w-56 items-center justify-center">
-                <RefreshCw className="h-8 w-8 animate-spin text-emerald-600" />
+              <div className="flex h-72 w-72 items-center justify-center">
+                <RefreshCw className="h-9 w-9 animate-spin text-emerald-600" />
               </div>
             ) : (
-              <div className="relative">
+              <div className="relative overflow-hidden rounded-2xl bg-white p-2">
                 <QRCodeSVG
                   value={qrValue}
-                  size={220}
+                  size={280}
                   level="H"
-                  includeMargin={false}
+                  includeMargin={true}
                   imageSettings={{
-                    src: "/Image/foodHub-logo.png",
+                    src: "/auth/mhoubahar-brand.png",
                     x: undefined,
                     y: undefined,
-                    height: 42,
-                    width: 42,
+                    height: 52,
+                    width: 52,
                     excavate: true,
                   }}
                 />

@@ -547,7 +547,14 @@ function HeroStage({ reduceMotion }: { reduceMotion: boolean }) {
         </motion.div>
 
         <motion.h1
-          initial={reduceMotion ? false : { opacity: 0, y: 30 }}
+          initial={
+            reduceMotion
+              ? false
+              : {
+                  opacity: 0,
+                  y: 30,
+                }
+          }
           animate={{ opacity: 1, y: 0 }}
           transition={{
             duration: 0.8,
