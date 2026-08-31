@@ -586,26 +586,30 @@ export default function FriendsTabs() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <FriendAvatar
-                        username={req.senderUsername || "អ្នកប្រើ"}
+                        friend={req}
+                        username={req.senderDefaultProfileName || req.senderUsername || "អ្នកប្រើ"}
                         avatarMediaKey={req.senderAvatarMediaKey}
                         avatarMediaUuid={req.senderAvatarMediaUuid}
                         avatarUrl={req.senderAvatarUrl}
                         size={44}
                       />
-                      <div className="min-w-0 flex-1 space-y-1">
-                        {req.senderDefaultProfileName && (
-                          <div className="flex items-center">
-                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200/50 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40">
+                      <div className="min-w-0 flex-1 space-y-0.5 sm:space-y-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <h4 className="truncate text-base font-bold text-slate-900 dark:text-white sm:text-lg">
+                            {req.senderDefaultProfileName || req.senderUsername || "អ្នកប្រើ"}
+                          </h4>
+                          {req.senderDefaultProfileName && (
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200/50 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40">
                               <Shield className="h-3 w-3 shrink-0" />
-                              <span className="truncate max-w-[150px] sm:max-w-[200px]">
-                                {req.senderDefaultProfileName}
-                              </span>
+                              <span>លំនាំដើម</span>
                             </span>
-                          </div>
+                          )}
+                        </div>
+                        {req.senderDefaultProfileName && req.senderUsername && (
+                          <p className="truncate text-xs text-slate-400 sm:text-sm">
+                            @{req.senderUsername}
+                          </p>
                         )}
-                        <h4 className="truncate text-base font-bold text-slate-900 dark:text-white sm:text-lg">
-                          @{req.senderUsername || "អ្នកប្រើ"}
-                        </h4>
                       </div>
                     </div>
 
@@ -650,16 +654,25 @@ export default function FriendsTabs() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <FriendAvatar
-                      username={req.receiverUsername || "អ្នកប្រើ"}
+                      friend={req}
+                      username={req.receiverDefaultProfileName || req.receiverUsername || "អ្នកប្រើ"}
                       avatarMediaKey={req.receiverAvatarMediaKey}
                       avatarMediaUuid={req.receiverAvatarMediaUuid}
                       avatarUrl={req.receiverAvatarUrl}
                       size={44}
                     />
                     <div className="min-w-0 flex-1 space-y-0.5">
-                      <h4 className="truncate text-base font-bold text-slate-900 dark:text-white sm:text-lg">
-                        @{req.receiverUsername || "អ្នកប្រើ"}
-                      </h4>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <h4 className="truncate text-base font-bold text-slate-900 dark:text-white sm:text-lg">
+                          {req.receiverDefaultProfileName || req.receiverUsername || "អ្នកប្រើ"}
+                        </h4>
+                        {req.receiverDefaultProfileName && (
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200/50 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40">
+                            <Shield className="h-3 w-3 shrink-0" />
+                            <span>លំនាំដើម</span>
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5 text-xs text-amber-600 whitespace-nowrap dark:text-amber-400 sm:text-sm">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
                         <span>កំពុងរង់ចាំការយល់ព្រម</span>

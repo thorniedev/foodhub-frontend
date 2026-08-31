@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { FriendDto } from "@/types/friends";
+import { FriendDto, FriendRequestDto } from "@/types/friends";
 import { useDeleteFriendMutation } from "@/app/store/friendsApi";
-import { useGetMediaAccessUrlQuery } from "@/app/store/memberProfileApi";
+import {
+  useGetMediaAccessUrlQuery,
+  useGetMemberProfileByIdQuery,
+} from "@/app/store/memberProfileApi";
+import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import {
   Shield,
   Utensils,
@@ -66,29 +70,110 @@ export function getAvatarGradient(name: string): string {
 }
 
 export function FriendAvatar({
+  friend,
   username,
   avatarMediaKey,
   avatarMediaUuid,
   avatarUrl,
+  profileUuid,
   size = 48,
 }: {
-  username: string;
+  friend?: FriendDto | FriendRequestDto | Record<string, unknown>;
+  username?: string;
   avatarMediaKey?: string | null;
   avatarMediaUuid?: string | null;
   avatarUrl?: string | null;
+  profileUuid?: string | null;
   size?: number;
 }) {
   const [imageError, setImageError] = useState(false);
-  const mediaKey = avatarMediaKey || avatarMediaUuid || "";
+
+  // Extract all possible avatar properties from friend object
+  const f = (friend || {}) as Record<string, unknown>;
+  const rawMediaKey =
+    avatarMediaKey ||
+    avatarMediaUuid ||
+    (f.avatarMediaKey as string) ||
+    (f.avatarMediaUuid as string) ||
+    (f.profileAvatarMediaUuid as string) ||
+    (f.defaultProfileAvatarMediaUuid as string) ||
+    (f.defaultProfileMediaUuid as string) ||
+    (f.mediaUuid as string) ||
+    (f.avatar as string) ||
+    (f.avatarKey as string) ||
+    "";
+
+  const rawDirectUrl =
+    avatarUrl ||
+    (f.avatarUrl as string) ||
+    (f.profileAvatarUrl as string) ||
+    (f.defaultProfileAvatarUrl as string) ||
+    (f.photoUrl as string) ||
+    (f.profilePicture as string) ||
+    (f.imageUrl as string) ||
+    (f.picture as string) ||
+    null;
+
+  const targetProfileUuid =
+    profileUuid ||
+    (f.defaultProfileUuid as string) ||
+    (f.profileUuid as string) ||
+    (f.userUuid as string) ||
+    "";
+
+  // If avatar media uuid is not directly on the friend object, fetch default profile to get avatarMediaUuid
+  const { data: friendProfile } = useGetMemberProfileByIdQuery(
+    targetProfileUuid,
+    {
+      skip: !targetProfileUuid || Boolean(rawMediaKey || rawDirectUrl),
+    },
+  );
+
+  const effectiveMediaKey = rawMediaKey || friendProfile?.avatarMediaUuid || "";
 
   // Fetch access URL if media key is provided and no direct avatar URL exists
-  const { data: mediaAccessData } = useGetMediaAccessUrlQuery(mediaKey, {
-    skip: !mediaKey || !!avatarUrl,
-  });
+  const { data: mediaAccessData } = useGetMediaAccessUrlQuery(
+    effectiveMediaKey,
+    {
+      skip: !effectiveMediaKey || Boolean(rawDirectUrl),
+    },
+  );
 
-  const resolvedUrl = avatarUrl || mediaAccessData?.url || null;
-  const initial = (username?.charAt(0) || "U").toUpperCase();
-  const gradient = getAvatarGradient(username || "user");
+  // Calculate final resolved URL with multiple fallback strategies
+  const resolvedUrl = useMemo(() => {
+    if (
+      rawDirectUrl &&
+      (rawDirectUrl.startsWith("http://") ||
+        rawDirectUrl.startsWith("https://") ||
+        rawDirectUrl.startsWith("/"))
+    ) {
+      return rawDirectUrl;
+    }
+    if (mediaAccessData?.url) {
+      return mediaAccessData.url;
+    }
+    if (effectiveMediaKey) {
+      if (
+        effectiveMediaKey.startsWith("http://") ||
+        effectiveMediaKey.startsWith("https://")
+      ) {
+        return effectiveMediaKey;
+      }
+      return toFrontendApiAssetUrl(effectiveMediaKey, "");
+    }
+    return null;
+  }, [rawDirectUrl, mediaAccessData, effectiveMediaKey]);
+
+  useEffect(() => {
+    if (resolvedUrl) {
+      setImageError(false);
+    }
+  }, [resolvedUrl]);
+
+  const name =
+    username || (f.username as string) || (f.name as string) || "user";
+  const initial = (name.charAt(0) || "U").toUpperCase();
+  const gradient = getAvatarGradient(name);
 
   return (
     <div
@@ -100,7 +185,7 @@ export function FriendAvatar({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={resolvedUrl}
-            alt={username}
+            alt={name}
             onError={() => setImageError(true)}
             className="h-full w-full object-cover"
           />
@@ -155,7 +240,9 @@ export default function FriendCard({
             <button
               type="button"
               onClick={() => onToggleSelect(friend.userUuid)}
-              title={isSelected ? "ដកចេញពីការជ្រើសរើស" : "ជ្រើសរើសសម្រាប់ណាត់ញ៉ាំ"}
+              title={
+                isSelected ? "ដកចេញពីការជ្រើសរើស" : "ជ្រើសរើសសម្រាប់ណាត់ញ៉ាំ"
+              }
               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all sm:h-6 sm:w-6 ${
                 isSelected
                   ? "border-emerald-600 bg-emerald-600 text-white shadow-xs dark:border-emerald-500 dark:bg-emerald-500"
@@ -171,7 +258,9 @@ export default function FriendCard({
             <button
               type="button"
               onClick={() => onToggleFavorite(friend.userUuid)}
-              title={isFavorite ? "ដកចេញពីសំណព្វចិត្ត" : "ដាក់ជាមិត្តសំណព្វចិត្ត"}
+              title={
+                isFavorite ? "ដកចេញពីសំណព្វចិត្ត" : "ដាក់ជាមិត្តសំណព្វចិត្ត"
+              }
               className={`shrink-0 p-0.5 transition-transform active:scale-125 sm:p-1 ${
                 isFavorite
                   ? "text-amber-400 drop-shadow-xs"
@@ -186,36 +275,41 @@ export default function FriendCard({
 
           {/* Avatar with dynamic Profile Picture or Initial */}
           <FriendAvatar
-            username={friend.username}
+            friend={friend}
+            username={friend.defaultProfileName || friend.username}
             avatarMediaKey={friend.avatarMediaKey}
             avatarMediaUuid={friend.avatarMediaUuid}
             avatarUrl={friend.avatarUrl}
+            profileUuid={friend.defaultProfileUuid}
             size={44}
           />
 
           {/* Friend Names & Profile Info */}
-          <div className="min-w-0 flex-1 space-y-1">
-            {/* Top: Profile Badge */}
-            {friend.defaultProfileName && (
-              <div className="flex items-center">
-                <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200/50 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40">
-                  <Shield className="h-3 w-3 shrink-0" />
-                  <span className="truncate max-w-[150px] sm:max-w-[200px]">
-                    {friend.defaultProfileName}
+          <div className="min-w-0 flex-1 space-y-0.5 sm:space-y-1">
+            {/* Primary Name: Render User's Default Profile Name */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h3 className="truncate text-base font-bold text-slate-900 dark:text-white sm:text-lg">
+                {friend.defaultProfileName || friend.username}
+              </h3>
+              {friend.defaultProfileName && (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200/50 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40"></span>
+              )}
+            </div>
+
+            {/* Secondary Row: Username/Email + Connection Date */}
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap sm:text-sm">
+              {friend.defaultProfileName && (
+                <>
+                  <span className="truncate max-w-[140px] sm:max-w-[200px]">
+                    @{friend.username}
                   </span>
-                </span>
+                  <span>•</span>
+                </>
+              )}
+              <div className="flex items-center gap-1 shrink-0">
+                <Calendar className="h-3.5 w-3.5 shrink-0" />
+                <span>បានភ្ជាប់ {formatDate(friend.connectedAt)}</span>
               </div>
-            )}
-
-            {/* Middle: Friend Username (Full visible width) */}
-            <h3 className="truncate text-base font-bold text-slate-900 dark:text-white sm:text-lg">
-              {friend.username}
-            </h3>
-
-            {/* Bottom: Date */}
-            <div className="flex items-center gap-1 text-xs text-slate-400 whitespace-nowrap sm:text-sm">
-              <Calendar className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">បានភ្ជាប់ {formatDate(friend.connectedAt)}</span>
             </div>
           </div>
         </div>
