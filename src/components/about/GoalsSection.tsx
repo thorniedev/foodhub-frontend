@@ -112,10 +112,10 @@ export default function GoalsSection() {
 
   return (
     <section className="relative w-full  py-8 sm:py-12 md:py-12.5">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-4">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header — letter-spacing tightens as it settles. */}
         <motion.h2
-          className="mb-8 sm:mb-12 text-center  text-2xl font-extrabold sm:text-4xl md:text-5xl"
+          className="mb-8 sm:mb-12 text-center font-semibold text-primary-800 lg:text-6xl py-2 md:text-5xl max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark"
           initial={
             reduceMotion
               ? false

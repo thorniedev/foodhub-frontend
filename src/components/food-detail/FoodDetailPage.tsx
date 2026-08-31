@@ -1848,7 +1848,13 @@ function RecommendationScoreList({
 export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   const router = useRouter();
 
-  const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
+  const {
+    bookmarks,
+    addBookmark,
+    removeBookmark,
+    findBookmark,
+    activeProfileUuid,
+  } = useBookmarks();
   const { track } = useTrackInteraction();
 
   const [activeImage, setActiveImage] = useState(0);
@@ -1892,11 +1898,17 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         const foodCategoryCode = food?.food?.category?.code;
         const foodCuisineCode = food?.food?.cuisine?.code;
 
-        if (foodCategoryCode && first.food?.category?.code === foodCategoryCode) {
+        if (
+          foodCategoryCode &&
+          first.food?.category?.code === foodCategoryCode
+        ) {
           firstScore += 3;
         }
 
-        if (foodCategoryCode && second.food?.category?.code === foodCategoryCode) {
+        if (
+          foodCategoryCode &&
+          second.food?.category?.code === foodCategoryCode
+        ) {
           secondScore += 3;
         }
 
@@ -1917,7 +1929,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         }
 
         firstScore += Math.max(0, Number(first.store?.averageRating ?? 0)) / 10;
-        secondScore += Math.max(0, Number(second.store?.averageRating ?? 0)) / 10;
+        secondScore +=
+          Math.max(0, Number(second.store?.averageRating ?? 0)) / 10;
 
         return secondScore - firstScore;
       })
@@ -2019,7 +2032,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   return (
     <main className="min-h-screen bg-[#f7f9f7] pt-15">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 ">
         {/* ============================================================
             BACK
         ============================================================ */}
@@ -2677,7 +2690,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               }
             />
 
-            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-6 container mx-auto max-w-7xl grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {relatedFoods.map((relatedFood) => (
                 <RelatedFoodCard key={relatedFood.uuid} food={relatedFood} />
               ))}

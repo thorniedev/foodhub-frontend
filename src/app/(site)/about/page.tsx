@@ -11,6 +11,12 @@ import AboutHeroClient from "@/components/about/AboutHeroClient";
 import TechnologiesSection from "@/components/about/TechnologiesSection";
 import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommendationSection";
 import MealTimeJourneySection from "@/components/MealTimeJourneySection";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "អំពីយើង | FoodHub - Discover Cambodian Mhoub",
+  description: "ស្វែងយល់បន្ថែមអំពី FoodHub បេសកកម្មរបស់យើង និងរបៀបដែលយើងជួយអ្នកក្នុងការស្វែងរកអាហារ (Mhoub) ដែលអ្នកចូលចិត្ត។",
+};
 
 export default function AboutPage() {
   return (

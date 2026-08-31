@@ -1234,34 +1234,44 @@ function EmptyValue({ text }: { text: string }) {
 
 function DashboardLoading() {
   return (
-    <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5 xl:px-6">
-      <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="h-20 bg-slate-100 sm:h-32" />
-
-        <div className="px-4 pb-5 sm:px-6">
-          <div className="-mt-8 flex items-end gap-3 sm:-mt-10">
-            <div className="h-16 w-16 rounded-2xl bg-slate-200 sm:h-20 sm:w-20" />
-
-            <div className="space-y-2 pb-1">
-              <div className="h-7 w-48 rounded bg-slate-200" />
-              <div className="h-4 w-32 rounded bg-slate-100" />
+    <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-4 lg:px-5 lg:py-5 xl:px-6">
+      {/* Profile Header Skeleton */}
+      <div className="animate-pulse rounded-3xl border border-slate-200/80 bg-white px-4 pb-0 pt-5 shadow-xs sm:px-6 sm:pt-6 lg:px-7 lg:pt-7">
+        
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:gap-6">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-5 lg:gap-6">
+            <div className="h-20 w-20 shrink-0 rounded-full bg-slate-200 lg:h-24 lg:w-24" />
+            
+            <div className="space-y-3">
+              <div className="h-8 w-48 rounded-lg bg-slate-200 sm:w-64 lg:h-10 lg:w-80" />
+              <div className="h-4 w-32 rounded-md bg-slate-100 sm:w-40 lg:h-5 lg:w-56" />
             </div>
           </div>
+          
+          <div className="h-11 w-full rounded-full bg-slate-200 sm:w-36 lg:h-12 lg:w-44" />
+        </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
-            {[0, 1, 2].map((item) => (
-              <div key={item} className="h-24 rounded-xl bg-slate-100" />
-            ))}
-          </div>
+        <div className="mt-6 grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-100 py-3.5 lg:mt-7 lg:py-4">
+          {[0, 1, 2].map((item) => (
+            <div key={item} className="flex flex-col items-center justify-center space-y-2">
+              <div className="h-7 w-12 rounded-md bg-slate-200 lg:h-8 lg:w-16" />
+              <div className="h-4 w-16 rounded-md bg-slate-100 lg:w-20" />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 py-2.5 lg:py-3">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="h-9 w-20 rounded-full bg-slate-100 lg:h-10 lg:w-24" />
+          ))}
         </div>
       </div>
 
-      {[0, 1, 2, 3].map((item) => (
-        <div
-          key={item}
-          className="mt-5 h-36 animate-pulse rounded-2xl border border-slate-200 bg-white"
-        />
-      ))}
+      {/* Sections Skeletons */}
+      <div className="mt-6 flex flex-col gap-5 lg:gap-6">
+        <div className="h-64 animate-pulse rounded-3xl border border-slate-200/80 bg-white shadow-xs lg:h-72" />
+        <div className="h-96 animate-pulse rounded-3xl border border-slate-200/80 bg-white shadow-xs lg:h-[420px]" />
+      </div>
     </div>
   );
 }

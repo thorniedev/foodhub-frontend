@@ -491,11 +491,30 @@ export default function FilterByMealTime({
         <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {/* Loading */}
 
-          {(isLoading || isFetching) && menuItems.length === 0 && (
-            <p className="col-span-full py-10 text-center text-gray-400 dark:text-slate-500">
-              កំពុងផ្ទុក...
-            </p>
-          )}
+          {(isLoading || isFetching) && menuItems.length === 0 &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={`skeleton-fbm-${i}`}
+                className="flex flex-col w-full gap-4 bg-white border border-gray-100 shadow-sm rounded-[24px] p-2.5 animate-pulse"
+              >
+                <div className="rounded-[14px] w-full h-[150px] md:h-37.5 lg:h-46.25 bg-gray-200 dark:bg-gray-700" />
+                <div className="flex flex-col gap-2">
+                  <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="flex justify-between items-center">
+                    <div className="h-6 w-2/3 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-6 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                    <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
 
           {/* Error */}
 

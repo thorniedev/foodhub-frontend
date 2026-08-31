@@ -200,7 +200,7 @@ export default function LocationPermissionModal({
 
                 <h2
                   id="location-dialog-title"
-                  className="mt-2 font-['Kantumruy_Pro',sans-serif] text-[26px] font-bold leading-relaxed text-slate-900 sm:text-[30px] dark:text-white"
+                  className="mt-2  text-[26px] font-bold leading-relaxed text-slate-900 sm:text-[30px] dark:text-white"
                 >
                   {isDenied
                     ? "ការចូលប្រើទីតាំងត្រូវបានបិទ"
@@ -213,7 +213,7 @@ export default function LocationPermissionModal({
 
                 <p
                   id="location-dialog-description"
-                  className="mx-auto mt-3 max-w-[410px] font-['Kantumruy_Pro',sans-serif] text-[16px] leading-7 text-slate-600 dark:text-slate-300"
+                  className="mx-auto mt-3 max-w-[410px]  text-[16px] leading-7 text-slate-600 dark:text-slate-300"
                 >
                   {isDenied
                     ? "សូមបើកសិទ្ធិទីតាំងក្នុងការកំណត់របស់កម្មវិធីរុករក ដើម្បីឱ្យ FoodHub អាចស្វែងរកហាងអាហារនៅជិតអ្នក។"
@@ -331,7 +331,7 @@ function BenefitItem({
         {icon}
       </span>
 
-      <span className="font-['Kantumruy_Pro',sans-serif] text-[14px] font-semibold leading-5">
+      <span className=" text-[14px] font-semibold leading-5">
         {label}
       </span>
     </motion.div>

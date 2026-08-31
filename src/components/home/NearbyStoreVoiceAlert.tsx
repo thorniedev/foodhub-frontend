@@ -108,11 +108,11 @@ export default function NearbyStoreVoiceAlert({
           </span>
 
           <div>
-            <p className="font-['Kantumruy_Pro',sans-serif] text-[16px] font-semibold text-orange-900 dark:text-orange-100">
+            <p className=" text-[16px] font-semibold text-orange-900 dark:text-orange-100">
               មិនគាំទ្រការជូនដំណឹងជាសំឡេង
             </p>
 
-            <p className="mt-1 font-['Kantumruy_Pro',sans-serif] text-[14px] leading-6 text-orange-700 dark:text-orange-200">
+            <p className="mt-1  text-[14px] leading-6 text-orange-700 dark:text-orange-200">
               កម្មវិធីរុករកនេះមិនអាចបញ្ចេញសំឡេងបានទេ។
             </p>
           </div>
@@ -228,7 +228,7 @@ export default function NearbyStoreVoiceAlert({
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-['Kantumruy_Pro',sans-serif] text-[17px] font-bold text-slate-900 dark:text-white">
+                <p className=" text-[17px] font-bold text-slate-900 dark:text-white">
                   ការជូនដំណឹងជាសំឡេង
                 </p>
 
@@ -258,7 +258,7 @@ export default function NearbyStoreVoiceAlert({
             <div className="mt-4 flex items-start gap-2 rounded-2xl border border-orange-200 bg-orange-50 px-3 py-2.5 dark:border-orange-400/20 dark:bg-orange-400/10">
               <LocateFixed className="mt-0.5 size-4 shrink-0 text-orange-600 dark:text-orange-300" />
 
-              <p className="font-['Kantumruy_Pro',sans-serif] text-[14px] leading-6 text-orange-700 dark:text-orange-200">
+              <p className=" text-[14px] leading-6 text-orange-700 dark:text-orange-200">
                 សូមអនុញ្ញាតទីតាំង ដើម្បីទទួលការជូនដំណឹងអំពីហាងនៅជិតអ្នក។
               </p>
             </div>
@@ -268,7 +268,7 @@ export default function NearbyStoreVoiceAlert({
             <div className="mt-4 flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 dark:border-emerald-400/20 dark:bg-emerald-400/10">
               <Cloud className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-300" />
 
-              <p className="font-['Kantumruy_Pro',sans-serif] text-[14px] leading-6 text-emerald-700 dark:text-emerald-200">
+              <p className=" text-[14px] leading-6 text-emerald-700 dark:text-emerald-200">
                 កំពុងប្រើសំឡេងភាសាខ្មែរតាមប្រព័ន្ធ Cloud។
               </p>
             </div>
@@ -278,7 +278,7 @@ export default function NearbyStoreVoiceAlert({
             <div className="mt-4 flex items-start gap-2 rounded-2xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 dark:border-cyan-400/20 dark:bg-cyan-400/10">
               <Volume2 className="mt-0.5 size-4 shrink-0 text-cyan-600 dark:text-cyan-300" />
 
-              <p className="font-['Kantumruy_Pro',sans-serif] text-[14px] leading-6 text-cyan-700 dark:text-cyan-200">
+              <p className=" text-[14px] leading-6 text-cyan-700 dark:text-cyan-200">
                 កំពុងប្រើសំឡេងភាសាខ្មែរពីឧបករណ៍របស់អ្នក។
               </p>
             </div>
@@ -288,7 +288,7 @@ export default function NearbyStoreVoiceAlert({
             <div className="mt-4 flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-3 py-2.5 dark:border-red-400/20 dark:bg-red-400/10">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-600 dark:text-red-300" />
 
-              <p className="font-['Kantumruy_Pro',sans-serif] text-[14px] leading-6 text-red-700 dark:text-red-200">
+              <p className=" text-[14px] leading-6 text-red-700 dark:text-red-200">
                 មិនអាចបញ្ចេញសំឡេងភាសាខ្មែរបានទេ។ សូមពិនិត្យការកំណត់ Azure Speech
                 និងការតភ្ជាប់អ៊ីនធឺណិត។
               </p>
@@ -322,11 +322,11 @@ export default function NearbyStoreVoiceAlert({
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-['Kantumruy_Pro',sans-serif] text-[15px] font-semibold text-emerald-900 dark:text-emerald-100">
+                      <p className="truncate  text-[15px] font-semibold text-emerald-900 dark:text-emerald-100">
                         {lastStoreName}
                       </p>
 
-                      <p className="mt-1 font-['Kantumruy_Pro',sans-serif] text-[13px] text-emerald-700 dark:text-emerald-300">
+                      <p className="mt-1  text-[13px] text-emerald-700 dark:text-emerald-300">
                         ចម្ងាយប្រហែល {lastDistance} ម៉ែត្រ
                       </p>
                     </div>
@@ -355,7 +355,7 @@ export default function NearbyStoreVoiceAlert({
             whileTap={{
               scale: 0.97,
             }}
-            className={`mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-['Kantumruy_Pro',sans-serif] text-[16px] font-semibold text-white shadow-lg transition ${
+            className={`mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl px-4 py-3  text-[16px] font-semibold text-white shadow-lg transition ${
               voiceEnabled
                 ? "bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500"
                 : "bg-emerald-600 hover:bg-emerald-700"

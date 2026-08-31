@@ -17,6 +17,7 @@ import ThemeToggle from "../theme-toggle";
 import DashboardUserProfile from "../DashboardUserProfile";
 import NotificationBellLink from "@/components/notifications/NotificationBellLink";
 import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+import Image from "next/image";
 
 /* =========================================================
    NAVIGATION DATA
@@ -431,9 +432,11 @@ export default function Navbar() {
             "
           >
             {/* Light logo */}
-            <img
+            <Image
               src="/Image/foodHub-logo.png"
               alt="FoodHub logo"
+              width={300}
+              height={300}
               className="
                 block
                 h-[43px]
@@ -450,16 +453,18 @@ export default function Navbar() {
             />
 
             {/* Dark logo */}
-            <img
+            <Image
               src="/Image/foodHub-logo-dark1.png"
               alt="FoodHub logo"
+              width={300}
+              height={300}
               className="
                 hidden
                 h-[43px]
                 w-auto
                 object-contain
                 transition-all
-
+ 
                 dark:block
 
                 sm:h-[48px]

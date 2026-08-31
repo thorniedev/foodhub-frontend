@@ -1311,17 +1311,17 @@ function FilterSidebar({
                 }
                 className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
               >
-                <option value="NEWEST">✨ ថ្មីបំផុត</option>
-                <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
-                <option value="PRICE_ASC">💵 តម្លៃទាបទៅខ្ពស់</option>
-                <option value="PRICE_DESC">💰 តម្លៃខ្ពស់ទៅទាប</option>
+                <option value="NEWEST"> ថ្មីបំផុត</option>
+                <option value="DISTANCE_ASC"> ចំងាយជិតបំផុត</option>
+                <option value="PRICE_ASC"> តម្លៃទាបទៅខ្ពស់</option>
+                <option value="PRICE_DESC"> តម្លៃខ្ពស់ទៅទាប</option>
               </select>
             </FilterSection>
 
             {/* OPEN NOW */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/60 p-3">
               <span className="text-[16px] font-semibold text-gray-700 dark:text-slate-200">
-                🏪 បើកដំណើរការឥឡូវនេះ
+                បើកដំណើរការឥឡូវនេះ
               </span>
               <input
                 type="checkbox"
@@ -1367,7 +1367,7 @@ function FilterSidebar({
                           : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
                       }`}
                     >
-                      🍲 ម្ហូប
+                      ម្ហូប
                     </button>
                     <button
                       type="button"
@@ -1378,7 +1378,7 @@ function FilterSidebar({
                           : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
                       }`}
                     >
-                      🥤 ភេសជ្ជៈ
+                      ភេសជ្ជៈ
                     </button>
                   </div>
 
@@ -1578,7 +1578,7 @@ function FilterSidebar({
                           : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                       }`}
                     >
-                      🔥 {spice.label}
+                      {spice.label}
                     </button>
                   );
                 })}
@@ -1865,7 +1865,7 @@ function FilterSidebar({
             {/* FEATURED ONLY */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
               <span className="text-[16px] font-semibold text-gray-700">
-                ⭐ តែមុខម្ហូបពិសេស
+                តែមុខម្ហូបពិសេស
               </span>
               <input
                 type="checkbox"
@@ -1999,9 +1999,33 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
 
 type FoodGridProps = {
   foods: CatalogMenuItem[];
+  isLoading?: boolean;
 };
 
-function FoodGrid({ foods }: FoodGridProps) {
+function FoodGrid({ foods, isLoading }: FoodGridProps) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full">
+        {Array.from({ length: 9 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="flex flex-col w-full gap-4 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm rounded-[24px] p-2.5 animate-pulse"
+          >
+            <div className="rounded-[14px] w-full h-[150px] md:h-37.5 lg:h-46.25 bg-gray-200 dark:bg-gray-700" />
+            <div className="flex flex-col gap-2 px-1 pb-2">
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+              <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+              <div className="flex justify-between items-center mt-2">
+                <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-6 w-1/5 rounded-full bg-gray-200 dark:bg-gray-700" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (foods.length === 0) {
     return (
       <motion.div
@@ -2033,7 +2057,7 @@ function FoodGrid({ foods }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full"
+      className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full"
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -2631,9 +2655,7 @@ function FoodPageContent() {
      RENDER
   ======================================================= */
 
-  if (isLoading && menuItems.length === 0) {
-    return <LoadingState />;
-  }
+  // Loading state is now handled by FoodGrid instead of an early return
 
   if (isError) {
     return (
@@ -2757,9 +2779,9 @@ function FoodPageContent() {
           <section className="mt-6">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
+                <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
                   ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត
-                </p>
+                </h1>
               </div>
 
               <p className="text-[16px] text-gray-500 dark:text-gray-50">
@@ -2767,13 +2789,13 @@ function FoodPageContent() {
               </p>
             </div>
 
-            <FoodGrid foods={displayFoods} />
+            <FoodGrid foods={displayFoods} isLoading={isLoading && menuItems.length === 0} />
           </section>
 
           <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
-            <p className="text-[28px] font-semibold md:text-[36px]">
+            <h2 className="text-[28px] font-semibold md:text-[36px]">
               បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
-            </p>
+            </h2>
 
             <p className="mx-auto mt-3 max-w-2xl text-[16px]  lg:text-xl leading-8 text-white/80">
               ស្វែងរកមុខម្ហូបដែលសមនឹងចំណូលចិត្ត តម្លៃ ពេលរៀបចំ ប្រភេទម្ហូប

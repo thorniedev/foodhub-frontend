@@ -227,9 +227,9 @@ function MentorCard({
       {/* Info Section */}
       <div className="text-center flex flex-col items-center gap-1.5">
         <motion.p
-          // className="font-['Kantumruy_Pro',sans-serif] font-bold text-[#1E2E3E] text-lg sm:text-2xl"
+          // className=" font-bold text-[#1E2E3E] text-lg sm:text-2xl"
           // new
-          className="font-['Kantumruy_Pro',sans-serif] font-bold text-[#1E2E3E] dark:text-white text-lg sm:text-2xl"
+          className=" font-bold text-[#1E2E3E] dark:text-white text-lg sm:text-2xl"
           initial={reduceMotion ? false : { opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
@@ -243,7 +243,7 @@ function MentorCard({
         </motion.p>
 
         <motion.span
-          // className="font-['Kantumruy_Pro',sans-serif] text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] text-[#136C34]"
+          // className=" text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] text-[#136C34]"
           // new
           className=" text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] dark:bg-[#136C34]/40 text-[#136C34] dark:text-primary-dark"
           initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.85 }}
@@ -310,11 +310,11 @@ export default function MentorSection() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className=" py-12.5 px-4 sm:px-8">
+    <section className="py-10 sm:py-12.5 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14 sm:mb-16">
           <motion.h2
-            className=" font-extrabold text-3xl sm:text-5xl md:text-6xl "
+            className="text-center font-semibold text-primary-800 lg:text-6xl py-2 md:text-5xl max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark"
             initial={
               reduceMotion
                 ? false
@@ -574,7 +574,7 @@ export default function MentorSection() {
 
 //       <div className="text-center flex flex-col items-center gap-1.5">
 //         <motion.p
-//           className="font-['Kantumruy_Pro',sans-serif] font-bold text-[#1E2E3E] dark:text-white text-lg sm:text-2xl"
+//           className=" font-bold text-[#1E2E3E] dark:text-white text-lg sm:text-2xl"
 //           initial={reduceMotion ? false : { opacity: 0, y: 18 }}
 //           whileInView={{ opacity: 1, y: 0 }}
 //           viewport={{ once: true, amount: 0.5 }}
@@ -584,7 +584,7 @@ export default function MentorSection() {
 //         </motion.p>
 
 //         <motion.span
-//           className="font-['Kantumruy_Pro',sans-serif] text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] dark:bg-[#136C34]/20 text-[#136C34] dark:text-[#4ADE80]"
+//           className=" text-sm sm:text-base font-semibold px-5 py-1 rounded-full bg-[#E9F9EF] dark:bg-[#136C34]/20 text-[#136C34] dark:text-[#4ADE80]"
 //           initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.85 }}
 //           whileInView={{ opacity: 1, y: 0, scale: 1 }}
 //           viewport={{ once: true, amount: 0.5 }}
@@ -638,7 +638,7 @@ export default function MentorSection() {
 //       <div className="max-w-6xl mx-auto">
 //         <div className="text-center mb-14 sm:mb-16">
 //           <motion.h2
-//             className="font-['Kantumruy_Pro',sans-serif] font-extrabold text-3xl sm:text-5xl md:text-6xl tracking-wide"
+//             className=" font-extrabold text-3xl sm:text-5xl md:text-6xl tracking-wide"
 //             initial={reduceMotion ? false : { opacity: 0, y: 30, letterSpacing: "0.18em" }}
 //             whileInView={{ opacity: 1, y: 0, letterSpacing: "0.025em" }}
 //             viewport={{ once: true, amount: 0.6 }}

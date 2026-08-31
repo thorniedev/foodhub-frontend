@@ -179,7 +179,7 @@ function Card1({ isActive, isPaused, cycle, durationMs }: CardProps) {
           {...headingEntrance(index, reduceMotion)}
           className="flex items-start justify-between"
         >
-          <h3 className="  text-xl font-bold text-[#136c34]">
+          <h3 className="text-lg sm:text-xl font-bold text-[#136c34]">
             ស្វែងរកតាមចំណូលចិត្ត
           </h3>
           <ArrowIcon index={index} />
@@ -188,7 +188,7 @@ function Card1({ isActive, isPaused, cycle, durationMs }: CardProps) {
           {...bodyEntrance(index, reduceMotion)}
           className="border-t border-[#3f3f46]/20 pt-3"
         >
-          <p className="   text-[20px] leading-relaxed text-[#596378]">
+          <p className="text-base sm:text-lg lg:text-[20px] leading-relaxed text-[#596378]">
             ស្វែងរកមុខម្ហូប និងប្រភេទអាហារ ត្រូវចិត្ត សម្រាប់អ្នក និងគ្រួសារ ។
           </p>
         </motion.div>
@@ -242,7 +242,7 @@ function Card2({ isActive, isPaused, cycle, durationMs }: CardProps) {
           {...headingEntrance(index, reduceMotion)}
           className="flex items-start justify-between"
         >
-          <h3 className="  text-xl font-bold text-[#e36914]">
+          <h3 className="text-lg sm:text-xl font-bold text-[#e36914]">
             ជ្រើសរើសឥឡូវនេះ
           </h3>
         </motion.div>
@@ -250,7 +250,7 @@ function Card2({ isActive, isPaused, cycle, durationMs }: CardProps) {
           {...bodyEntrance(index, reduceMotion)}
           className="border-t border-[#3f3f46]/20 pt-3"
         >
-          <p className="   text-[20px] leading-relaxed text-[#596378]">
+          <p className="text-base sm:text-lg lg:text-[20px] leading-relaxed text-[#596378]">
             ស្វែងយល់ពីជម្រើសនៅជុំវិញអ្នក ជាមួយការណែនាំឆ្លាតវៃ ។
           </p>
         </motion.div>
@@ -343,7 +343,7 @@ function Card3({ isActive, isPaused, cycle, durationMs }: CardProps) {
           {...headingEntrance(index, reduceMotion)}
           className="flex items-start justify-between"
         >
-          <h3 className="  text-xl font-bold text-[#515a6d]">
+          <h3 className="text-lg sm:text-xl font-bold text-[#515a6d]">
             ញ៉ាំដោយភាពរីករាយ
           </h3>
           <ArrowIcon index={index} />
@@ -352,7 +352,7 @@ function Card3({ isActive, isPaused, cycle, durationMs }: CardProps) {
           {...bodyEntrance(index, reduceMotion)}
           className="border-t border-[#3f3f46]/20 pt-3"
         >
-          <p className="   text-[20px] leading-relaxed text-[#596378]">
+          <p className="text-base sm:text-lg lg:text-[20px] leading-relaxed text-[#596378]">
             ចូលញ៉ាំដល់ហាង ឬកុម្ម៉ង់ភ្លាម រីករាយ ជាមួយអាហារឆ្ងាញ់ ។
           </p>
         </motion.div>
@@ -419,12 +419,12 @@ export default function HowToUseSection() {
   };
 
   return (
-    <section className=" px-6 ">
+    <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto container max-w-7xl">
         {/* Header — letter-spacing tightens as it settles */}
         <div className="mb-10 text-center md:mb-14">
           <motion.h2
-            className="  text-3xl font-semibold tracking-wide sm:text-4xl md:text-[48px]"
+            className="text-center font-semibold text-primary-800 lg:text-6xl py-2 md:text-5xl max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark"
             initial={
               reduceMotion
                 ? false

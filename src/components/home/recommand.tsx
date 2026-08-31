@@ -132,10 +132,10 @@ export default function RecommandSection({
   return (
     <div className="my-15 flex flex-col gap-12.5">
       <section className="flex flex-col items-center lg:pt-0 md:pt-4 justify-center md:gap-12.5 max-md:gap-6 container max-w-7xl mx-auto">
-        <p className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
+        <h2 className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
           បទពិសោធន៍ថ្មីក្នុង
           <TypingAnimation
-            words={["ការស្វែងរកអាហារ","ការស្វែងរកអាហារ"]}
+            words={["ការស្វែងរកម្ហូបអាហារ","ការស្វែងរកម្ហូបអាហារ"]}
             blinkCursor={true}
             pauseDelay={2000}
             loop
@@ -143,11 +143,11 @@ export default function RecommandSection({
           >
           Blinking cursor
           </TypingAnimation>
-        </p>
+        </h2>
         <p className="lg:text-[24px] md:text-[20px] text-center font-light text-gray-700 dark:text-gray-100 max-md:text-[16px]">
-          ស្វែងរកមុខម្ហូប និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ
+          ស្វែងរកម្ហូបអាហារ និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈ
           <br />
-          ប្រព័ន្ធណែនាំឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
+          ប្រព័ន្ធណែនាំម្ហូបអាហារឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា
           និងទីតាំងរបស់អ្នក
         </p>
       </section>
@@ -183,11 +183,30 @@ export default function RecommandSection({
 
       {/* Grid */}
       <div className="lg:max-w-7xl md:max-w-3xl container items-center place-items-center mx-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 px-4">
-        {isLoading && (
-          <p className="col-span-full text-center text-gray-400 py-10">
-            កំពុងផ្ទុក...
-          </p>
-        )}
+        {isLoading &&
+          Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={`skeleton-rec-${i}`}
+              className="flex flex-col w-full gap-4 bg-white border border-gray-100 shadow-sm rounded-[24px] p-2.5 animate-pulse"
+            >
+              <div className="rounded-[14px] w-full h-[150px] md:h-37.5 lg:h-46.25 bg-gray-200 dark:bg-gray-700" />
+              <div className="flex flex-col gap-2">
+                <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="flex justify-between items-center">
+                  <div className="h-6 w-2/3 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-6 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+                <div className="flex gap-4">
+                  <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  <div className="h-6 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                </div>
+              </div>
+            </div>
+          ))}
         {isError && (
           <p className="col-span-full text-center text-red-400 py-10">
             មានបញ្ហាក្នុងការផ្ទុកទិន្នន័យ

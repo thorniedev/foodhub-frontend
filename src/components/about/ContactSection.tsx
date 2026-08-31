@@ -76,12 +76,12 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="relative w-full  py-16 px-4 sm:px-6 lg:px-8 font-['Kantumruy_Pro',sans-serif]">
-      <div className="max-w-7xl container mx-auto px-4">
+    <section className="relative w-full  py-16 px-4 sm:px-6 lg:px-8 ">
+      <div className="max-w-7xl container mx-auto">
         {/* Header Title — letter-spacing tightens as it settles */}
         <div className="text-center mb-12">
           <motion.h2
-            className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight"
+            className="text-center font-semibold text-primary-800 lg:text-6xl py-2 md:text-5xl max-md:text-3xl dark:text-[#22a447] dark:text-primary-dark"
             initial={
               reduceMotion
                 ? false
@@ -98,7 +98,7 @@ export default function ContactSection() {
           </motion.h2>
           <motion.p
             {...rowEntrance(0.22, reduceMotion)}
-            className="mt-4 text-base sm:text-lg md:text-xl font-medium "
+            className="mt-4 lg:text-[24px] md:text-[20px] max-md:text-[16px] font-light text-gray-700 dark:text-gray-100"
           >
             មានសំណួរ ឬចង់ធ្វើជាដៃគូជាមួយយើង?
             <span className="">យើងរីករាយនឹងទទួលសារពីអ្នក។</span>

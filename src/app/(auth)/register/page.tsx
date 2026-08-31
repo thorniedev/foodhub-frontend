@@ -1,3 +1,150 @@
+// "use client";
+
+// import Image from "next/image";
+// import Link from "next/link";
+// import { FormEvent, useState } from "react";
+// import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+// import { useRegisterMutation } from "@/app/store/auth/authApi";
+
+// // Replace this path with your own logo, for example: "/images/foodhub-logo.png".
+// const LOGO_SRC = "/Image/foodHub-logo.png";
+
+// interface FieldErrors {
+//   firstName?: string;
+//   lastName?: string;
+//   email?: string;
+//   password?: string;
+//   confirmedPassword?: string;
+// }
+
+// export default function RegisterPage() {
+//   const [firstName, setFirstName] = useState("");
+//   const [lastName, setLastName] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [confirmedPassword, setConfirmedPassword] = useState("");
+//   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+//   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+//     useState(false);
+//   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+//   const [apiError, setApiError] = useState<string | null>(null);
+//   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+//   const [register, { isLoading }] = useRegisterMutation();
+
+//   const clearFieldError = (field: keyof FieldErrors) => {
+//     if (fieldErrors[field]) {
+//       setFieldErrors((current) => ({ ...current, [field]: undefined }));
+//     }
+//   };
+
+//   const validateForm = () => {
+//     const errors: FieldErrors = {};
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+//     if (!firstName.trim()) errors.firstName = "សូមបញ្ចូលនាមខ្លួន";
+//     if (!lastName.trim()) errors.lastName = "សូមបញ្ចូលនាមត្រកូល";
+//     if (!email.trim()) errors.email = "សូមបញ្ចូលអ៊ីមែល";
+//     else if (!emailRegex.test(email.trim()))
+//       errors.email = "ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ";
+//     if (!password) errors.password = "សូមបញ្ចូលពាក្យសម្ងាត់";
+//     else if (password.length < 8)
+//       errors.password = "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៨ តួអក្សរ";
+//     if (!confirmedPassword) errors.confirmedPassword = "សូមបញ្ជាក់ពាក្យសម្ងាត់";
+//     else if (confirmedPassword !== password)
+//       errors.confirmedPassword = "ពាក្យសម្ងាត់ទាំងពីរមិនត្រូវគ្នា";
+
+//     setFieldErrors(errors);
+//     return Object.keys(errors).length === 0;
+//   };
+
+//   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+//     setApiError(null);
+//     setSuccessMessage(null);
+//     if (!validateForm()) return;
+
+//     try {
+//       const response = await register({
+//         firstName: firstName.trim(),
+//         lastName: lastName.trim(),
+//         email: email.trim(),
+//         username: email.trim(),
+//         phoneNumber: "",
+//         password,
+//         confirmedPassword,
+//       }).unwrap();
+
+//       setSuccessMessage(
+//         response.message || "បង្កើតគណនីបានជោគជ័យ! អ្នកអាចចូលគណនីឥឡូវនេះ។",
+//       );
+//       setFirstName("");
+//       setLastName("");
+//       setEmail("");
+//       setPassword("");
+//       setConfirmedPassword("");
+//       setFieldErrors({});
+//     } catch (error: unknown) {
+//       const requestError = error as {
+//         data?: { message?: string; error?: string };
+//         error?: string;
+//         message?: string;
+//       };
+//       setApiError(
+//         requestError?.data?.message ||
+//           requestError?.data?.error ||
+//           requestError?.error ||
+//           requestError?.message ||
+//           "ការចុះឈ្មោះមិនបានជោគជ័យទេ។ សូមព្យាយាមម្តងទៀត។",
+//       );
+//     }
+//   };
+
+//   const inputClass = (hasError?: string) =>
+//     `h-12 w-full rounded-xl border bg-[#F8FAF8] px-4 text-lg text-slate-900 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 ${
+//       hasError
+//         ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+//         : "border-slate-200 focus:border-[#136B34] focus:ring-[#136B34]/10"
+//     }`;
+
+//   return (
+//     <main className="min-h-screen bg-white px-4 py-8 sm:px-8 lg:flex lg:items-center lg:px-12">
+//       <section className="relative mx-auto w-full max-w-7xl overflow-hidden bg-[#FFF9F2] lg:h-[650px]">
+//         <svg
+//           aria-hidden="true"
+//           viewBox="0 0 360 290"
+//           className="pointer-events-none absolute left-0 top-0 hidden h-[160px] W-[190px] text-[#136B34] lg:block"
+//         >
+//           <path
+//             fill="currentColor"
+//             d="M0 0h360v25c0 78-12 102-64 98l-79-8c-36-4-55 11-54 48l4 65c3 42-26 62-92 62H0V0Z"
+//           />
+//         </svg>
+//         <svg
+//           aria-hidden="true"
+//           viewBox="0 0 330 345"
+//           className="pointer-events-none absolute right-0 top-0 hidden h-[160px]  text-[#136B34] lg:block"
+//         >
+//           <path
+//             fill="currentColor"
+//             d="M330 0H0c0 66 3 113 20 120 25 10 63-10 95 0 37 12 25 64 30 107 7 63 63 101 185 118V0Z"
+//           />
+//         </svg>
+//         <svg
+//           aria-hidden="true"
+//           viewBox="0 0 500 300"
+//           className="pointer-events-none absolute bottom-0 left-0 hidden h-[160px] w-[270px] text-[#136B34] lg:block"
+//         >
+//           <path
+//             fill="currentColor"
+//             d="M0 300V74C17 18 91 0 124 44c26 35-1 111 31 137 27 22 71-4 117-34 87-58 157-13 228 63v90H0Z"
+//           />
+//         </svg>
+
+//       </section>
+//     </main>
+//   );
+// }
+
 "use client";
 
 import React, { FormEvent, useState } from "react";
@@ -27,7 +174,8 @@ export default function RegisterPage() {
   const [confirmedPassword, setConfirmedPassword] = useState("");
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+    useState(false);
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
@@ -56,13 +204,16 @@ export default function RegisterPage() {
     if (!password) {
       errors.password = "សូមបញ្ចូលពាក្យសម្ងាត់ (Password is required)";
     } else if (password.length < 8) {
-      errors.password = "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៨ តួអក្សរ (Minimum 8 characters)";
+      errors.password =
+        "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៨ តួអក្សរ (Minimum 8 characters)";
     }
 
     if (!confirmedPassword) {
-      errors.confirmedPassword = "សូមបញ្ជាក់ពាក្យសម្ងាត់ (Please confirm your password)";
+      errors.confirmedPassword =
+        "សូមបញ្ជាក់ពាក្យសម្ងាត់ (Please confirm your password)";
     } else if (confirmedPassword !== password) {
-      errors.confirmedPassword = "ពាក្យសម្ងាត់បញ្ជាក់មិនត្រូវគ្នាទេ (Passwords do not match)";
+      errors.confirmedPassword =
+        "ពាក្យសម្ងាត់បញ្ជាក់មិនត្រូវគ្នាទេ (Passwords do not match)";
     }
 
     setFieldErrors(errors);
@@ -91,7 +242,7 @@ export default function RegisterPage() {
 
       setSuccessMessage(
         response.message ||
-          "បង្កើតគណនីបានជោគជ័យ! សូមចូលប្រើប្រាស់គណនីរបស់អ្នក។"
+          "បង្កើតគណនីបានជោគជ័យ! សូមចូលប្រើប្រាស់គណនីរបស់អ្នក។",
       );
       setFirstName("");
       setLastName("");
@@ -123,9 +274,7 @@ export default function RegisterPage() {
     <AuthLayout>
       <div className="kc-login-header-group">
         <h1 className="kc-title">បង្កើតគណនី FoodHub</h1>
-        <p className="kc-subtitle">
-          ចូលរួមជាមួយ FoodHub ហើយរកមើលអាហារឆ្ងាញ់ៗ
-        </p>
+        <p className="kc-subtitle">ចូលរួមជាមួយ FoodHub ហើយរកមើលអាហារឆ្ងាញ់ៗ</p>
       </div>
 
       {apiError && (
