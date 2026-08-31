@@ -59,15 +59,15 @@ const tabs: {
   },
   {
     id: "MORNING",
-    label: "អាហារពេលព្រឹក",
+    label: "ពេលព្រឹក",
   },
   {
     id: "LUNCH",
-    label: "អាហារពេលថ្ងៃ",
+    label: "ពេលថ្ងៃ",
   },
   {
     id: "DINNER",
-    label: "អាហារពេលល្ងាច",
+    label: "ពេលល្ងាច",
   },
 ];
 

@@ -192,6 +192,7 @@ export default function HomePageClient() {
         </h1>
         <MealTimeJourneySection />
         <Hero />
+        <MealTimeJourneySection />
         {/* <ZoomThroughSection /> */}
         {/* <BrushRevealSection /> */}
         <PopularSection />

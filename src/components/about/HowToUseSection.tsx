@@ -55,10 +55,8 @@ const bodyEntrance = (index: number, reduceMotion: boolean | null) =>
 /** Photo: uncovers upward, so the card assembles rather than appearing whole. */
 const photoEntrance = (index: number, reduceMotion: boolean | null) =>
   ({
-    initial: reduceMotion
-      ? false
-      : { opacity: 0, y: 24, clipPath: "inset(0% 0% 100% 0%)" },
-    whileInView: { opacity: 1, y: 0, clipPath: "inset(0% 0% 0% 0%)" },
+    initial: reduceMotion ? false : { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
     viewport: { once: true, amount: 0.3 },
     transition: {
       duration: 0.8,
@@ -265,7 +263,7 @@ function Card2({ isActive, isPaused, cycle, durationMs }: CardProps) {
           >
             <Image
               alt="Choose food"
-              src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+              src={""}
               fill
               unoptimized
               className="object-cover"
@@ -367,7 +365,7 @@ function Card3({ isActive, isPaused, cycle, durationMs }: CardProps) {
           >
             <Image
               alt="Enjoy food"
-              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"
+              src={"/Image/food01.png"}
               fill
               unoptimized
               className="object-cover"

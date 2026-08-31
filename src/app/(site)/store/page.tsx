@@ -23,8 +23,8 @@ export default function StorePage() {
 
   return (
     <>
-      <section className="mb-4 rounded-full border border-gray-100 bg-white p-1 shadow-sm">
-        <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-full border border-gray-200 bg-white px-5 transition focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
+      <section className="mb-4 pt-32 container mx-auto max-w-7xl px-4">
+        <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-1 shadow-sm transition focus-within:border-primary-700 focus-within:ring-4 focus-within:ring-primary-50">
           <IoSearchOutline className="shrink-0 text-[22px] text-primary-700" />
 
           <input

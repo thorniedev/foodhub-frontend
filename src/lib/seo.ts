@@ -787,10 +787,7 @@ export function generateWebSiteJsonLd(): object {
         description:
           "Mhoubahar FoodHub (ម្ហូបអាហារ) is Cambodia's personalized food discovery platform. Find Khmer food, restaurants, and meal recommendations tailored to your taste, dietary needs, religion, and location.",
 
-        sameAs: [
-          "https://www.mhoubahar.store",
-          "https://mhoubahar.store",
-        ],
+        sameAs: ["https://www.mhoubahar.store", "https://mhoubahar.store"],
 
         contactPoint: {
           "@type": "ContactPoint",
@@ -823,11 +820,7 @@ export function generateWebSiteJsonLd(): object {
         url: SITE_URL,
         name: "Mhoubahar FoodHub — ម្ហូបអាហារ",
 
-        alternateName: [
-          "ម្ហូបអាហារ",
-          "Mhoubahar",
-          "FoodHub Cambodia",
-        ],
+        alternateName: ["ម្ហូបអាហារ", "Mhoubahar", "FoodHub Cambodia"],
 
         description:
           "ស្វែងរក និងណែនាំម្ហូបអាហារ (Mhoub) ភោជនីយដ្ឋាន ដោយផ្អែកលើចំណូលចិត្ត អាឡែស៊ី និងទីតាំងរបស់អ្នក — Discover personalized food and restaurant recommendations in Cambodia.",
