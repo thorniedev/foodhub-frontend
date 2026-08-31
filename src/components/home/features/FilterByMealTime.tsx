@@ -226,6 +226,14 @@ function matchesMealTime(menuItem: CatalogMenuItem, activeTab: TabId): boolean {
 
   const mealTypes = getMealTypes(menuItem);
 
+  // No meal-time tag at all means "available anytime," not "excluded from
+  // every tab" — most of the live catalog isn't tagged yet (measured ~40%
+  // untagged), and treating a missing tag as exclusion made every specific
+  // tab look almost empty. An item WITH tags must still match the active one.
+  if (mealTypes.length === 0) {
+    return true;
+  }
+
   return mealTypes.some((mealType) => {
     const mealCode = String(mealType.code ?? "")
       .trim()
