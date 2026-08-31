@@ -117,12 +117,12 @@ const enforcementLabels: Record<DietaryEnforcementLevel, string> = {
 
 const initialFormState: CreateProfileForm = {
   profileName: "",
-  relationship: "SELF",
+  relationship: "OTHER",
   gender: "MALE",
   dateOfBirth: "",
   preferredLanguage: "km",
   avatarMediaUuid: null,
-  isDefault: true,
+  isDefault: false,
   allergies: [],
   dietaryTypes: [],
   medicalConditions: [],

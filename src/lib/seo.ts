@@ -14,13 +14,11 @@ export const SITE_URL = (
 ).replace(/\/+$/, "");
 
 export const SITE_NAME = "ម្ហូបអាហារ";
-
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpeg`;
-
 export const FOOD_PUBLIC_PATH = "/menu";
 export const STORE_PUBLIC_PATH = "/stores";
 
-const BACKEND_API_URL = (
+export const BACKEND_API_URL = (
   process.env.BACKEND_API_URL || "https://api.mhoubahar.store/api/v1"
 ).replace(/\/+$/, "");
 
@@ -173,12 +171,12 @@ export function toAbsoluteMediaUrl(
 
   // Backend already returns /api/v1/...
   if (source.startsWith("/api/v1/")) {
-    return `https://api.mhoubahar.store${source}`;
+    return `${BACKEND_API_URL}${source.slice("/api/v1".length)}`;
   }
 
   // Backend returns /api/...
   if (source.startsWith("/api/")) {
-    return `https://api.mhoubahar.store/api/v1${source.slice("/api".length)}`;
+    return `${BACKEND_API_URL}${source.slice("/api".length)}`;
   }
 
   // Backend returns /media/...
@@ -419,7 +417,6 @@ export function generateFoodMetadata(
 
     openGraph: {
       type: "website",
-
       url: canonical,
 
       siteName: SITE_NAME,
@@ -495,11 +492,12 @@ export function generateStoreMetadata(
       } នៅ FoodHub Cambodia.`,
   );
 
-  const imageUrl = toAbsoluteMediaUrl(
+  const mediaImageUrl = toAbsoluteMediaUrl(
     store.coverMediaUuid || store.logoMediaUuid,
   );
 
-  const canonical = `${SITE_URL}${STORE_PUBLIC_PATH}/${encodeURIComponent(uuid)}`;
+  const imageUrl = mediaImageUrl || `/api/og/store/${uuid}`;
+  const canonical = `/stores/${uuid}`;
 
   return {
     title: storeName,
@@ -525,7 +523,6 @@ export function generateStoreMetadata(
 
     openGraph: {
       type: "website",
-
       url: canonical,
 
       siteName: SITE_NAME,
@@ -746,31 +743,223 @@ export function generateWebSiteJsonLd(): object {
     "@context": "https://schema.org",
 
     "@graph": [
+      /* -------------------------------------------------------
+         ORGANIZATION — Establishes brand identity.
+         "alternateName" teaches Google all spelling variants,
+         which eliminates the "Did you mean mahabharat" typo
+         correction because Google learns the real brand name.
+      ------------------------------------------------------- */
       {
         "@type": "Organization",
-
         "@id": `${SITE_URL}/#organization`,
 
-        name: SITE_NAME,
+        name: "Mhoubahar FoodHub",
+        legalName: "Mhoubahar FoodHub",
+
+        alternateName: [
+          "ម្ហូបអាហារ",
+          "MhouBahar",
+          "Mhoubahar",
+          "mhoubahar",
+          "mhoubahar.store",
+          "FoodHub",
+          "Food Hub Cambodia",
+          "FoodHub Cambodia",
+          "ម្ហូប",
+          "មហូបអាហារ",
+          "Mhoub",
+          "Mhoub Ahar",
+          "ម្ហូបអាហារ Cambodia",
+        ],
 
         url: SITE_URL,
 
-        logo: `${SITE_URL}/Image/foodHub-logo.png`,
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/Image/foodHub-logo.png`,
+          width: 300,
+          height: 300,
+          caption: "Mhoubahar FoodHub Logo",
+        },
+
+        image: `${SITE_URL}/Image/foodHub-logo.png`,
+
+        description:
+          "Mhoubahar FoodHub (ម្ហូបអាហារ) is Cambodia's personalized food discovery platform. Find Khmer food, restaurants, and meal recommendations tailored to your taste, dietary needs, religion, and location.",
+
+        sameAs: ["https://www.mhoubahar.store", "https://mhoubahar.store"],
+
+        contactPoint: {
+          "@type": "ContactPoint",
+          email: "foouhub@gmail.com",
+          contactType: "Customer Support",
+          availableLanguage: ["km", "en"],
+        },
+
+        foundingLocation: {
+          "@type": "Place",
+          name: "Phnom Penh, Cambodia",
+        },
+
+        areaServed: {
+          "@type": "Country",
+          name: "Cambodia",
+        },
       },
 
+      /* -------------------------------------------------------
+         WEBSITE + SEARCH ACTION
+         Enables Google Sitelinks Searchbox in search results.
+         SearchAction with target lets Google show your site
+         search directly in the SERP.
+      ------------------------------------------------------- */
       {
         "@type": "WebSite",
-
         "@id": `${SITE_URL}/#website`,
 
         url: SITE_URL,
+        name: "Mhoubahar FoodHub — ម្ហូបអាហារ",
 
-        name: SITE_NAME,
+        alternateName: ["ម្ហូបអាហារ", "Mhoubahar", "FoodHub Cambodia"],
 
-        inLanguage: "km-KH",
+        description:
+          "ស្វែងរក និងណែនាំម្ហូបអាហារ (Mhoub) ភោជនីយដ្ឋាន ដោយផ្អែកលើចំណូលចិត្ត អាឡែស៊ី និងទីតាំងរបស់អ្នក — Discover personalized food and restaurant recommendations in Cambodia.",
+
+        inLanguage: ["km-KH", "en-US"],
 
         publisher: {
           "@id": `${SITE_URL}/#organization`,
+        },
+
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_URL}/menu?search={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+
+      /* -------------------------------------------------------
+         BREADCRUMB — Helps Google understand site hierarchy.
+      ------------------------------------------------------- */
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${SITE_URL}/#breadcrumb`,
+
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "ទំព័រដើម — Mhoubahar FoodHub",
+            item: SITE_URL,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "ម្ហូបអាហារ — Khmer Food Menu",
+            item: `${SITE_URL}/menu`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: "ភោជនីយដ្ឋាន — Restaurants",
+            item: `${SITE_URL}/stores`,
+          },
+        ],
+      },
+
+      /* -------------------------------------------------------
+         FAQ PAGE — FAQ schema adds keyword-rich content signals.
+         Google indexes FAQ answers and can show them as rich
+         results — greatly increasing keyword coverage for
+         Khmer food, "foodhub", "mhoubahar", etc.
+      ------------------------------------------------------- */
+      {
+        "@type": "FAQPage",
+        "@id": `${SITE_URL}/#faq`,
+
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "Mhoubahar ជាអ្វី? (What is Mhoubahar?)",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Mhoubahar (ម្ហូបអាហារ) គឺជា FoodHub — វេទិកាស្វែងរក និងណែនាំម្ហូបអាហារ (Mhoub) ជាតិខ្មែរ និងហាងភោជនីយដ្ឋាននៅកម្ពុជា។ Mhoubahar.store is Cambodia's leading personalized food discovery app (FoodHub) that recommends Khmer food, restaurants, and meals based on your preferences, allergies, dietary type, and location.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "តើ FoodHub ជួយអ្វី? (What does FoodHub help with?)",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "FoodHub (ម្ហូបអាហារ Mhoubahar) ជួយអ្នកស្វែងរក ម្ហូបឆ្ងាញ់ ហាងអាហារ ភោជនីយដ្ឋាន មុខម្ហូបខ្មែរ (Khmer food) ម្ហូបhalal ម្ហូប채食 (vegetarian food) ម្ហូបតាមរដូវ ម្ហូបប្រចាំទិវា និងការណែនាំម្ហូបដែលត្រូវការ (food recommendation) ដោយផ្អែកលើចំណូលចិត្ត (preferences) អាឡែស៊ី (allergies) ជំនឿ (religion) និងទីតាំង (location)។",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "ស្វែងរកម្ហូបខ្មែរ Khmer food យ៉ាងដូចម្តេច?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "ចូល Mhoubahar.store ហើយប្រើប្រាស់ប្រព័ន្ធស្វែងរកដើម្បីស្វែងរក មុខម្ហូប ហាងភោជនីយដ្ឋាន ឬប្រភេទអាហារ (food category) ណាមួយ។ អ្នកអាចស្វែងរកដោយ ប្រភេទ (category), ប្រភពពូជ (cuisine), ដូចជា ម្ហូបខ្មែរ, ម្ហូបចិន, ម្ហូបថៃ, ម្ហូបhalal, ម្ហូប채食 (vegetarian), ក្នុងតំបន់ (location), ឬតាមពេលវេលា (meal time).",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "FoodHub Cambodia ខុសពី app ផ្សេងៗ (food delivery app) ដូចម្តេច?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Mhoubahar FoodHub (ម្ហូបអាហារ) មិនមែនជា food delivery app ទេ។ FoodHub ផ្តល់ការណែនាំ (personalized food recommendation) ដែលផ្អែកលើ profile សុខភាព ចំណូលចិត្ត ជំនឿ (religion) ដូចជា Halal, Buddhism, Vegetarian, អាឡែស៊ី (allergies) និងទីតាំង (location) នៅ Cambodia។",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "ស្វែងរកហាងអាហារ (restaurant) ណែនាំ នៅភ្នំពេញ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Mhoubahar FoodHub (ម្ហូបអាហារ) ផ្តល់ការណែនាំ ហាងអាហារ ភោជនីយដ្ឋាន restaurant នៅ ភ្នំពេញ (Phnom Penh) Cambodia ។ ប្រើ FoodHub.mhoubahar.store ដើម្បីរក ហាងអាហារ restaurant ណែនាំ ហាង halal ហាង채食 ហាង BBQ ហាងបាយ ហាងកាហ្វេ ហាងម្ហូបខ្មែរ ជិតទីតាំងអ្នក (near you).",
+            },
+          },
+        ],
+      },
+
+      /* -------------------------------------------------------
+         SPEAKABLE — Helps Google identify key text to read
+         aloud in voice search results and Google Assistant.
+      ------------------------------------------------------- */
+      {
+        "@type": "WebPage",
+        "@id": `${SITE_URL}/#homepage`,
+
+        url: SITE_URL,
+
+        name: "ម្ហូបអាហារ Mhoubahar - ណែនាំម្ហូបឆ្ងាញ់ | FoodHub Cambodia",
+
+        description:
+          "Mhoubahar (ម្ហូបអាហារ) FoodHub Cambodia — ស្វែងរក និងណែនាំម្ហូបអាហារ ភោជនីយដ្ឋាន (restaurant) ជាតិខ្មែរ Khmer food ដោយផ្អែកលើចំណូលចិត្ត (preferences) អាឡែស៊ី (allergy) ជំនឿ (religion) ។",
+
+        inLanguage: "km-KH",
+
+        isPartOf: {
+          "@id": `${SITE_URL}/#website`,
+        },
+
+        about: {
+          "@id": `${SITE_URL}/#organization`,
+        },
+
+        speakable: {
+          "@type": "SpeakableSpecification",
+          cssSelector: ["h1", "h2", "[data-speakable]"],
+        },
+
+        primaryImageOfPage: {
+          "@type": "ImageObject",
+          url: DEFAULT_OG_IMAGE,
+          width: 1200,
+          height: 630,
+          caption: "Mhoubahar FoodHub — ម្ហូបអាហារ Cambodia",
         },
       },
     ],

@@ -97,10 +97,10 @@ export default function StoreContent({
     // If backend public search returned matching store hits, filter by hit IDs/names
     if (deferredSearchQuery.trim() && searchResults?.stores?.items?.length) {
       const hitUuids = new Set(
-        searchResults.stores.items.map((item) => item.uuid || item.id)
+        searchResults.stores.items.map((item) => item.uuid || item.id),
       );
       const matchedFromSearch = storeData.filter((store) =>
-        hitUuids.has(store.uuid)
+        hitUuids.has(store.uuid),
       );
 
       // If backend matches exist, apply active UI filters to them
@@ -336,6 +336,7 @@ export default function StoreContent({
       className="
         mt-6
         min-w-0
+        container mx-auto max-w-7xl px-4
       "
     >
       <div

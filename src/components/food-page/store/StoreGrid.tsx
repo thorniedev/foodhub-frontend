@@ -117,11 +117,15 @@ function FeaturedStoreBanner({
         ease: "easeOut",
       }}
       className="
+        group
         overflow-hidden
-        rounded-[22px]
-        border border-gray-100
+        rounded-[32px]
+        border border-gray-100/60
         bg-white
-        shadow-sm
+        shadow-[0_8px_30px_rgb(0,0,0,0.06)]
+        transition-all duration-300
+        hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]
+        hover:-translate-y-1
       "
     >
       <div
