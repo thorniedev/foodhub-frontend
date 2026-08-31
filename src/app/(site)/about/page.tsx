@@ -1,52 +1,61 @@
 import CommunitySection from "@/components/about/CommunitySection";
 import GoalsSection from "@/components/about/GoalsSection";
 import HowToUseSection from "@/components/about/HowToUseSection";
-import MarqueeSection from "@/components/about/MarqueeSection";
 import StatsSection from "@/components/about/StatsSection";
-import WhyChooseUsSection from "@/components/about/WhyChooseUsSection";
 import ContactSection from "@/components/about/ContactSection";
 import MentorSection from "@/components/about/MentorSection";
-import MarqueeSectionOrangeRtl from "@/components/about/MarqueeSectionOrangeReverse";
 import AboutHeroClient from "@/components/about/AboutHeroClient";
 import TechnologiesSection from "@/components/about/TechnologiesSection";
-import FoodHubSmartRecommendationSection from "@/components/FoodHubSmartRecommendationSection";
-import MealTimeJourneySection from "@/components/MealTimeJourneySection";
+import AboutStorySection from "@/components/about/AboutStorySection";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "អំពី Mhoubahar FoodHub - ម្ហូបអាហារ Cambodia",
+  title: {
+    absolute: "អំពីយើង Mhoubahar FoodHub — ម្ហូបអាហារ",
+  },
   description:
-    "ស្វែងយល់អំពី Mhoubahar FoodHub (ម្ហូបអាហារ) — Cambodia's personalized food discovery platform for Khmer food, restaurants, Halal food, and healthy meal recommendations based on your allergies, dietary preferences, and location.",
+    "ស្វែងយល់អំពី Mhoubahar FoodHub (ម្ហូបអាហារ) — វេទិកាណែនាំមុខម្ហូបខ្មែរ ភោជនីយដ្ឋាន និងអាហារសុខភាពនៅកម្ពុជា។ Discover personalized food recommendations.",
   alternates: {
     canonical: "https://www.mhoubahar.store/about",
   },
   openGraph: {
-    title: "អំពី Mhoubahar FoodHub — ម្ហូបអាហារ Cambodia",
-    description:
-      "Learn about Mhoubahar.store (FoodHub) — Cambodia's leading food discovery platform for personalized Khmer food (ម្ហូបអាហារ) and restaurant recommendations.",
+    type: "website",
     url: "https://www.mhoubahar.store/about",
     siteName: "Mhoubahar FoodHub",
+    locale: "km_KH",
+    title: "អំពីយើង Mhoubahar FoodHub — ម្ហូបអាហារ",
+    description:
+      "ស្វែងយល់អំពី Mhoubahar FoodHub (ម្ហូបអាហារ) — វេទិកាណែនាំមុខម្ហូបខ្មែរ ភោជនីយដ្ឋាន និងអាហារសុខភាពនៅកម្ពុជា។ Discover personalized food recommendations.",
+    images: [
+      {
+        url: "https://www.mhoubahar.store/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "អំពី Mhoubahar FoodHub",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "អំពីយើង Mhoubahar FoodHub — ម្ហូបអាហារ",
+    description:
+      "ស្វែងយល់អំពី Mhoubahar FoodHub (ម្ហូបអាហារ) — វេទិកាណែនាំមុខម្ហូបខ្មែរ ភោជនីយដ្ឋាន និងអាហារសុខភាពនៅកម្ពុជា។",
+    images: ["https://www.mhoubahar.store/og-image.jpeg"],
   },
 };
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen w-full overflow-x-hidden  dark:bg-slate-950">
+    <main className="min-h-screen w-full overflow-x-hidden dark:bg-slate-950">
       <div className="relative mx-auto w-full max-w-[1536px]">
-        
         <AboutHeroClient />
-        {/* <FoodHubSmartRecommendationSection /> */}
+        <AboutStorySection />
         <StatsSection />
         <TechnologiesSection />
-        {/* <WhyChooseUsSection /> */}
-       
         <GoalsSection />
         <HowToUseSection />
-        {/* <MarqueeSection /> */}
         <MentorSection />
         <CommunitySection />
-        {/*  <MarqueeSection /> */}
-        {/* <MarqueeSectionOrangeRtl /> */}
         <ContactSection />
       </div>
     </main>

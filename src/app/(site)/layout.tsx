@@ -2,6 +2,7 @@ import MarqueeSection from "@/components/about/MarqueeSection";
 import Model from "@/components/home/features/Model";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import MealTopPickAlert from "@/components/notifications/MealTopPickAlert";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import "leaflet/dist/leaflet.css";
 
@@ -38,6 +39,7 @@ export default function SiteLayout({
 
       {/* Keep AI outside Navbar */}
       <Model />
+      <MealTopPickAlert />
     </div>
   );
 }

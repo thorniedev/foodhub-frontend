@@ -3,19 +3,37 @@ import FoodNavTabs from "@/components/food-page/FoodNavTabs";
 import { SITE_URL } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "ម្ហូបអាហារ Mhoubahar — ស្វែងរក Khmer Food & Restaurant",
+  title: {
+    absolute: "មុខម្ហូប Mhoubahar — ស្វែងរក Khmer Food",
+  },
   description:
-    "ស្វែងរកមុខម្ហូបឆ្ងាញ់ ហាងភោជនីយដ្ឋាន (restaurant) ម្ហូបខ្មែរ (Khmer food) ម្ហូប Halal ម្ហូប채食 (vegetarian) ជាមួយ Mhoubahar FoodHub Cambodia — Find personalized food and restaurant recommendations tailored to your preferences, allergies, dietary type.",
+    "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ ភោជនីយដ្ឋាន ម្ហូបខ្មែរ Halal និងម្ហូបបួសជាមួយ Mhoubahar FoodHub Cambodia — Find personalized food recommendations in Cambodia.",
   alternates: {
     canonical: `${SITE_URL}/menu`,
   },
   openGraph: {
-    title: "Mhoubahar FoodHub — ស្វែងរកម្ហូបអាហារ Khmer Food",
-    description:
-      "ស្វែងរកមុខម្ហូបឆ្ងាញ់ ហាងអាហារ ភោជនីយដ្ឋាន ម្ហូបខ្មែរ (Khmer food) ម្ហូប Halal ម្ហូប채食 (vegetarian) ជាមួយ Mhoubahar FoodHub Cambodia.",
+    type: "website",
     url: `${SITE_URL}/menu`,
     siteName: "Mhoubahar FoodHub",
-    type: "website",
+    locale: "km_KH",
+    title: "មុខម្ហូប Mhoubahar — ស្វែងរក Khmer Food",
+    description:
+      "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ ភោជនីយដ្ឋាន ម្ហូបខ្មែរ Halal និងម្ហូបបួសជាមួយ Mhoubahar FoodHub Cambodia — Find personalized food recommendations in Cambodia.",
+    images: [
+      {
+        url: "https://www.mhoubahar.store/og-image.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Mhoubahar FoodHub Menu",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "មុខម្ហូប Mhoubahar — ស្វែងរក Khmer Food",
+    description:
+      "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ ភោជនីយដ្ឋាន ម្ហូបខ្មែរ Halal និងម្ហូបបួសជាមួយ Mhoubahar FoodHub Cambodia.",
+    images: ["https://www.mhoubahar.store/og-image.jpeg"],
   },
 };
 

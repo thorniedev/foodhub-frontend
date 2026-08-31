@@ -1,21 +1,23 @@
 import { Metadata } from "next";
 import HomePageClient from "@/components/home/HomePageClient";
-import SeoContentBlock from "@/components/home/SeoContentBlock";
 
 export const metadata: Metadata = {
-  title: "ម្ហូបអាហារ Mhoubahar - ណែនាំម្ហូបឆ្ងាញ់ៗ | FoodHub Cambodia",
+  title: {
+    absolute: "ម្ហូបអាហារ Mhoubahar — FoodHub Cambodia",
+  },
   description:
-    "Mhoubahar FoodHub (ម្ហូបអាហារ) — ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន (restaurant) ម្ហូប Halal ម្ហូប채食 (vegetarian) ដែលសមស្របតាមចំណូលចិត្ត អាឡែស៊ី (allergy) ជំនឿ (religion) និងទីតាំងរបស់អ្នក។ Discover personalized food recommendations in Cambodia with FoodHub.",
+    "Mhoubahar FoodHub (ម្ហូបអាហារ) — ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន ម្ហូប Halal ម្ហូបបួស តាមចំណូលចិត្ត និងទីតាំង។ Food recommendations in Cambodia.",
   alternates: {
     canonical: "https://www.mhoubahar.store",
   },
   openGraph: {
-    title: "ម្ហូបអាហារ Mhoubahar — FoodHub Cambodia",
-    description:
-      "ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន ម្ហូប Halal ម្ហូប채食 ដែលសមស្របតាមចំណូលចិត្ត អាឡែស៊ី ជំនឿ និងទីតាំងរបស់អ្នក។ Discover personalized food in Cambodia.",
+    type: "website",
     url: "https://www.mhoubahar.store",
     siteName: "Mhoubahar FoodHub",
-    type: "website",
+    locale: "km_KH",
+    title: "ម្ហូបអាហារ Mhoubahar — FoodHub Cambodia",
+    description:
+      "Mhoubahar FoodHub (ម្ហូបអាហារ) — ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន ម្ហូប Halal ម្ហូបបួស តាមចំណូលចិត្ត និងទីតាំង។ Food recommendations in Cambodia.",
     images: [
       {
         url: "https://www.mhoubahar.store/og-image.jpeg",
@@ -27,9 +29,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ម្ហូបអាហារ Mhoubahar | FoodHub Cambodia",
+    title: "ម្ហូបអាហារ Mhoubahar — FoodHub Cambodia",
     description:
-      "ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន ម្ហូប Halal ម្ហូប채食 ដែលសមស្របតាមចំណូលចិត្ត អាឡែស៊ី ជំនឿ និងទីតាំងរបស់អ្នក - Personalized food recommendations in Cambodia.",
+      "Mhoubahar FoodHub (ម្ហូបអាហារ) — ស្វែងរក និងណែនាំ Khmer food ភោជនីយដ្ឋាន ម្ហូប Halal ម្ហូបបួស តាមចំណូលចិត្ត និងទីតាំង។ Food recommendations in Cambodia.",
     images: ["https://www.mhoubahar.store/og-image.jpeg"],
   },
 };
@@ -37,11 +39,5 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default function Page() {
-  return (
-    <>
-      <HomePageClient />
-      {/* Server-rendered keyword-rich content block for SEO topical authority */}
-      <SeoContentBlock />
-    </>
-  );
+  return <HomePageClient />;
 }
