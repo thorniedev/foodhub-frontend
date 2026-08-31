@@ -1,24 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const rawBackendUrl = (
-  process.env.BACKEND_API_URL || "https://api.mhoubahar.store"
-)
-  .trim()
-  .replace(/\/+$/, "");
-
-const BACKEND_API_URL = rawBackendUrl.endsWith("/api/v1")
-  ? rawBackendUrl
-  : rawBackendUrl.endsWith("/api")
-    ? `${rawBackendUrl}/v1`
-    : `${rawBackendUrl}/api/v1`;
-
-/* =========================================================
-   BACKEND
-========================================================= */
-
-const BACKEND_API_URL = (
-  process.env.BACKEND_API_URL || "https://api.mhoubahar.store/api/v1"
-).replace(/\/+$/, "");
+import { SITE_URL, FOOD_PUBLIC_PATH, STORE_PUBLIC_PATH, BACKEND_API_URL } from "@/lib/seo";
 
 /* =========================================================
    TYPES

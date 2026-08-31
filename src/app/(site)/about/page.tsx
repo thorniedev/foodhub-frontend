@@ -14,8 +14,19 @@ import MealTimeJourneySection from "@/components/MealTimeJourneySection";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "អំពីយើង | FoodHub - Discover Cambodian Mhoub",
-  description: "ស្វែងយល់បន្ថែមអំពី FoodHub បេសកកម្មរបស់យើង និងរបៀបដែលយើងជួយអ្នកក្នុងការស្វែងរកអាហារ (Mhoub) ដែលអ្នកចូលចិត្ត។",
+  title: "អំពី Mhoubahar FoodHub - ម្ហូបអាហារ Cambodia",
+  description:
+    "ស្វែងយល់អំពី Mhoubahar FoodHub (ម្ហូបអាហារ) — Cambodia's personalized food discovery platform for Khmer food, restaurants, Halal food, and healthy meal recommendations based on your allergies, dietary preferences, and location.",
+  alternates: {
+    canonical: "https://www.mhoubahar.store/about",
+  },
+  openGraph: {
+    title: "អំពី Mhoubahar FoodHub — ម្ហូបអាហារ Cambodia",
+    description:
+      "Learn about Mhoubahar.store (FoodHub) — Cambodia's leading food discovery platform for personalized Khmer food (ម្ហូបអាហារ) and restaurant recommendations.",
+    url: "https://www.mhoubahar.store/about",
+    siteName: "Mhoubahar FoodHub",
+  },
 };
 
 export default function AboutPage() {

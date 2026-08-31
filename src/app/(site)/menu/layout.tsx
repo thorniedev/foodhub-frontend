@@ -3,17 +3,18 @@ import FoodNavTabs from "@/components/food-page/FoodNavTabs";
 import { SITE_URL } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "ស្វែងរកមុខម្ហូប - Search Foods & Menu Items",
+  title: "ម្ហូបអាហារ Mhoubahar — ស្វែងរក Khmer Food & Restaurant",
   description:
-    "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ ហាងអាហារ និងការណែនាំពិសេសដែលត្រូវនឹងចំណូលចិត្តរបស់អ្នកនៅ FoodHub Cambodia.",
+    "ស្វែងរកមុខម្ហូបឆ្ងាញ់ ហាងភោជនីយដ្ឋាន (restaurant) ម្ហូបខ្មែរ (Khmer food) ម្ហូប Halal ម្ហូប채食 (vegetarian) ជាមួយ Mhoubahar FoodHub Cambodia — Find personalized food and restaurant recommendations tailored to your preferences, allergies, dietary type.",
   alternates: {
     canonical: `${SITE_URL}/menu`,
   },
   openGraph: {
-    title: "ស្វែងរកមុខម្ហូប - Search Foods | FoodHub",
+    title: "Mhoubahar FoodHub — ស្វែងរកម្ហូបអាហារ Khmer Food",
     description:
-      "ស្វែងរកមុខម្ហូបឆ្ងាញ់ៗ ហាងអាហារ និងការណែនាំពិសេសដែលត្រូវនឹងចំណូលចិត្តរបស់អ្នកនៅ FoodHub Cambodia.",
+      "ស្វែងរកមុខម្ហូបឆ្ងាញ់ ហាងអាហារ ភោជនីយដ្ឋាន ម្ហូបខ្មែរ (Khmer food) ម្ហូប Halal ម្ហូប채食 (vegetarian) ជាមួយ Mhoubahar FoodHub Cambodia.",
     url: `${SITE_URL}/menu`,
+    siteName: "Mhoubahar FoodHub",
     type: "website",
   },
 };
