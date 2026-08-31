@@ -1,5 +1,22 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL, FOOD_PUBLIC_PATH, STORE_PUBLIC_PATH, BACKEND_API_URL } from "@/lib/seo";
+import { SITE_URL, FOOD_PUBLIC_PATH, STORE_PUBLIC_PATH } from "@/lib/seo";
+
+/* =========================================================
+   BACKEND URL
+   Always use a hardcoded HTTPS fallback so the build never
+   receives an invalid/empty URL from a missing env var.
+   The imported BACKEND_API_URL from seo.ts can still be
+   undefined in Vercel's GitHub Action build because the env
+   var is only injected at runtime, not build-time.
+========================================================= */
+
+const BACKEND_BASE = (() => {
+  const raw = process.env.BACKEND_API_URL?.trim();
+  if (raw && (raw.startsWith("http://") || raw.startsWith("https://"))) {
+    return raw.replace(/\/+$/, "");
+  }
+  return "https://api.mhoubahar.store/api/v1";
+})();
 
 /* =========================================================
    TYPES
@@ -7,13 +24,11 @@ import { SITE_URL, FOOD_PUBLIC_PATH, STORE_PUBLIC_PATH, BACKEND_API_URL } from "
 
 interface SitemapMenuItem {
   uuid: string;
-
   updatedAt?: string | null;
 }
 
 interface SitemapStore {
   uuid: string;
-
   updatedAt?: string | null;
 }
 
@@ -22,17 +37,9 @@ interface SitemapStore {
 ========================================================= */
 
 function extractContent<T>(json: unknown): T[] {
-  if (!json) {
-    return [];
-  }
-
-  if (Array.isArray(json)) {
-    return json as T[];
-  }
-
-  if (typeof json !== "object") {
-    return [];
-  }
+  if (!json) return [];
+  if (Array.isArray(json)) return json as T[];
+  if (typeof json !== "object") return [];
 
   const response = json as {
     payload?: unknown;
@@ -42,9 +49,7 @@ function extractContent<T>(json: unknown): T[] {
 
   const root = response.payload ?? response.data ?? response.content ?? json;
 
-  if (Array.isArray(root)) {
-    return root as T[];
-  }
+  if (Array.isArray(root)) return root as T[];
 
   if (root && typeof root === "object") {
     const nested = root as {
@@ -52,18 +57,9 @@ function extractContent<T>(json: unknown): T[] {
       items?: unknown;
       results?: unknown;
     };
-
-    if (Array.isArray(nested.content)) {
-      return nested.content as T[];
-    }
-
-    if (Array.isArray(nested.items)) {
-      return nested.items as T[];
-    }
-
-    if (Array.isArray(nested.results)) {
-      return nested.results as T[];
-    }
+    if (Array.isArray(nested.content)) return nested.content as T[];
+    if (Array.isArray(nested.items)) return nested.items as T[];
+    if (Array.isArray(nested.results)) return nested.results as T[];
   }
 
   return [];
@@ -74,17 +70,55 @@ function extractContent<T>(json: unknown): T[] {
 ========================================================= */
 
 function safeDate(value: string | null | undefined): Date {
-  if (!value) {
-    return new Date();
-  }
-
+  if (!value) return new Date();
   const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
 
-  if (Number.isNaN(date.getTime())) {
-    return new Date();
+/* =========================================================
+   SAFE FETCH HELPER
+   • Validates the URL before fetching (prevents build crash)
+   • Times out after 15 seconds so the sitemap never blocks
+     the build for 60+ seconds
+========================================================= */
+
+async function safeFetch(url: string): Promise<unknown> {
+  // Guard: Validate URL before fetching
+  try {
+    new URL(url);
+  } catch {
+    console.error("[Sitemap] Invalid URL skipped:", url);
+    return null;
   }
 
-  return date;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+      // Revalidate cached response every hour
+      next: { revalidate: 3600 },
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      console.error("[Sitemap] API returned", response.status, url);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    clearTimeout(timeout);
+    if ((error as Error)?.name === "AbortError") {
+      console.error("[Sitemap] Fetch timed out (15s):", url);
+    } else {
+      console.error("[Sitemap] Fetch error:", url, error);
+    }
+    return null;
+  }
 }
 
 /* =========================================================
@@ -92,39 +126,10 @@ function safeDate(value: string | null | undefined): Date {
 ========================================================= */
 
 async function fetchMenuItems(): Promise<SitemapMenuItem[]> {
-  const urls = [`${BACKEND_API_URL}/catalog/menu-items?page=0&size=1000`];
-
-  for (const url of urls) {
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Accept: "application/json",
-        },
-
-        next: {
-          revalidate: 3600,
-        },
-      });
-
-      if (!response.ok) {
-        console.error("[Sitemap] Menu API failed:", response.status, url);
-
-        continue;
-      }
-
-      const json = await response.json();
-
-      const items = extractContent<SitemapMenuItem>(json);
-
-      if (items.length) {
-        return items;
-      }
-    } catch (error) {
-      console.error("[Sitemap] Menu fetch error:", error);
-    }
-  }
-
-  return [];
+  const json = await safeFetch(
+    `${BACKEND_BASE}/catalog/menu-items?page=0&size=1000`,
+  );
+  return extractContent<SitemapMenuItem>(json);
 }
 
 /* =========================================================
@@ -132,35 +137,13 @@ async function fetchMenuItems(): Promise<SitemapMenuItem[]> {
 ========================================================= */
 
 async function fetchStores(): Promise<SitemapStore[]> {
-  try {
-    const response = await fetch(`${BACKEND_API_URL}/stores?page=0&size=1000`, {
-      headers: {
-        Accept: "application/json",
-      },
-
-      next: {
-        revalidate: 3600,
-      },
-    });
-
-    if (!response.ok) {
-      console.error("[Sitemap] Store API failed:", response.status);
-
-      return [];
-    }
-
-    const json = await response.json();
-
-    return extractContent<SitemapStore>(json);
-  } catch (error) {
-    console.error("[Sitemap] Store fetch error:", error);
-
-    return [];
-  }
+  const json = await safeFetch(`${BACKEND_BASE}/stores?page=0&size=1000`);
+  return extractContent<SitemapStore>(json);
 }
 
 /* =========================================================
    SITEMAP
+   Run dynamic fetches in parallel but each is time-bounded.
 ========================================================= */
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -176,42 +159,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
-
       lastModified: new Date(),
-
       changeFrequency: "daily",
-
       priority: 1,
     },
-
     {
       url: `${SITE_URL}/menu`,
-
       lastModified: new Date(),
-
       changeFrequency: "daily",
-
       priority: 0.9,
     },
-
     {
       url: `${SITE_URL}/food-page`,
-
       lastModified: new Date(),
-
       changeFrequency: "daily",
-
       priority: 0.8,
     },
-
     {
       url: `${SITE_URL}/about`,
-
       lastModified: new Date(),
-
       changeFrequency: "monthly",
-
       priority: 0.6,
+    },
+    {
+      url: `${SITE_URL}/stores`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
     },
   ];
 
@@ -223,11 +197,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((food) => Boolean(food.uuid))
     .map((food) => ({
       url: `${SITE_URL}${FOOD_PUBLIC_PATH}/${food.uuid}`,
-
       lastModified: safeDate(food.updatedAt),
-
       changeFrequency: "weekly" as const,
-
       priority: 0.8,
     }));
 
@@ -239,96 +210,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((store) => Boolean(store.uuid))
     .map((store) => ({
       url: `${SITE_URL}${STORE_PUBLIC_PATH}/${store.uuid}`,
-
       lastModified: safeDate(store.updatedAt),
-
       changeFrequency: "weekly" as const,
-
       priority: 0.7,
     }));
 
   return [...staticPages, ...foodPages, ...storePages];
 }
-
-// import type { MetadataRoute } from "next";
-// import { SITE_URL } from "@/lib/seo";
-
-// const BACKEND_API_URL =
-//   process.env.BACKEND_API_URL || "https://api.mhoubahar.store/api/v1";
-
-// async function fetchJson<T>(url: string): Promise<T | null> {
-//   try {
-//     const res = await fetch(url, { next: { revalidate: 86400 } });
-//     if (!res.ok) return null;
-//     const json = await res.json();
-//     return (json?.payload ?? json?.data ?? json) as T;
-//   } catch {
-//     return null;
-//   }
-// }
-
-// function extractArray(data: unknown): unknown[] {
-//   if (Array.isArray(data)) return data;
-//   if (data && typeof data === "object") {
-//     const d = data as Record<string, unknown>;
-//     if (Array.isArray(d.content)) return d.content;
-//     if (Array.isArray(d.contents)) return d.contents;
-//   }
-//   return [];
-// }
-
-// export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-//   const now = new Date();
-
-//   // Static routes
-//   const staticRoutes: MetadataRoute.Sitemap = [
-//     { url: SITE_URL, lastModified: now, changeFrequency: "daily", priority: 1.0 },
-//     { url: `${SITE_URL}/menu`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-//     { url: `${SITE_URL}/food-page`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-//     { url: `${SITE_URL}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-//     { url: `${SITE_URL}/login`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-//     { url: `${SITE_URL}/register`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-//   ];
-
-//   // Dynamic food items from live catalog
-//   const foodData = await fetchJson<unknown>(
-//     `${BACKEND_API_URL}/catalog/menu-items?page=0&size=500`,
-//   );
-//   const foodItems = extractArray(foodData) as Array<{
-//     uuid: string;
-//     updatedAt?: string;
-//   }>;
-
-//   const foodRoutes: MetadataRoute.Sitemap = foodItems
-//     .filter((item) => item.uuid)
-//     .map((item) => ({
-//       url: `${SITE_URL}/menu/${item.uuid}`,
-//       lastModified: item.updatedAt ? new Date(item.updatedAt) : now,
-//       changeFrequency: "weekly" as const,
-//       priority: 0.8,
-//     }));
-
-//   // Dynamic stores from live database
-//   const storeData = await fetchJson<unknown>(
-//     `${BACKEND_API_URL}/stores?page=0&size=500`,
-//   );
-//   const storeItems = extractArray(storeData) as Array<{
-//     uuid: string;
-//     updatedAt?: string;
-//   }>;
-
-//   const storeRoutes: MetadataRoute.Sitemap = storeItems
-//     .filter((store) => store.uuid)
-//     .map((store) => ({
-//       url: `${SITE_URL}/stores/${store.uuid}`,
-//       lastModified: store.updatedAt ? new Date(store.updatedAt) : now,
-//       changeFrequency: "weekly" as const,
-//       priority: 0.75,
-//     }));
-
-//   return [
-//     ...staticRoutes,
-//     ...foodRoutes,
-//     ...storeRoutes,
-//   ];
-// }
