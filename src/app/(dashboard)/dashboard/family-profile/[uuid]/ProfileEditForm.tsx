@@ -15,7 +15,7 @@ import {
   Compass,
   Flame,
   HeartPulse,
-  Languages,
+  ImageIcon,
   LoaderCircle,
   Plus,
   RefreshCw,
@@ -1442,9 +1442,13 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 className="object-cover"
                 sizes="96px"
               />
-            ) : (
+            ) : form.profileName.trim() ? (
               <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-[34px] font-bold text-primary-800">
-                {form.profileName.trim().charAt(0).toUpperCase() || "?"}
+                {form.profileName.trim().charAt(0).toUpperCase()}
+              </span>
+            ) : (
+              <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-primary-800">
+                <ImageIcon className="h-9 w-9 text-primary-800/60" />
               </span>
             )}
 
@@ -1608,42 +1612,6 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 }
                 className="min-h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-4 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
               />
-            </div>
-          </div>
-
-          {/* Language */}
-          <div>
-            <label
-              htmlFor="edit-language"
-              className="mb-2.5 block text-lg font-semibold text-slate-700"
-            >
-              ភាសាដែលពេញចិត្ត
-            </label>
-
-            <div className="relative">
-              <Languages className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
-              <select
-                id="edit-language"
-                value={form.preferredLanguage}
-                onChange={(event) =>
-                  setForm((previous) => ({
-                    ...previous,
-                    preferredLanguage: event.target.value,
-                  }))
-                }
-                className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
-              >
-                <option value="km" className="text-lg">
-                  ភាសាខ្មែរ
-                </option>
-
-                <option value="en" className="text-lg">
-                  English
-                </option>
-              </select>
-
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
             </div>
           </div>
         </div>

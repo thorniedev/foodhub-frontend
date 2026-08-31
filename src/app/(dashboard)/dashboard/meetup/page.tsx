@@ -134,17 +134,17 @@ export default function DashboardMeetupHistoryPage() {
       {/* Header Banner */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-black text-primary-800 dark:text-white">
             ប្រវត្តិនៃការណាត់ញ៉ាំ
           </h1>
-          <p className="mt-1 text-sm sm:text-base text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-[17px] sm:text-base text-slate-500 dark:text-slate-400">
             ពិនិត្យមើលបន្ទប់បោះឆ្នោត និងលទ្ធផលហាងដែលបានសម្រេចពីមុន
           </p>
         </div>
 
         <Link
           href="/meetup/create"
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-800 active:scale-98 shrink-0"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-800 active:scale-98 shrink-0 text-[17px]"
         >
           <Plus className="h-4 w-4" />
           បង្កើតការណាត់ញ៉ាំថ្មី
@@ -163,7 +163,7 @@ export default function DashboardMeetupHistoryPage() {
           }`}
         >
           <Users className="h-4 w-4" />
-          <span>ជាមួយមិត្តភក្តិ {historyList.filter((i) => i.mode === "FRIENDS").length}</span>
+          <span className="text-[17px]">ជាមួយមិត្តភក្តិ {historyList.filter((i) => i.mode === "FRIENDS").length}</span>
         </button>
 
         <button
@@ -176,7 +176,7 @@ export default function DashboardMeetupHistoryPage() {
           }`}
         >
           <Link2 className="h-4 w-4" />
-          <span>តំណភ្ញៀវ {historyList.filter((i) => i.mode === "GUEST_LINK").length}</span>
+          <span className="text-[17px]">តំណភ្ញៀវ {historyList.filter((i) => i.mode === "GUEST_LINK").length}</span>
         </button>
       </div>
 
@@ -189,7 +189,7 @@ export default function DashboardMeetupHistoryPage() {
           <h3 className="mt-4 text-lg font-bold text-slate-800 dark:text-slate-200">
             មិនទាន់មានប្រវត្តិក្នុងផ្ទាំងនេះនៅឡើយទេ
           </h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+          <p className="mt-1 text-sm text text-slate-500 dark:text-slate-400 max-w-md mx-auto">
             ចូលទៅកាន់ផ្ទាំងទីតាំង ដើម្បីចាប់ផ្តើមបង្កើតការណាត់ជួបញ៉ាំអាហារជាមួយមិត្តភក្តិ ឬផ្ញើតំណភ្ញៀវ!
           </p>
           <Link

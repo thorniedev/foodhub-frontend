@@ -13,7 +13,6 @@ import {
   Crown,
   Flame,
   HeartPulse,
-  Languages,
   LoaderCircle,
   Pencil,
   RefreshCw,
@@ -435,18 +434,6 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
               icon={<HeartPulse className="h-5 w-5" />}
               label="ក្រុមអាយុ"
               value={profile.ageGroup?.name ?? "មិនបានបញ្ជាក់"}
-            />
-
-            <InfoItem
-              icon={<Languages className="h-5 w-5" />}
-              label="ភាសាដែលពេញចិត្ត"
-              value={
-                profile.preferredLanguage === "km"
-                  ? "ភាសាខ្មែរ"
-                  : profile.preferredLanguage === "en"
-                    ? "English"
-                    : profile.preferredLanguage
-              }
             />
 
             <InfoItem

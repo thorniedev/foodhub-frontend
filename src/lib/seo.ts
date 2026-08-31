@@ -20,7 +20,7 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpeg`;
 export const FOOD_PUBLIC_PATH = "/menu";
 export const STORE_PUBLIC_PATH = "/stores";
 
-const BACKEND_API_URL = (
+export const BACKEND_API_URL = (
   process.env.BACKEND_API_URL || "https://api.mhoubahar.store/api/v1"
 ).replace(/\/+$/, "");
 
