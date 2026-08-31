@@ -9,6 +9,7 @@ import {
   LogIn,
   UtensilsCrossed,
   Store,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -780,7 +781,7 @@ p-1
           <MobileNavItem
             href="/about"
             label="អំពីយើង"
-            icon={Info}
+            icon={Users}
             active={pathname.startsWith("/about")}
           />
         </div>
