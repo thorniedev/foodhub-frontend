@@ -6,7 +6,12 @@ export type StoreOperatingStatus =
   | "UNKNOWN"
   | string;
 
-export type StoreSortBy = "default" | "name-asc" | "rating" | "reviews";
+export type StoreSortBy =
+  | "default"
+  | "nearest"
+  | "name-asc"
+  | "rating"
+  | "reviews";
 
 export interface StoreOpeningHour {
   storeUuid: string;
@@ -111,5 +116,6 @@ export interface StorePageFilters {
   operatingStatuses: string[];
   openNowOnly: boolean;
   minimumRating: number | null;
+  maxDistanceKm?: number | null;
   sortBy: StoreSortBy;
 }

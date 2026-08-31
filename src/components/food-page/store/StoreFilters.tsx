@@ -8,6 +8,7 @@ import {
   IoChevronDown,
   IoCloseOutline,
   IoLocationOutline,
+  IoNavigateOutline,
   IoSwapVerticalOutline,
 } from "react-icons/io5";
 
@@ -34,6 +35,7 @@ type StoreFiltersProps = {
   operatingStatusOptions: StorePageOption[];
 
   hasAverageRatingData: boolean;
+  hasDistanceData?: boolean;
 
   onClose?: () => void;
 };
@@ -45,6 +47,32 @@ type FilterSectionProps = {
   onToggle: () => void;
   children: ReactNode;
 };
+
+const DISTANCE_OPTIONS: Array<{
+  value: number | null;
+  label: string;
+}> = [
+  {
+    value: null,
+    label: "ទាំងអស់",
+  },
+  {
+    value: 2,
+    label: "< 2 km",
+  },
+  {
+    value: 5,
+    label: "< 5 km",
+  },
+  {
+    value: 10,
+    label: "< 10 km",
+  },
+  {
+    value: 20,
+    label: "< 20 km",
+  },
+];
 
 const RATING_OPTIONS: Array<{
   value: number | null;
@@ -77,6 +105,10 @@ const SORT_OPTIONS: Array<{
     label: "លំដាប់ដើម",
   },
   {
+    value: "nearest",
+    label: "ចម្ងាយជិតបំផុត",
+  },
+  {
     value: "name-asc",
     label: "ឈ្មោះ A ដល់ Z",
   },
@@ -92,6 +124,7 @@ const SORT_OPTIONS: Array<{
 
 const OPEN_SECTION_DEFAULTS: Record<string, boolean> = {
   status: true,
+  distance: true,
   city: false,
   province: false,
   operatingStatus: true,
@@ -383,6 +416,12 @@ export default function StoreFilters({
       key: "status",
       label: "បើកឥឡូវនេះ",
       icon: <FaStore />,
+      visible: true,
+    },
+    {
+      key: "distance",
+      label: "ចម្ងាយ",
+      icon: <IoNavigateOutline />,
       visible: true,
     },
     {
@@ -699,6 +738,50 @@ export default function StoreFilters({
                     updateFilter("openNowOnly", !filters.openNowOnly)
                   }
                 />
+              </div>
+            </FilterSection>
+
+            {/* -------------------------------------------------------------- */}
+            {/* Distance / Near Me                                             */}
+            {/* -------------------------------------------------------------- */}
+
+            <FilterSection
+              title="ចម្ងាយពីទីតាំងអ្នក"
+              icon={<IoNavigateOutline />}
+              isOpen={openSections.distance}
+              onToggle={() => toggleSection("distance")}
+            >
+              <div className="flex flex-wrap gap-2">
+                {DISTANCE_OPTIONS.map((option) => {
+                  const selected =
+                    (filters.maxDistanceKm ?? null) === option.value;
+
+                  return (
+                    <button
+                      key={String(option.value)}
+                      type="button"
+                      onClick={() =>
+                        updateFilter("maxDistanceKm", option.value)
+                      }
+                      className={`
+                        min-h-[42px]
+                        rounded-full
+                        border px-3.5 py-2
+                        text-[18px]
+                        font-medium
+                        transition-colors
+
+                        ${
+                          selected
+                            ? "border-primary-800 bg-primary-800 text-white"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50"
+                        }
+                      `}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
             </FilterSection>
 

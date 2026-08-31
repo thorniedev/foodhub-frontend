@@ -93,25 +93,6 @@ export default function StoreContent({
     [storeData],
   );
 
-  const filteredStores = useMemo(() => {
-    // If backend public search returned matching store hits, filter by hit IDs/names
-    if (deferredSearchQuery.trim() && searchResults?.stores?.items?.length) {
-      const hitUuids = new Set(
-        searchResults.stores.items.map((item) => item.uuid || item.id),
-      );
-      const matchedFromSearch = storeData.filter((store) =>
-        hitUuids.has(store.uuid),
-      );
-
-      // If backend matches exist, apply active UI filters to them
-      if (matchedFromSearch.length > 0) {
-        return applyStoreFilters(matchedFromSearch, "", filters);
-      }
-    }
-
-    return applyStoreFilters(storeData, deferredSearchQuery, filters);
-  }, [storeData, deferredSearchQuery, filters, searchResults]);
-
   /**
    * Distance is UI-derived from the user's current FoodHub location and
    * the real latitude/longitude returned by the Store endpoint.
@@ -175,6 +156,40 @@ export default function StoreContent({
     }, {});
   }, [coordinates, storeData]);
 
+  const hasDistanceData = useMemo(
+    () => Object.values(distanceByStoreUuid).some((d) => Number.isFinite(d)),
+    [distanceByStoreUuid],
+  );
+
+  const filteredStores = useMemo(() => {
+    // If backend public search returned matching store hits, filter by hit IDs/names
+    if (deferredSearchQuery.trim() && searchResults?.stores?.items?.length) {
+      const hitUuids = new Set(
+        searchResults.stores.items.map((item) => item.uuid || item.id),
+      );
+      const matchedFromSearch = storeData.filter((store) =>
+        hitUuids.has(store.uuid),
+      );
+
+      // If backend matches exist, apply active UI filters to them
+      if (matchedFromSearch.length > 0) {
+        return applyStoreFilters(
+          matchedFromSearch,
+          "",
+          filters,
+          distanceByStoreUuid,
+        );
+      }
+    }
+
+    return applyStoreFilters(
+      storeData,
+      deferredSearchQuery,
+      filters,
+      distanceByStoreUuid,
+    );
+  }, [storeData, deferredSearchQuery, filters, searchResults, distanceByStoreUuid]);
+
   const activeFilterCount = countActiveStoreFilters(filters);
 
   useEffect(() => {
@@ -214,6 +229,7 @@ export default function StoreContent({
     provinceOptions,
     operatingStatusOptions,
     hasAverageRatingData,
+    hasDistanceData,
   };
 
   if (isLoading || isFetching) {

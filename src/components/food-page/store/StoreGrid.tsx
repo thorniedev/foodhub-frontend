@@ -39,22 +39,55 @@ function getRating(store: FoodStore): number {
   return Number.isFinite(store.averageRating) ? store.averageRating : 0;
 }
 
-function getFeaturedStores(stores: FoodStore[]): FoodStore[] {
-  /**
-   * List response has no accountStatus/reviewStatus.
-   * Rank using only fields that actually exist on StoreListItem.
-   */
+function getNearestFeaturedStores(
+  stores: FoodStore[],
+  distanceByStoreUuid?: Record<string, number>,
+): FoodStore[] {
+  const hasDistances =
+    distanceByStoreUuid &&
+    Object.values(distanceByStoreUuid).some((d) => Number.isFinite(d));
+
   return [...stores]
     .sort((first, second) => {
-      const openNowDifference =
-        Number(second.isOpenNow) - Number(first.isOpenNow);
+      if (hasDistances) {
+        const d1 =
+          distanceByStoreUuid?.[first.uuid] ??
+          getBackendDistanceKm(first) ??
+          Infinity;
+        const d2 =
+          distanceByStoreUuid?.[second.uuid] ??
+          getBackendDistanceKm(second) ??
+          Infinity;
 
-      if (openNowDifference !== 0) {
-        return openNowDifference;
+        // If one has valid distance and the other does not
+        if (Number.isFinite(d1) && !Number.isFinite(d2)) return -1;
+        if (!Number.isFinite(d1) && Number.isFinite(d2)) return 1;
+
+        // If distance difference is significant (> 0.2km), closer store ranks first
+        if (Math.abs(d1 - d2) > 0.2) {
+          return d1 - d2;
+        }
+
+        // For stores at roughly the same distance, open store comes first
+        const openNowDifference =
+          Number(second.isOpenNow) - Number(first.isOpenNow);
+        if (openNowDifference !== 0) {
+          return openNowDifference;
+        }
+
+        if (d1 !== d2) {
+          return d1 - d2;
+        }
+      } else {
+        // Fallback when user location is not active: open stores first
+        const openNowDifference =
+          Number(second.isOpenNow) - Number(first.isOpenNow);
+        if (openNowDifference !== 0) {
+          return openNowDifference;
+        }
       }
 
       const ratingDifference = getRating(second) - getRating(first);
-
       if (ratingDifference !== 0) {
         return ratingDifference;
       }
@@ -305,7 +338,17 @@ export default function StoreGrid({
 
   const [isPaused, setIsPaused] = useState(false);
 
-  const featuredStores = useMemo(() => getFeaturedStores(stores), [stores]);
+  const hasUserDistance = useMemo(() => {
+    return (
+      distanceByStoreUuid &&
+      Object.values(distanceByStoreUuid).some((d) => Number.isFinite(d))
+    );
+  }, [distanceByStoreUuid]);
+
+  const featuredStores = useMemo(
+    () => getNearestFeaturedStores(stores, distanceByStoreUuid),
+    [stores, distanceByStoreUuid],
+  );
 
   useEffect(() => {
     if (featuredStores.length <= 1 || isPaused) {
@@ -359,47 +402,44 @@ export default function StoreGrid({
       <motion.div
         initial={{
           opacity: 0,
-          y: 10,
+          y: 12,
         }}
         animate={{
           opacity: 1,
           y: 0,
         }}
+        transition={{
+          duration: 0.22,
+        }}
         className="
           rounded-[22px]
           border border-dashed border-gray-200
           bg-white
-          px-5 py-12
+          px-5 py-14
           text-center
-          shadow-sm
         "
       >
         <div
           className="
-            mx-auto
-            flex h-14 w-14
+            mx-auto flex h-14 w-14
             items-center justify-center
             rounded-full
             bg-primary-50
+            text-primary-700
           "
         >
-          <IoSearchOutline
-            className="
-              text-[28px]
-              text-primary-700
-            "
-          />
+          <IoSearchOutline className="text-[26px]" />
         </div>
 
         <p
           className="
             mt-4
             text-[21px]
-            font-semibold
+            font-bold
             text-primary-900
           "
         >
-          រកមិនឃើញហាងអាហារ
+          រកមិនឃើញហាងអាហារដែលត្រូវនឹងតម្រងទេ
         </p>
 
         <p
@@ -411,7 +451,7 @@ export default function StoreGrid({
             text-gray-500
           "
         >
-          សូមសាកល្បងផ្លាស់ប្តូរពាក្យស្វែងរក ឬសម្អាតតម្រងមួយចំនួន។
+          សូមសាកល្បងផ្លាស់ប្តូរតម្រងស្វែងរក ឬសម្អាតតម្រងទាំងអស់ដើម្បីមើលហាងទាំងអស់ឡើងវិញ។
         </p>
 
         <button
@@ -424,7 +464,7 @@ export default function StoreGrid({
             gap-2
             rounded-full
             bg-primary-800
-            px-5
+            px-6
             text-[18px]
             font-semibold
             text-white
@@ -433,8 +473,7 @@ export default function StoreGrid({
             active:scale-95
           "
         >
-          <IoRestaurantOutline className="text-[20px]" />
-          បង្ហាញហាងទាំងអស់
+          សម្អាតតម្រងទាំងអស់
         </button>
       </motion.div>
     );
@@ -463,9 +502,11 @@ export default function StoreGrid({
                   text-[18px]
                   font-semibold
                   text-secondary-500
+                  flex items-center gap-1.5
                 "
               >
-                ជម្រើសសម្រាប់អ្នក
+                <IoNavigateOutline className="text-[18px]" />
+                {hasUserDistance ? "ហាងនៅជិតអ្នកបំផុត" : "ជម្រើសសម្រាប់អ្នក"}
               </p>
 
               <p
