@@ -188,9 +188,9 @@ export default function HomePageClient() {
 
       <section>
         {" "}
-        <MealTimeJourneySection />
         {/* <BrushRevealSection /> */}
         <Hero />
+        <MealTimeJourneySection />
         {/* <ZoomThroughSection /> */}
         {/* <BrushRevealSection /> */}
         <PopularSection />
