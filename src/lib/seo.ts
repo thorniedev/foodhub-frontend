@@ -173,12 +173,12 @@ export function toAbsoluteMediaUrl(
 
   // Backend already returns /api/v1/...
   if (source.startsWith("/api/v1/")) {
-    return `${BACKEND_API_URL}${source.slice("/api/v1".length)}`;
+    return `https://api.mhoubahar.store${source}`;
   }
 
   // Backend returns /api/...
   if (source.startsWith("/api/")) {
-    return `${BACKEND_API_URL}${source.slice("/api".length)}`;
+    return `https://api.mhoubahar.store/api/v1${source.slice("/api".length)}`;
   }
 
   // Backend returns /media/...
@@ -537,6 +537,7 @@ export function generateStoreMetadata(
       images: [
         {
           url: imageUrl,
+          secureUrl: imageUrl,
           width: 1200,
           height: 630,
           alt: storeName,

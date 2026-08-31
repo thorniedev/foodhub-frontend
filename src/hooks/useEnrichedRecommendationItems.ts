@@ -148,11 +148,13 @@ export function useEnrichedRecommendationItems(
       );
 
       if (!cancelled) {
-        setEnrichedItems(
-          results.filter(
-            (food): food is EnrichedRecommendationItem => food !== null,
-          ),
-        );
+        /*
+         * One enriched item per session item, always: a lookup failure falls
+         * back to a synthetic card built from the session's own data (above)
+         * rather than being dropped. The card count the caller renders must
+         * never silently diverge from what the recommendation API returned.
+         */
+        setEnrichedItems(results);
         setIsEnriching(false);
       }
     })();
