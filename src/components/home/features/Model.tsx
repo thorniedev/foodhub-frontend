@@ -112,7 +112,7 @@ export default function Model() {
       // Production stores only the documented request-source values.
       // Prompt-driven requests have no dedicated backend enum yet.
       requestSource: promptText ? "OTHER" : "HOMEPAGE_AUTO",
-      requestedLimit: 50,
+      requestedLimit: 15,
       contextData: promptText ? { userPrompt: promptText } : undefined,
       profiles: targets.map((profile, index) => ({
         profileId: profile.uuid,

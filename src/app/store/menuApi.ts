@@ -14,19 +14,38 @@ import { normalizeArrayPayload, normalizePayload } from "./utils/normalize";
 
 type MenuItemDetailQueryArg = string | GetCatalogMenuItemDetailParams;
 
+export interface GetMenuItemsParams {
+  /** Hard filter to only the FOOD or only the DRINK category hierarchy. */
+  rootCategoryCode?: "FOOD" | "DRINK";
+}
+
+export interface MealTypeDto {
+  id: number;
+  uuid: string;
+  code: string;
+  name: string;
+  defaultStartTime: string | null;
+  defaultEndTime: string | null;
+  displayOrder: number | null;
+  isActive: boolean | null;
+}
+
 export const menuApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // =========================================================
     // GET ALL MENU ITEMS
     // GET /api/v1/catalog/menu-items
     // =========================================================
-    getMenuItems: builder.query<CatalogMenuItem[], void>({
-      query: () => ({
+    getMenuItems: builder.query<CatalogMenuItem[], GetMenuItemsParams | void>({
+      query: (params) => ({
         url: "/catalog/menu-items",
         method: "GET",
         params: {
           page: 0,
           size: 100,
+          ...(params?.rootCategoryCode
+            ? { rootCategoryCode: params.rootCategoryCode }
+            : {}),
         },
       }),
 
@@ -103,9 +122,33 @@ export const menuApi = baseApi.injectEndpoints({
         ];
       },
     }),
+
+    // =========================================================
+    // GET ACTIVE MEAL TYPES (breakfast/lunch/dinner + their real IDs)
+    // GET /api/v1/catalog/meal-types
+    // =========================================================
+    getMealTypes: builder.query<MealTypeDto[], void>({
+      query: () => ({
+        url: "/catalog/meal-types",
+        method: "GET",
+        params: {
+          page: 0,
+          size: 20,
+          sort: "displayOrder",
+        },
+      }),
+
+      transformResponse: (response: unknown): MealTypeDto[] => {
+        return normalizeArrayPayload<MealTypeDto>(response);
+      },
+    }),
   }),
 
   overrideExisting: false,
 });
 
-export const { useGetMenuItemsQuery, useGetMenuItemByUuidQuery } = menuApi;
+export const {
+  useGetMenuItemsQuery,
+  useGetMenuItemByUuidQuery,
+  useGetMealTypesQuery,
+} = menuApi;
