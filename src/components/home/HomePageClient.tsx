@@ -188,11 +188,12 @@ export default function HomePageClient() {
 
       <section>
         <h1 className="sr-only">
-          ម្ហូបអាហារ Mhoubahar (FoodHub) - ប្រព័ន្ធស្វែងរក និងណែនាំមុខម្ហូបឆ្លាតវៃនៅកម្ពុជា
+          ម្ហូបអាហារ Mhoubahar (FoodHub) - ប្រព័ន្ធស្វែងរក
+          និងណែនាំមុខម្ហូបឆ្លាតវៃនៅកម្ពុជា
         </h1>
         <MealTimeJourneySection />
         <Hero />
-        <MealTimeJourneySection />
+        {/* <MealTimeJourneySection /> */}
         {/* <ZoomThroughSection /> */}
         {/* <BrushRevealSection /> */}
         <PopularSection />

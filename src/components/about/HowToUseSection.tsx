@@ -263,7 +263,7 @@ function Card2({ isActive, isPaused, cycle, durationMs }: CardProps) {
           >
             <Image
               alt="Choose food"
-              src={""}
+              src="/Image/food01.png"
               fill
               unoptimized
               className="object-cover"

@@ -49,7 +49,7 @@ export default function AboutPage() {
     <main className="min-h-screen w-full overflow-x-hidden dark:bg-slate-950">
       <div className="relative mx-auto w-full max-w-[1536px]">
         <AboutHeroClient />
-        <AboutStorySection />
+
         <StatsSection />
         <TechnologiesSection />
         <GoalsSection />
@@ -57,6 +57,7 @@ export default function AboutPage() {
         <MentorSection />
         <CommunitySection />
         <ContactSection />
+        <AboutStorySection />
       </div>
     </main>
   );
