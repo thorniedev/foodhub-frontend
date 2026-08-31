@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 /* =========================================================
    CONFIG
-========================================================= */
 
 const RAW_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.mhoubahar.store";
@@ -13,9 +12,13 @@ export const SITE_URL = (
     : `https://${RAW_SITE_URL}`
 ).replace(/\/+$/, "");
 
-export const SITE_NAME = "ម្ហូបអាហារ";
+  if (source.startsWith("/api/v1/")) {
+    return `https://api.mhoubahar.store${source}`;
+  }
 
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpeg`;
+  if (source.startsWith("/api/")) {
+    return `https://api.mhoubahar.store/api/v1${source.slice("/api".length)}`;
+  }
 
 export const FOOD_PUBLIC_PATH = "/menu";
 export const STORE_PUBLIC_PATH = "/stores";
@@ -419,7 +422,6 @@ export function generateFoodMetadata(
 
     openGraph: {
       type: "website",
-
       url: canonical,
 
       siteName: SITE_NAME,
@@ -499,7 +501,8 @@ export function generateStoreMetadata(
     store.coverMediaUuid || store.logoMediaUuid,
   );
 
-  const canonical = `${SITE_URL}${STORE_PUBLIC_PATH}/${encodeURIComponent(uuid)}`;
+  const imageUrl = `/api/og/store/${uuid}`;
+  const canonical = `/stores/${uuid}`;
 
   return {
     title: storeName,
@@ -525,7 +528,6 @@ export function generateStoreMetadata(
 
     openGraph: {
       type: "website",
-
       url: canonical,
 
       siteName: SITE_NAME,
@@ -537,6 +539,7 @@ export function generateStoreMetadata(
       images: [
         {
           url: imageUrl,
+          secureUrl: imageUrl,
           width: 1200,
           height: 630,
           alt: storeName,

@@ -23,6 +23,17 @@ export async function generateMetadata({
     return {
       title: "ហាងអាហារ - FoodHub",
       description: "ស្វែងរកហាងអាហារឆ្ងាញ់ៗនៅកម្ពុជាជាមួយ FoodHub.",
+      openGraph: {
+        title: "ហាងអាហារ - FoodHub",
+        description: "ស្វែងរកហាងអាហារឆ្ងាញ់ៗនៅកម្ពុជាជាមួយ FoodHub.",
+        images: ["https://www.mhoubahar.store/og-image.jpeg"],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "ហាងអាហារ - FoodHub",
+        description: "ស្វែងរកហាងអាហារឆ្ងាញ់ៗនៅកម្ពុជាជាមួយ FoodHub.",
+        images: ["https://www.mhoubahar.store/og-image.jpeg"],
+      },
     };
   }
 

@@ -1270,6 +1270,11 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             priority: item.priority || index + 1,
           })),
         }).unwrap();
+      } else {
+        await saveMemberCuisines({
+          uuid,
+          cuisines: [],
+        }).unwrap();
       }
 
       await refetchProfile();

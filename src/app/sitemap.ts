@@ -1,6 +1,16 @@
 import type { MetadataRoute } from "next";
 
-import { FOOD_PUBLIC_PATH, SITE_URL, STORE_PUBLIC_PATH } from "@/lib/seo";
+const rawBackendUrl = (
+  process.env.BACKEND_API_URL || "https://api.mhoubahar.store"
+)
+  .trim()
+  .replace(/\/+$/, "");
+
+const BACKEND_API_URL = rawBackendUrl.endsWith("/api/v1")
+  ? rawBackendUrl
+  : rawBackendUrl.endsWith("/api")
+    ? `${rawBackendUrl}/v1`
+    : `${rawBackendUrl}/api/v1`;
 
 /* =========================================================
    BACKEND

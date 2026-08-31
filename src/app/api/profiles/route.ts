@@ -177,6 +177,20 @@ export async function GET(request: NextRequest) {
         response: responseData,
         url: backendUrl.toString(),
       });
+
+      // If user is valid but has no profiles created yet (404), return empty page list (200 OK)
+      if (backendResponse.status === 404) {
+        return createBackendResponse(
+          {
+            contents: [],
+            totalElements: 0,
+            totalPages: 0,
+            page: 0,
+            size: 20,
+          },
+          200,
+        );
+      }
     }
 
     return createBackendResponse(responseData, backendResponse.status);
