@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -1400,7 +1400,7 @@ function FilterSidebar({
                     />
                   </div>
 
-                  <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                  <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
                     {categories.length > 0 ? (
                       categories.map((cat) => (
                         <CheckboxOption
@@ -1433,7 +1433,7 @@ function FilterSidebar({
                 isOpen={openSections.cuisine}
                 onToggle={() => toggleSection("cuisine")}
               >
-                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
                   {filterOptions.cuisines.map((c) => (
                     <CheckboxOption
                       key={c.uuid}
@@ -1889,7 +1889,7 @@ function FilterSidebar({
                 isOpen={openSections.province}
                 onToggle={() => toggleSection("province")}
               >
-                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
                   {filterOptions.provinces.map((prov) => (
                     <CheckboxOption
                       key={prov}
@@ -1912,7 +1912,7 @@ function FilterSidebar({
                 isOpen={openSections.city}
                 onToggle={() => toggleSection("city")}
               >
-                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
                   {filterOptions.cities.map((city) => (
                     <CheckboxOption
                       key={city}
@@ -1947,49 +1947,96 @@ type CategoryTabsProps = {
 
 function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
   const allSelected = selectedCodes.length === 0;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (containerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, [options]);
 
   return (
-    <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
-      <button
-        type="button"
-        onClick={() => onChange([])}
-        className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
-          allSelected
-            ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
-            : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
-        }`}
+    <div className="relative group flex items-center">
+      {/* Fade left */}
+      <AnimatePresence>
+        {canScrollLeft && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pointer-events-none absolute left-0 top-0 bottom-2 w-16 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10"
+          />
+        )}
+      </AnimatePresence>
+
+      <div
+        ref={containerRef}
+        onScroll={checkScroll}
+        className="scrollbar-hide flex gap-3 overflow-x-auto pb-2 relative z-0 w-full"
       >
-        ទាំងអស់
-      </button>
+        <button
+          type="button"
+          onClick={() => onChange([])}
+          className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
+            allSelected
+              ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+              : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
+          }`}
+        >
+          ទាំងអស់
+        </button>
 
-      {options.map((option) => {
-        const isSelected = selectedCodes.includes(option.code);
+        {options.map((option) => {
+          const isSelected = selectedCodes.includes(option.code);
 
-        return (
-          <button
-            key={option.code}
-            type="button"
-            onClick={() =>
-              onChange(
+          return (
+            <button
+              key={option.code}
+              type="button"
+              onClick={() =>
+                onChange(
+                  isSelected
+                    ? selectedCodes.filter((code) => code !== option.code)
+                    : [...selectedCodes, option.code],
+                )
+              }
+              className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
                 isSelected
-                  ? selectedCodes.filter((code) => code !== option.code)
-                  : [...selectedCodes, option.code],
-              )
-            }
-            className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
-              isSelected
-                ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
-                : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
-            }`}
-          >
-            {option.name}
+                  ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
+              }`}
+            >
+              {option.name}
 
-            {option.count > 0 && (
-              <span className="ml-2 opacity-70">{option.count}</span>
-            )}
-          </button>
-        );
-      })}
+              {option.count > 0 && (
+                <span className="ml-2 opacity-70">{option.count}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Fade right */}
+      <AnimatePresence>
+        {canScrollRight && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pointer-events-none absolute right-0 top-0 bottom-2 w-16 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10"
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -2768,7 +2815,7 @@ function FoodPageContent() {
 
           {/* ALL FOODS */}
 
-          <section className="mt-6">
+          <section className="mt-6 min-h-[600px]">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
@@ -2781,7 +2828,7 @@ function FoodPageContent() {
               </p>
             </div>
 
-            <FoodGrid foods={displayFoods} isLoading={isLoading && menuItems.length === 0} />
+            <FoodGrid foods={displayFoods} isLoading={(isLoading && menuItems.length === 0) || isDiscoveryLoading} />
           </section>
 
           <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">

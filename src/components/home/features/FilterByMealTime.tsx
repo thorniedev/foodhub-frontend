@@ -598,7 +598,7 @@ export default function FilterByMealTime({
 
       <div className="container mx-auto max-w-7xl px-4">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex gap-8 overflow-x-auto">
+          <div className="scrollbar-hide flex gap-8 overflow-x-auto">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
 
