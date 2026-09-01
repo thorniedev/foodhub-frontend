@@ -467,7 +467,12 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+
+import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 
 import { CiHeart } from "react-icons/ci";
 import {
@@ -535,6 +540,11 @@ function getStoredFavoriteIds(): string[] {
 ========================================================= */
 
 export default function FoodCard({ food }: FoodCardProps) {
+  const router = useRouter();
+  const { data: user } = useGetCurrentUserQuery();
+  const { bookmarks, addBookmark, removeBookmark, findBookmark } =
+    useBookmarks();
+
   /* =======================================================
      DISPLAY VALUES
   ======================================================= */
@@ -577,6 +587,7 @@ export default function FoodCard({ food }: FoodCardProps) {
   ======================================================= */
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   /* =======================================================
      DISTANCE & TRAVEL TIME
@@ -645,9 +656,6 @@ export default function FoodCard({ food }: FoodCardProps) {
      BOOKMARKS & FAVORITES
   ======================================================= */
 
-  const { bookmarks, addBookmark, removeBookmark, findBookmark } =
-    useBookmarks();
-
   useEffect(() => {
     const favoriteIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
@@ -663,6 +671,11 @@ export default function FoodCard({ food }: FoodCardProps) {
   ======================================================= */
 
   const toggleFavorite = async () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     const currentIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: food.uuid,
@@ -1213,6 +1226,12 @@ export default function FoodCard({ food }: FoodCardProps) {
         )}
       </button>
       */}
+
+      {/* MODAL */}
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </motion.article>
   );
 }

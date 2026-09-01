@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { createPortal } from "react-dom";
@@ -25,10 +27,11 @@ import { useEnrichedRecommendationItems } from "@/hooks/useEnrichedRecommendatio
 import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
 import AiPromptRecommender from "./AiPromptRecommender";
+import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
 
 import type { MemberProfile } from "@/types/member-profile/member-profile";
 
-type ModalTab = "swipe" | "spin";
+type ModalTab = "swipe" | "spin" | "chat";
 
 type ModalTabItem = {
   id: ModalTab;
@@ -50,9 +53,21 @@ const MODAL_TABS: ModalTabItem[] = [
     description: "ឱ្យ AI ជួយជ្រើសរើសមុខម្ហូបមួយសម្រាប់អ្នក",
     icon: <TbWheel className="text-[24px]" />,
   },
+  {
+    id: "chat",
+    label: "ជជែកជាមួយ AI",
+    description: "ប្រាប់ AI នូវលក្ខខណ្ឌរបស់អ្នក ដើម្បីទទួលបានការណែនាំ",
+    icon: <IoSparkles className="text-[24px]" />,
+  },
 ];
 
 export default function Model() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   const constraintsRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const [mounted, setMounted] = useState(false);
@@ -221,6 +236,22 @@ export default function Model() {
       );
     }
 
+    if (activeTab === "chat") {
+      return (
+        <AiPromptRecommender
+          prompt={prompt}
+          onPromptChange={setPrompt}
+          onSubmit={handlePromptSubmit}
+          isLoading={isSessionLoading}
+          error={sessionError}
+          items={enrichedSwipeFoods}
+          canRecommend={canRecommend}
+          isLoadingProfiles={isLoadingProfiles}
+          targetProfiles={targetProfiles}
+        />
+      );
+    }
+
     // The swipe deck must never fall back to the raw, unfiltered catalog —
     // every state below is explicit so it can never look like "here are
     // random menu items" when it is actually "no session yet" / "no safe
@@ -378,26 +409,6 @@ export default function Model() {
     return (
       <div className="flex w-full flex-col">
         <div className="flex w-full justify-center">{deckArea}</div>
-        {/* Same recommendation session feeds the deck above: submitting a
-            prompt here re-ranks the swipe cards too, not just this list.
-            Always mounted once canRecommend is true so the profile switcher
-            stays reachable even when the deck area shows an error/empty
-            state. */}
-        <AiPromptRecommender
-          prompt={prompt}
-          onPromptChange={setPrompt}
-          onSubmit={handlePromptSubmit}
-          isLoading={isSessionLoading}
-          error={sessionError}
-          items={sessionItems}
-          canRecommend={canRecommend}
-          isLoadingProfiles={isLoadingProfiles}
-          profiles={activeProfiles}
-          targetProfiles={targetProfiles}
-          onToggleProfile={handleToggleProfile}
-          onSelectAllProfiles={handleSelectAllProfiles}
-          allProfilesSelected={allActiveProfilesSelected}
-        />
       </div>
     );
   };
@@ -751,7 +762,6 @@ export default function Model() {
                 transition={{
                   duration: 0.22,
                 }}
-                onClick={closeModal}
                 className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-3 py-4 backdrop-blur-md sm:px-5"
               >
                 <motion.div
@@ -780,10 +790,29 @@ export default function Model() {
                     damping: 28,
                   }}
                   onClick={(event) => event.stopPropagation()}
-                  className="relative flex max-h-[94vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[32px] border border-white/50 bg-[#f6f7f5] shadow-[0_35px_120px_rgba(0,0,0,0.35)]"
+                  className="relative flex max-h-[94vh] w-full max-w-[560px] md:max-w-[680px] lg:max-w-[800px] flex-col overflow-hidden rounded-[32px] border border-white/50 bg-[#f6f7f5] shadow-[0_35px_120px_rgba(0,0,0,0.35)]"
                 >
                   <div className="border-b border-gray-200 bg-white px-3 pt-3 sm:px-4">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="mb-3 flex items-center justify-between pl-1 pr-1">
+                      <h2 className="text-[17px] font-bold text-gray-900">ការណែនាំពី AI</h2>
+                      <div className="flex items-center gap-2">
+                        <ProfileMultiSelect
+                          profiles={activeProfiles}
+                          targetProfiles={targetProfiles}
+                          onToggle={handleToggleProfile}
+                          onSelectAll={handleSelectAllProfiles}
+                          allSelected={allActiveProfilesSelected}
+                        />
+                        <button
+                          type="button"
+                          onClick={closeModal}
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+                        >
+                          <IoClose className="text-[18px]" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex overflow-x-auto snap-x hide-scrollbar gap-2 md:grid md:grid-cols-3">
                       {MODAL_TABS.map((tab) => {
                         const isActive = activeTab === tab.id;
 
@@ -795,7 +824,7 @@ export default function Model() {
                             whileTap={{
                               scale: 0.97,
                             }}
-                            className={`relative flex min-w-0 items-center gap-3 rounded-t-[18px] px-3 pb-4 pt-3 text-left transition ${isActive
+                            className={`relative flex min-w-[150px] shrink-0 snap-start items-center gap-3 rounded-t-[18px] px-3 pb-4 pt-3 text-left transition md:min-w-0 ${isActive
                               ? "bg-primary-50 text-primary-800 dark:text-primary-dark"
                               : "text-gray-500 hover:bg-gray-50 hover:text-primary-700"
                               }`}
@@ -823,7 +852,7 @@ export default function Model() {
                                 {tab.label}
                               </span>
 
-                              <span className="mt-1 hidden truncate text-[16px] text-gray-400 sm:block">
+                              <span className="mt-0.5 hidden text-[13px] leading-tight text-gray-400 sm:line-clamp-2">
                                 {tab.description}
                               </span>
                             </span>

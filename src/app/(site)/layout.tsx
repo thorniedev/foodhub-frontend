@@ -2,6 +2,7 @@ import MarqueeSection from "@/components/about/MarqueeSection";
 import Model from "@/components/home/features/Model";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import NotificationAlertPopup from "@/components/notifications/NotificationAlertPopup";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import "leaflet/dist/leaflet.css";
@@ -37,7 +38,8 @@ export default function SiteLayout({
         <Footer />
       </footer>
 
-      {/* Keep AI outside Navbar */}
+      {/* Keep AI and mobile bottom nav outside main content */}
+      <MobileBottomNav />
       <Model />
       <NotificationAlertPopup />
     </div>

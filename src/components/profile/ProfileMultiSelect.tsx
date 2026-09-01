@@ -71,7 +71,7 @@ export function ProfileAvatarStack({ profiles }: { profiles: MemberProfile[] }) 
           <ProfileAvatar
             name={profile.profileName}
             avatarMediaUuid={profile.avatarMediaUuid}
-            size={20}
+            size={24}
           />
         </span>
       ))}
@@ -96,7 +96,7 @@ export function ProfileMultiSelect({
   onSelectAll,
   allSelected,
   emptyLabel = "ជ្រើសរើសគណនី",
-  triggerClassName = "flex items-center gap-1.5 rounded-full bg-emerald-50 py-0.5 pl-0.5 pr-2 text-[12px] font-medium text-emerald-700 transition hover:bg-emerald-100",
+  triggerClassName = "flex items-center gap-1.5 rounded-full bg-emerald-50 py-1 pl-1 pr-2.5 lg:py-1.5 lg:pl-1.5 lg:pr-3 text-[13px] lg:text-[14px] font-medium text-emerald-700 transition hover:bg-emerald-100",
 }: {
   profiles: MemberProfile[];
   targetProfiles: MemberProfile[];
@@ -146,7 +146,7 @@ export function ProfileMultiSelect({
           <ProfileAvatar
             name={targetProfiles[0]?.profileName ?? "?"}
             avatarMediaUuid={targetProfiles[0]?.avatarMediaUuid ?? null}
-            size={20}
+            size={24}
           />
         )}
         <span className="max-w-[130px] truncate">
