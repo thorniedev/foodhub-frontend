@@ -5,6 +5,8 @@ export interface FriendDto {
   defaultProfileUuid?: string | null;
   defaultProfileName?: string | null;
   avatarMediaKey?: string | null;
+  avatarMediaUuid?: string | null;
+  avatarUrl?: string | null;
   connectedAt?: string;
 }
 
@@ -13,9 +15,15 @@ export interface FriendRequestDto {
   senderUuid?: string;
   senderUsername?: string;
   senderDefaultProfileName?: string | null;
+  senderAvatarMediaKey?: string | null;
+  senderAvatarMediaUuid?: string | null;
+  senderAvatarUrl?: string | null;
   receiverUuid?: string;
   receiverUsername?: string;
   receiverDefaultProfileName?: string | null;
+  receiverAvatarMediaKey?: string | null;
+  receiverAvatarMediaUuid?: string | null;
+  receiverAvatarUrl?: string | null;
   status: "PENDING" | "ACCEPTED" | "REJECTED" | "BLOCKED";
   createdAt?: string;
 }
