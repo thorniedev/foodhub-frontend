@@ -263,7 +263,7 @@ function Card2({ isActive, isPaused, cycle, durationMs }: CardProps) {
           >
             <Image
               alt="Choose food"
-              src="/Image/food01.png"
+              src="/about/third.png"
               fill
               unoptimized
               className="object-cover"
@@ -351,7 +351,7 @@ function Card3({ isActive, isPaused, cycle, durationMs }: CardProps) {
           className="border-t border-[#3f3f46]/20 pt-3"
         >
           <p className="text-base sm:text-lg lg:text-[20px] leading-relaxed text-[#596378]">
-            ចូលញ៉ាំដល់ហាង ឬកុម្ម៉ង់ភ្លាម រីករាយ ជាមួយអាហារឆ្ងាញ់ ។
+            រកទីតាំងហាងដែលមានមុខម្ហូបដែលអ្នកចូលចិត្តនៅជុំវិញអ្នក។
           </p>
         </motion.div>
         <motion.div
@@ -365,7 +365,7 @@ function Card3({ isActive, isPaused, cycle, durationMs }: CardProps) {
           >
             <Image
               alt="Enjoy food"
-              src={"/Image/food01.png"}
+              src={"/about/second.jpg"}
               fill
               unoptimized
               className="object-cover"

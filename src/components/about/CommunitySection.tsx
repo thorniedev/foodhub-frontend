@@ -189,6 +189,8 @@ interface MemberCardProps {
   roleColor: string;
   roleBg: string;
   avatar: string;
+  imageScale?: number;
+  imagePosition?: string;
   index?: number;
 
   socials?: {
@@ -208,6 +210,8 @@ function MemberCard({
   roleColor,
   roleBg,
   avatar,
+  imageScale,
+  imagePosition,
   socials,
   index = 0,
 }: MemberCardProps) {
@@ -389,7 +393,7 @@ function MemberCard({
 
           {!imageError && (
             <motion.div
-              className="absolute inset-0"
+              className="absolute inset-0 overflow-hidden"
               initial={false}
               animate={{
                 opacity: imageLoaded ? 1 : 0,
@@ -407,21 +411,23 @@ function MemberCard({
                 src={avatar}
                 alt={name}
                 fill
-                /*
-                 * Removed "unoptimized".
-                 *
-                 * Let Next.js optimize the images.
-                 * This is better when many avatars load together.
-                 */
-                className="object-cover"
+                className="object-cover transition-transform duration-300"
+                style={
+                  imageScale || imagePosition
+                    ? {
+                        transform: imageScale
+                          ? `scale(${imageScale})`
+                          : undefined,
+                        transformOrigin: imagePosition || "center",
+                        objectPosition: imagePosition || "center",
+                      }
+                    : undefined
+                }
                 sizes="
                   (max-width: 640px) 172px,
                   (max-width: 768px) 180px,
                   190px
                 "
-                /*
-                 * Let most member images load lazily.
-                 */
                 loading={index <= 1 ? "eager" : "lazy"}
                 onLoad={() => {
                   setImageLoaded(true);
@@ -654,6 +660,8 @@ const members: MemberCardProps[] = [
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
     avatar: "/about/lyta3.jpg",
+    imageScale: 1.25,
+    imagePosition: "center 100%",
 
     socials: {
       facebook: "https://www.facebook.com/share/1Gro8hQqpP/?mibextid=wwXIfr",
@@ -669,6 +677,8 @@ const members: MemberCardProps[] = [
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
     avatar: "/about/yeak.jpg",
+    imageScale: 1.1,
+    imagePosition: "center 100%",
 
     socials: {
       facebook: "https://www.facebook.com/share/189oyqLh4v/",
@@ -684,6 +694,8 @@ const members: MemberCardProps[] = [
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
     avatar: "/about/karona2.JPG",
+    imageScale: 1.13,
+    imagePosition: "center 100%",
 
     socials: {
       facebook: "https://www.facebook.com/share/1GWBpCBHgw/?mibextid=wwXIfr",
@@ -729,6 +741,8 @@ const members: MemberCardProps[] = [
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
     avatar: "/about/dara2.jpg",
+    imageScale: 1.23,
+    imagePosition: "center 100%",
 
     socials: {
       facebook: "https://www.facebook.com/USERNAME",
@@ -744,6 +758,8 @@ const members: MemberCardProps[] = [
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
     avatar: "/about/fou.jpg",
+    imageScale: 1.2,
+    imagePosition: "center 100%",
 
     socials: {
       facebook: "https://www.facebook.com/lim.longfou",
@@ -759,6 +775,8 @@ const members: MemberCardProps[] = [
     roleColor: "#1E2E3E",
     roleBg: "#FEF1E8",
     avatar: "/about/chanthat2.jpg",
+    imageScale: 1.1,
+    imagePosition: "center 100%",
 
     socials: {
       facebook: "https://www.facebook.com/USERNAME",
