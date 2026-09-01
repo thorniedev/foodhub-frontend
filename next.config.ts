@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
     "idealist-distrust-buffed.ngrok-free.dev",
   ],
   images: {
+    // Serve AVIF first (smallest), WebP as fallback — browsers pick best format
+    formats: ["image/avif", "image/webp"],
+    // Cache optimized images for 1 year (they are content-addressed by URL)
+    minimumCacheTTL: 31536000,
+    // Breakpoints that match the card grid (50vw → 33vw → 25vw)
+    deviceSizes: [375, 640, 768, 1024, 1280, 1536],
+    imageSizes: [96, 128, 200, 256, 384, 485],
     remotePatterns: [
       {
         protocol: "https",

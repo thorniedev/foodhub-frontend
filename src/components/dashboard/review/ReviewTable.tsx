@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Star, Ban, Pencil, Trash2 } from "lucide-react";
 import type { RatingReviewItem } from "@/types/review";
 
@@ -40,10 +41,11 @@ export default function ReviewTable({
             <div className="hidden grid-cols-[2fr_0.8fr_0.9fr_2.2fr_0.8fr] items-center gap-4 px-6 py-4 md:grid">
               <div className="flex items-center gap-3">
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={item.imageUrl}
                     alt={item.name}
+                    fill
+                    sizes="56px"
                     className="h-full w-full object-cover"
                   />
                 </div>
@@ -100,10 +102,11 @@ export default function ReviewTable({
             <div className="flex flex-col gap-3 px-4 py-4 md:hidden">
               <div className="flex items-start gap-3">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={item.imageUrl}
                     alt={item.name}
+                    fill
+                    sizes="64px"
                     className="h-full w-full object-cover"
                   />
                 </div>

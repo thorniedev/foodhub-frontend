@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 import {
@@ -74,18 +75,23 @@ function StoreImagePlaceholder({ displayName }: { displayName: string }) {
 }
 
 export function StoreImage({ store }: { store: FoodStore }) {
-  const displayName = getDisplayName(store);
-
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [imageFailed, setImageFailed] = useState(false);
   const [isResolving, setIsResolving] = useState(Boolean(store.logoMediaUuid));
+  const [imageFailed, setImageFailed] = useState(false);
+
+  const displayName = getDisplayName(store);
 
   useEffect(() => {
     let cancelled = false;
-
-    setImageUrl(null);
     setImageFailed(false);
-    setIsResolving(Boolean(store.logoMediaUuid));
+
+    if (!store.logoMediaUuid) {
+      setImageUrl(null);
+      setIsResolving(false);
+      return;
+    }
+
+    setIsResolving(true);
 
     async function loadLogo() {
       if (!store.logoMediaUuid) {
@@ -119,9 +125,11 @@ export function StoreImage({ store }: { store: FoodStore }) {
   }
 
   return (
-    <img
+    <Image
       src={imageUrl}
       alt={`${displayName} store logo`}
+      fill
+      sizes="(max-width: 640px) 100px, 140px"
       draggable={false}
       onError={() => setImageFailed(true)}
       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"

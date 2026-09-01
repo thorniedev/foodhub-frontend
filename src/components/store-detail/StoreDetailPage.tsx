@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 
 import Link from "next/link";
 
@@ -201,9 +202,11 @@ function StoreMediaImage({
   }
 
   return (
-    <img
+    <Image
       src={imageUrl}
       alt={alt}
+      fill
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1200px"
       draggable={false}
       onError={() => setFailed(true)}
       className={className}

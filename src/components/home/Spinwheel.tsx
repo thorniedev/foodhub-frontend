@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import {
   AnimatePresence,
   motion,
@@ -225,11 +226,13 @@ function WinPopup({
           </button>
 
           {/* 4:3 image with a one-off shine sweep that repeats slowly */}
-          <div className="relative   overflow-hidden ">
-            <img
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[16px]">
+            <Image
               src={food.image}
               alt={food.name}
-              className="h-full rounded-[16px] w-full object-cover"
+              fill
+              sizes="(max-width: 640px) 100vw, 360px"
+              className="h-full w-full object-cover"
             />
             {!reduced && (
               <motion.div
@@ -356,9 +359,11 @@ function CollectionSheet({
                 className="overflow-hidden rounded-[18px] border border-gray-100 bg-white shadow-sm"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
+                  <Image
                     src={food.image}
                     alt={food.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 200px"
                     className="h-full w-full object-cover"
                   />
                   {count > 1 && (

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   Check,
   Loader2,
@@ -59,11 +60,11 @@ export default function MeetupCandidateCard({
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
         {candidate.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={candidate.photoUrl}
             alt={candidate.foodName}
-            loading="lazy"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (

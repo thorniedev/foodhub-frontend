@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import {
   motion,
   useScroll,
@@ -315,9 +316,11 @@ function RegionCard({
   if (reduce) {
     return (
       <div className="absolute inset-0" style={{ zIndex: index + 1 }}>
-        <img
+        <Image
           src={region.img}
           alt={region.name}
+          fill
+          sizes="100vw"
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-primary-950/80 via-transparent to-transparent" />

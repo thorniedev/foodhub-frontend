@@ -1,14 +1,16 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
 
 export default function NotFoundPage() {
   return (
     <div className="h-screen bg-background dark:bg-gray-950  md:gap-8 flex-col w-full flex items-center justify-center">
-      <img
-        className="w-[350px] block dark:hidden"
+      <Image
+        className="w-[350px] h-auto block dark:hidden"
         src="/Image/foodHub-logo.png"
-        alt="L0go"
+        alt="Logo"
+        width={350}
+        height={100}
+        priority
       />
       {/* <img className="w-[350px] hidden dark:block" src={LogoDark} alt="L0go" /> */}
       <div className="flex py-4 dark:bg-white px-10 rounded-full  flex-col items-center ">
