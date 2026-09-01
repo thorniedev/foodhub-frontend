@@ -17,6 +17,7 @@ import LocationPermissionModal from "@/components/LocationPermissionModal";
 import NearbyStoreVoiceAlert from "@/components/home/NearbyStoreVoiceAlert";
 
 import { useGetStoresQuery } from "@/app/store/locationApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useUserLocation } from "@/hooks/useUserLocation";
 
 import type { VoiceAlertStore } from "@/hooks/useNearbyStoreVoiceAlert";
@@ -52,6 +53,16 @@ export default function HomePageClient() {
   const { coordinates, status, error, refreshLocation } = useUserLocation();
 
   const { data: stores = [] } = useGetStoresQuery();
+  const { data: catalogMenuItems = [] } = useGetMenuItemsQuery();
+
+  const storeUuidsWithItems = useMemo(() => {
+    const set = new Set<string>();
+    catalogMenuItems.forEach((item) => {
+      if (item?.store?.uuid) set.add(item.store.uuid);
+      if ((item as any)?.storeUuid) set.add((item as any).storeUuid);
+    });
+    return set;
+  }, [catalogMenuItems]);
 
   const [locationModalOpen, setLocationModalOpen] = useState(false);
 
@@ -89,6 +100,15 @@ export default function HomePageClient() {
       })
       .filter(({ store, latitude, longitude, matchPercentage }) => {
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+          return false;
+        }
+
+        const storeUuid = store.uuid || store.id;
+        if (
+          catalogMenuItems.length > 0 &&
+          storeUuid &&
+          !storeUuidsWithItems.has(storeUuid)
+        ) {
           return false;
         }
 

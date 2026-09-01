@@ -145,8 +145,19 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     const storesList = Array.isArray(catalogStoresData)
       ? catalogStoresData
       : (catalogStoresData as any)?.contents || [];
+
+    const storeUuidsWithItems = new Set<string>();
+    catalogMenuItems.forEach((item) => {
+      if (item?.store?.uuid) storeUuidsWithItems.add(item.store.uuid);
+      if ((item as any)?.storeUuid) storeUuidsWithItems.add((item as any).storeUuid);
+    });
+
     return storesList
       .filter((store: any) => {
+        const storeUuid = store.uuid || store.id;
+        if (catalogMenuItems.length > 0 && storeUuid && !storeUuidsWithItems.has(storeUuid)) {
+          return false;
+        }
         const name = (store.storeName || store.name || "").toLowerCase();
         const city = (store.city || "").toLowerCase();
         return name.includes(q) || city.includes(q);
@@ -158,7 +169,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
         averageRating: store.averageRating,
         logoUrl: store.logoMediaUuid ? toFrontendApiAssetUrl(store.logoMediaUuid) : undefined,
       }));
-  }, [debouncedQuery, catalogStoresData]);
+  }, [debouncedQuery, catalogStoresData, catalogMenuItems]);
 
   if (!isOpen) return null;
 
