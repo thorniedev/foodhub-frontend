@@ -53,6 +53,8 @@ const MODAL_TABS: ModalTabItem[] = [
 ];
 
 export default function Model() {
+  const constraintsRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -402,10 +404,29 @@ export default function Model() {
 
   return (
     <>
+      <div ref={constraintsRef} className="fixed inset-0 z-[100] pointer-events-none" />
       <motion.button
         type="button"
         // aria-label="Open FoodHub AI assistant"
-        onClick={openModal}
+        onDragStart={() => {
+          isDraggingRef.current = true;
+        }}
+        onDragEnd={() => {
+          setTimeout(() => {
+            isDraggingRef.current = false;
+          }, 150);
+        }}
+        onClick={(e) => {
+          if (isDraggingRef.current) {
+            e.preventDefault();
+            return;
+          }
+          openModal();
+        }}
+        drag
+        dragConstraints={constraintsRef}
+        dragElastic={0.2}
+        dragMomentum={false}
         initial={{
           opacity: 0,
           scale: 0.35,
@@ -428,163 +449,9 @@ export default function Model() {
         whileTap={{
           scale: 0.92,
         }}
-        className="group fixed bottom-[calc(10px+env(safe-area-inset-bottom))] right-2 z-[100] cursor-pointer border-0 bg-transparent p-0 outline-none md:bottom-10 md:right-10 md:left-auto md:translate-x-0"
+        className="group fixed bottom-[calc(10px+env(safe-area-inset-bottom))] right-2 z-[101] cursor-pointer border-0 bg-transparent p-0 outline-none md:bottom-10 md:right-10 md:left-auto md:translate-x-0 pointer-events-auto"
       >
         <div className="origin-bottom-right scale-[0.75] transition-transform md:scale-100">
-          {/* AI recommendation preview */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              x: 24,
-              scale: 0.92,
-              filter: "blur(8px)",
-            }}
-            variants={{
-              hover: {
-                opacity: 1,
-                x: 0,
-                scale: 1,
-                filter: "blur(0px)",
-              },
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 24,
-            }}
-            className="pointer-events-none absolute bottom-0 right-[98px] hidden w-[290px] overflow-hidden rounded-[24px] border border-white/60 bg-white/85 p-4 text-left z-99 shadow-[0_24px_80px_rgba(18,80,55,0.28)] backdrop-blur-2xl sm:block"
-          >
-            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-cyan-400 via-primary-700 to-secondary-500" />
-
-            <motion.div
-              aria-hidden="true"
-              className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-300/20 blur-3xl"
-              animate={{
-                scale: [1, 1.25, 1],
-                opacity: [0.35, 0.7, 0.35],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-
-            <div className="relative flex items-start gap-3">
-              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-primary-900 to-secondary-500 text-white shadow-lg">
-                <RiRobot2Line className="text-[27px]" />
-
-                <motion.span
-                  className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-green-400 ring-2 ring-white"
-                  animate={{
-                    opacity: [1, 0.35, 1],
-                    scale: [1, 0.8, 1],
-                  }}
-                  transition={{
-                    duration: 1.3,
-                    repeat: Infinity,
-                  }}
-                />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[17px] font-semibold text-primary-900">
-                    FoodHub
-                  </p>
-
-                  <span className="rounded-full bg-green-50 px-2.5 py-1 text-[16px] font-medium text-green-600">
-                    Active
-                  </span>
-                </div>
-
-                <p className="mt-1 text-[16px] leading-7 text-gray-500">
-                  ខ្ញុំបានរកឃើញមុខម្ហូបដែលសមនឹងអ្នក
-                </p>
-
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="rounded-full bg-primary-50 px-3 py-1.5 text-[16px] font-medium text-primary-700">
-                    95% Match
-                  </span>
-
-                  <span className="rounded-full bg-secondary-50 px-3 py-1.5 text-[16px] font-medium text-secondary-600">
-                    Nearby
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <motion.div
-              className="mt-4 flex items-center gap-1"
-              animate={{
-                opacity: [0.55, 1, 0.55],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-              }}
-            >
-              {[8, 14, 10, 18, 12, 16, 9].map((height, index) => (
-                <motion.span
-                  key={index}
-                  className="w-1 rounded-full bg-gradient-to-t from-primary-700 to-cyan-400"
-                  animate={{
-                    height: [height, height + 8, height],
-                  }}
-                  transition={{
-                    duration: 0.8,
-                    repeat: Infinity,
-                    delay: index * 0.08,
-                    ease: "easeInOut",
-                  }}
-                  style={{
-                    height,
-                  }}
-                />
-              ))}
-
-              <span className="ml-2 text-[16px] text-gray-400">AI is ready</span>
-            </motion.div>
-          </motion.div>
-
-          {/* Floating AI message */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              scale: 0.6,
-              y: 12,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-            }}
-            transition={{
-              delay: 1.1,
-              type: "spring",
-              stiffness: 300,
-              damping: 19,
-            }}
-            className="pointer-events-none absolute right-2 -top-16 hidden whitespace-nowrap rounded-[18px] rounded-br-[5px] border border-primary-100 bg-white/95 px-4 py-2.5 text-[16px] font-medium text-primary-900 shadow-[0_12px_40px_rgba(20,70,45,0.18)] backdrop-blur-xl md:block"
-          >
-            {/* តើថ្ងៃនេះអ្នកចង់ញ៉ាំអ្វី? */}
-            ណែនាំម្ហូបអាហារដោយAI
-            <motion.span
-              className="ml-2 inline-block text-secondary-500"
-              animate={{
-                rotate: [0, 20, -12, 0],
-                scale: [1, 1.25, 1],
-              }}
-              transition={{
-                duration: 1.8,
-                repeat: Infinity,
-                repeatDelay: 1.8,
-              }}
-            >
-              ✦
-            </motion.span>
-          </motion.div>
-
           {/* Main AI core */}
           <motion.div
             variants={{
