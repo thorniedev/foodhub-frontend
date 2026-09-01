@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   IoChevronBack,
   IoChevronDown,
+  IoClose,
   IoFilterOutline,
   IoNutritionOutline,
   IoPricetagOutline,
@@ -368,36 +369,36 @@ function findMatchingAgeGroup(
 function getDietaryTypes(food: CatalogMenuItem): CatalogCodeName[] {
   return Array.isArray(food.food?.dietaryTypes)
     ? food.food.dietaryTypes.map((item) => ({
-        code: item.code,
-        name: item.name,
-      }))
+      code: item.code,
+      name: item.name,
+    }))
     : [];
 }
 
 function getSeasons(food: CatalogMenuItem): CatalogCodeName[] {
   return Array.isArray(food.food?.seasons)
     ? food.food.seasons.map((item) => ({
-        code: item.code,
-        name: item.name,
-      }))
+      code: item.code,
+      name: item.name,
+    }))
     : [];
 }
 
 function getEvents(food: CatalogMenuItem): CatalogCodeName[] {
   return Array.isArray(food.food?.events)
     ? food.food.events.map((item) => ({
-        code: item.code,
-        name: item.name,
-      }))
+      code: item.code,
+      name: item.name,
+    }))
     : [];
 }
 
 function getSuitableWeather(food: CatalogMenuItem): CatalogCodeName[] {
   return Array.isArray(food.food?.suitableWeather)
     ? food.food.suitableWeather.map((item) => ({
-        code: item.code,
-        name: item.name,
-      }))
+      code: item.code,
+      name: item.name,
+    }))
     : [];
 }
 
@@ -914,20 +915,24 @@ function FilterSection({
             initial={{
               height: 0,
               opacity: 0,
+              overflow: "hidden",
             }}
             animate={{
               height: "auto",
               opacity: 1,
+              transitionEnd: {
+                overflow: "visible",
+              },
             }}
             exit={{
               height: 0,
               opacity: 0,
+              overflow: "hidden",
             }}
             transition={{
               duration: 0.25,
               ease: [0.16, 1, 0.3, 1],
             }}
-            className="overflow-hidden"
           >
             <div className="pt-4">{children}</div>
           </motion.div>
@@ -937,40 +942,165 @@ function FilterSection({
   );
 }
 
-type CheckboxOptionProps = {
+function CollapsibleList<T>({ items, limit = 6, renderItem, hideSearch = false }: { items: T[], limit?: number, renderItem: (item: T) => React.ReactNode, hideSearch?: boolean }) {
+  const [expanded, setExpanded] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const filteredItems = useMemo(() => {
+    if (!query) return items;
+    const q = query.toLowerCase();
+    return items.filter(item => {
+      let str = "";
+      if (typeof item === 'string') {
+        str = item;
+      } else if (item && typeof item === 'object') {
+        if ('name' in item) str = String(item.name);
+        else if ('label' in item) str = String(item.label);
+      }
+      return str.toLowerCase().includes(q);
+    });
+  }, [items, query]);
+
+  const visible = expanded || query ? filteredItems : filteredItems.slice(0, limit);
+  const hiddenCount = filteredItems.length - limit;
+
+  return (
+    <div className="flex flex-col gap-3">
+      {!hideSearch && items.length > limit && (
+        <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/80">
+          <IoSearchOutline className="text-[18px] text-gray-400 dark:text-slate-500" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="ស្វែងរក..."
+            className="w-full bg-transparent text-[14px] text-gray-700 outline-none placeholder:text-gray-400 dark:text-slate-200 dark:placeholder:text-slate-500"
+          />
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {visible.map(renderItem)}
+        {!expanded && !query && hiddenCount > 0 && (
+          <button type="button" onClick={() => setExpanded(true)} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-medium text-gray-500 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
+            + {hiddenCount} ទៀត
+          </button>
+        )}
+        {expanded && !query && hiddenCount > 0 && (
+          <button type="button" onClick={() => setExpanded(false)} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-medium text-gray-500 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
+            បង្រួម
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SortDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const options = [
+    { value: "NEWEST", label: "ថ្មីបំផុត" },
+    { value: "DISTANCE_ASC", label: "ចំងាយជិតបំផុត" },
+    { value: "PRICE_ASC", label: "តម្លៃទាបទៅខ្ពស់" },
+    { value: "PRICE_DESC", label: "តម្លៃខ្ពស់ទៅទាប" },
+  ];
+
+  const selectedOption = options.find((o) => o.value === value) || options[0];
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-[14px] font-medium text-gray-800 transition-colors hover:bg-gray-50 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+      >
+        <span>{selectedOption.label}</span>
+        <IoChevronDown
+          className={`text-[16px] text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
+          >
+            <div className="flex flex-col py-1">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={`px-4 py-2 text-left text-[14px] font-medium transition-colors ${value === option.value
+                      ? "bg-primary-50 text-primary-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                      : "text-gray-700 hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                    }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+type PillOptionProps = {
   label: string;
   count?: number;
   checked: boolean;
   onChange: () => void;
 };
 
-function CheckboxOption({
+function PillOption({
   label,
   count,
   checked,
   onChange,
-}: CheckboxOptionProps) {
+}: PillOptionProps) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50 dark:hover:bg-slate-800/80">
-      <span className="flex min-w-0 items-center gap-3">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={onChange}
-          className="h-4 w-4 shrink-0 accent-primary-800 dark:accent-emerald-500"
-        />
-
-        <span className="truncate text-[18px] text-gray-600 dark:text-slate-300">
-          {label}
-        </span>
-      </span>
-
-      {typeof count === "number" && (
-        <span className="shrink-0 rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-0.5 text-[18px] text-gray-500 dark:text-slate-400">
-          {count}
-        </span>
+    <button
+      type="button"
+      onClick={onChange}
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-medium transition-colors border ${checked
+          ? "bg-primary-800 text-white border-primary-800 dark:bg-emerald-600 dark:border-emerald-600 shadow-sm"
+          : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
+        }`}
+    >
+      <span>{label}</span>
+      {count !== undefined && count > 0 && (
+        <span className="opacity-70 text-[12px]">({count})</span>
       )}
-    </label>
+      {checked && (
+        <IoClose className="text-[12px] opacity-80 hover:opacity-100 transition-opacity" />
+      )}
+    </button>
   );
 }
 
@@ -1000,11 +1130,10 @@ function SingleChoice<T extends string | number>({
             key={String(option.value)}
             type="button"
             onClick={() => onChange(isSelected ? null : option.value)}
-            className={`rounded-full border px-3 py-2 text-[18px] transition ${
-              isSelected
+            className={`rounded-full border px-3 py-2 text-[18px] transition ${isSelected
                 ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
                 : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
+              }`}
           >
             {option.label}
           </button>
@@ -1131,11 +1260,11 @@ function FilterSidebar({
     (customerSearchRequest.featuredOnly ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
     (customerSearchRequest.minimumPrice !== undefined ||
-    customerSearchRequest.maximumPrice !== undefined
+      customerSearchRequest.maximumPrice !== undefined
       ? 1
       : 0) +
     (customerSearchRequest.minimumSpiceLevel !== undefined ||
-    customerSearchRequest.maximumSpiceLevel !== undefined
+      customerSearchRequest.maximumSpiceLevel !== undefined
       ? 1
       : 0) +
     (customerSearchRequest.maxPreparationTimeMinutes !== undefined ? 1 : 0) +
@@ -1172,22 +1301,19 @@ function FilterSidebar({
       }
     >
       <div
-        className={`flex h-full flex-col overflow-hidden bg-white dark:bg-slate-900 ${
-          mobile
+        className={`flex h-full flex-col overflow-hidden bg-white dark:bg-slate-900 ${mobile
             ? ""
             : "rounded-[24px] border border-gray-100 dark:border-slate-800 shadow-sm"
-        }`}
+          }`}
       >
         {/* Header */}
         <div
-          className={`shrink-0 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 ${
-            isCollapsed ? "p-3" : "p-5"
-          }`}
+          className={`shrink-0 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 ${isCollapsed ? "p-3" : "p-5"
+            }`}
         >
           <div
-            className={`flex items-center ${
-              isCollapsed ? "justify-center" : "justify-between"
-            }`}
+            className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"
+              }`}
           >
             <AnimatePresence mode="wait" initial={false}>
               {!isCollapsed && (
@@ -1302,21 +1428,15 @@ function FilterSidebar({
               isOpen={openSections.sort}
               onToggle={() => toggleSection("sort")}
             >
-              <select
+              <SortDropdown
                 value={customerSearchRequest.sort || "NEWEST"}
-                onChange={(e) =>
+                onChange={(value) =>
                   onSearchRequestChange({
                     ...customerSearchRequest,
-                    sort: e.target.value,
+                    sort: value,
                   })
                 }
-                className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
-              >
-                <option value="NEWEST"> ថ្មីបំផុត</option>
-                <option value="DISTANCE_ASC"> ចំងាយជិតបំផុត</option>
-                <option value="PRICE_ASC"> តម្លៃទាបទៅខ្ពស់</option>
-                <option value="PRICE_DESC"> តម្លៃខ្ពស់ទៅទាប</option>
-              </select>
+              />
             </FilterSection>
 
             {/* OPEN NOW */}
@@ -1351,33 +1471,30 @@ function FilterSidebar({
                     <button
                       type="button"
                       onClick={() => setCategoryType("ALL")}
-                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
-                        categoryType === "ALL"
+                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${categoryType === "ALL"
                           ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
                           : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
-                      }`}
+                        }`}
                     >
                       ទាំងអស់
                     </button>
                     <button
                       type="button"
                       onClick={() => setCategoryType("FOOD")}
-                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
-                        categoryType === "FOOD"
+                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${categoryType === "FOOD"
                           ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
                           : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
-                      }`}
+                        }`}
                     >
                       ម្ហូប
                     </button>
                     <button
                       type="button"
                       onClick={() => setCategoryType("DRINK")}
-                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
-                        categoryType === "DRINK"
+                      className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${categoryType === "DRINK"
                           ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-white shadow-sm"
                           : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
-                      }`}
+                        }`}
                     >
                       ភេសជ្ជៈ
                     </button>
@@ -1400,10 +1517,12 @@ function FilterSidebar({
                     />
                   </div>
 
-                  <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
-                    {categories.length > 0 ? (
-                      categories.map((cat) => (
-                        <CheckboxOption
+                  {categories.length > 0 ? (
+                    <CollapsibleList
+                      hideSearch={true}
+                      items={categories}
+                      renderItem={(cat) => (
+                        <PillOption
                           key={cat.uuid}
                           label={cat.name}
                           checked={Boolean(
@@ -1415,13 +1534,13 @@ function FilterSidebar({
                             toggleArrayItem("categoryUuids", cat.uuid)
                           }
                         />
-                      ))
-                    ) : (
-                      <p className="py-2 text-center text-xs text-gray-400 dark:text-slate-500">
-                        រកមិនឃើញប្រភេទដែលត្រូវគ្នា
-                      </p>
-                    )}
-                  </div>
+                      )}
+                    />
+                  ) : (
+                    <p className="py-2 text-center text-xs text-gray-400 dark:text-slate-500">
+                      រកមិនឃើញប្រភេទដែលត្រូវគ្នា
+                    </p>
+                  )}
                 </FilterSection>
               )}
 
@@ -1433,9 +1552,10 @@ function FilterSidebar({
                 isOpen={openSections.cuisine}
                 onToggle={() => toggleSection("cuisine")}
               >
-                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
-                  {filterOptions.cuisines.map((c) => (
-                    <CheckboxOption
+                <CollapsibleList
+                  items={filterOptions.cuisines}
+                  renderItem={(c) => (
+                    <PillOption
                       key={c.uuid}
                       label={c.name}
                       checked={Boolean(
@@ -1443,8 +1563,8 @@ function FilterSidebar({
                       )}
                       onChange={() => toggleArrayItem("cuisineUuids", c.uuid)}
                     />
-                  ))}
-                </div>
+                  )}
+                />
               </FilterSection>
             )}
 
@@ -1457,9 +1577,10 @@ function FilterSidebar({
                   isOpen={openSections.dietary}
                   onToggle={() => toggleSection("dietary")}
                 >
-                  <div className="space-y-1">
-                    {filterOptions.dietaryTypes.map((d) => (
-                      <CheckboxOption
+                  <CollapsibleList
+                    items={filterOptions.dietaryTypes}
+                    renderItem={(d) => (
+                      <PillOption
                         key={d.uuid}
                         label={d.name}
                         checked={Boolean(
@@ -1471,8 +1592,8 @@ function FilterSidebar({
                           toggleArrayItem("dietaryTypeUuids", d.uuid)
                         }
                       />
-                    ))}
-                  </div>
+                    )}
+                  />
                 </FilterSection>
               )}
 
@@ -1487,9 +1608,10 @@ function FilterSidebar({
                 <p className="mb-2 text-[14px] text-orange-600 dark:text-orange-400">
                   មុខម្ហូបដែលមានធាតុផ្សំអាឡែស៊ីដែលបានជ្រើសរើសនឹងត្រូវដកចេញ។
                 </p>
-                <div className="space-y-1">
-                  {filterOptions.allergens.map((alg) => (
-                    <CheckboxOption
+                <CollapsibleList
+                  items={filterOptions.allergens}
+                  renderItem={(alg) => (
+                    <PillOption
                       key={alg.uuid}
                       label={`គ្មាន ${alg.name}`}
                       checked={Boolean(
@@ -1501,8 +1623,8 @@ function FilterSidebar({
                         toggleArrayItem("excludeAllergenUuids", alg.uuid)
                       }
                     />
-                  ))}
-                </div>
+                  )}
+                />
               </FilterSection>
             )}
 
@@ -1573,11 +1695,10 @@ function FilterSidebar({
                           maximumSpiceLevel: spice.max,
                         })
                       }
-                      className={`p-2 rounded-xl text-[14px] font-semibold border transition text-center ${
-                        isSelected
+                      className={`p-2 rounded-xl text-[14px] font-semibold border transition text-center ${isSelected
                           ? "bg-primary-800 dark:bg-emerald-600 text-white border-primary-800 dark:border-emerald-600"
                           : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       {spice.label}
                     </button>
@@ -1607,16 +1728,15 @@ function FilterSidebar({
                         ...customerSearchRequest,
                         maxPreparationTimeMinutes:
                           customerSearchRequest.maxPreparationTimeMinutes ===
-                          pt.val
+                            pt.val
                             ? undefined
                             : pt.val,
                       })
                     }
-                    className={`flex-1 p-2 rounded-xl text-[14px] font-semibold border transition text-center ${
-                      customerSearchRequest.maxPreparationTimeMinutes === pt.val
+                    className={`flex-1 p-2 rounded-xl text-[14px] font-semibold border transition text-center ${customerSearchRequest.maxPreparationTimeMinutes === pt.val
                         ? "bg-primary-800 dark:bg-emerald-600 text-white border-primary-800 dark:border-emerald-600"
                         : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
-                    }`}
+                      }`}
                   >
                     ⏱️ {pt.label}
                   </button>
@@ -1632,9 +1752,10 @@ function FilterSidebar({
                 isOpen={openSections.mealType}
                 onToggle={() => toggleSection("mealType")}
               >
-                <div className="space-y-1">
-                  {filterOptions.mealTypes.map((m) => (
-                    <CheckboxOption
+                <CollapsibleList
+                  items={filterOptions.mealTypes}
+                  renderItem={(m) => (
+                    <PillOption
                       key={m.uuid}
                       label={m.name}
                       checked={Boolean(
@@ -1642,8 +1763,8 @@ function FilterSidebar({
                       )}
                       onChange={() => toggleArrayItem("mealTypeUuids", m.uuid)}
                     />
-                  ))}
-                </div>
+                  )}
+                />
               </FilterSection>
             )}
 
@@ -1655,8 +1776,9 @@ function FilterSidebar({
                 isOpen={openSections.ageGroup}
                 onToggle={() => toggleSection("ageGroup")}
               >
-                <div className="space-y-1">
-                  {filterOptions.ageGroups.map((a) => {
+                <CollapsibleList
+                  items={filterOptions.ageGroups}
+                  renderItem={(a) => {
                     const isChecked = Boolean(
                       customerSearchRequest.ageGroupUuids?.includes(a.uuid) ||
                       customerSearchRequest.ageGroupUuids?.includes(a.code) ||
@@ -1690,7 +1812,7 @@ function FilterSidebar({
                     );
 
                     return (
-                      <CheckboxOption
+                      <PillOption
                         key={a.uuid}
                         label={formatAgeGroupOptionLabel(a)}
                         checked={isChecked}
@@ -1722,8 +1844,8 @@ function FilterSidebar({
                         }}
                       />
                     );
-                  })}
-                </div>
+                  }}
+                />
               </FilterSection>
             )}
 
@@ -1735,9 +1857,10 @@ function FilterSidebar({
                 isOpen={openSections.season}
                 onToggle={() => toggleSection("season")}
               >
-                <div className="space-y-1">
-                  {filterOptions.seasons.map((s) => (
-                    <CheckboxOption
+                <CollapsibleList
+                  items={filterOptions.seasons}
+                  renderItem={(s) => (
+                    <PillOption
                       key={s.uuid}
                       label={s.name}
                       checked={Boolean(
@@ -1745,8 +1868,8 @@ function FilterSidebar({
                       )}
                       onChange={() => toggleArrayItem("seasonUuids", s.uuid)}
                     />
-                  ))}
-                </div>
+                  )}
+                />
               </FilterSection>
             )}
 
@@ -1758,9 +1881,10 @@ function FilterSidebar({
                 isOpen={openSections.event}
                 onToggle={() => toggleSection("event")}
               >
-                <div className="space-y-1">
-                  {filterOptions.events.map((ev) => (
-                    <CheckboxOption
+                <CollapsibleList
+                  items={filterOptions.events}
+                  renderItem={(ev) => (
+                    <PillOption
                       key={ev.uuid}
                       label={ev.name}
                       checked={Boolean(
@@ -1768,8 +1892,8 @@ function FilterSidebar({
                       )}
                       onChange={() => toggleArrayItem("eventUuids", ev.uuid)}
                     />
-                  ))}
-                </div>
+                  )}
+                />
               </FilterSection>
             )}
 
@@ -1782,9 +1906,10 @@ function FilterSidebar({
                   isOpen={openSections.weather}
                   onToggle={() => toggleSection("weather")}
                 >
-                  <div className="space-y-1">
-                    {filterOptions.suitableWeather.map((w) => (
-                      <CheckboxOption
+                  <CollapsibleList
+                    items={filterOptions.suitableWeather}
+                    renderItem={(w) => (
+                      <PillOption
                         key={w.uuid}
                         label={w.name}
                         checked={Boolean(
@@ -1796,8 +1921,8 @@ function FilterSidebar({
                           toggleArrayItem("weatherConditionUuids", w.uuid)
                         }
                       />
-                    ))}
-                  </div>
+                    )}
+                  />
                 </FilterSection>
               )}
 
@@ -1821,11 +1946,10 @@ function FilterSidebar({
                           onClick={() =>
                             toggleNumberItem("storePriceLevels", level)
                           }
-                          className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition ${
-                            selected
+                          className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition ${selected
                               ? "border-primary-800 bg-primary-800 text-white"
                               : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
-                          }`}
+                            }`}
                         >
                           {"$".repeat(level)}
                         </button>
@@ -1844,9 +1968,10 @@ function FilterSidebar({
                   isOpen={openSections.availability}
                   onToggle={() => toggleSection("availability")}
                 >
-                  <div className="space-y-1">
-                    {filterOptions.availabilityStatuses.map((status) => (
-                      <CheckboxOption
+                  <CollapsibleList
+                    items={filterOptions.availabilityStatuses}
+                    renderItem={(status) => (
+                      <PillOption
                         key={status}
                         label={AVAILABILITY_LABELS[status] ?? status}
                         checked={Boolean(
@@ -1858,8 +1983,8 @@ function FilterSidebar({
                           toggleArrayItem("availabilityStatuses", status)
                         }
                       />
-                    ))}
-                  </div>
+                    )}
+                  />
                 </FilterSection>
               )}
 
@@ -1889,9 +2014,10 @@ function FilterSidebar({
                 isOpen={openSections.province}
                 onToggle={() => toggleSection("province")}
               >
-                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
-                  {filterOptions.provinces.map((prov) => (
-                    <CheckboxOption
+                <CollapsibleList
+                  items={filterOptions.provinces}
+                  renderItem={(prov) => (
+                    <PillOption
                       key={prov}
                       label={prov}
                       checked={Boolean(
@@ -1899,8 +2025,8 @@ function FilterSidebar({
                       )}
                       onChange={() => toggleArrayItem("provinces", prov)}
                     />
-                  ))}
-                </div>
+                  )}
+                />
               </FilterSection>
             )}
 
@@ -1912,9 +2038,10 @@ function FilterSidebar({
                 isOpen={openSections.city}
                 onToggle={() => toggleSection("city")}
               >
-                <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
-                  {filterOptions.cities.map((city) => (
-                    <CheckboxOption
+                <CollapsibleList
+                  items={filterOptions.cities}
+                  renderItem={(city) => (
+                    <PillOption
                       key={city}
                       label={city}
                       checked={Boolean(
@@ -1922,8 +2049,8 @@ function FilterSidebar({
                       )}
                       onChange={() => toggleArrayItem("cities", city)}
                     />
-                  ))}
-                </div>
+                  )}
+                />
               </FilterSection>
             )}
           </div>
@@ -1987,11 +2114,10 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
         <button
           type="button"
           onClick={() => onChange([])}
-          className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
-            allSelected
+          className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${allSelected
               ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
               : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
-          }`}
+            }`}
         >
           ទាំងអស់
         </button>
@@ -2010,11 +2136,10 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
                     : [...selectedCodes, option.code],
                 )
               }
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${
-                isSelected
+              className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${isSelected
                   ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
                   : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
-              }`}
+                }`}
             >
               {option.name}
 
@@ -2051,7 +2176,7 @@ type FoodGridProps = {
 };
 
 function FoodGrid({ foods, isLoading }: FoodGridProps) {
-  if (isLoading) {
+  if (isLoading && foods.length === 0) {
     return (
       <div className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full">
         {Array.from({ length: 9 }).map((_, idx) => (
@@ -2085,7 +2210,7 @@ function FoodGrid({ foods, isLoading }: FoodGridProps) {
           opacity: 1,
           y: 0,
         }}
-        className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-16 text-center"
+        className="flex min-h-[850px] lg:min-h-[900px] flex-col items-center justify-center rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-16 text-center"
       >
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50">
           <IoSearchOutline className="text-[30px] text-primary-700" />
@@ -2105,7 +2230,7 @@ function FoodGrid({ foods, isLoading }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full"
+      className={`grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full min-h-[850px] lg:min-h-[900px] content-start transition-opacity duration-300 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -2182,6 +2307,7 @@ function FoodPageContent() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [customerSearchRequest, setCustomerSearchRequest] =
     useState<CustomerSearchRequest>({
@@ -2256,6 +2382,8 @@ function FoodPageContent() {
         query: searchInput.trim() || undefined,
       },
     });
+    // Reset page to 1 when filters or search change
+    setCurrentPage(1);
   }, [customerSearchRequest, searchInput, executeDiscoverySearch]);
 
   const discoveryItems = useMemo<MenuItemDiscoveryResponse[]>(() => {
@@ -2366,11 +2494,11 @@ function FoodPageContent() {
 
           return cuisine
             ? [
-                {
-                  code: cuisine.code,
-                  name: cuisine.name,
-                },
-              ]
+              {
+                code: cuisine.code,
+                name: cuisine.name,
+              },
+            ]
             : [];
         }),
       ),
@@ -2619,6 +2747,13 @@ function FoodPageContent() {
   const displayFoods =
     apiCatalogFoods.length > 0 ? apiCatalogFoods : filteredFoods;
 
+  const PAGE_SIZE = 9;
+  const totalPages = Math.ceil(displayFoods.length / PAGE_SIZE);
+  const paginatedFoods = displayFoods.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   const activeFilterCount =
     (customerSearchRequest.categoryUuids?.length || 0) +
     (customerSearchRequest.cuisineUuids?.length || 0) +
@@ -2637,11 +2772,11 @@ function FoodPageContent() {
     (customerSearchRequest.minimumStoreRating !== undefined ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
     (customerSearchRequest.minimumPrice !== undefined ||
-    customerSearchRequest.maximumPrice !== undefined
+      customerSearchRequest.maximumPrice !== undefined
       ? 1
       : 0) +
     (customerSearchRequest.minimumSpiceLevel !== undefined ||
-    customerSearchRequest.maximumSpiceLevel !== undefined
+      customerSearchRequest.maximumSpiceLevel !== undefined
       ? 1
       : 0) +
     (customerSearchRequest.maxPreparationTimeMinutes !== undefined ? 1 : 0) +
@@ -2815,7 +2950,7 @@ function FoodPageContent() {
 
           {/* ALL FOODS */}
 
-          <section className="mt-6 min-h-[600px]">
+          <section className="mt-6">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
@@ -2828,7 +2963,39 @@ function FoodPageContent() {
               </p>
             </div>
 
-            <FoodGrid foods={displayFoods} isLoading={(isLoading && menuItems.length === 0) || isDiscoveryLoading} />
+            <FoodGrid foods={paginatedFoods} isLoading={(isLoading && menuItems.length === 0) || isDiscoveryLoading} />
+
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentPage((p) => Math.max(1, p - 1));
+                    window.scrollTo({ top: 400, behavior: "smooth" });
+                  }}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-[14px] font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  <IoChevronBack /> មុន
+                </button>
+                
+                <div className="flex items-center justify-center rounded-full bg-gray-50 px-5 py-2.5 text-[14px] font-medium text-gray-600 dark:bg-slate-800 dark:text-slate-300">
+                  ទំព័រ {currentPage} នៃ {totalPages}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentPage((p) => Math.min(totalPages, p + 1));
+                    window.scrollTo({ top: 400, behavior: "smooth" });
+                  }}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-[14px] font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  បន្ទាប់ <IoChevronBack className="rotate-180" />
+                </button>
+              </div>
+            )}
           </section>
 
           <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
