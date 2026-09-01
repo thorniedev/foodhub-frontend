@@ -174,23 +174,13 @@ function FeaturedStoreBanner({
             className="
               relative
               h-[205px]
-              bg-primary-50
+              bg-white
 
               sm:h-[230px]
               md:h-[270px]
             "
           >
             <StoreImage store={store} />
-
-            <div
-              className="
-                absolute inset-0
-                bg-gradient-to-t
-                from-black/20
-                via-transparent
-                to-transparent
-              "
-            />
           </div>
 
           {/* Banner content */}
