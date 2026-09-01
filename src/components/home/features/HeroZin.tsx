@@ -24,7 +24,13 @@ export default function HeroSection() {
               }}
               className="absolute z-10  w-20 left-10 top-25"
             >
-              <img className="" src="/Image/decorate.png" alt="" />
+              <Image
+                src="/Image/decorate.png"
+                alt="Decorate"
+                width={80}
+                height={80}
+                className="w-full h-auto"
+              />
             </motion.div>
             <motion.div
               aria-hidden
@@ -137,10 +143,12 @@ export default function HeroSection() {
                   data-aos-delay="300"
                   className="w-40 md:w-52 aspect-3/3.5 bg-white/5 lg:backdrop-blur-xs border border-white/40 rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[-12deg] shadow-2xl hover:rotate-0 transition-transform duration-500"
                 >
-                  <div className="w-16 h-16 md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
-                    <img
+                  <div className="relative w-16 h-16 md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
+                    <Image
                       src="/Image/food-picture/food 31.jpg"
-                      alt="Avatar"
+                      alt="Food"
+                      width={96}
+                      height={96}
                       className="w-full h-full object-cover scale-150"
                     />
                   </div>
@@ -171,10 +179,12 @@ export default function HeroSection() {
                   data-aos-delay="450"
                   className="w-40 md:w-52 aspect-3/3.5 bg-white/5 lg:backdrop-blur-xs border border-white/40 rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[12deg] shadow-2xl hover:rotate-0 transition-transform duration-500"
                 >
-                  <div className="w-16 h-16  md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
-                    <img
+                  <div className="relative w-16 h-16 md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
+                    <Image
                       src="/Image/food-picture/food-32.jpg"
-                      alt="Avatar"
+                      alt="Food"
+                      width={96}
+                      height={96}
                       className="w-full h-full object-cover scale-150"
                     />
                   </div>
@@ -232,10 +242,12 @@ export default function HeroSection() {
                 {/* Pill Graphic */}
                 <div className="relative w-full flex justify-center mt-6">
                   <div className="flex items-center bg-primary-600 rounded-full p-2 pr-16 text-white shadow-lg relative z-10">
-                    <div className="w-8 h-8 bg-[#D2B48C] rounded-full mr-3 border border-white/30 overflow-hidden flex-shrink-0">
-                      <img
+                    <div className="relative w-8 h-8 bg-[#D2B48C] rounded-full mr-3 border border-white/30 overflow-hidden flex-shrink-0">
+                      <Image
                         src="https://i.pinimg.com/736x/c7/f9/cd/c7f9cd69787cfb858d686150d097597f.jpg"
                         alt="Avatar"
+                        width={32}
+                        height={32}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -255,7 +267,13 @@ export default function HeroSection() {
 
                 {/* Arrow pointing to next card */}
                 <div className="hidden md:block absolute -right-12 bottom-8 w-16 h-16 z-30">
-                  <img src="/Image/arr.png" alt="" />
+                  <Image
+                    src="/Image/arr.png"
+                    alt="Arrow"
+                    width={64}
+                    height={64}
+                    className="w-full h-auto"
+                  />
                 </div>
               </div>
 
@@ -296,7 +314,13 @@ export default function HeroSection() {
 
                 {/* Arrow pointing to next card */}
                 <div className="hidden md:block absolute -right-12 bottom-8 w-16 h-16 z-30">
-                  <img src="/Image/arr.png" alt="" />
+                  <Image
+                    src="/Image/arr.png"
+                    alt="Arrow"
+                    width={64}
+                    height={64}
+                    className="w-full h-auto"
+                  />
                 </div>
               </div>
 

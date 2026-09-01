@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { IoMdTime } from "react-icons/io";
 import { FaStar, FaStore } from "react-icons/fa";
@@ -239,9 +240,11 @@ export default function SpinWheel({ foods }: SpinWheelProps) {
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
             className="flex items-center gap-3 rounded-[20px] border border-gray-100 bg-white p-3 shadow-md"
           >
-            <img
+            <Image
               src={result.image}
               alt={result.name}
+              width={64}
+              height={64}
               className="h-16 w-16 shrink-0 rounded-[12px] object-cover"
             />
             <div className="flex min-w-0 flex-col gap-1">

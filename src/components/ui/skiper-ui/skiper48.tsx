@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import React from "react";
@@ -135,11 +136,13 @@ const Carousel_002 = ({
         modules={[EffectCards, Autoplay, Pagination, Navigation]}
       >
         {images.map((image, index) => (
-          <SwiperSlide key={index} className="rounded-3xl">
-            <img
+          <SwiperSlide key={index} className="relative rounded-3xl overflow-hidden">
+            <Image
               className="h-full w-full object-cover"
               src={image.src}
               alt={image.alt}
+              fill
+              sizes="260px"
             />
           </SwiperSlide>
         ))}

@@ -842,7 +842,7 @@ export default function FoodCard({ food }: FoodCardProps) {
             alt={displayName}
             width={485}
             height={370}
-            unoptimized={true}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             draggable={false}
             onError={() => {
               if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {

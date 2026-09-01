@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -72,7 +73,13 @@ export default function LocationSection() {
             ease: "easeInOut",
           }}
         >
-          <img src="/Image/location-vector.png" alt="Location" />
+          <Image
+            src="/Image/location-vector.png"
+            alt="Location"
+            width={280}
+            height={280}
+            className="w-full h-auto"
+          />
         </motion.div>
       </div>
 
@@ -91,10 +98,12 @@ export default function LocationSection() {
           className=" -mb-50  self-end pointer-events-auto"
         >
           <div className="w-40 md:w-52  ab aspect-3/3.5 bg-white lg:backdrop-blur-xs  rounded-[2rem] p-5 flex flex-col items-center justify-center rotate-[12deg] shadow-md border border-gray-100 hover:rotate-0 transition-transform duration-500 max-sm:w-55 max-sm:-mt-10">
-            <div className="w-16 h-16  md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
-              <img
+            <div className="relative w-16 h-16 md:w-24 md:h-24 bg-[#2C3E50] rounded-full flex items-center justify-center mb-4 shadow-inner border-[3px] border-white/50 overflow-hidden">
+              <Image
                 src="/Image/icon map.png"
                 alt="Avatar"
+                width={96}
+                height={96}
                 className="w-full h-full object-cover scale-150"
               />
             </div>

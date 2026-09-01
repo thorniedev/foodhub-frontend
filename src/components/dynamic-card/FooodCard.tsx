@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 import Link from "next/link";
 
@@ -285,29 +286,28 @@ export default function FooodCard({
           className="block"
           aria-label={`View ${displayName}`}
         >
-          <img
+          <Image
             src={thumbnailUrl}
             alt={displayName}
             width={485}
             height={370}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             draggable={false}
-            onError={(event) => {
-              const currentSrc = event.currentTarget.src;
-
-              if (currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
-                return;
+            onError={() => {
+              if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {
+                setThumbnailUrl(DEFAULT_FOOD_IMAGE);
               }
-
-              setThumbnailUrl(DEFAULT_FOOD_IMAGE);
             }}
             className="
-              h-[190px]
+              h-[160px]
+              sm:h-[180px]
               w-full
               rounded-[14px]
+              border
+              border-gray-100
+              dark:border-gray-800
               object-cover
-              transition-transform
-              duration-300
-              hover:scale-[1.02]
+              pointer-events-none
             "
           />
         </Link>

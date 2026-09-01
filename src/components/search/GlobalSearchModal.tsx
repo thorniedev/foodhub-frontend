@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, X, Store as StoreIcon, Utensils, Star, DollarSign, ArrowRight, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -145,8 +146,19 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     const storesList = Array.isArray(catalogStoresData)
       ? catalogStoresData
       : (catalogStoresData as any)?.contents || [];
+
+    const storeUuidsWithItems = new Set<string>();
+    catalogMenuItems.forEach((item) => {
+      if (item?.store?.uuid) storeUuidsWithItems.add(item.store.uuid);
+      if ((item as any)?.storeUuid) storeUuidsWithItems.add((item as any).storeUuid);
+    });
+
     return storesList
       .filter((store: any) => {
+        const storeUuid = store.uuid || store.id;
+        if (catalogMenuItems.length > 0 && storeUuid && !storeUuidsWithItems.has(storeUuid)) {
+          return false;
+        }
         const name = (store.storeName || store.name || "").toLowerCase();
         const city = (store.city || "").toLowerCase();
         return name.includes(q) || city.includes(q);
@@ -158,7 +170,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
         averageRating: store.averageRating,
         logoUrl: store.logoMediaUuid ? toFrontendApiAssetUrl(store.logoMediaUuid) : undefined,
       }));
-  }, [debouncedQuery, catalogStoresData]);
+  }, [debouncedQuery, catalogStoresData, catalogMenuItems]);
 
   if (!isOpen) return null;
 
@@ -329,14 +341,15 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                       onClick={() => handleSelectStore(store)}
                       className="group flex items-center gap-3 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 hover:border-emerald-200 dark:hover:border-emerald-800 transition cursor-pointer"
                     >
-                      <img
-                        src={store.logoUrl || store.bannerUrl || "/Image/foodHub-logo.png"}
-                        alt={store.storeName || store.name || "Store"}
-                        className="h-12 w-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/Image/foodHub-logo.png";
-                        }}
-                      />
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                        <Image
+                          src={store.logoUrl || store.bannerUrl || "/Image/foodHub-logo.png"}
+                          alt={store.storeName || store.name || "Store"}
+                          width={48}
+                          height={48}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="font-semibold text-sm text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
                           {store.storeName || store.name}
@@ -375,14 +388,15 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                       className="group flex items-center justify-between p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 hover:border-emerald-200 dark:hover:border-emerald-800 transition cursor-pointer"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <img
-                          src={item.imageUrl || "/Image/foodHub-logo.png"}
-                          alt={item.name}
-                          className="h-12 w-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/Image/foodHub-logo.png";
-                          }}
-                        />
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                          <Image
+                            src={item.imageUrl || "/Image/foodHub-logo.png"}
+                            alt={item.name}
+                            width={48}
+                            height={48}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
                         <div className="min-w-0">
                           <h4 className="font-semibold text-sm text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
                             {item.name}

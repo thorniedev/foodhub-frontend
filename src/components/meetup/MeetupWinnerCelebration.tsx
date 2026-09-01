@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import confetti from "canvas-confetti";
 import { MeetupWinningCardResponse } from "@/types/meetup-api";
 import {
@@ -164,9 +165,11 @@ export default function MeetupWinnerCelebration({
           {/* Food Picture & Name */}
           <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
-              <img
+              <Image
                 src={winningCard.foodPhotoUrl || "/Image/food01.png"}
                 alt={foodName}
+                width={64}
+                height={64}
                 className="h-full w-full object-cover"
               />
             </div>

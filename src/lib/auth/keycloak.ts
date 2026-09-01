@@ -292,12 +292,65 @@ export function safeReturnTo(
   return value;
 }
 
+/**
+ * Auth cookies must be visible on whichever host the browser is actually on
+ * ("mhoubahar.store" or "www.mhoubahar.store") — without an explicit Domain
+ * attribute a cookie is scoped to the exact host that set it, so a login
+ * started on "www." sets foodhub_oauth_state there, but the OAuth
+ * redirect_uri built from APP_URL always points at the bare apex domain.
+ * Keycloak's redirect back then lands on a host that never saw the cookie,
+ * and the callback's state-match check fails ("invalid_state" / "Session
+ * expired"). Scoping to the leading-dot apex domain makes the cookie
+ * visible on both. Skipped outside production since localhost has no
+ * meaningful apex/subdomain split.
+ */
+function getCookieDomain(): string | undefined {
+  if (process.env.NODE_ENV !== "production") {
+    return undefined;
+  }
+
+  try {
+    const hostname = new URL(getAuthConfig().appUrl).hostname;
+    const apexDomain = hostname.replace(/^www\./i, "");
+    return `.${apexDomain}`;
+  } catch {
+    return undefined;
+  }
+}
+
 export function getAuthCookieOptions() {
+  const domain = getCookieDomain();
+
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
+    ...(domain ? { domain } : {}),
+  };
+}
+
+/**
+ * PKCE login cookies (state, codeVerifier, returnTo) are set during the
+ * /api/auth/login redirect and must survive the round-trip through
+ * auth.mhoubahar.store → mhoubahar.store. On production, Keycloak performs a
+ * top-level GET redirect (HTTP 302), so SameSite=lax is fine. However, we
+ * must NOT set the domain to the apex (.mhoubahar.store) because that would
+ * expose the cookies to all subdomains. We set no domain so they are scoped
+ * to the exact host (mhoubahar.store) which is exactly where the callback
+ * lands.
+ */
+export function getLoginCookieOptions() {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    // lax is fine: Keycloak sends a top-level GET redirect back.
+    sameSite: "lax" as const,
+    path: "/",
+    // Do NOT scope to apex domain - the callback is always on the same host
+    // that started the login flow, so no domain attribute needed.
   };
 }
 
@@ -328,7 +381,10 @@ export function setAuthCookies(
 }
 
 export function clearLoginCookies(response: NextResponse) {
-  const options = getAuthCookieOptions();
+  // Must use getLoginCookieOptions (no domain) to match the original cookie
+  // attributes. A cookie can only be cleared by a Set-Cookie header with
+  // matching Path + Domain attributes.
+  const options = getLoginCookieOptions();
 
   for (const name of [
     AUTH_COOKIES.oauthState,

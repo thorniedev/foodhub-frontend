@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 type MediaImageProps = {
   thumbnail: string | null | undefined;
@@ -8,32 +9,21 @@ type MediaImageProps = {
   className?: string;
 };
 
-type MediaAccessResponse = {
-  uuid: string;
-  url: string;
-  expiresAt: string;
-};
-
 function getMediaUuid(thumbnail: string | null | undefined): string | null {
   if (!thumbnail) {
     return null;
   }
 
-  // Example:
-  // /api/v1/media/b7ccff1e-90ee-49ea-b713-dbd8151be3e4
-
   const match = thumbnail.match(/\/media\/([0-9a-fA-F-]{36})/);
-
   return match?.[1] ?? null;
 }
 
 export default function MediaImage({
   thumbnail,
   alt,
-  className = "",
+  className = "h-full w-full object-cover",
 }: MediaImageProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
@@ -44,11 +34,6 @@ export default function MediaImage({
       return;
     }
 
-    /*
-     * If backend someday returns a real URL
-     * instead of /api/v1/media/{uuid},
-     * render it directly.
-     */
     if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
       setImageUrl(thumbnail);
       return;
@@ -61,25 +46,20 @@ export default function MediaImage({
       return;
     }
 
-    // Direct streaming endpoint /api/media/{uuid}/file avoids MinIO internal presigned URL issues
     setImageUrl(`/api/media/${mediaUuid}/file`);
   }, [thumbnail]);
 
-  if (!thumbnail || !imageUrl || hasError) {
-    return (
-      <img
-        src="/Image/default-food.png"
-        alt={alt}
-        draggable={false}
-        className={className}
-      />
-    );
-  }
+  const finalSrc =
+    !thumbnail || !imageUrl || hasError
+      ? "/Image/default-food.png"
+      : imageUrl;
 
   return (
-    <img
-      src={imageUrl}
+    <Image
+      src={finalSrc}
       alt={alt}
+      fill
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
       draggable={false}
       onError={() => {
         setHasError(true);

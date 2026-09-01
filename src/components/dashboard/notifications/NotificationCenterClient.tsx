@@ -17,7 +17,6 @@ import NotificationGroup from "@/components/dashboard/notifications/Notification
 import NotificationsEmptyState from "@/components/dashboard/notifications/NotificationsEmptyState";
 import NotificationsHeader from "@/components/dashboard/notifications/NotificationsHeader";
 import NotificationSummaryCards from "@/components/dashboard/notifications/NotificationSummaryCards";
-import PushNotificationManager from "@/components/dashboard/notifications/PushNotificationManager";
 import {
   createFilterTabs,
   createSummaryCards,
@@ -248,8 +247,6 @@ export default function NotificationCenterClient() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
-      <PushNotificationManager />
-
       {!isOnline && (
         <p className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
           You are offline. FoodHub will refresh notifications when the network
