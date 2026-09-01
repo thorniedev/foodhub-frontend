@@ -1,6 +1,9 @@
 
 "use client";
 
+import { useState } from "react";
+import FluidTabs from "../../../../../../components/animata/tabs/fluid-tabs";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -197,7 +200,14 @@ function EmptySafetyState({ message }: { message: string }) {
   );
 }
 
+const PROFILE_TABS = [
+  { id: "personal", label: "ព័ត៌មានផ្ទាល់ខ្លួន" },
+  { id: "preferences", label: "ចំណូលចិត្តអាហារ" },
+  { id: "safety", label: "សុវត្ថិភាពអាហារ" },
+];
+
 export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
   const {
     data: profile,
     isLoading,
@@ -485,7 +495,6 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
                       getSpiceDescriptor(spiceLevel).colorClass
                     }`}
                   >
-                    {getSpiceDescriptor(spiceLevel).emoji}{" "}
                     {getSpiceDescriptor(spiceLevel).labelKm} ({spiceLevel}/10)
                   </span>
                 </div>
@@ -548,7 +557,6 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
                               key={code}
                               className="inline-flex items-center gap-1 rounded-xl bg-primary-50 px-2.5 py-1 text-xs font-bold text-primary-800"
                             >
-                              <span>{meta?.emoji ?? "✨"}</span>
                               <span>{meta?.labelKm ?? code}</span>
                             </span>
                           );
@@ -572,7 +580,6 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
                               key={code}
                               className="inline-flex items-center gap-1 rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700"
                             >
-                              <span>{meta?.emoji ?? "✨"}</span>
                               <span>{meta?.labelKm ?? code}</span>
                             </span>
                           );
@@ -619,7 +626,6 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
                         className="flex items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 px-3.5 py-2.5"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">{meta?.flag ?? "🍽️"}</span>
                           <span className="font-bold text-slate-800 text-sm">
                             {meta?.labelKm ?? c.cuisineCode}
                           </span>
