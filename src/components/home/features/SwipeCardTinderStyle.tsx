@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -399,20 +400,16 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
       className="flex h-full w-full flex-col gap-3 rounded-[24px] border border-gray-200 bg-white p-2.5 shadow-sm"
     >
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-[14px]">
-        <img
+        <Image
           src={thumbnailUrl}
           alt={displayName}
           draggable={false}
-          width={590}
-          height={500}
-          onError={(event) => {
-            const currentSrc = event.currentTarget.src;
-
-            if (currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
-              return;
+          fill
+          sizes="(max-width: 640px) 100vw, 400px"
+          onError={() => {
+            if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {
+              setThumbnailUrl(DEFAULT_FOOD_IMAGE);
             }
-
-            setThumbnailUrl(DEFAULT_FOOD_IMAGE);
           }}
           className="pointer-events-none h-full w-full object-cover"
         />

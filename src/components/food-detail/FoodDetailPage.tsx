@@ -1408,6 +1408,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -1594,9 +1595,11 @@ function ApiImage({ src, alt, className }: ApiImageProps) {
   }, [normalizedSrc]);
 
   return (
-    <img
+    <Image
       src={currentSrc}
       alt={alt}
+      fill
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
       draggable={false}
       onError={() => {
         if (currentSrc !== DEFAULT_FOOD_IMAGE) {
@@ -2311,7 +2314,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
           >
             <div className="grid gap-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
               {/* Logo */}
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-primary-50">
+              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-primary-50">
                 {food.store.logoUrl ? (
                   <ApiImage
                     src={food.store.logoUrl}

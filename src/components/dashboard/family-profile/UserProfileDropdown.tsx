@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ChevronDown, Plus, Check } from "lucide-react";
 import type { FamilyMember } from "@/types/family-profile";
 
@@ -36,9 +37,11 @@ export default function UserProfileDropdown({
         transition
         "
       >
-        <img
+        <Image
           src={activeMember?.avatarUrl || "/Image/default-avatar.png"}
           alt={activeMember?.name || "User"}
+          width={40}
+          height={40}
           className="
           h-10 w-10
           rounded-full
@@ -114,9 +117,11 @@ export default function UserProfileDropdown({
                 "
               >
                 <div className="flex items-center gap-3">
-                  <img
+                  <Image
                     src={member.avatarUrl || "/Image/default-avatar.png"}
                     alt={member.name}
+                    width={36}
+                    height={36}
                     className="
   h-9 w-9
   rounded-full

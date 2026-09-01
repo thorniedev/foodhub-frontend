@@ -9,7 +9,7 @@ import {
   createCodeVerifier,
   createOAuthState,
   getAuthConfig,
-  getAuthCookieOptions,
+  getLoginCookieOptions,
   getKeycloakEndpoints,
   safeReturnTo,
 } from "@/lib/auth/keycloak";
@@ -96,7 +96,10 @@ export async function GET(
     }
 
     const response = NextResponse.redirect(authorizationUrl);
-    const cookieOptions = getAuthCookieOptions();
+    // Use login-specific cookie options: no domain scoping, so the cookie
+    // is tied to the exact host (mhoubahar.store). Keycloak redirects back
+    // to the same host via a top-level GET, so SameSite=lax works correctly.
+    const cookieOptions = getLoginCookieOptions();
 
     response.cookies.set(AUTH_COOKIES.oauthState, state, {
       ...cookieOptions,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -42,8 +43,7 @@ export function ProfileAvatar({
       style={{ width: size, height: size }}
     >
       {data?.url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={data.url} alt={name} className="h-full w-full object-cover" />
+        <Image src={data.url} alt={name} fill sizes="40px" className="h-full w-full object-cover" />
       ) : (
         <span
           className="font-bold"

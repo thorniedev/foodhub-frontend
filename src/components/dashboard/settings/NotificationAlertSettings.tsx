@@ -24,6 +24,19 @@ const POPUP_ALERT_TYPE_CODES = new Set([
   "GROUP_MEETUP_INVITE",
 ]);
 
+/**
+ * Leftover dev/API-testing notification types (e.g. timestamp-suffixed
+ * "TEST_PUSH_1787..." rows created while testing push delivery) that
+ * shouldn't be presented to end users as real preference options. Hides
+ * them here rather than deleting the underlying NotificationType rows,
+ * since that's a data cleanup the team owns, not a UI concern.
+ */
+const HIDDEN_TEST_TYPE_CODES = new Set(["NOTIFICATION"]);
+
+function isTestArtifactType(code: string): boolean {
+  return HIDDEN_TEST_TYPE_CODES.has(code) || code.startsWith("TEST_PUSH_");
+}
+
 function Toggle({
   checked,
   disabled,
@@ -74,7 +87,12 @@ export default function NotificationAlertSettings() {
     );
 
     return (types ?? [])
-      .filter((type) => type.isActive && type.isConfigurable)
+      .filter(
+        (type) =>
+          type.isActive &&
+          type.isConfigurable &&
+          !isTestArtifactType(type.code),
+      )
       .map((type) => {
         const existing = preferenceByTypeId.get(type.id);
         // No saved row yet means "never touched" — the backend's own

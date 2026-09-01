@@ -1891,7 +1891,7 @@ function HeroBannerCardImage({
       alt={alt}
       width={96}
       height={96}
-      unoptimized={true}
+      sizes="96px"
       className="h-full w-full object-cover"
       onError={() => {
         if (imgSrc !== fallbackSrc) {
@@ -3242,9 +3242,11 @@ max-sm:hidden
                     bg-[#D2B48C]
                   "
                       >
-                        <img
+                        <Image
                           src="https://i.pinimg.com/736x/c7/f9/cd/c7f9cd69787cfb858d686150d097597f.jpg"
                           alt="Avatar"
+                          width={32}
+                          height={32}
                           className="h-full w-full object-cover"
                         />
                       </div>

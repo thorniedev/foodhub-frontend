@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import {
   motion,
   useMotionValue,
@@ -130,11 +131,15 @@ export default function FlavorIndexSection() {
 
                   <span className="relative flex items-center gap-5">
                     {/* mobile thumbnail */}
-                    <img
-                      src={d.img}
-                      alt=""
-                      className="h-16 w-16 shrink-0 rounded-2xl object-cover md:hidden"
-                    />
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl md:hidden">
+                      <Image
+                        src={d.img}
+                        alt={d.name}
+                        width={64}
+                        height={64}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                     <span className="text-2xl font-bold text-primary-950 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-3 md:text-4xl lg:text-5xl">
                       {d.name}
                     </span>
@@ -183,9 +188,11 @@ export default function FlavorIndexSection() {
                       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                       className="relative h-64 w-52 overflow-hidden rounded-[26px] shadow-2xl shadow-primary-950/25 ring-1 ring-primary-950/10"
                     >
-                      <img
+                      <Image
                         src={DISHES[hovered].img}
-                        alt=""
+                        alt={DISHES[hovered].name}
+                        fill
+                        sizes="208px"
                         className="h-full w-full object-cover"
                       />
                       <span className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary-950/85 px-4 py-1.5 text-lg font-semibold text-accent-300 backdrop-blur-sm">

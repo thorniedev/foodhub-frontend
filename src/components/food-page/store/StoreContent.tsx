@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IoFilterOutline, IoRefreshOutline } from "react-icons/io5";
 
 import { useGetStoresQuery } from "@/app/store/locationApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { usePublicSearchQuery } from "@/app/store/searchApi";
 
 import { useUserLocation } from "@/hooks/useUserLocation";
@@ -40,6 +41,7 @@ type StoreContentProps = {
 };
 
 export default function StoreContent({
+  menuItems,
   searchQuery = "",
   onClearSearch,
 }: StoreContentProps) {
@@ -61,12 +63,32 @@ export default function StoreContent({
     refetch,
   } = useGetStoresQuery();
 
+  const { data: catalogMenuItems = [] } = useGetMenuItemsQuery();
+  const effectiveMenuItems =
+    menuItems && menuItems.length > 0 ? menuItems : catalogMenuItems;
+
+  const validStoreUuidsWithItems = useMemo(() => {
+    const set = new Set<string>();
+    effectiveMenuItems.forEach((item) => {
+      if (item?.store?.uuid) set.add(item.store.uuid);
+      if ((item as any)?.storeUuid) set.add((item as any).storeUuid);
+    });
+    return set;
+  }, [effectiveMenuItems]);
+
   const { data: searchResults } = usePublicSearchQuery(
     { q: deferredSearchQuery },
     { skip: !deferredSearchQuery.trim() },
   );
 
-  const storeData = stores as FoodStore[];
+  // Strict rule: Only show stores that have at least 1 menu item
+  const storeData = useMemo(() => {
+    const rawStores = stores as FoodStore[];
+    if (effectiveMenuItems.length === 0) {
+      return rawStores;
+    }
+    return rawStores.filter((store) => validStoreUuidsWithItems.has(store.uuid));
+  }, [stores, effectiveMenuItems, validStoreUuidsWithItems]);
 
   const cityOptions = useMemo(
     () => getStoreFilterOptions(storeData, (store) => store.city),

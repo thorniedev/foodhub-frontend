@@ -425,7 +425,7 @@ export default function DashboardUserProfile({
               className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-base font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-[#136C34] dark:text-slate-200 dark:hover:bg-emerald-950/40"
             >
               <LuLayoutDashboard className="h-5 w-5" />
-              <span className="flex-1">ផ្ទាំងគ្រប់គ្រង (Dashboard)</span>
+              <span className="flex-1">ផ្ទាំងគ្រប់គ្រង</span>
             </Link>
             <Link
               href="/dashboard/settings"

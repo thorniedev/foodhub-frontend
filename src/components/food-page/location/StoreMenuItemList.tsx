@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Clock, MapPin, ShieldCheck, Star, Utensils, Navigation } from "lucide-react";
 import Link from "next/link";
 import type { StoreMenuItemCard } from "@/lib/location/store-menu-item-cards";
@@ -67,11 +68,11 @@ export default function StoreMenuItemList({
             {/* Thumbnail */}
             <div className="relative flex h-24 w-full sm:h-24 sm:w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gray-100 dark:bg-slate-800">
               {card.thumbnail ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={card.thumbnail}
                   alt={card.name}
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 96px"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (

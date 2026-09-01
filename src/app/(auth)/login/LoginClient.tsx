@@ -4,11 +4,7 @@ import React, { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AuthLayout from "@/components/auth/AuthLayout";
-import {
-  AlertCircleIcon,
-  GoogleIcon,
-  GitHubIcon,
-} from "@/components/auth/icons";
+import { AlertCircleIcon, GoogleIcon } from "@/components/auth/icons";
 import { safeReturnTo } from "@/lib/auth/keycloak";
 
 function formatErrorMessage(error: string | null, description: string | null): string {
@@ -44,7 +40,7 @@ export default function LoginClient() {
   return (
     <AuthLayout>
       <div className="kc-login-header-group">
-        <h1 className="kc-title">ចូលទៅកាន់គណនី FoodHub</h1>
+        <h1 className="kc-title">ចូលទៅកាន់គណនី ម្ហូបអាហារ</h1>
         <p className="kc-subtitle">
           រីករាយដែលជួបអ្នកម្ដងទៀត។ តោះយើងរកអ្វីដែលឆ្ងាញ់ៗញាំ
         </p>
@@ -81,14 +77,6 @@ export default function LoginClient() {
             >
               <GoogleIcon />
               <span>Google</span>
-            </a>
-            <a
-              href="/api/auth/login?kc_idp_hint=github"
-              className="kc-pill-social-btn"
-              id="social-github"
-            >
-              <GitHubIcon />
-              <span>GitHub</span>
             </a>
           </div>
 
