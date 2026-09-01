@@ -2639,14 +2639,12 @@ function FoodPageContent() {
           description:
             item.description || matchingCatalogItem?.description || null,
           localDescription: matchingCatalogItem?.localDescription || null,
-          thumbnail: thumbnail,
+          thumbnail: thumbnail || undefined,
           gallery: matchingCatalogItem?.gallery?.length
             ? matchingCatalogItem.gallery
-            : item.imageUrl
-              ? [item.imageUrl]
-              : thumbnail
-                ? [thumbnail]
-                : [],
+            : thumbnail
+              ? [thumbnail]
+              : [],
           price: item.price ?? matchingCatalogItem?.price ?? 0,
           currencyCode:
             item.currencyCode || matchingCatalogItem?.currencyCode || "USD",
