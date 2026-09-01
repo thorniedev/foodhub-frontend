@@ -65,6 +65,34 @@ export interface GetNotificationsParams {
   typeCode?: string;
 }
 
+export interface NotificationTypeSummary {
+  id: number;
+  code: string;
+  name: string;
+  audience: string | null;
+  defaultPriority: NotificationPriority | null;
+  isConfigurable: boolean;
+  isActive: boolean;
+}
+
+export interface NotificationPreferenceRecord {
+  notificationTypeId: number;
+  typeCode: string;
+  typeName: string;
+  channelType: string;
+  isEnabled: boolean;
+  quietStartTime: string | null;
+  quietEndTime: string | null;
+  timezone: string | null;
+}
+
+export interface UpdateNotificationPreferenceRequest {
+  isEnabled: boolean;
+  quietStartTime?: string | null;
+  quietEndTime?: string | null;
+  timezone?: string | null;
+}
+
 export interface WebPushSubscriptionRecord {
   uuid: string;
   browserName: string | null;

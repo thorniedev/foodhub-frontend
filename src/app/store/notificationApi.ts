@@ -10,8 +10,11 @@ import type {
   GetNotificationsParams,
   NotificationFeedMeta,
   NotificationFeedResponse,
+  NotificationPreferenceRecord,
+  NotificationTypeSummary,
   ProximityNotificationResult,
   ProximityPingRequest,
+  UpdateNotificationPreferenceRequest,
   WebPushSubscriptionRecord,
 } from "@/types/notifications";
 
@@ -313,6 +316,55 @@ export const notificationApi = baseApi.injectEndpoints({
         { type: "ProximityNotification", id: "LAST_RESULT" },
       ],
     }),
+
+    // =========================================================
+    // NOTIFICATION TYPES + PER-TYPE ALERT PREFERENCES
+    // GET /notifications/types (static reference data, no tag)
+    // GET/PUT /notifications/preferences (the user's own overrides)
+    // =========================================================
+    getNotificationTypes: builder.query<NotificationTypeSummary[], void>({
+      query: () => ({
+        url: "/notification-types",
+        method: "GET",
+        params: { page: 0, size: 100 },
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<NotificationTypeSummary>(response),
+    }),
+
+    getNotificationPreferences: builder.query<
+      NotificationPreferenceRecord[],
+      void
+    >({
+      query: () => ({
+        url: "/notification-preferences",
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeArrayPayload<NotificationPreferenceRecord>(response),
+      providesTags: [{ type: "NotificationPreference", id: "LIST" }],
+    }),
+
+    updateNotificationPreference: builder.mutation<
+      NotificationPreferenceRecord,
+      {
+        notificationTypeId: number;
+        channelType: string;
+        body: UpdateNotificationPreferenceRequest;
+      }
+    >({
+      query: ({ notificationTypeId, channelType, body }) => ({
+        url: `/notification-preferences/${notificationTypeId}/${channelType}`,
+        method: "PUT",
+        body,
+      }),
+      transformResponse: (response: unknown) =>
+        normalizePayload<NotificationPreferenceRecord>(
+          response,
+          {} as NotificationPreferenceRecord,
+        ),
+      invalidatesTags: [{ type: "NotificationPreference", id: "LIST" }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -330,4 +382,7 @@ export const {
   useMarkAllNotificationsReadMutation,
   useDismissNotificationMutation,
   useSendProximityPingMutation,
+  useGetNotificationTypesQuery,
+  useGetNotificationPreferencesQuery,
+  useUpdateNotificationPreferenceMutation,
 } = notificationApi;

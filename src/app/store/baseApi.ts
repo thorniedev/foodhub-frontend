@@ -121,6 +121,7 @@ export const baseApi = createApi({
     "Bookmark",
     "InteractionHistory",
     "Notification",
+    "NotificationPreference",
     "PushSubscription",
     "ProximityNotification",
     "Banner"

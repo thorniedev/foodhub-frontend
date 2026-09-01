@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { UtensilsCrossed } from "lucide-react";
+import { MapPin, UtensilsCrossed } from "lucide-react";
 
 import {
   useDismissNotificationMutation,
+  useGetNotificationPreferencesQuery,
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from "@/app/store/notificationApi";
@@ -23,14 +24,29 @@ import {
 
 import type { FoodHubNotification } from "@/types/notifications";
 
-const MEAL_REMINDER_TYPE_CODE = "MEAL_REMINDER";
 const POLL_INTERVAL_MS = 60_000;
+const IN_APP_CHANNEL = "IN_APP";
 
 /**
- * Only meal reminders that carry an actual item pick (menuItemId set by the
- * backend once a safety-checked candidate was found for the user's default
- * profile) get the popup. A generic "it's mealtime" reminder with no item
- * still lands in the normal notification list, unchanged.
+ * Notification types time-sensitive enough to proactively pop this alert
+ * instead of sitting passively in the bell/list — the recommended item or
+ * nearby store may be gone by the time the user happens to open the bell.
+ * Kept in sync with POPUP_ALERT_TYPE_CODES in NotificationAlertSettings.
+ */
+const ALERT_TYPE_CODES = new Set([
+  "MEAL_REMINDER",
+  "NEARBY_STORE_RECOMMENDATION",
+]);
+
+function getAlertIcon(typeCode: string | null) {
+  return typeCode === "NEARBY_STORE_RECOMMENDATION" ? MapPin : UtensilsCrossed;
+}
+
+/**
+ * Only notifications that carry an actual item pick (menuItemId set by the
+ * backend once a safety-checked candidate was found) get the popup. A
+ * generic reminder with no item still lands in the normal notification
+ * list, unchanged.
  */
 function hasItemPick(notification: FoodHubNotification): boolean {
   return (
@@ -40,18 +56,33 @@ function hasItemPick(notification: FoodHubNotification): boolean {
   );
 }
 
-export default function MealTopPickAlert() {
+export default function NotificationAlertPopup() {
   const router = useRouter();
   const seenUuidsRef = useRef<Set<string>>(new Set());
   const [openUuid, setOpenUuid] = useState<string | null>(null);
 
   const { data } = useGetNotificationsQuery(
-    { isRead: false, typeCode: MEAL_REMINDER_TYPE_CODE, size: 5 },
+    { isRead: false, size: 10 },
     { pollingInterval: POLL_INTERVAL_MS, skipPollingIfUnfocused: true },
   );
 
+  const { data: preferences } = useGetNotificationPreferencesQuery();
+
   const [markNotificationRead] = useMarkNotificationReadMutation();
   const [dismissNotification] = useDismissNotificationMutation();
+
+  // A user who disabled a type's IN_APP preference (see /dashboard/settings)
+  // should never have it pop, even if it's on the alert-worthy list above.
+  const disabledTypeCodes = useMemo(() => {
+    return new Set(
+      (preferences ?? [])
+        .filter(
+          (preference) =>
+            preference.channelType === IN_APP_CHANNEL && !preference.isEnabled,
+        )
+        .map((preference) => preference.typeCode),
+    );
+  }, [preferences]);
 
   useEffect(() => {
     if (openUuid) {
@@ -60,6 +91,9 @@ export default function MealTopPickAlert() {
 
     const candidate = data?.data.find(
       (notification) =>
+        notification.typeCode != null &&
+        ALERT_TYPE_CODES.has(notification.typeCode) &&
+        !disabledTypeCodes.has(notification.typeCode) &&
         hasItemPick(notification) &&
         !seenUuidsRef.current.has(notification.uuid),
     );
@@ -67,7 +101,7 @@ export default function MealTopPickAlert() {
     if (candidate) {
       setOpenUuid(candidate.uuid);
     }
-  }, [data, openUuid]);
+  }, [data, disabledTypeCodes, openUuid]);
 
   const activeNotification = data?.data.find(
     (notification) => notification.uuid === openUuid,
@@ -96,6 +130,8 @@ export default function MealTopPickAlert() {
     }
   };
 
+  const AlertIcon = getAlertIcon(activeNotification?.typeCode ?? null);
+
   return (
     <Dialog
       open={Boolean(activeNotification)}
@@ -109,8 +145,8 @@ export default function MealTopPickAlert() {
             <div className="grid grid-cols-[1fr_96px] items-center gap-4 sm:grid-cols-[1fr_128px]">
               <DialogHeader className="min-w-0">
                 <span className="flex w-fit items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-600">
-                  <UtensilsCrossed className="h-3.5 w-3.5" />
-                  {activeNotification.typeName || "អាហារ"}
+                  <AlertIcon className="h-3.5 w-3.5" />
+                  {activeNotification.typeName || "ការជូនដំណឹង"}
                 </span>
                 <DialogTitle className="mt-1">
                   {activeNotification.title}
@@ -145,7 +181,7 @@ export default function MealTopPickAlert() {
                 onClick={handleView}
                 className="rounded-full bg-primary-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
               >
-                មើលមុខម្ហូបនេះ
+                មើលលម្អិត
               </button>
             </DialogFooter>
           </>

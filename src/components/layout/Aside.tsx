@@ -172,16 +172,22 @@ export default function Aside() {
           ==================================================== */}
           <div className="mt-6 shrink-0 border-t border-slate-100 pt-3">
             {/* Settings */}
-            <button
-              type="button"
-              className="flex min-h-[48px] w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+            <Link
+              href="/dashboard/settings"
+              onClick={close}
+              className={cn(
+                "flex min-h-[48px] w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium transition-colors",
+                pathname.startsWith("/dashboard/settings")
+                  ? "bg-primary-700 text-white"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+              )}
             >
               <span className="flex h-6 w-6 items-center justify-center">
                 <IoSettingsOutline className="text-xl" />
               </span>
 
               <span>ការកំណត់</span>
-            </button>
+            </Link>
 
             {/* Logout */}
             {/* <LogoutButton /> */}
