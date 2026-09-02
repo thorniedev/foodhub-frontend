@@ -34,13 +34,13 @@ const NAV_LINKS = [
   },
   {
     href: "/menu",
-    label: "ម្ហូបអាហារ",
+    label: "ម្ហូប",
     mobileLabel: "ម្ហូប",
     icon: UtensilsCrossed,
   },
   {
     href: "/store",
-    label: "ហាងអាហារ",
+    label: "ហាង",
     mobileLabel: "ហាង",
     icon: Store,
   },
