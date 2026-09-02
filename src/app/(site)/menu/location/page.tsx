@@ -78,7 +78,7 @@ export default function LocationPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6">
         {renderContent()}
       </div>
     </>

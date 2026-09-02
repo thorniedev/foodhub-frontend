@@ -2206,6 +2206,18 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
     }
   };
 
+  const scrollLeftBy = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({ left: -300, behavior: "smooth" });
+    }
+  };
+
+  const scrollRightBy = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  };
+
   useEffect(() => {
     checkScroll();
     window.addEventListener("resize", checkScroll);
@@ -2221,22 +2233,31 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-none absolute left-0 top-0 bottom-2 w-16 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10"
-          />
+            className="pointer-events-none absolute left-0 top-0 bottom-2 w-24 bg-gradient-to-r from-[#fafaf8] dark:from-black to-transparent z-10 flex items-center justify-start pl-1"
+          >
+            <button
+              type="button"
+              onClick={scrollLeftBy}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md text-gray-600 hover:bg-gray-50 border border-gray-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 transition active:scale-95"
+              aria-label="Scroll left"
+            >
+              <IoChevronBack className="text-[18px]" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 
       <div
         ref={containerRef}
         onScroll={checkScroll}
-        className="scrollbar-hide flex gap-3 overflow-x-auto pb-2 relative z-0 w-full"
+        className="scrollbar-hide flex gap-2 overflow-x-auto pb-2 relative z-0 w-full"
       >
         <button
           type="button"
           onClick={() => onChange([])}
-          className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${allSelected
-              ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
-              : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
+          className={`shrink-0 rounded-full px-5 py-2 text-[14px] md:text-[15px] font-semibold transition-all ${allSelected
+              ? "bg-primary-800 text-white shadow-md shadow-primary-800/20 dark:bg-emerald-600 dark:shadow-emerald-600/20"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
         >
           ទាំងអស់
@@ -2256,15 +2277,19 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
                     : [...selectedCodes, option.code],
                 )
               }
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${isSelected
-                  ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
+              className={`shrink-0 rounded-full px-5 py-2 text-[14px] md:text-[15px] font-semibold transition-all flex items-center justify-center gap-1.5 ${isSelected
+                  ? "bg-primary-800 text-white shadow-md shadow-primary-800/20 dark:bg-emerald-600 dark:shadow-emerald-600/20"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 }`}
             >
-              {option.name}
+              <span>{option.name}</span>
 
               {option.count > 0 && (
-                <span className="ml-2 opacity-70">{option.count}</span>
+                <span className="opacity-70">{option.count}</span>
+              )}
+              
+              {isSelected && (
+                <IoClose className="text-[16px] opacity-90 transition-opacity" />
               )}
             </button>
           );
@@ -2278,8 +2303,17 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-none absolute right-0 top-0 bottom-2 w-16 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10"
-          />
+            className="pointer-events-none absolute right-0 top-0 bottom-2 w-24 bg-gradient-to-l from-[#fafaf8] dark:from-black to-transparent z-10 flex items-center justify-end pr-1"
+          >
+            <button
+              type="button"
+              onClick={scrollRightBy}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md text-gray-600 hover:bg-gray-50 border border-gray-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 transition active:scale-95"
+              aria-label="Scroll right"
+            >
+              <IoChevronBack className="text-[18px] rotate-180" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -2431,6 +2465,23 @@ function FoodPageContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const stickyHeaderRef = useRef<HTMLDivElement>(null);
+  const [stickyTop, setStickyTop] = useState(64); // default to top-16 (64px)
+
+  useEffect(() => {
+    if (!stickyHeaderRef.current) return;
+    
+    // Create a ResizeObserver to monitor the sticky header's height
+    const observer = new ResizeObserver((entries) => {
+      // 64 is the global navbar height
+      setStickyTop(64 + entries[0].contentRect.height);
+    });
+    
+    observer.observe(stickyHeaderRef.current);
+    
+    return () => observer.disconnect();
+  }, []);
 
   const [customerSearchRequest, setCustomerSearchRequest] =
     useState<CustomerSearchRequest>({
@@ -3042,7 +3093,10 @@ function FoodPageContent() {
 
   return (
     <>
-      <div className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/85">
+      <div 
+        ref={stickyHeaderRef}
+        className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/85"
+      >
         <div className="mx-auto flex w-full max-w-7xl px-4 py-3 sm:px-6 flex-col lg:flex-row lg:items-center gap-4">
           <FoodNavTabs />
           
@@ -3099,29 +3153,34 @@ function FoodPageContent() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6">
 
-      <div className="mt-6 flex gap-8">
+      <div className="mt-2 flex gap-5">
         <FilterSidebar
           customerSearchRequest={customerSearchRequest}
           onSearchRequestChange={setCustomerSearchRequest}
         />
 
-        <main className="min-w-0 flex-1">
-          <CategoryTabs
-            options={apiCategoryOptions}
-            selectedCodes={customerSearchRequest.categoryUuids ?? []}
-            onChange={(categoryUuids) =>
-              setCustomerSearchRequest((current) => ({
-                ...current,
-                categoryUuids: categoryUuids.length ? categoryUuids : undefined,
-              }))
-            }
-          />
+        <main className="min-w-0 flex-1 relative">
+          <div 
+            className="sticky z-20 bg-[#fafaf8] dark:bg-black py-2 -mx-2 px-2 shadow-sm shadow-[#fafaf8]/50 dark:shadow-black/50" 
+            style={{ top: `${stickyTop - 1}px` }}
+          >
+            <CategoryTabs
+              options={apiCategoryOptions}
+              selectedCodes={customerSearchRequest.categoryUuids ?? []}
+              onChange={(categoryUuids) =>
+                setCustomerSearchRequest((current) => ({
+                  ...current,
+                  categoryUuids: categoryUuids.length ? categoryUuids : undefined,
+                }))
+              }
+            />
+          </div>
 
           {/* ALL FOODS */}
 
-          <section className="mt-6">
+          <section className="mt-3">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
@@ -3169,7 +3228,7 @@ function FoodPageContent() {
             )}
           </section>
 
-          <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
+          <section className="mt-8 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
             <h2 className="text-[28px] font-semibold md:text-[36px]">
               បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
             </h2>
