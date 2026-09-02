@@ -25,6 +25,7 @@ import { CustomSelect } from "@/components/shared/CustomSelect";
 
 import FoodCard from "@/components/dynamic-card/FoodCard";
 import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
+import FoodNavTabs from "@/components/food-page/FoodNavTabs";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import {
@@ -3041,60 +3042,64 @@ function FoodPageContent() {
 
   return (
     <>
-      {/* SEARCH */}
+      <div className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/85">
+        <div className="mx-auto flex w-full max-w-7xl px-4 py-3 sm:px-6 flex-col lg:flex-row lg:items-center gap-4">
+          <FoodNavTabs />
+          
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center flex-1 w-full lg:w-auto">
+            {renderSearch()}
 
-      <section className="lg:rounded-full lg:border lg:border-gray-100 dark:lg:border-slate-800 lg:bg-white dark:lg:bg-slate-900 lg:p-1 lg:shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          {renderSearch()}
+            {/* Mobile / tablet Action Buttons */}
+            <div className="flex w-full items-center gap-3 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(true)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
+                aria-label="Sort options"
+              >
+                <IoSwapVerticalOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
+                <span>តម្រៀប</span>
+              </button>
 
-          {/* Mobile / tablet Action Buttons */}
-          <div className="flex w-full items-center gap-3 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(true)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
-              aria-label="Sort options"
-            >
-              <IoSwapVerticalOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
-              <span>តម្រៀប</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(true)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
+                aria-label="Filter options"
+              >
+                <IoGridOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
+                <span>តម្រង</span>
+              </button>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(true)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
-              aria-label="Filter options"
-            >
-              <IoGridOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
-              <span>តម្រង</span>
-            </button>
+            <div className="hidden lg:flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3 shrink-0">
+              <FaStar className="text-[20px] text-yellow-500" />
+
+              <p className="text-[16px] text-primary-800 dark:text-emerald-400">
+                រកឃើញ
+                <span className="font-semibold px-1">{displayFoods.length}</span>
+                មុខម្ហូប
+              </p>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInput("");
+                  setCustomerSearchRequest({ sort: "NEWEST" });
+                  setFilters(DEFAULT_FILTERS);
+                }}
+                className="rounded-full border border-secondary-200 dark:border-slate-700 px-5 py-3 text-[16px] font-semibold text-secondary-500 dark:text-amber-400 transition hover:bg-secondary-50 dark:hover:bg-slate-800 shrink-0"
+              >
+                សម្អាតតម្រង {activeFilterCount}
+              </button>
+            )}
           </div>
-
-          <div className="hidden lg:flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3">
-            <FaStar className="text-[20px] text-yellow-500" />
-
-            <p className="text-[16px] text-primary-800 dark:text-emerald-400">
-              រកឃើញ
-              <span className="font-semibold px-1">{displayFoods.length}</span>
-              មុខម្ហូប
-            </p>
-          </div>
-
-          {activeFilterCount > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchInput("");
-                setCustomerSearchRequest({ sort: "NEWEST" });
-                setFilters(DEFAULT_FILTERS);
-              }}
-              className="rounded-full border border-secondary-200 dark:border-slate-700 px-5 py-3 text-[16px] font-semibold text-secondary-500 dark:text-amber-400 transition hover:bg-secondary-50 dark:hover:bg-slate-800"
-            >
-              សម្អាតតម្រង {activeFilterCount}
-            </button>
-          )}
         </div>
-      </section>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6">
 
       <div className="mt-6 flex gap-8">
         <FilterSidebar
@@ -3264,6 +3269,7 @@ function FoodPageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </>
   );
 }

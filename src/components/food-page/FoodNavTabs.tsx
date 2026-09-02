@@ -52,41 +52,39 @@ export default function FoodNavTabs() {
   const activeTabsCount = TABS.length;
 
   return (
-    <nav className="mx-auto flex w-full max-w-7xl px-4 py-3 sm:px-6">
+    <div
+      className="relative grid bg-gray-100 dark:bg-slate-800 p-1 rounded-full ring-1 ring-black/5 dark:ring-white/10 shrink-0"
+      style={{
+        gridTemplateColumns: `repeat(${activeTabsCount}, minmax(0, 1fr))`,
+      }}
+    >
+      {/* CSS-only Sliding Indicator */}
       <div
-        className="relative grid bg-gray-100 dark:bg-slate-800 p-1 rounded-full ring-1 ring-black/5 dark:ring-white/10"
+        className="absolute left-1 top-1 bottom-1 rounded-full bg-primary-800 dark:bg-emerald-500 shadow-sm transition-transform duration-300 ease-out"
         style={{
-          gridTemplateColumns: `repeat(${activeTabsCount}, minmax(0, 1fr))`,
+          width: `calc((100% - 8px) / ${activeTabsCount})`,
+          transform: `translateX(calc(${activeIndex * 100}%))`,
         }}
-      >
-        {/* CSS-only Sliding Indicator */}
-        <div
-          className="absolute left-1 top-1 bottom-1 rounded-full bg-primary-800 dark:bg-emerald-500 shadow-sm transition-transform duration-300 ease-out"
-          style={{
-            width: `calc((100% - 8px) / ${activeTabsCount})`,
-            transform: `translateX(calc(${activeIndex * 100}%))`,
-          }}
-        />
+      />
 
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
+      {TABS.map((tab) => {
+        const isActive = activeTab === tab.id;
 
-          return (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              className={`relative z-10 flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2 text-[15px] font-semibold transition-colors duration-300 ${
-                isActive
-                  ? "text-white"
-                  : "text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
-            >
-              <span className="flex-shrink-0">{tab.icon}</span>
-              <span className="mb-[1px] whitespace-nowrap">{tab.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+        return (
+          <Link
+            key={tab.id}
+            href={tab.href}
+            className={`relative z-10 flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2 text-[15px] font-semibold transition-colors duration-300 ${
+              isActive
+                ? "text-white"
+                : "text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-slate-200"
+            }`}
+          >
+            <span className="flex-shrink-0">{tab.icon}</span>
+            <span className="mb-[1px] whitespace-nowrap">{tab.label}</span>
+          </Link>
+        );
+      })}
+    </div>
   );
 }
