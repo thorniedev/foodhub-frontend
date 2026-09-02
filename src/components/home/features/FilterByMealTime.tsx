@@ -770,7 +770,7 @@ export default function FilterByMealTime({
         ===================================================== */}
 
         {!isLoading && !isError && totalPages > 1 && (
-          <div className="mt-10 flex flex-col items-center justify-between gap-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6">
+          <div className="mt-6 flex flex-col items-center justify-between gap-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6">
             <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
               បង្ហាញ <span className="font-semibold text-primary-800 dark:text-emerald-400">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="font-semibold text-primary-800 dark:text-emerald-400">{Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}</span> នៃ <span className="font-semibold text-primary-800 dark:text-emerald-400">{filteredFoods.length}</span> មុខម្ហូប
             </p>
