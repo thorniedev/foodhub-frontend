@@ -41,6 +41,7 @@ import type {
   FilterItemOption,
   MenuItemDiscoveryResponse,
   SafetyStatusType,
+  DiscoveryFilterOptionsResponse,
 } from "@/types/search";
 import {
   useGetMemberProfileByIdQuery,
@@ -573,6 +574,83 @@ function getUniqueOptions(
   );
 }
 
+function buildCodeNameLookup(
+  discoveryOptions?: DiscoveryFilterOptionsResponse | null,
+) {
+  const map = new Map<string, { code: string; name: string }>();
+  if (!discoveryOptions) return map;
+
+  const lists = [
+    discoveryOptions.categories,
+    discoveryOptions.cuisines,
+    discoveryOptions.mealTypes,
+    discoveryOptions.dietaryTypes,
+    discoveryOptions.allergens,
+    discoveryOptions.seasons,
+    discoveryOptions.events,
+    discoveryOptions.suitableWeather,
+    discoveryOptions.ageGroups,
+  ];
+
+  for (const list of lists) {
+    if (Array.isArray(list)) {
+      for (const item of list) {
+        if (item && item.uuid) {
+          map.set(item.uuid, {
+            code: item.code || "",
+            name: item.name || "",
+          });
+        }
+      }
+    }
+  }
+  return map;
+}
+
+function matchesItemWithLookup(
+  selectedUuidsOrCodes: string[] | undefined,
+  targetCode: string | undefined | null,
+  targetName: string | undefined | null,
+  lookupMap: Map<string, { code: string; name: string }>,
+): boolean {
+  if (!selectedUuidsOrCodes || selectedUuidsOrCodes.length === 0) return true;
+  const nCode = normalizeText(targetCode);
+  const nName = normalizeText(targetName);
+
+  return selectedUuidsOrCodes.some((u) => {
+    const nU = normalizeText(u);
+    if (nU === nCode || nU === nName || u === targetCode || u === targetName) {
+      return true;
+    }
+    const resolved = lookupMap.get(u);
+    if (resolved) {
+      const rCode = normalizeText(resolved.code);
+      const rName = normalizeText(resolved.name);
+      if (
+        (rCode && (rCode === nCode || nCode.includes(rCode))) ||
+        (rName && (rName === nName || nName.includes(rName)))
+      ) {
+        return true;
+      }
+    }
+    return false;
+  });
+}
+
+function getFoodPriceLevel(food: CatalogMenuItem): number {
+  if (
+    typeof (food.store as any)?.priceLevel === "number" &&
+    (food.store as any).priceLevel > 0
+  ) {
+    return (food.store as any).priceLevel;
+  }
+  const price = food.price ?? 0;
+  if (price <= 5) return 1;
+  if (price <= 10) return 2;
+  if (price <= 20) return 3;
+  return 4;
+}
+
 /* =========================================================
    FILTERING
 ========================================================= */
@@ -582,8 +660,10 @@ function applyCustomerSearchFilters(
   req: CustomerSearchRequest,
   searchQuery: string,
   profile?: MemberProfile | null,
+  discoveryOptions?: DiscoveryFilterOptionsResponse | null,
 ): CatalogMenuItem[] {
   const normalizedQuery = normalizeText(searchQuery);
+  const lookupMap = buildCodeNameLookup(discoveryOptions);
 
   const filteredFoods = foods.filter((food) => {
     // 1. Search text
@@ -604,182 +684,174 @@ function applyCustomerSearchFilters(
     // 4. Category
     if (req.categoryUuids && req.categoryUuids.length > 0) {
       const category = food.food?.category;
-      const matchesCategory =
-        category &&
-        (req.categoryUuids.includes(category.code) ||
-          req.categoryUuids.some(
-            (u) =>
-              normalizeText(u) === normalizeText(category.name) ||
-              normalizeText(u) === normalizeText(category.code),
-          ));
-      if (!matchesCategory) return false;
+      const matches = matchesItemWithLookup(
+        req.categoryUuids,
+        category?.code,
+        category?.name,
+        lookupMap,
+      );
+      if (!matches) return false;
     }
 
     // 5. Cuisine
     if (req.cuisineUuids && req.cuisineUuids.length > 0) {
       const cuisine = food.food?.cuisine;
-      const matchesCuisine =
-        cuisine &&
-        (req.cuisineUuids.includes(cuisine.code) ||
-          req.cuisineUuids.some(
-            (u) =>
-              normalizeText(u) === normalizeText(cuisine.name) ||
-              normalizeText(u) === normalizeText(cuisine.code),
-          ));
-      if (!matchesCuisine) return false;
+      const matches = matchesItemWithLookup(
+        req.cuisineUuids,
+        cuisine?.code,
+        cuisine?.name,
+        lookupMap,
+      );
+      if (!matches) return false;
     }
 
     // 6. Meal Types
     if (req.mealTypeUuids && req.mealTypeUuids.length > 0) {
       const mealTypes = getMealTypes(food);
-      const matchesMeal = mealTypes.some(
-        (m) =>
-          req.mealTypeUuids!.includes(m.code) ||
-          req.mealTypeUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(m.name) ||
-              normalizeText(u) === normalizeText(m.code),
-          ),
+      const matches = mealTypes.some((m) =>
+        matchesItemWithLookup(req.mealTypeUuids, m.code, m.name, lookupMap),
       );
-      if (!matchesMeal) return false;
+      if (!matches) return false;
     }
 
     // 7. Dietary Types
     if (req.dietaryTypeUuids && req.dietaryTypeUuids.length > 0) {
       const dietaryTypes = getDietaryTypes(food);
-      const matchesDietary = dietaryTypes.some(
-        (d) =>
-          req.dietaryTypeUuids!.includes(d.code) ||
-          req.dietaryTypeUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(d.name) ||
-              normalizeText(u) === normalizeText(d.code),
-          ),
+      const matches = dietaryTypes.some((d) =>
+        matchesItemWithLookup(req.dietaryTypeUuids, d.code, d.name, lookupMap),
       );
-      if (!matchesDietary) return false;
+      if (!matches) return false;
     }
 
     // 8. Age Groups
     if (req.ageGroupUuids && req.ageGroupUuids.length > 0) {
       const ageGroups = getAgeGroups(food);
-      const matchesAge = ageGroups.some((a) => {
+      const matches = ageGroups.some((a) => {
+        if (
+          matchesItemWithLookup(req.ageGroupUuids, a.code, a.name, lookupMap)
+        ) {
+          return true;
+        }
         const aName = normalizeText(a.name);
         const aCode = normalizeText(a.code);
         return req.ageGroupUuids!.some((u) => {
+          const resolved = lookupMap.get(u);
+          const rCode = resolved?.code ? normalizeText(resolved.code) : "";
+          const rName = resolved?.name ? normalizeText(resolved.name) : "";
           const normU = normalizeText(u);
-          if (
-            normU === aName ||
-            normU === aCode ||
-            (a.code && req.ageGroupUuids!.includes(a.code))
-          ) {
-            return true;
-          }
-          if (aName.includes(normU) || normU.includes(aName)) {
-            return true;
-          }
-          if (
-            (normU.includes("យុវវ័យ") || normU.includes("13-17")) &&
-            (aName.includes("យុវវ័យ") || aCode.includes("youth"))
-          ) {
-            return true;
-          }
-          if (
-            (normU.includes("កុមារតូច") || normU.includes("0-2")) &&
-            (aName.includes("កុមារតូច") || aCode.includes("toddler"))
-          ) {
-            return true;
-          }
-          if (
-            (normU.includes("កុមារ") || normU.includes("3-12")) &&
-            (aName.includes("កុមារ") ||
-              aCode.includes("child") ||
-              aCode.includes("children")) &&
-            !normU.includes("តូច") &&
-            !aName.includes("តូច")
-          ) {
-            return true;
-          }
-          if (
-            (normU.includes("ពេញវ័យ") || normU.includes("18-59")) &&
-            (aName.includes("ពេញវ័យ") || aCode.includes("adult"))
-          ) {
-            return true;
-          }
-          if (
-            (normU.includes("ចំណាស់") || normU.includes("60+")) &&
-            (aName.includes("ចំណាស់") ||
-              aCode.includes("senior") ||
-              aCode.includes("elderly"))
-          ) {
-            return true;
-          }
-          return false;
+
+          const searchTokens = [normU, rCode, rName].filter(Boolean);
+          return searchTokens.some((token) => {
+            if (token === aName || token === aCode) return true;
+            if (aName.includes(token) || token.includes(aName)) return true;
+            if (
+              (token.includes("យុវវ័យ") || token.includes("13-17")) &&
+              (aName.includes("យុវវ័យ") || aCode.includes("youth"))
+            ) {
+              return true;
+            }
+            if (
+              (token.includes("កុមារតូច") || token.includes("0-2")) &&
+              (aName.includes("កុមារតូច") || aCode.includes("toddler"))
+            ) {
+              return true;
+            }
+            if (
+              (token.includes("កុមារ") || token.includes("3-12")) &&
+              (aName.includes("កុមារ") ||
+                aCode.includes("child") ||
+                aCode.includes("children")) &&
+              !token.includes("តូច") &&
+              !aName.includes("តូច")
+            ) {
+              return true;
+            }
+            if (
+              (token.includes("ពេញវ័យ") || token.includes("18-59")) &&
+              (aName.includes("ពេញវ័យ") || aCode.includes("adult"))
+            ) {
+              return true;
+            }
+            if (
+              (token.includes("ចំណាស់") || token.includes("60+")) &&
+              (aName.includes("ចំណាស់") ||
+                aCode.includes("senior") ||
+                aCode.includes("elderly"))
+            ) {
+              return true;
+            }
+            return false;
+          });
         });
       });
-      if (!matchesAge) return false;
+      if (!matches) return false;
     }
 
     // 9. Seasons
     if (req.seasonUuids && req.seasonUuids.length > 0) {
       const seasons = getSeasons(food);
-      const matchesSeason = seasons.some(
-        (s) =>
-          req.seasonUuids!.includes(s.code) ||
-          req.seasonUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(s.name) ||
-              normalizeText(u) === normalizeText(s.code),
-          ),
+      const matches = seasons.some((s) =>
+        matchesItemWithLookup(req.seasonUuids, s.code, s.name, lookupMap),
       );
-      if (!matchesSeason) return false;
+      if (!matches) return false;
     }
 
     // 10. Events
     if (req.eventUuids && req.eventUuids.length > 0) {
       const events = getEvents(food);
-      const matchesEvent = events.some(
-        (e) =>
-          req.eventUuids!.includes(e.code) ||
-          req.eventUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(e.name) ||
-              normalizeText(u) === normalizeText(e.code),
-          ),
+      const matches = events.some((e) =>
+        matchesItemWithLookup(req.eventUuids, e.code, e.name, lookupMap),
       );
-      if (!matchesEvent) return false;
+      if (!matches) return false;
     }
 
     // 11. Weather
     if (req.weatherConditionUuids && req.weatherConditionUuids.length > 0) {
       const weather = getSuitableWeather(food);
-      const matchesWeather = weather.some(
-        (w) =>
-          req.weatherConditionUuids!.includes(w.code) ||
-          req.weatherConditionUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(w.name) ||
-              normalizeText(u) === normalizeText(w.code),
-          ),
+      const matches = weather.some((w) =>
+        matchesItemWithLookup(
+          req.weatherConditionUuids,
+          w.code,
+          w.name,
+          lookupMap,
+        ),
       );
-      if (!matchesWeather) return false;
+      if (!matches) return false;
     }
 
-    // 12. Allergen Exclusions
+    // 12. Allergen Exclusions (Checks declared allergens + ingredients)
     if (req.excludeAllergenUuids && req.excludeAllergenUuids.length > 0) {
       const allergens = getAllergens(food);
-      const hasExcluded = allergens.some(
-        (alg) =>
-          req.excludeAllergenUuids!.includes(alg.code) ||
-          req.excludeAllergenUuids!.some(
-            (u) =>
-              normalizeText(u) === normalizeText(alg.name) ||
-              normalizeText(u) === normalizeText(alg.code),
+      const ingredients = getIngredientNames(food);
+      const hasExcluded =
+        allergens.some((alg) =>
+          matchesItemWithLookup(
+            req.excludeAllergenUuids,
+            alg.code,
+            alg.name,
+            lookupMap,
           ),
-      );
+        ) ||
+        ingredients.some((ing) =>
+          matchesItemWithLookup(
+            req.excludeAllergenUuids,
+            ing,
+            ing,
+            lookupMap,
+          ),
+        );
       if (hasExcluded) return false;
     }
 
-    // 13. Price Range
+    // 13. Store Price Level ($, $$, $$$, $$$$)
+    if (req.storePriceLevels && req.storePriceLevels.length > 0) {
+      const level = getFoodPriceLevel(food);
+      if (!req.storePriceLevels.includes(level)) {
+        return false;
+      }
+    }
+
+    // 14. Price Range (Min/Max Custom Budget)
     if (req.minimumPrice !== undefined && food.price < req.minimumPrice) {
       return false;
     }
@@ -2658,8 +2730,15 @@ function FoodPageContent() {
         customerSearchRequest,
         searchInput,
         selectedProfile,
+        discoveryFilterOptions,
       ),
-    [menuItems, customerSearchRequest, searchInput, selectedProfile],
+    [
+      menuItems,
+      customerSearchRequest,
+      searchInput,
+      selectedProfile,
+      discoveryFilterOptions,
+    ],
   );
 
   const apiCatalogFoods = useMemo(() => {
@@ -2790,21 +2869,6 @@ function FoodPageContent() {
     return categoryOptions;
   }, [discoveryFilterOptions, categoryOptions]);
 
-  // Display foods with real-time global search and filters over full catalog menuItems.
-  const displayFoods =
-    menuItems.length > 0
-      ? filteredFoods
-      : apiCatalogFoods.length > 0
-        ? apiCatalogFoods
-        : filteredFoods;
-
-  const PAGE_SIZE = 9;
-  const totalPages = Math.ceil(displayFoods.length / PAGE_SIZE);
-  const paginatedFoods = displayFoods.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
-
   const activeFilterCount =
     (customerSearchRequest.categoryUuids?.length || 0) +
     (customerSearchRequest.cuisineUuids?.length || 0) +
@@ -2832,6 +2896,46 @@ function FoodPageContent() {
       : 0) +
     (customerSearchRequest.maxPreparationTimeMinutes !== undefined ? 1 : 0) +
     (customerSearchRequest.profileUuid ? 1 : 0);
+
+  const hasActiveFilters =
+    activeFilterCount > 0 ||
+    Boolean(searchInput.trim()) ||
+    Boolean(customerSearchRequest.profileUuid);
+
+  // Display foods with real-time complete catalog filtering and discovery safety enrichment
+  const displayFoods = useMemo(() => {
+    if (discoveryItems.length === 0) return filteredFoods;
+    const safetyMap = new Map<
+      string,
+      { status?: SafetyStatusType; reasons?: string[] }
+    >();
+    for (const d of discoveryItems) {
+      if (d.menuItemUuid) {
+        safetyMap.set(d.menuItemUuid, {
+          status: d.safetyStatus,
+          reasons: d.safetyReasonCodes,
+        });
+      }
+    }
+    return filteredFoods.map((item) => {
+      const s = safetyMap.get(item.uuid);
+      if (s) {
+        return {
+          ...item,
+          safetyStatus: s.status ?? (item as any).safetyStatus,
+          safetyReasonCodes: s.reasons ?? (item as any).safetyReasonCodes,
+        };
+      }
+      return item;
+    });
+  }, [filteredFoods, discoveryItems]);
+
+  const PAGE_SIZE = 9;
+  const totalPages = Math.ceil(displayFoods.length / PAGE_SIZE);
+  const paginatedFoods = displayFoods.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   /* =======================================================
      MOBILE FILTER DRAWER
