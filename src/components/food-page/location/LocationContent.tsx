@@ -837,15 +837,35 @@ export default function LocationContent({
     xl:block
   "
           >
-            {usesFoodFilters ? (
-              <LocationFilters
-                menuItems={menuItems}
-                filters={foodFilters}
-                onChange={setFoodFilters}
-              />
-            ) : (
-              <StoreFilters {...groupStoreFilterProps} />
-            )}
+            <AnimatePresence mode="popLayout" initial={false}>
+              {usesFoodFilters ? (
+                <motion.div
+                  key="food-filters"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <LocationFilters
+                    menuItems={menuItems}
+                    filters={foodFilters}
+                    onChange={setFoodFilters}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="store-filters"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <StoreFilters {...groupStoreFilterProps} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <main className="min-w-0 flex-1">
@@ -871,9 +891,16 @@ export default function LocationContent({
                 setLocationPickerOpen(true);
               }}
             >
-              {mode === "me" && (
-                <div className="space-y-4">
-                  {/* Profile Selection */}
+              <AnimatePresence initial={false}>
+                {mode === "me" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden space-y-4"
+                  >
+                    {/* Profile Selection */}
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[16px] font-bold text-primary-900 dark:text-white">
@@ -924,18 +951,19 @@ export default function LocationContent({
                       ))}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </LocationHeader>
 
-            <div className="mt-6 pb-10">
-              <AnimatePresence mode="wait">
+            <div className="mt-6 pb-10 relative">
+              <AnimatePresence mode="popLayout" initial={false}>
                 {mode === "me" ? (
                   <motion.div
                     key="single-recommendation"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.2 }}
                   >
                     <SingleRecommendation
@@ -958,9 +986,9 @@ export default function LocationContent({
                 ) : (
                   <motion.div
                     key="group-recommendation"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.2 }}
                   >
                     <GroupRecommendation

@@ -3163,27 +3163,17 @@ function FoodPageContent() {
           <FoodNavTabs />
           
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center flex-1 w-full lg:w-auto">
-            {renderSearch()}
+            <div className="flex w-full items-center gap-3 lg:w-auto lg:flex-1">
+              {renderSearch()}
 
-            {/* Mobile / tablet Action Buttons */}
-            <div className="flex w-full items-center gap-3 lg:hidden">
+              {/* Mobile / tablet Action Button */}
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(true)}
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
-                aria-label="Sort options"
-              >
-                <IoSwapVerticalOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
-                <span>តម្រៀប</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setMobileFiltersOpen(true)}
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
+                className="flex lg:hidden items-center justify-center gap-2 rounded-2xl border border-gray-200/80 bg-white px-4 min-h-[56px] text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300 shrink-0"
                 aria-label="Filter options"
               >
-                <IoGridOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
+                <IoFilterOutline className="text-[22px] text-primary-700 dark:text-emerald-400" />
                 <span>តម្រង</span>
               </button>
             </div>

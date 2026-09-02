@@ -893,7 +893,7 @@ export default function LocationPickerModal({
                 }`}
               >
                 <IoMapOutline className="text-[20px]" />
-                <span>ជ្រើសលើផែនទី (Map Picker)</span>
+                <span>ជ្រើសលើផែនទី <span className="hidden sm:inline">(Map Picker)</span></span>
               </button>
 
               <button
@@ -906,7 +906,7 @@ export default function LocationPickerModal({
                 }`}
               >
                 <IoBookmarkOutline className="text-[20px]" />
-                <span>ទីតាំងបានរក្សាទុក (Saved Places)</span>
+                <span>ទីតាំងបានរក្សាទុក <span className="hidden sm:inline">(Saved Places)</span></span>
                 {savedLocations.length > 0 && (
                   <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[12px] font-bold text-primary-800">
                     {savedLocations.length}
@@ -1209,7 +1209,7 @@ export default function LocationPickerModal({
                           className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-4 text-[14px] font-bold text-amber-900 shadow-sm transition hover:bg-amber-100 active:scale-95"
                         >
                           <IoBookmarkOutline className="text-[18px] text-amber-700" />
-                          <span>រក្សាទុកទីតាំង(Save Location)</span>
+                          <span>រក្សាទុកទីតាំង<span className="hidden sm:inline"> (Save Location)</span></span>
                         </button>
 
                         <button
@@ -1226,7 +1226,7 @@ export default function LocationPickerModal({
                           className="flex min-h-11 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl bg-primary-800 px-5 text-[14px] font-bold text-white shadow-md transition hover:bg-primary-700 active:scale-98"
                         >
                           <IoCheckmarkOutline className="text-[20px]" />
-                          <span>បញ្ជាក់ទីតាំង (Choose Place)</span>
+                          <span>បញ្ជាក់ទីតាំង <span className="hidden sm:inline">(Choose Place)</span></span>
                         </button>
                       </div>
                     </div>

@@ -47,7 +47,7 @@ export default function LocationPageWrapper({ mode }: LocationPageWrapperProps) 
     }
   };
 
-  if (isLoading || isFetching) {
+  if (isLoading) {
     return (
       <>
         {/* Top bar skeleton */}
