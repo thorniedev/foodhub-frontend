@@ -578,7 +578,7 @@ export default function SingleRecommendation({
             2xl:grid-cols-1
             2xl:gap-y-4
             transition-opacity duration-300
-            ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}
+            ${isLoading ? "pointer-events-none" : ""}
           `}
         >
           <AnimatePresence mode="popLayout">

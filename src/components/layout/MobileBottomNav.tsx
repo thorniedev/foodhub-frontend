@@ -253,10 +253,10 @@ export default function MobileBottomNav() {
 
         {/* FOOD */}
         <MobileNavItem
-          href="/food-page"
+          href="/menu"
           label="ម្ហូប"
           icon={UtensilsCrossed}
-          active={pathname.startsWith("/food-page")}
+          active={pathname.startsWith("/menu") || pathname.startsWith("/food-page")}
         />
 
         {/* STORE */}

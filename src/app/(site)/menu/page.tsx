@@ -2349,7 +2349,7 @@ function FoodGrid({ foods, isLoading }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className={`grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full min-h-[850px] lg:min-h-[900px] content-start transition-opacity duration-300 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+      className={`grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full min-h-[850px] lg:min-h-[900px] content-start transition-opacity duration-300 ${isLoading ? "pointer-events-none" : ""}`}
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
