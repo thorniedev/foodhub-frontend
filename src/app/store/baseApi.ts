@@ -122,6 +122,7 @@ export const baseApi = createApi({
     "InteractionHistory",
     "Notification",
     "NotificationPreference",
+    "MealReminderSetting",
     "PushSubscription",
     "ProximityNotification",
     "Banner"

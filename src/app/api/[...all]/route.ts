@@ -40,6 +40,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   notifications: new Set(["GET", "POST", "PATCH", "DELETE"]),
   "notification-preferences": new Set(["GET", "PUT"]),
   "notification-types": new Set(["GET"]),
+  "meal-reminder-settings": new Set(["GET", "PUT"]),
   admin: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 };
 
@@ -61,6 +62,7 @@ const nestedRoutePrefixes = new Set([
   "notifications",
   "notification-preferences",
   "notification-types",
+  "meal-reminder-settings",
   "admin",
 ]);
 
