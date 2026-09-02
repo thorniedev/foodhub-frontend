@@ -19,9 +19,14 @@ import {
   IoTimeOutline,
   IoChevronDownOutline,
   IoChevronUpOutline,
+  IoNavigateOutline,
+  IoMapOutline,
+  IoCopyOutline,
+  IoCheckmarkOutline,
+  IoStar,
 } from "react-icons/io5";
 
-import { FaStore } from "react-icons/fa";
+import { FaStore, FaDirections } from "react-icons/fa";
 
 import { useGetStoreByUuidQuery } from "@/app/store/locationApi";
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
@@ -160,10 +165,9 @@ function StoreMediaImage({
   mediaUuid?: string | null;
   fallbackMediaUuid?: string | null;
   alt: string;
-  className: string;
+  className?: string;
 }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -194,9 +198,9 @@ function StoreMediaImage({
   if (!imageUrl || failed) {
     return (
       <div
-        role="img"
-        aria-label={alt}
-        className={`${className} flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50`}
+        className={`flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100/50 ${
+          className || ""
+        }`}
       >
         <FaStore className="text-[46px] text-primary-300" />
       </div>
@@ -219,11 +223,36 @@ function StoreMediaImage({
 function StoreHero({ store }: { store: FoodStoreDetail }) {
   const address = getStoreAddress(store);
   const priceLevel = formatPriceLevel(store.priceLevel);
+  const [copied, setCopied] = useState(false);
+
+  const hasCoords =
+    store.latitude !== null &&
+    store.latitude !== undefined &&
+    store.longitude !== null &&
+    store.longitude !== undefined &&
+    Number.isFinite(Number(store.latitude)) &&
+    Number.isFinite(Number(store.longitude));
+
+  const directionsUrl = hasCoords
+    ? `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+
+  const googleMapsUrl = hasCoords
+    ? `https://www.google.com/maps/search/?api=1&query=${store.latitude},${store.longitude}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   const hygiene =
     store.hygieneRating !== null && Number.isFinite(Number(store.hygieneRating))
       ? Number(store.hygieneRating).toFixed(1)
       : null;
+
+  const handleCopyAddress = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <section className="relative rounded-[32px] border border-gray-100/50 bg-white p-3 shadow-sm ring-1 ring-black/5 sm:p-4">
@@ -237,14 +266,25 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
         />
 
         {/* Subtle, modern gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/15 to-transparent" />
 
-        {/* Top-Right Bookmark Button (Glassmorphism style) */}
-        <div className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
+        {/* Top-Right Bookmark & Directions Buttons (Glassmorphism style) */}
+        <div className="absolute right-4 top-4 z-10 flex items-center gap-2 sm:right-6 sm:top-6">
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-11 items-center gap-2 rounded-full border border-white/30 bg-white/20 px-4 text-sm font-semibold text-white shadow-md backdrop-blur-md transition-all hover:bg-white hover:text-primary-800 sm:h-12"
+            title="ទិសដៅទៅហាងនៅលើ Google Maps"
+          >
+            <FaDirections className="text-base" />
+            <span className="hidden sm:inline">ទិសដៅ</span>
+          </a>
+
           <BookmarkButton
             storeUuid={store.uuid}
             showText={false}
-            className="h-11 w-11 bg-white/20 text-white border border-white/30 shadow-md backdrop-blur-md transition-all hover:bg-white hover:text-primary-700 sm:h-12 sm:w-12"
+            className="h-11 w-11 border border-white/30 bg-white/20 text-white shadow-md backdrop-blur-md transition-all hover:bg-white hover:text-primary-700 sm:h-12 sm:w-12"
           />
         </div>
 
@@ -275,6 +315,17 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
                 <span className="rounded-full border border-white/30 bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md">
                   {getOperatingStatusLabel(store.operatingStatus)}
                 </span>
+                {store.averageRating > 0 && (
+                  <span className="flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/20 px-4 py-1.5 text-sm font-bold text-amber-300 backdrop-blur-md">
+                    <IoStar className="text-amber-300" />
+                    {Number(store.averageRating).toFixed(1)}
+                    {store.totalReviews > 0 && (
+                      <span className="font-normal text-white/80">
+                        ({store.totalReviews})
+                      </span>
+                    )}
+                  </span>
+                )}
               </div>
 
               <h1 className="truncate text-2xl font-extrabold leading-tight text-white drop-shadow-sm sm:text-3xl lg:text-4xl">
@@ -298,17 +349,48 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
           </p>
         )}
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-4 text-base font-medium text-slate-600">
+        <div className="flex flex-wrap items-center gap-3 text-base font-medium text-slate-600">
+          {/* Google Maps Directions Action */}
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-primary-800 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-primary-700 active:scale-95"
+          >
+            <IoNavigateOutline className="text-xl" />
+            ទិសដៅទៅហាង
+          </a>
+
+          <button
+            type="button"
+            onClick={handleCopyAddress}
+            className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-5 py-2.5 text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-100"
+            title="ចម្លងអាសយដ្ឋាន"
+          >
+            {copied ? (
+              <>
+                <IoCheckmarkOutline className="text-xl text-emerald-600" />
+                <span className="text-emerald-700 font-semibold">បានចម្លងអាសយដ្ឋាន</span>
+              </>
+            ) : (
+              <>
+                <IoCopyOutline className="text-lg text-slate-500" />
+                <span>ចម្លងអាសយដ្ឋាន</span>
+              </>
+            )}
+          </button>
+
+          {store.province && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-4 py-2.5 font-semibold text-primary-800 ring-1 ring-primary-100">
+              <IoLocationOutline className="text-lg text-primary-600" />
+              {store.province}
+            </span>
+          )}
+
           {hygiene && (
             <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-5 py-2.5 ring-1 ring-slate-100">
               <IoShieldCheckmarkOutline className="text-xl text-primary-600" />
               អនាម័យ {hygiene}
-            </span>
-          )}
-
-          {priceLevel && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-5 py-2.5 font-bold text-primary-800 ring-1 ring-slate-100">
-              {priceLevel}
             </span>
           )}
 
@@ -337,9 +419,107 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
   );
 }
 
+function StoreLocationMapCard({ store }: { store: FoodStoreDetail }) {
+  const address = getStoreAddress(store);
+  const [copied, setCopied] = useState(false);
+
+  const hasCoords =
+    store.latitude !== null &&
+    store.latitude !== undefined &&
+    store.longitude !== null &&
+    store.longitude !== undefined &&
+    Number.isFinite(Number(store.latitude)) &&
+    Number.isFinite(Number(store.longitude));
+
+  const embedSrc = hasCoords
+    ? `https://www.google.com/maps?q=${store.latitude},${store.longitude}&hl=km&z=15&output=embed`
+    : `https://www.google.com/maps?q=${encodeURIComponent(address)}&hl=km&z=15&output=embed`;
+
+  const directionsUrl = hasCoords
+    ? `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+
+  const handleCopyAddress = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <section className="rounded-[32px] border border-gray-100/50 bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-7">
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+          <IoMapOutline className="text-[23px]" />
+        </span>
+
+        <div>
+          <p className="text-[20px] font-bold text-primary-900">ទីតាំងនៅលើផែនទី</p>
+          <p className="text-[15px] text-gray-400">Google Maps</p>
+        </div>
+      </div>
+
+      {/* Embedded Map */}
+      <div className="mt-5 relative h-[220px] w-full overflow-hidden rounded-[20px] border border-gray-200 shadow-inner">
+        <iframe
+          title={`ទីតាំង ${store.storeName} នៅលើ Google Maps`}
+          src={embedSrc}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          className="h-full w-full border-0"
+        />
+      </div>
+
+      {/* Address & Actions */}
+      <div className="mt-4 space-y-3">
+        <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+          <IoLocationOutline className="mt-0.5 shrink-0 text-lg text-primary-600" />
+          <p className="flex-1 font-medium leading-relaxed">{address}</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5 pt-1">
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-xl bg-primary-800 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 active:scale-95 shadow-sm"
+          >
+            <FaDirections className="text-base" />
+            ទិសដៅ
+          </a>
+
+          <button
+            type="button"
+            onClick={handleCopyAddress}
+            className="flex items-center justify-center gap-2 rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95"
+          >
+            {copied ? (
+              <>
+                <IoCheckmarkOutline className="text-lg text-emerald-600" />
+                <span className="text-emerald-700">បានចម្លង</span>
+              </>
+            ) : (
+              <>
+                <IoCopyOutline className="text-base text-slate-500" />
+                <span>ចម្លងអាសយដ្ឋាន</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
   const [expanded, setExpanded] = useState(false);
   const schedules = groupOpeningHours(store.openingHours);
+
+  // JavaScript getDay(): 0 is Sunday, 1 is Monday... Map to 1 (Monday) - 7 (Sunday)
+  const currentDayOfWeek = typeof window !== "undefined"
+    ? (new Date().getDay() === 0 ? 7 : new Date().getDay())
+    : 1;
 
   if (schedules.length === 0) {
     return null;
@@ -352,48 +532,80 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
   const hasMore = schedules.length > MAX_VISIBLE;
 
   return (
-    <section className="rounded-[32px] border border-gray-100/50 bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
-      <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
-          <IoTimeOutline className="text-[23px]" />
-        </span>
+    <section className="rounded-[32px] border border-gray-100/50 bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-7">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+            <IoTimeOutline className="text-[23px]" />
+          </span>
 
-        <div>
-          <p className="text-[22px] font-bold text-primary-900">ម៉ោងបើកបិទ</p>
-
-          <p className="text-[18px] text-gray-400">កាលវិភាគប្រចាំសប្ដាហ៍</p>
+          <div>
+            <p className="text-[20px] font-bold text-primary-900">ម៉ោងបើកបិទ</p>
+            <p className="text-[15px] text-gray-400">កាលវិភាគប្រចាំសប្ដាហ៍</p>
+          </div>
         </div>
+
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-bold ${
+            store.isOpenNow
+              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+              : "bg-red-50 text-red-700 ring-1 ring-red-200"
+          }`}
+        >
+          {store.isOpenNow ? "កំពុងបើក" : "បានបិទ"}
+        </span>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
-        {visibleSchedules.map((schedule, index) => (
-          <div
-            key={`${schedule.dayOfWeek}-${schedule.intervalOrder}-${index}`}
-            className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-3 py-2.5"
-          >
-            <span className="text-[18px] font-medium text-gray-600">
-              {getWeekdayLabel(schedule.dayOfWeek)}
-            </span>
+      <div className="mt-5 flex flex-col gap-2.5">
+        {visibleSchedules.map((schedule, index) => {
+          const isToday = schedule.dayOfWeek === currentDayOfWeek;
 
-            <span className="text-[18px] text-primary-800">
-              {schedule.isClosed
-                ? "បិទ"
-                : `${formatHour(schedule.openingTime)}–${formatHour(
-                    schedule.closingTime,
-                  )}`}
-            </span>
-          </div>
-        ))}
+          return (
+            <div
+              key={`${schedule.dayOfWeek}-${schedule.intervalOrder}-${index}`}
+              className={`flex items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-all ${
+                isToday
+                  ? "bg-primary-50/80 font-semibold ring-1 ring-primary-200 text-primary-900"
+                  : "bg-gray-50 text-gray-600"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span>{getWeekdayLabel(schedule.dayOfWeek)}</span>
+                {isToday && (
+                  <span className="rounded-full bg-primary-700 px-2 py-0.5 text-[11px] font-bold text-white">
+                    ថ្ងៃនេះ
+                  </span>
+                )}
+              </div>
+
+              <span
+                className={
+                  schedule.isClosed
+                    ? "font-medium text-red-500"
+                    : isToday
+                    ? "font-bold text-primary-800"
+                    : "text-gray-700"
+                }
+              >
+                {schedule.isClosed
+                  ? "បិទ"
+                  : `${formatHour(schedule.openingTime)}–${formatHour(
+                      schedule.closingTime,
+                    )}`}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {hasMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 py-3 text-base font-semibold text-primary-700 transition hover:bg-primary-50"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 py-2.5 text-sm font-semibold text-primary-700 transition hover:bg-primary-50"
         >
           {expanded ? (
             <>
-              បង្រួម <IoChevronUpOutline className="text-lg" />
+              បង្រួម <IoChevronUpOutline className="text-base" />
             </>
           ) : (
             <>
@@ -641,7 +853,10 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
         <div className="mb-8 grid items-start gap-6 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px]">
           <StoreHero store={store} />
 
-          <StoreOpeningHoursCard store={store} />
+          <div className="flex flex-col gap-6">
+            <StoreLocationMapCard store={store} />
+            <StoreOpeningHoursCard store={store} />
+          </div>
         </div>
 
         {/* Menu Section Header */}

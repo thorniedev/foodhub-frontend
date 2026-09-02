@@ -211,7 +211,9 @@ function normalizeText(value: unknown): string {
   return String(value ?? "")
     .trim()
     .toLowerCase()
-    .normalize("NFKC");
+    .normalize("NFKC")
+    .replace(/[_\-]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function toggleInList(list: string[], value: string): string[] {
@@ -466,8 +468,57 @@ function getOriginCountry(food: CatalogMenuItem): CatalogCodeName | null {
 }
 
 /* =========================================================
-   SEARCH
+   GLOBAL SEARCH
 ========================================================= */
+
+function buildGlobalSearchText(food: CatalogMenuItem): string {
+  const extraTokens = [
+    food.uuid,
+    food.legacyId,
+    food.name,
+    food.localName,
+    food.description,
+    food.localDescription,
+    food.price,
+    food.currencyCode,
+    food.food?.uuid,
+    food.food?.canonicalName,
+    food.food?.category?.code,
+    food.food?.category?.name,
+    food.food?.cuisine?.code,
+    food.food?.cuisine?.name,
+    food.store?.name,
+    food.store?.localName,
+    food.store?.city,
+    food.store?.district,
+    food.store?.addressLine,
+    food.origin?.countryCode,
+    food.origin?.countryName,
+    food.origin?.countryLocalName,
+    food.origin?.provinceName,
+    food.origin?.provinceCode,
+    ...(food.food?.mealTypes?.map((m) => `${m.code} ${m.name}`) ?? []),
+    ...(food.food?.dietaryTypes?.map((d) => `${d.code} ${d.name}`) ?? []),
+    ...(food.food?.ageGroups?.map((a) => `${a.code} ${a.name}`) ?? []),
+    ...(food.food?.seasons?.map((s) => `${s.code} ${s.name}`) ?? []),
+    ...(food.food?.events?.map((e) => `${e.code} ${e.name}`) ?? []),
+    ...(food.food?.suitableWeather?.map((w) => `${w.code} ${w.name}`) ?? []),
+    ...(Array.isArray(food.ingredients) ? food.ingredients : []),
+    ...(Array.isArray(food.allergenDeclarations)
+      ? food.allergenDeclarations.map((a: any) =>
+          typeof a === "string" ? a : `${a?.code || ""} ${a?.name || ""}`,
+        )
+      : []),
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  try {
+    return normalizeText(`${JSON.stringify(food)} ${extraTokens}`);
+  } catch {
+    return normalizeText(extraTokens);
+  }
+}
 
 function matchesSearch(food: CatalogMenuItem, query: string): boolean {
   const normalizedQuery = normalizeText(query);
@@ -476,16 +527,10 @@ function matchesSearch(food: CatalogMenuItem, query: string): boolean {
     return true;
   }
 
-  /**
-   * Search the same complete CatalogMenuItem object that is passed to FoodCard.
-   * This includes current nested category, cuisine, dietary, age group,
-   * meal type, seasons, events, weather, ingredients, allergens,
-   * nutrition, store, origin, price, preparation time, etc.
-   */
-  const searchableText = normalizeText(JSON.stringify(food));
+  const searchableText = buildGlobalSearchText(food);
 
   const tokens = normalizedQuery
-    .split(/\s+/)
+    .split(" ")
     .map((token) => token.trim())
     .filter(Boolean);
 
@@ -2303,7 +2348,10 @@ function FoodPageContent() {
     searchParams.get("age") ||
     "";
   const rawQueryParam =
-    searchParams.get("q") || searchParams.get("search") || "";
+    searchParams.get("query") ||
+    searchParams.get("q") ||
+    searchParams.get("search") ||
+    "";
 
   const [searchInput, setSearchInput] = useState(rawQueryParam);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
@@ -2369,7 +2417,7 @@ function FoodPageContent() {
 
   // Synchronize search query param if provided
   useEffect(() => {
-    if (rawQueryParam && !searchInput) {
+    if (rawQueryParam && rawQueryParam !== searchInput) {
       setSearchInput(rawQueryParam);
     }
   }, [rawQueryParam]);
@@ -2641,7 +2689,7 @@ function FoodPageContent() {
           description:
             item.description || matchingCatalogItem?.description || null,
           localDescription: matchingCatalogItem?.localDescription || null,
-          thumbnail: thumbnail || undefined,
+          thumbnail: thumbnail || null,
           gallery: matchingCatalogItem?.gallery?.length
             ? matchingCatalogItem.gallery
             : thumbnail
@@ -2742,10 +2790,13 @@ function FoodPageContent() {
     return categoryOptions;
   }, [discoveryFilterOptions, categoryOptions]);
 
-  // If discovery returned items, display them. Otherwise fall back to filteredFoods
-  // so all menu items are shown when no filter is active, and client filters work smoothly.
+  // Display foods with real-time global search and filters over full catalog menuItems.
   const displayFoods =
-    apiCatalogFoods.length > 0 ? apiCatalogFoods : filteredFoods;
+    menuItems.length > 0
+      ? filteredFoods
+      : apiCatalogFoods.length > 0
+        ? apiCatalogFoods
+        : filteredFoods;
 
   const PAGE_SIZE = 9;
   const totalPages = Math.ceil(displayFoods.length / PAGE_SIZE);
@@ -2815,23 +2866,34 @@ function FoodPageContent() {
   ======================================================= */
 
   const renderSearch = () => (
-    <button
-      type="button"
-      onClick={() => window.dispatchEvent(new Event("open-global-search"))}
-      className="flex min-h-[56px] w-full flex-1 items-center justify-between gap-3 rounded-2xl lg:rounded-full border border-gray-100 bg-white px-5 text-left transition hover:border-primary-700 hover:bg-gray-50/80 focus:outline-none shadow-sm dark:border-slate-800 dark:bg-slate-900"
-    >
-      <div className="flex items-center gap-3 min-w-0">
-        <IoSearchOutline className="shrink-0 text-[22px] text-primary-700 dark:text-emerald-400" />
-        <span className="text-[16px] text-gray-500 dark:text-gray-400 truncate">
-          {searchInput
-            ? `ស្វែងរក: "${searchInput}"`
-            : "ស្វែងរកហាង ឬ មុខម្ហូប..."}
-        </span>
-      </div>
-      <kbd className="hidden sm:inline-block rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 dark:bg-slate-800 dark:text-gray-400">
+    <div className="relative flex min-h-[56px] w-full flex-1 items-center gap-3 rounded-2xl lg:rounded-full border border-gray-200/80 bg-white px-4 shadow-sm transition-all focus-within:border-primary-700 focus-within:ring-2 focus-within:ring-primary-700/20 dark:border-slate-800 dark:bg-slate-900">
+      <IoSearchOutline className="shrink-0 text-[22px] text-primary-700 dark:text-emerald-400" />
+      <input
+        type="search"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        placeholder="ស្វែងរកមុខម្ហូប ឈ្មោះ កូដ ប្រភេទ ហាង..."
+        className="w-full bg-transparent text-[16px] text-gray-800 placeholder-gray-400 focus:outline-none dark:text-slate-100 dark:placeholder-gray-500"
+      />
+      {searchInput && (
+        <button
+          type="button"
+          onClick={() => setSearchInput("")}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 transition"
+          aria-label="សម្អាតការស្វែងរក"
+        >
+          <IoClose className="text-[16px]" />
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event("open-global-search"))}
+        className="hidden sm:inline-flex items-center rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700 transition"
+        title="បើកផ្ទាំងស្វែងរកសកល (Global Search)"
+      >
         ⌘K
-      </kbd>
-    </button>
+      </button>
+    </div>
   );
 
   /* =======================================================
