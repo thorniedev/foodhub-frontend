@@ -902,7 +902,7 @@ export function generateWebSiteJsonLd(): object {
             name: "ស្វែងរកម្ហូបខ្មែរ Khmer food យ៉ាងដូចម្តេច?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "ចូល Mhoubahar.store ហើយប្រើប្រាស់ប្រព័ន្ធស្វែងរកដើម្បីស្វែងរក មុខម្ហូប ហាងភោជនីយដ្ឋាន ឬប្រភេទអាហារ (food category) ណាមួយ។ អ្នកអាចស្វែងរកដោយ ប្រភេទ (category), ប្រភពពូជ (cuisine), ដូចជា ម្ហូបខ្មែរ, ម្ហូបចិន, ម្ហូបថៃ, ម្ហូបhalal, ម្ហូប채食 (vegetarian), ក្នុងតំបន់ (location), ឬតាមពេលវេលា (meal time).",
+              text: "ចូល Mhoubahar.store ហើយប្រើប្រាស់ប្រព័ន្ធស្វែងរកដើម្បីស្វែងរក មុខម្ហូប ហាងភោជនីយដ្ឋាន ឬប្រភេទអាហារ (food category) ណាមួយ។ អ្នកអាចស្វែងរកដោយ ប្រភេទ (category), ប្រភពពូជ (cuisine), ដូចជា ម្ហូបខ្មែរ, ម្ហូបចិន, ម្ហូបhalal, ម្ហូប채食 (vegetarian), ក្នុងតំបន់ (location), ឬតាមពេលវេលា (meal time).",
             },
           },
           {

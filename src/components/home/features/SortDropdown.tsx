@@ -9,8 +9,8 @@ export type SortOption =
   | "price-desc"
   | "preparation-asc"
   | "preparation-desc"
-  | "rating-desc"
-  | "name-asc";
+  | "name-asc"
+  | "name-desc";
 
 interface SortDropdownProps {
   value: SortOption;
@@ -42,12 +42,12 @@ const SORT_OPTIONS: {
     label: "ពេលរៀបចំ: យូរ → លឿន",
   },
   {
-    value: "rating-desc",
-    label: "Rating ខ្ពស់មុន",
-  },
-  {
     value: "name-asc",
     label: "ឈ្មោះ A → Z",
+  },
+  {
+    value: "name-desc",
+    label: "ឈ្មោះ Z → A",
   },
 ];
 

@@ -132,7 +132,7 @@ describe("Profile Preferences & Behavioral Integration", () => {
         expect.arrayContaining(["crispy", "chewy", "creamy", "tender", "crunchy"])
       );
       expect(CUISINE_OPTIONS.map((c) => c.code)).toEqual(
-        expect.arrayContaining(["KHMER", "JAPANESE", "CHINESE", "KOREAN", "THAI"])
+        expect.arrayContaining(["KHMER", "JAPANESE", "CHINESE", "KOREAN", "VIETNAMESE"])
       );
       expect(PREFERENCE_LEVELS.map((p) => p.value)).toEqual(
         expect.arrayContaining(["LOVE", "LIKE", "NEUTRAL", "DISLIKE", "AVOID"])
