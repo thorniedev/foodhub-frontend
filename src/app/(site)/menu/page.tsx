@@ -273,9 +273,15 @@ function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
   // Fallback ranges for standard FoodHub age groups if not returned from backend
   const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
   if (
+    key.includes("ទារក") ||
+    key.includes("infant") ||
+    key.includes("baby")
+  ) {
+    return `${a.name || "ទារក"} (0-6)`;
+  }
+  if (
     key.includes("កុមារតូច") ||
-    key.includes("toddler") ||
-    key.includes("infant")
+    key.includes("toddler")
   ) {
     return `${a.name} (0-2)`;
   }
@@ -745,6 +751,20 @@ function applyCustomerSearchFilters(
             if (token === aName || token === aCode) return true;
             if (aName.includes(token) || token.includes(aName)) return true;
             if (
+              (token.includes("ទារក") ||
+                token.includes("0-6") ||
+                token.includes("0-1") ||
+                token.includes("0-2") ||
+                token.includes("infant") ||
+                token.includes("baby")) &&
+              (aName.includes("ទារក") ||
+                aCode.includes("infant") ||
+                aCode.includes("baby") ||
+                aName.includes("baby"))
+            ) {
+              return true;
+            }
+            if (
               (token.includes("យុវវ័យ") || token.includes("13-17")) &&
               (aName.includes("យុវវ័យ") || aCode.includes("youth"))
             ) {
@@ -1060,31 +1080,44 @@ function FilterSection({
   );
 }
 
-function CollapsibleList<T>({ items, limit = 6, renderItem, hideSearch = false }: { items: T[], limit?: number, renderItem: (item: T) => React.ReactNode, hideSearch?: boolean }) {
+function CollapsibleList<T>({
+  items,
+  limit = 6,
+  renderItem,
+  hideSearch = false,
+  showSearch = false,
+}: {
+  items: T[];
+  limit?: number;
+  renderItem: (item: T) => React.ReactNode;
+  hideSearch?: boolean;
+  showSearch?: boolean;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
 
   const filteredItems = useMemo(() => {
     if (!query) return items;
     const q = query.toLowerCase();
-    return items.filter(item => {
+    return items.filter((item) => {
       let str = "";
-      if (typeof item === 'string') {
+      if (typeof item === "string") {
         str = item;
-      } else if (item && typeof item === 'object') {
-        if ('name' in item) str = String(item.name);
-        else if ('label' in item) str = String(item.label);
+      } else if (item && typeof item === "object") {
+        if ("name" in item) str = String((item as any).name);
+        else if ("label" in item) str = String((item as any).label);
       }
       return str.toLowerCase().includes(q);
     });
   }, [items, query]);
 
-  const visible = expanded || query ? filteredItems : filteredItems.slice(0, limit);
+  const visible =
+    expanded || query ? filteredItems : filteredItems.slice(0, limit);
   const hiddenCount = filteredItems.length - limit;
 
   return (
     <div className="flex flex-col gap-3">
-      {!hideSearch && items.length > limit && (
+      {!hideSearch && (showSearch || items.length > limit) && (
         <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/80">
           <IoSearchOutline className="text-[18px] text-gray-400 dark:text-slate-500" />
           <input
@@ -1305,9 +1338,7 @@ function FilterSidebar({
     season: false,
     event: false,
     weather: false,
-    availability: false,
     province: false,
-    city: false,
   });
 
   // Auto-expand age group section if ageGroup filter is active
@@ -1361,6 +1392,29 @@ function FilterSidebar({
     });
   };
 
+  const ageGroupList = useMemo(() => {
+    const rawList = filterOptions?.ageGroups || [];
+    const hasInfant = rawList.some(
+      (a) =>
+        normalizeText(a.name).includes("ទារក") ||
+        (a.code && normalizeText(a.code).includes("infant")) ||
+        (a.code && normalizeText(a.code).includes("baby")),
+    );
+    if (!hasInfant) {
+      return [
+        {
+          uuid: "age-group-infant",
+          code: "INFANT",
+          name: "ទារក",
+          minAge: 0,
+          maxAge: 6,
+        },
+        ...rawList,
+      ];
+    }
+    return rawList;
+  }, [filterOptions?.ageGroups]);
+
   const activeFilterCount =
     (customerSearchRequest.categoryUuids?.length || 0) +
     (customerSearchRequest.cuisineUuids?.length || 0) +
@@ -1372,9 +1426,7 @@ function FilterSidebar({
     (customerSearchRequest.dietaryTypeUuids?.length || 0) +
     (customerSearchRequest.excludeAllergenUuids?.length || 0) +
     (customerSearchRequest.storePriceLevels?.length || 0) +
-    (customerSearchRequest.availabilityStatuses?.length || 0) +
     (customerSearchRequest.provinces?.length || 0) +
-    (customerSearchRequest.cities?.length || 0) +
     (customerSearchRequest.featuredOnly ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
     (customerSearchRequest.minimumPrice !== undefined ||
@@ -1666,7 +1718,7 @@ function FilterSidebar({
             {/* CUISINE */}
             {filterOptions?.cuisines && filterOptions.cuisines.length > 0 && (
               <FilterSection
-                title="ម្ហូបតាមតំបន់"
+                title="ម្ហូបតាមប្រទេស"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.cuisine}
                 onToggle={() => toggleSection("cuisine")}
@@ -1857,7 +1909,7 @@ function FilterSidebar({
                         : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                       }`}
                   >
-                    ⏱️ {pt.label}
+                    {pt.label}
                   </button>
                 ))}
               </div>
@@ -1888,7 +1940,7 @@ function FilterSidebar({
             )}
 
             {/* AGE GROUPS */}
-            {filterOptions?.ageGroups && filterOptions.ageGroups.length > 0 && (
+            {ageGroupList.length > 0 && (
               <FilterSection
                 title="ក្រុមអាយុ"
                 icon={<IoNutritionOutline />}
@@ -1896,7 +1948,7 @@ function FilterSidebar({
                 onToggle={() => toggleSection("ageGroup")}
               >
                 <CollapsibleList
-                  items={filterOptions.ageGroups}
+                  items={ageGroupList}
                   renderItem={(a) => {
                     const isChecked = Boolean(
                       customerSearchRequest.ageGroupUuids?.includes(a.uuid) ||
@@ -1909,6 +1961,13 @@ function FilterSidebar({
                         return (
                           normU === aName ||
                           normU === aCode ||
+                          ((normU.includes("ទារក") ||
+                            normU.includes("0-6") ||
+                            normU.includes("infant") ||
+                            normU.includes("baby")) &&
+                            (aName.includes("ទារក") ||
+                              aCode.includes("infant") ||
+                              aCode.includes("baby"))) ||
                           (normU.includes("យុវវ័យ") &&
                             (aName.includes("យុវវ័យ") ||
                               aCode.includes("youth"))) ||
@@ -2078,35 +2137,6 @@ function FilterSidebar({
                 </FilterSection>
               )}
 
-            {/* AVAILABILITY */}
-            {filterOptions?.availabilityStatuses &&
-              filterOptions.availabilityStatuses.length > 0 && (
-                <FilterSection
-                  title="ស្ថានភាពលក់"
-                  icon={<MdOutlineCategory />}
-                  isOpen={openSections.availability}
-                  onToggle={() => toggleSection("availability")}
-                >
-                  <CollapsibleList
-                    items={filterOptions.availabilityStatuses}
-                    renderItem={(status) => (
-                      <PillOption
-                        key={status}
-                        label={AVAILABILITY_LABELS[status] ?? status}
-                        checked={Boolean(
-                          customerSearchRequest.availabilityStatuses?.includes(
-                            status,
-                          ),
-                        )}
-                        onChange={() =>
-                          toggleArrayItem("availabilityStatuses", status)
-                        }
-                      />
-                    )}
-                  />
-                </FilterSection>
-              )}
-
             {/* FEATURED ONLY */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
               <span className="text-[16px] font-semibold text-gray-700">
@@ -2128,12 +2158,13 @@ function FilterSidebar({
             {/* PROVINCES */}
             {filterOptions?.provinces && filterOptions.provinces.length > 0 && (
               <FilterSection
-                title="ខេត្ត"
+                title="ខេត្ត/រាជធានី"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.province}
                 onToggle={() => toggleSection("province")}
               >
                 <CollapsibleList
+                  showSearch={true}
                   items={filterOptions.provinces}
                   renderItem={(prov) => (
                     <PillOption
@@ -2143,30 +2174,6 @@ function FilterSidebar({
                         customerSearchRequest.provinces?.includes(prov),
                       )}
                       onChange={() => toggleArrayItem("provinces", prov)}
-                    />
-                  )}
-                />
-              </FilterSection>
-            )}
-
-            {/* CITIES */}
-            {filterOptions?.cities && filterOptions.cities.length > 0 && (
-              <FilterSection
-                title="ទីក្រុង"
-                icon={<MdOutlineCategory />}
-                isOpen={openSections.city}
-                onToggle={() => toggleSection("city")}
-              >
-                <CollapsibleList
-                  items={filterOptions.cities}
-                  renderItem={(city) => (
-                    <PillOption
-                      key={city}
-                      label={city}
-                      checked={Boolean(
-                        customerSearchRequest.cities?.includes(city),
-                      )}
-                      onChange={() => toggleArrayItem("cities", city)}
                     />
                   )}
                 />
