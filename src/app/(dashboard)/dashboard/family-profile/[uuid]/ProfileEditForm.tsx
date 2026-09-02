@@ -1161,13 +1161,24 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         }).unwrap();
       }
 
+      // Filter out any stale/inactive allergens that are no longer in the active options dictionary
+      const activeAllergenCodes = new Set(
+        allergenOptions.map((opt) => opt.code.toUpperCase()),
+      );
+      const validAllergies =
+        allergenOptions.length > 0
+          ? form.allergies.filter((item) =>
+              activeAllergenCodes.has(item.allergenCode.toUpperCase()),
+            )
+          : form.allergies;
+
       const originalAllergyCount = profile.allergies?.length ?? 0;
 
-      if (form.allergies.length > 0) {
+      if (validAllergies.length > 0) {
         await saveMemberAllergies({
           uuid,
 
-          allergies: form.allergies.map((item) => ({
+          allergies: validAllergies.map((item) => ({
             allergenCode: item.allergenCode,
 
             severity: item.severity,
@@ -1189,13 +1200,23 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
        * ==================================================
        */
 
+      const activeDietaryCodes = new Set(
+        dietaryOptions.map((opt) => opt.code.toUpperCase()),
+      );
+      const validDietaryTypes =
+        dietaryOptions.length > 0
+          ? form.dietaryTypes.filter((item) =>
+              activeDietaryCodes.has(item.dietaryTypeCode.toUpperCase()),
+            )
+          : form.dietaryTypes;
+
       const originalDietaryCount = profile.dietaryTypes?.length ?? 0;
 
-      if (form.dietaryTypes.length > 0) {
+      if (validDietaryTypes.length > 0) {
         await saveMemberDietaryTypes({
           uuid,
 
-          dietaryTypes: form.dietaryTypes.map((item, index) => ({
+          dietaryTypes: validDietaryTypes.map((item, index) => ({
             dietaryTypeCode: item.dietaryTypeCode,
 
             enforcementLevel: item.enforcementLevel,
@@ -1215,13 +1236,23 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
        * ==================================================
        */
 
+      const activeMedicalCodes = new Set(
+        medicalOptions.map((opt) => opt.code.toUpperCase()),
+      );
+      const validMedicalConditions =
+        medicalOptions.length > 0
+          ? form.medicalConditions.filter((item) =>
+              activeMedicalCodes.has(item.conditionCode.toUpperCase()),
+            )
+          : form.medicalConditions;
+
       const originalMedicalCount = profile.medicalConditions?.length ?? 0;
 
-      if (form.medicalConditions.length > 0) {
+      if (validMedicalConditions.length > 0) {
         await saveMemberMedicalConditions({
           uuid,
 
-          medicalConditions: form.medicalConditions.map((item) => ({
+          medicalConditions: validMedicalConditions.map((item) => ({
             conditionCode: item.conditionCode,
 
             severity: item.severity,
