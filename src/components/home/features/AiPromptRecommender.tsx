@@ -1,11 +1,13 @@
 "use client";
 
-import { Compass, Sparkles, Send, Loader2, ShieldCheck } from "lucide-react";
+import { Compass, Sparkles, Send, Loader2, ShieldCheck, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
+import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
 import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
 
 import type { MemberProfile } from "@/types/member-profile/member-profile";
-import type { RecommendationItem } from "@/types/recommendation";
+import type { EnrichedRecommendationItem } from "@/hooks/useEnrichedRecommendationItems";
 
 const MAX_PROMPT = 200;
 
@@ -42,7 +44,7 @@ function matchClasses(match: number | null): string {
 }
 
 /** Hover tooltip text summarizing the per-strategy score breakdown. */
-function breakdownTitle(breakdown: Record<string, number> | null): string | undefined {
+function breakdownTitle(breakdown: Record<string, number | undefined> | null): string | undefined {
   if (!breakdown) return undefined;
   const labels: Record<string, string> = {
     AI_JUDGMENT: "AI",
@@ -51,9 +53,9 @@ function breakdownTitle(breakdown: Record<string, number> | null): string | unde
     POPULARITY: "Popularity",
     TRENDING: "Trending",
   };
-  const parts = Object.entries(breakdown).map(
-    ([key, value]) => `${labels[key] ?? key} ${Math.round(value * 100)}%`,
-  );
+  const parts = Object.entries(breakdown)
+    .filter(([, value]) => value != null)
+    .map(([key, value]) => `${labels[key] ?? key} ${Math.round(value! * 100)}%`);
   return parts.length ? parts.join(" · ") : undefined;
 }
 
@@ -73,43 +75,25 @@ export default function AiPromptRecommender({
   items,
   canRecommend,
   isLoadingProfiles,
-  profiles,
   targetProfiles,
-  onToggleProfile,
-  onSelectAllProfiles,
-  allProfilesSelected,
 }: {
   prompt: string;
   onPromptChange: (value: string) => void;
   onSubmit: (event: React.FormEvent) => void;
   isLoading: boolean;
   error: unknown;
-  items: RecommendationItem[];
+  items: EnrichedRecommendationItem[];
   canRecommend: boolean;
   isLoadingProfiles: boolean;
-  profiles: MemberProfile[];
   targetProfiles: MemberProfile[];
-  onToggleProfile: (profile: MemberProfile) => void;
-  onSelectAllProfiles: () => void;
-  allProfilesSelected: boolean;
 }) {
   return (
-    <div className="border-t border-gray-200 bg-white/70 px-4 py-4">
-      <div className="mb-2 flex items-center justify-between gap-2 text-[15px] font-semibold text-primary-900">
-        <div className="flex min-w-0 items-center gap-2">
-          <Sparkles className="h-4 w-4 shrink-0 text-secondary-500" />
-          <span className="truncate">
-            ប្រាប់ AI នូវលក្ខខណ្ឌរបស់អ្នក (Tell the AI what you want)
-          </span>
-        </div>
-
-        <ProfileMultiSelect
-          profiles={profiles}
-          targetProfiles={targetProfiles}
-          onToggle={onToggleProfile}
-          onSelectAll={onSelectAllProfiles}
-          allSelected={allProfilesSelected}
-        />
+    <div className="flex h-full flex-col bg-white px-4 py-5 sm:px-5">
+      <div className="mb-4 flex items-center gap-2 text-[16px] font-semibold text-primary-900">
+        <Sparkles className="h-5 w-5 shrink-0 text-secondary-500" />
+        <span className="truncate">
+          ប្រាប់ AI នូវលក្ខខណ្ឌរបស់អ្នក (Tell the AI what you want)
+        </span>
       </div>
 
       <form onSubmit={onSubmit} className="flex gap-2">
@@ -166,47 +150,72 @@ export default function AiPromptRecommender({
       )}
 
       {items.length > 0 && (
-        <ul className="mt-3 max-h-[240px] space-y-2 overflow-y-auto pr-1">
+        <ul className="mt-4 flex-1 space-y-3 overflow-y-auto pr-1 pb-4">
           {items.map((item) => {
-            const price = formatPrice(item.priceSnapshot, item.currencyCode);
-            const match =
-              item.finalScore != null ? Math.round(item.finalScore * 100) : null;
+            const price = formatPrice(item.price, item.currencyCode);
+            const finalScore = item.recommendation?.finalScore;
+            const match = finalScore != null ? Math.round(finalScore * 100) : null;
+            const effectiveThumbnail =
+              item.thumbnail ||
+              (item.gallery && item.gallery.length > 0 ? item.gallery[0] : null) ||
+              (item.uuid ? `/api/v1/catalog/menu-items/${item.uuid}/images/1` : null);
+            const thumbnailUrl = toFrontendApiAssetUrl(effectiveThumbnail);
+
             return (
               <li
                 key={item.uuid}
-                className="flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-3"
+                className="flex items-stretch gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:shadow-md"
               >
-                {item.rankPosition != null && (
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-800 text-[12px] font-bold text-white">
-                    {item.rankPosition}
-                  </span>
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-gray-900">
-                    {item.menuItemName ?? "Recommended dish"}
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[10px] bg-gray-100">
+                  {thumbnailUrl ? (
+                    <Image
+                      src={thumbnailUrl}
+                      alt={item.name}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-gray-300">
+                      <ImageIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                  {item.rankPosition != null && (
+                    <div className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-primary-800 text-[11px] font-bold text-white shadow-sm">
+                      {item.rankPosition}
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 flex flex-col justify-center">
+                  <p className="truncate font-bold text-gray-900">
+                    {item.name ?? "Recommended dish"}
                   </p>
-                  {item.storeName && (
+                  {item.store?.name && (
                     <p className="truncate text-[13px] text-gray-500">
-                      {item.storeName}
+                      {item.store.name}
                     </p>
                   )}
-                  {item.reasonText && (
-                    <p className="mt-0.5 line-clamp-1 text-[13px] text-gray-600">
-                      {item.reasonText}
+                  {item.recommendation?.reasonText && (
+                    <p className="mt-0.5 line-clamp-1 text-[13px] leading-tight text-gray-600">
+                      {item.recommendation.reasonText}
                     </p>
                   )}
                   {item.isExploration && (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                      <Compass className="h-3 w-3" />
-                      ស្វែងរកថ្មី
-                    </span>
+                    <div className="mt-1">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                        <Compass className="h-3 w-3" />
+                        ស្វែងរកថ្មី
+                      </span>
+                    </div>
                   )}
                 </div>
-                <div className="shrink-0 text-right">
+
+                <div className="flex shrink-0 flex-col items-end justify-center">
                   {price && <p className="font-bold text-gray-900">{price}</p>}
                   {match != null && (
                     <span
-                      title={breakdownTitle(item.scoreBreakdown)}
+                      title={breakdownTitle(item.recommendation?.scoreBreakdown ?? null)}
                       className={`mt-1 inline-block cursor-default rounded-full px-2 py-0.5 text-[12px] font-semibold ${matchClasses(
                         match,
                       )}`}

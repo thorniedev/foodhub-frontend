@@ -596,9 +596,10 @@ export default function FilterByMealTime({
           TABS
       ===================================================== */}
 
-      <div className="container mx-auto max-w-7xl px-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex gap-8 overflow-x-auto">
+      <div className="sticky top-16 md:top-0 lg:top-16 z-30 w-full bg-white/90 backdrop-blur-md dark:bg-gray-950/90 pt-3 pb-1 transition-all duration-300">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:border-b sm:border-gray-200 sm:dark:border-slate-800">
+          <div className="scrollbar-hide flex w-full sm:w-auto gap-5 sm:gap-8 overflow-x-auto border-b border-gray-200 dark:border-slate-800 sm:border-none">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
 
@@ -610,7 +611,7 @@ export default function FilterByMealTime({
                     isManualOverride.current = true;
                     setActiveTab(tab.id);
                   }}
-                  className={`relative cursor-pointer whitespace-nowrap pb-4 text-lg font-semibold transition-colors md:text-xl ${
+                  className={`relative cursor-pointer whitespace-nowrap pb-3 sm:pb-4 text-[17px] font-semibold transition-colors md:text-xl ${
                     isActive
                       ? "text-primary-700 dark:text-emerald-400"
                       : "text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
@@ -637,7 +638,7 @@ export default function FilterByMealTime({
           {/* Food / Drink switch — recommendation and catalog both mix
               food and drink items, so this is a real hard filter, not a
               cosmetic one. */}
-          <div className="mb-2 flex shrink-0 gap-1 rounded-full bg-gray-100 p-1 dark:bg-slate-800">
+          <div className="mt-3 sm:mt-0 mb-1 sm:mb-2 flex shrink-0 self-start sm:self-auto gap-1 rounded-full bg-gray-100 p-1 dark:bg-slate-800">
             {rootCategoryTabs.map((tab) => {
               const isActive = rootCategoryFilter === tab.id;
               const Icon = tab.icon;
@@ -661,6 +662,7 @@ export default function FilterByMealTime({
           </div>
         </div>
       </div>
+    </div>
 
       {/* =====================================================
           FOOD GRID
