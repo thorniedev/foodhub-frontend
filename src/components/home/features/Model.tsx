@@ -86,6 +86,8 @@ export default function Model() {
 
   const [prompt, setPrompt] = useState("");
   const hasAutoTriggeredRef = useRef(false);
+  // Synchronous in-flight lock for createSession. See runRecommendation.
+  const sessionInFlightRef = useRef(false);
 
   const activeProfiles = useMemo(() => {
     const list = Array.isArray(profilesData)
@@ -122,21 +124,39 @@ export default function Model() {
     targetProfilesOverride?: MemberProfile[],
   ) => {
     const targets = targetProfilesOverride ?? targetProfiles;
-    if (!canRecommend || isSessionLoading || targets.length === 0) return;
+    // isSessionLoading alone cannot prevent a duplicate: it is React state
+    // and only becomes true on a later render, so two calls in the same tick
+    // (an effect plus a click, or a double click) both read it as false and
+    // both fire. Each duplicate session costs a full AI_CANDIDATE_LIMIT worth
+    // of paid LLM calls, so the in-flight lock has to be synchronous.
+    if (
+      !canRecommend ||
+      isSessionLoading ||
+      sessionInFlightRef.current ||
+      targets.length === 0
+    ) {
+      return;
+    }
 
-    void createSession({
-      mode: targets.length > 1 ? "GROUP" : "SINGLE",
-      // Production stores only the documented request-source values.
-      // Prompt-driven requests have no dedicated backend enum yet.
-      requestSource: promptText ? "OTHER" : "HOMEPAGE_AUTO",
-      requestedLimit: 15,
-      searchRadiusKm: 3,
-      currencyCode: "USD",
-      contextData: promptText ? { userPrompt: promptText } : undefined,
-      profiles: targets.map((profile, index) => ({
-        profileId: profile.uuid,
-        isPrimary: index === 0,
-      })),
+    sessionInFlightRef.current = true;
+
+    void Promise.resolve(
+      createSession({
+        mode: targets.length > 1 ? "GROUP" : "SINGLE",
+        // Production stores only the documented request-source values.
+        // Prompt-driven requests have no dedicated backend enum yet.
+        requestSource: promptText ? "OTHER" : "HOMEPAGE_AUTO",
+        requestedLimit: 15,
+        searchRadiusKm: 3,
+        currencyCode: "USD",
+        contextData: promptText ? { userPrompt: promptText } : undefined,
+        profiles: targets.map((profile, index) => ({
+          profileId: profile.uuid,
+          isPrimary: index === 0,
+        })),
+      }),
+    ).finally(() => {
+      sessionInFlightRef.current = false;
     });
   };
 
