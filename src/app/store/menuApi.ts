@@ -32,6 +32,69 @@ export interface MealTypeDto {
   isActive: boolean | null;
 }
 
+export interface FoodCatalogDetail {
+  uuid: string;
+  canonicalName: string;
+  localName: string;
+  description: string | null;
+  categoryUuid?: string;
+  categoryName?: string;
+  cuisineUuid?: string;
+  cuisineName?: string;
+  defaultSpiceLevel?: number;
+  nutritionData?: {
+    calories?: number;
+    fatGrams?: number;
+    fiberGrams?: number;
+    proteinGrams?: number;
+    carbohydrateGrams?: number;
+  };
+  seasons?: Array<{
+    uuid?: string;
+    code?: string;
+    name?: string;
+    localName?: string | null;
+    suitabilityScore?: number;
+    reasonText?: string | null;
+  }>;
+  dietaryTypes?: Array<{
+    code: string;
+    name: string;
+    verificationStatus?: string;
+  }>;
+  events?: Array<{
+    uuid?: string;
+    code?: string;
+    name?: string;
+    localName?: string | null;
+    relevanceScore?: number;
+    reasonText?: string | null;
+  }>;
+  suitableWeather?: Array<{
+    uuid?: string;
+    code?: string;
+    name?: string;
+    localName?: string | null;
+    suitabilityScore?: number;
+    reasonText?: string | null;
+  }>;
+  mealTypes?: Array<{
+    uuid?: string;
+    code?: string;
+    name?: string;
+    suitabilityScore?: number;
+  }>;
+  ageRules?: Array<{
+    uuid?: string;
+    code?: string;
+    name?: string;
+    minAge?: number;
+    maxAge?: number;
+    ruleResult?: string;
+    reasonText?: string;
+  }>;
+}
+
 export const menuApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // =========================================================
@@ -126,6 +189,29 @@ export const menuApi = baseApi.injectEndpoints({
     }),
 
     // =========================================================
+    // GET FOOD CATALOG DETAIL (Master Food Definition)
+    // GET /api/v1/catalog/foods/{uuid}
+    // =========================================================
+    getFoodCatalogByUuid: builder.query<FoodCatalogDetail, string>({
+      query: (uuid) => ({
+        url: `/catalog/foods/${encodeURIComponent(uuid)}`,
+        method: "GET",
+      }),
+      transformResponse: (response: unknown): FoodCatalogDetail => {
+        return normalizePayload<FoodCatalogDetail>(
+          response,
+          {} as FoodCatalogDetail,
+        );
+      },
+      providesTags: (_result, _error, uuid) => [
+        {
+          type: "Food" as const,
+          id: uuid,
+        },
+      ],
+    }),
+
+    // =========================================================
     // GET ACTIVE MEAL TYPES (breakfast/lunch/dinner + their real IDs)
     // GET /api/v1/catalog/meal-types
     // =========================================================
@@ -152,5 +238,6 @@ export const menuApi = baseApi.injectEndpoints({
 export const {
   useGetMenuItemsQuery,
   useGetMenuItemByUuidQuery,
+  useGetFoodCatalogByUuidQuery,
   useGetMealTypesQuery,
 } = menuApi;

@@ -328,12 +328,26 @@ function normalizeEnforcement(value: string | null): DietaryEnforcementLevel {
   return "PREFERRED";
 }
 
+function deduplicateByCode<T>(items: T[], getCode: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    const raw = getCode(item);
+    const code = raw ? raw.trim().toUpperCase() : "";
+    if (code && !seen.has(code)) {
+      seen.add(code);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
 function normalizeAllergies(value: unknown): AllergyFormItem[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  return value.flatMap((item) => {
+  const items = value.flatMap((item) => {
     const code = readString(item, "allergenCode", "code");
 
     if (!code) {
@@ -350,6 +364,8 @@ function normalizeAllergies(value: unknown): AllergyFormItem[] {
       },
     ];
   });
+
+  return deduplicateByCode(items, (i) => i.allergenCode);
 }
 
 function normalizeDietaryTypes(value: unknown): DietaryFormItem[] {
@@ -357,7 +373,7 @@ function normalizeDietaryTypes(value: unknown): DietaryFormItem[] {
     return [];
   }
 
-  return value.flatMap((item, index) => {
+  const items = value.flatMap((item, index) => {
     const code = readString(item, "dietaryTypeCode", "code");
 
     if (!code) {
@@ -378,6 +394,8 @@ function normalizeDietaryTypes(value: unknown): DietaryFormItem[] {
       },
     ];
   });
+
+  return deduplicateByCode(items, (i) => i.dietaryTypeCode);
 }
 
 function normalizeMedicalConditions(value: unknown): MedicalFormItem[] {
@@ -385,7 +403,7 @@ function normalizeMedicalConditions(value: unknown): MedicalFormItem[] {
     return [];
   }
 
-  return value.flatMap((item) => {
+  const items = value.flatMap((item) => {
     const code = readString(item, "conditionCode", "code");
 
     if (!code) {
@@ -402,6 +420,8 @@ function normalizeMedicalConditions(value: unknown): MedicalFormItem[] {
       },
     ];
   });
+
+  return deduplicateByCode(items, (i) => i.conditionCode);
 }
 
 function getErrorMessage(error: unknown): string {
@@ -1155,7 +1175,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         }).unwrap();
       }
 
-      // Filter out any stale/inactive allergens that are no longer in the active options dictionary
+      // 2. Allergies
       const activeAllergenCodes = new Set(
         allergenOptions.map((opt) => opt.code.toUpperCase()),
       );
@@ -1166,34 +1186,32 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             )
           : form.allergies;
 
+      const uniqueAllergies = deduplicateByCode(
+        validAllergies,
+        (item) => item.allergenCode,
+      );
       const originalAllergyCount = profile.allergies?.length ?? 0;
 
-      if (validAllergies.length > 0) {
+      if (uniqueAllergies.length > 0) {
         await saveMemberAllergies({
           uuid,
-
-          allergies: validAllergies.map((item) => ({
-            allergenCode: item.allergenCode,
-
+          allergies: uniqueAllergies.map((item) => ({
+            allergenCode: item.allergenCode.toUpperCase(),
             severity: item.severity,
-
             reactionNotes: item.reactionNotes.trim() || null,
-
             avoidCrossContact: item.avoidCrossContact,
-
             medicallyDiagnosed: item.medicallyDiagnosed,
           })),
         }).unwrap();
       } else if (originalAllergyCount > 0) {
-        await clearSafetySection(uuid, "allergies");
+        try {
+          await saveMemberAllergies({ uuid, allergies: [] }).unwrap();
+        } catch {
+          await clearSafetySection(uuid, "allergies").catch(() => {});
+        }
       }
 
-      /*
-       * ==================================================
-       * 3. DIETARY TYPES
-       * ==================================================
-       */
-
+      // 3. Dietary Types
       const activeDietaryCodes = new Set(
         dietaryOptions.map((opt) => opt.code.toUpperCase()),
       );
@@ -1204,32 +1222,31 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             )
           : form.dietaryTypes;
 
+      const uniqueDietaryTypes = deduplicateByCode(
+        validDietaryTypes,
+        (item) => item.dietaryTypeCode,
+      );
       const originalDietaryCount = profile.dietaryTypes?.length ?? 0;
 
-      if (validDietaryTypes.length > 0) {
+      if (uniqueDietaryTypes.length > 0) {
         await saveMemberDietaryTypes({
           uuid,
-
-          dietaryTypes: validDietaryTypes.map((item, index) => ({
-            dietaryTypeCode: item.dietaryTypeCode,
-
+          dietaryTypes: uniqueDietaryTypes.map((item, index) => ({
+            dietaryTypeCode: item.dietaryTypeCode.toUpperCase(),
             enforcementLevel: item.enforcementLevel,
-
             priority: index + 1,
-
             notes: item.notes.trim() || null,
           })),
         }).unwrap();
       } else if (originalDietaryCount > 0) {
-        await clearSafetySection(uuid, "dietary-types");
+        try {
+          await saveMemberDietaryTypes({ uuid, dietaryTypes: [] }).unwrap();
+        } catch {
+          await clearSafetySection(uuid, "dietary-types").catch(() => {});
+        }
       }
 
-      /*
-       * ==================================================
-       * 4. MEDICAL CONDITIONS
-       * ==================================================
-       */
-
+      // 4. Medical Conditions
       const activeMedicalCodes = new Set(
         medicalOptions.map((opt) => opt.code.toUpperCase()),
       );
@@ -1240,29 +1257,33 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             )
           : form.medicalConditions;
 
+      const uniqueMedicalConditions = deduplicateByCode(
+        validMedicalConditions,
+        (item) => item.conditionCode,
+      );
       const originalMedicalCount = profile.medicalConditions?.length ?? 0;
 
-      if (validMedicalConditions.length > 0) {
+      if (uniqueMedicalConditions.length > 0) {
         await saveMemberMedicalConditions({
           uuid,
-
-          medicalConditions: validMedicalConditions.map((item) => ({
-            conditionCode: item.conditionCode,
-
+          medicalConditions: uniqueMedicalConditions.map((item) => ({
+            conditionCode: item.conditionCode.toUpperCase(),
             severity: item.severity,
-
             notes: item.notes.trim() || null,
           })),
         }).unwrap();
       } else if (originalMedicalCount > 0) {
-        await clearSafetySection(uuid, "medical-conditions");
+        try {
+          await saveMemberMedicalConditions({
+            uuid,
+            medicalConditions: [],
+          }).unwrap();
+        } catch {
+          await clearSafetySection(uuid, "medical-conditions").catch(() => {});
+        }
       }
 
-      /*
-       * ==================================================
-       * 5. GENERAL PREFERENCES (SPICE, BUDGET, RADIUS, TASTES)
-       * ==================================================
-       */
+      // 5. General Preferences
       const minPrice =
         typeof form.minimumPrice === "number" ? form.minimumPrice : undefined;
       const maxPrice =
@@ -1281,25 +1302,23 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
         },
       }).unwrap();
 
-      /*
-       * ==================================================
-       * 6. CUISINE PREFERENCES
-       * ==================================================
-       */
-      if (form.cuisinePreferences.length > 0) {
+      // 6. Cuisine Preferences
+      const uniqueCuisines = deduplicateByCode(
+        form.cuisinePreferences,
+        (item) => item.cuisineCode,
+      );
+
+      try {
         await saveMemberCuisines({
           uuid,
-          cuisines: form.cuisinePreferences.map((item, index) => ({
-            cuisineCode: item.cuisineCode,
+          cuisines: uniqueCuisines.map((item, index) => ({
+            cuisineCode: item.cuisineCode.toUpperCase(),
             preferenceLevel: item.preferenceLevel,
             priority: item.priority || index + 1,
           })),
         }).unwrap();
-      } else {
-        await saveMemberCuisines({
-          uuid,
-          cuisines: [],
-        }).unwrap();
+      } catch (cuisineErr) {
+        console.warn("Non-fatal cuisine preferences update warning:", cuisineErr);
       }
 
       await refetchProfile();

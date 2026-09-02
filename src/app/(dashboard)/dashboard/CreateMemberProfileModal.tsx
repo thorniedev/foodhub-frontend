@@ -131,6 +131,20 @@ const initialFormState: CreateProfileForm = {
   medicalConditions: [],
 };
 
+function deduplicateByCode<T>(items: T[], getCode: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    const raw = getCode(item);
+    const code = raw ? raw.trim().toUpperCase() : "";
+    if (code && !seen.has(code)) {
+      seen.add(code);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
@@ -577,12 +591,16 @@ export default function CreateMemberProfileModal({
        */
       const safetyRequests: Promise<unknown>[] = [];
 
-      if (form.allergies.length > 0) {
+      const uniqueAllergies = deduplicateByCode(
+        form.allergies,
+        (item) => item.allergenCode,
+      );
+      if (uniqueAllergies.length > 0) {
         safetyRequests.push(
           saveMemberAllergies({
             uuid: profileUuid,
-            allergies: form.allergies.map((item) => ({
-              allergenCode: item.allergenCode,
+            allergies: uniqueAllergies.map((item) => ({
+              allergenCode: item.allergenCode.toUpperCase(),
               severity: item.severity,
               reactionNotes: item.reactionNotes.trim() || null,
               avoidCrossContact: item.avoidCrossContact,
@@ -592,12 +610,16 @@ export default function CreateMemberProfileModal({
         );
       }
 
-      if (form.dietaryTypes.length > 0) {
+      const uniqueDietaryTypes = deduplicateByCode(
+        form.dietaryTypes,
+        (item) => item.dietaryTypeCode,
+      );
+      if (uniqueDietaryTypes.length > 0) {
         safetyRequests.push(
           saveMemberDietaryTypes({
             uuid: profileUuid,
-            dietaryTypes: form.dietaryTypes.map((item, index) => ({
-              dietaryTypeCode: item.dietaryTypeCode,
+            dietaryTypes: uniqueDietaryTypes.map((item, index) => ({
+              dietaryTypeCode: item.dietaryTypeCode.toUpperCase(),
               enforcementLevel: item.enforcementLevel,
               priority: index + 1,
               notes: item.notes.trim() || null,
@@ -606,12 +628,16 @@ export default function CreateMemberProfileModal({
         );
       }
 
-      if (form.medicalConditions.length > 0) {
+      const uniqueMedicalConditions = deduplicateByCode(
+        form.medicalConditions,
+        (item) => item.conditionCode,
+      );
+      if (uniqueMedicalConditions.length > 0) {
         safetyRequests.push(
           saveMemberMedicalConditions({
             uuid: profileUuid,
-            medicalConditions: form.medicalConditions.map((item) => ({
-              conditionCode: item.conditionCode,
+            medicalConditions: uniqueMedicalConditions.map((item) => ({
+              conditionCode: item.conditionCode.toUpperCase(),
               severity: item.severity,
               notes: item.notes.trim() || null,
             })),
