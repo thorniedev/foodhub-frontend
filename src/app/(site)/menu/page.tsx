@@ -17,7 +17,6 @@ import {
   IoSwapVerticalOutline,
   IoTimeOutline,
   IoGridOutline,
-  IoClose,
 } from "react-icons/io5";
 
 import { FaFire, FaStar } from "react-icons/fa";
@@ -2688,7 +2687,7 @@ function FoodPageContent() {
           description:
             item.description || matchingCatalogItem?.description || null,
           localDescription: matchingCatalogItem?.localDescription || null,
-          thumbnail: thumbnail || undefined,
+          thumbnail: thumbnail || null,
           gallery: matchingCatalogItem?.gallery?.length
             ? matchingCatalogItem.gallery
             : thumbnail

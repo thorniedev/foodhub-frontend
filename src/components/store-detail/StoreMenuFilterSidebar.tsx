@@ -533,7 +533,7 @@ export default function StoreMenuFilterSidebar({
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  🍲 ម្ហូប
+                  ម្ហូប
                 </button>
                 <button
                   type="button"
@@ -544,7 +544,7 @@ export default function StoreMenuFilterSidebar({
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  🥤 ភេសជ្ជៈ
+                  ភេសជ្ជៈ
                 </button>
               </div>
 
