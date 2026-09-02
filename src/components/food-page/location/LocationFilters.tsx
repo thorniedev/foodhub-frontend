@@ -248,7 +248,14 @@ function CheckboxOption({
   onChange,
 }: CheckboxOptionProps) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50">
+    <motion.label
+      layout
+      initial={{ opacity: 0, scale: 0.97, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.22 }}
+      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50"
+    >
       <span className="flex min-w-0 items-center gap-3">
         <input
           type="checkbox"
@@ -264,7 +271,7 @@ function CheckboxOption({
           {count}
         </span>
       )}
-    </label>
+    </motion.label>
   );
 }
 
@@ -714,28 +721,35 @@ export default function LocationFilters({
               onToggle={() => toggleSection("sort")}
             >
               <div className="flex flex-col gap-2">
-                {SORT_OPTIONS.map((option) => {
-                  const selected = filters.sortBy === option.value;
-                  return (
-                    <label
-                      key={option.value}
-                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
-                        selected
-                          ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
-                          : "border-transparent text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="location-food-sort"
-                        checked={selected}
-                        onChange={() => update("sortBy", option.value)}
-                        className="h-4 w-4 shrink-0 accent-primary-800"
-                      />
-                      <span className="text-[16px]">{option.label}</span>
-                    </label>
-                  );
-                })}
+                <AnimatePresence mode="popLayout">
+                  {SORT_OPTIONS.map((option) => {
+                    const selected = filters.sortBy === option.value;
+                    return (
+                      <motion.label
+                        layout
+                        initial={{ opacity: 0, scale: 0.97, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
+                        transition={{ duration: 0.22 }}
+                        key={option.value}
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
+                          selected
+                            ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
+                            : "border-transparent text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="location-food-sort"
+                          checked={selected}
+                          onChange={() => update("sortBy", option.value)}
+                          className="h-4 w-4 shrink-0 accent-primary-800"
+                        />
+                        <span className="text-[16px]">{option.label}</span>
+                      </motion.label>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
             </FilterSection>
 
@@ -750,7 +764,7 @@ export default function LocationFilters({
                 <button
                   type="button"
                   onClick={() => setCategoryType("ALL")}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-[15px] font-semibold transition ${
                     categoryType === "ALL"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
@@ -761,7 +775,7 @@ export default function LocationFilters({
                 <button
                   type="button"
                   onClick={() => setCategoryType("FOOD")}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-[15px] font-semibold transition ${
                     categoryType === "FOOD"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
@@ -772,7 +786,7 @@ export default function LocationFilters({
                 <button
                   type="button"
                   onClick={() => setCategoryType("DRINK")}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-[15px] font-semibold transition ${
                     categoryType === "DRINK"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
@@ -799,26 +813,35 @@ export default function LocationFilters({
                 />
               </div>
               <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
-                {visibleCategoryOptions.length > 0 ? (
-                  visibleCategoryOptions.map((option) => (
-                    <CheckboxOption
-                      key={option.code}
-                      label={option.name}
-                      count={option.count}
-                      checked={filters.categoryCodes.includes(option.code)}
-                      onChange={() =>
-                        update(
-                          "categoryCodes",
-                          toggleInList(filters.categoryCodes, option.code),
-                        )
-                      }
-                    />
-                  ))
-                ) : (
-                  <p className="py-2 text-center text-xs text-gray-400">
-                    រកមិនឃើញប្រភេទដែលត្រូវគ្នា
-                  </p>
-                )}
+                <AnimatePresence mode="popLayout">
+                  {visibleCategoryOptions.length > 0 ? (
+                    visibleCategoryOptions.map((option) => (
+                      <CheckboxOption
+                        key={option.code}
+                        label={option.name}
+                        count={option.count}
+                        checked={filters.categoryCodes.includes(option.code)}
+                        onChange={() =>
+                          update(
+                            "categoryCodes",
+                            toggleInList(filters.categoryCodes, option.code),
+                          )
+                        }
+                      />
+                    ))
+                  ) : (
+                    <motion.p
+                      layout
+                      initial={{ opacity: 0, scale: 0.97, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.97 }}
+                      transition={{ duration: 0.22 }}
+                      className="py-2 text-center text-xs text-gray-400"
+                    >
+                      រកមិនឃើញប្រភេទដែលត្រូវគ្នា
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
             </FilterSection>
 

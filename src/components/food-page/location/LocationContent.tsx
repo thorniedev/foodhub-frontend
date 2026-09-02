@@ -943,6 +943,7 @@ export default function LocationContent({
                     searchQuery={searchQuery}
                     onOpenFilters={() => setFiltersOpen(true)}
                     onResultCountChange={setResultCount}
+                    isLoading={isRecommendationSessionLoading || isEnriching}
                   />
                 </>
               ) : (

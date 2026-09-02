@@ -67,6 +67,7 @@ interface SingleRecommendationProps {
   searchQuery: string;
   onOpenFilters: () => void;
   onResultCountChange: (count: number) => void;
+  isLoading?: boolean;
 }
 
 /**
@@ -204,6 +205,7 @@ export default function SingleRecommendation({
   searchQuery,
   onOpenFilters,
   onResultCountChange,
+  isLoading,
 }: SingleRecommendationProps) {
   const [view, setView] = useState<LocationViewMode>("list");
 
@@ -517,7 +519,26 @@ export default function SingleRecommendation({
    */
   const list = (
     <div className="min-w-0">
-      {nearbyFoods.length === 0 ? (
+      {isLoading && nearbyFoods.length === 0 ? (
+        <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2 2xl:grid-cols-1 2xl:gap-y-4 w-full">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="flex flex-col w-full gap-4 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm rounded-[24px] p-2.5 animate-pulse"
+            >
+              <div className="rounded-[14px] w-full h-[150px] md:h-37.5 lg:h-46.25 bg-gray-200 dark:bg-gray-700" />
+              <div className="flex flex-col gap-2 px-1 pb-2">
+                <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+                <div className="flex justify-between items-center mt-2">
+                  <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-6 w-1/5 rounded-full bg-gray-200 dark:bg-gray-700" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : nearbyFoods.length === 0 ? (
         <section className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-12 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 text-primary-700">
             <IoRestaurantOutline className="text-[30px]" />
@@ -547,7 +568,7 @@ export default function SingleRecommendation({
       ) : (
         <motion.div
           layout
-          className="
+          className={`
             grid
             min-w-0
             grid-cols-1
@@ -556,7 +577,9 @@ export default function SingleRecommendation({
             md:grid-cols-2
             2xl:grid-cols-1
             2xl:gap-y-4
-          "
+            transition-opacity duration-300
+            ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}
+          `}
         >
           <AnimatePresence mode="popLayout">
             {nearbyFoods.map((food) => {
@@ -591,7 +614,7 @@ export default function SingleRecommendation({
                   className={`
         min-w-0
         rounded-[24px]
-        transition-all
+        transition-shadow
         cursor-pointer
         ${selected ? "ring-2 ring-primary-700 ring-offset-2 shadow-md dark:ring-emerald-500" : ""}
       `}

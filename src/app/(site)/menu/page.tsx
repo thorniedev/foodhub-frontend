@@ -21,6 +21,7 @@ import {
 
 import { FaFire, FaStar } from "react-icons/fa";
 import { MdOutlineCategory } from "react-icons/md";
+import { CustomSelect } from "@/components/shared/CustomSelect";
 
 import FoodCard from "@/components/dynamic-card/FoodCard";
 import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
@@ -1388,7 +1389,7 @@ function FilterSidebar({
         {/* Sidebar Sections */}
         {!isCollapsed && (
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
-            {/* PROFILE SAFETY EVALUATION */}
+            {/* PROFILE SAFETY EVALUATION (Hidden per request)
             {memberProfiles.length > 0 && (
               <FilterSection
                 title="វាយតម្លៃសុវត្ថិភាពម្ហូប"
@@ -1400,26 +1401,27 @@ function FilterSidebar({
                   ជ្រើសរើសប្រវត្តិរូបដើម្បីពិនិត្យអាលែហ្ស៊ី
                   និងធាតុផ្សំដែលហាមឃាត់៖
                 </p>
-                <select
+                <CustomSelect
                   value={customerSearchRequest.profileUuid || ""}
-                  onChange={(e) =>
+                  onChange={(val) =>
                     onSearchRequestChange({
                       ...customerSearchRequest,
-                      profileUuid: e.target.value || undefined,
+                      profileUuid: val || undefined,
                     })
                   }
-                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-700 dark:focus:ring-emerald-500"
-                >
-                  <option value="">-- មិនជ្រើសរើសប្រវត្តិរូប --</option>
-                  {memberProfiles.map((p) => (
-                    <option key={p.uuid} value={p.uuid}>
-                      👤 {p.profileName || (p as any).name}{" "}
-                      {p.relationship ? `(${p.relationship})` : ""}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "", label: "-- មិនជ្រើសរើសប្រវត្តិរូប --" },
+                    ...memberProfiles.map((p) => ({
+                      value: p.uuid,
+                      label: `${p.profileName || (p as any).name} ${p.relationship ? `(${p.relationship})` : ""}`,
+                      icon: "👤",
+                    })),
+                  ]}
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-[15px] font-medium text-gray-800 dark:text-slate-100"
+                />
               </FilterSection>
             )}
+            */}
 
             {/* SORT BY */}
             <FilterSection
