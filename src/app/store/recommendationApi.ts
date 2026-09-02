@@ -31,6 +31,56 @@ type CreateSessionResult =
 const inFlightSessions = new Map<string, Promise<CreateSessionResult>>();
 
 /**
+ * Words that name the DRINK category itself, in English and Khmer.
+ *
+ * Deliberately only category words, not specific drink names. "coffee"
+ * already works through the backend's keyword match against menu item and
+ * food names, whereas "drink" matches no item text at all -- drinks are
+ * identified by their category, so the only way to honour that request is the
+ * rootCategoryCode hard filter. Keeping specific names out of this list
+ * avoids a hard filter wrongly excluding, say, a coffee-flavoured dessert.
+ */
+const DRINK_INTENT_WORDS = [
+  "drink",
+  "drinks",
+  "beverage",
+  "beverages",
+  "ភេសជ្ជៈ",
+  "ភេសជ្ជះ",
+];
+
+const FOOD_INTENT_WORDS = ["food", "eat", "meal", "dish", "ម្ហូប", "អាហារ"];
+
+/**
+ * Derives the FOOD/DRINK hard filter from the user's own words.
+ *
+ * Applied here rather than in each screen so every component that creates a
+ * session behaves the same. An explicit rootCategoryCode from the caller
+ * always wins; an ambiguous prompt (both or neither) stays unfiltered.
+ */
+function resolveRootCategoryCode(
+  body: CreateRecommendationSessionRequest,
+): "FOOD" | "DRINK" | undefined {
+  if (body.rootCategoryCode) {
+    return body.rootCategoryCode;
+  }
+
+  const prompt = (body.contextData as { userPrompt?: string } | undefined)
+    ?.userPrompt;
+  if (!prompt) return undefined;
+
+  const haystack = ` ${prompt.toLowerCase()} `;
+  const wantsDrink = DRINK_INTENT_WORDS.some((word) =>
+    haystack.includes(word),
+  );
+  const wantsFood = FOOD_INTENT_WORDS.some((word) => haystack.includes(word));
+
+  if (wantsDrink && !wantsFood) return "DRINK";
+  if (wantsFood && !wantsDrink) return "FOOD";
+  return undefined;
+}
+
+/**
  * Stable signature for a session request.
  *
  * Profile ids are sorted so the same group in a different order is treated as
@@ -44,6 +94,7 @@ function sessionRequestKey(body: CreateRecommendationSessionRequest): string {
     requestedLimit: body.requestedLimit,
     searchRadiusKm: body.searchRadiusKm,
     currencyCode: body.currencyCode,
+    rootCategoryCode: resolveRootCategoryCode(body) ?? null,
     userPrompt:
       (body.contextData as { userPrompt?: string } | undefined)?.userPrompt ??
       null,
@@ -71,11 +122,18 @@ export const recommendationApi = baseApi.injectEndpoints({
     >({
       async queryFn(body, _queryApi, _extraOptions, fetchWithBQ) {
         const runCreateSession = async (): Promise<CreateSessionResult> => {
+          // "give me a drink" names a category, not an item, so it can only be
+          // honoured by the FOOD/DRINK hard filter. See resolveRootCategoryCode.
+          const rootCategoryCode = resolveRootCategoryCode(body);
+          const requestBody = rootCategoryCode
+            ? { ...body, rootCategoryCode }
+            : body;
+
           // Step 1: Create session
           const createResult = await fetchWithBQ({
             url: "/recommendations/sessions",
             method: "POST",
-            body,
+            body: requestBody,
           });
 
           if (createResult.error) {

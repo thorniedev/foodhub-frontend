@@ -134,6 +134,57 @@ describe("createRecommendationSession de-duplication", () => {
     expect(sessionCreateCalls()).toHaveLength(2);
   });
 
+  async function createdSessionBody() {
+    const call = sessionCreateCalls()[0];
+    const input = call?.[0] as Request | undefined;
+    if (!input || typeof input.text !== "function") return null;
+    return JSON.parse(await input.clone().text());
+  }
+
+  it("routes a drink request to the DRINK category filter", async () => {
+    const store = makeStore();
+
+    await store.dispatch(
+      recommendationApi.endpoints.createRecommendationSession.initiate(
+        request({ contextData: { userPrompt: "give me a drink" } }),
+      ),
+    );
+
+    // "drink" names a category, not an item, so keyword matching alone can
+    // never surface drinks -- it has to become the rootCategoryCode filter.
+    expect(await createdSessionBody()).toMatchObject({
+      rootCategoryCode: "DRINK",
+    });
+  });
+
+  it("leaves an item-name prompt to keyword matching, unfiltered", async () => {
+    const store = makeStore();
+
+    await store.dispatch(
+      recommendationApi.endpoints.createRecommendationSession.initiate(
+        request({ contextData: { userPrompt: "give me coffee" } }),
+      ),
+    );
+
+    // "coffee" matches real item text, so a hard category filter would risk
+    // excluding valid matches.
+    const body = await createdSessionBody();
+    expect(body?.rootCategoryCode).toBeUndefined();
+  });
+
+  it("stays unfiltered when the prompt names both categories", async () => {
+    const store = makeStore();
+
+    await store.dispatch(
+      recommendationApi.endpoints.createRecommendationSession.initiate(
+        request({ contextData: { userPrompt: "food and drink" } }),
+      ),
+    );
+
+    const body = await createdSessionBody();
+    expect(body?.rootCategoryCode).toBeUndefined();
+  });
+
   it("does not block a later identical request once the first settles", async () => {
     const store = makeStore();
 
