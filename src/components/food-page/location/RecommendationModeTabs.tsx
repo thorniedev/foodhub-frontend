@@ -40,7 +40,7 @@ export default function RecommendationModeTabs({
             role="tab"
             aria-selected={selected}
             onClick={() => onChange(value)}
-            className={`relative z-10 flex min-h-11 flex-1 sm:flex-initial items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-[14px] sm:px-5 sm:text-[15px] font-bold transition-colors duration-200 ${
+            className={`relative z-10 flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-lg font-bold transition-colors duration-200 ${
               selected
                 ? "text-white"
                 : "text-gray-600 hover:text-primary-900 dark:text-slate-300 dark:hover:text-white"
@@ -58,7 +58,7 @@ export default function RecommendationModeTabs({
               />
             )}
 
-            <Icon className="shrink-0 text-[18px] sm:text-[19px]" />
+            <Icon className="shrink-0 text-[22px]" />
             <span>{label}</span>
           </button>
         );

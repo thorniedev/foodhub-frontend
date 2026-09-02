@@ -108,15 +108,15 @@ export default function LocationHeader({
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-primary-700">
-            <IoLocationOutline className="shrink-0 text-[22px]" />
+            <IoLocationOutline className="shrink-0 text-[24px]" />
 
-            <p className="text-[17px] font-semibold">ទីតាំង</p>
+            <p className="text-lg font-bold">ទីតាំង</p>
           </div>
 
           <p
             role="heading"
             aria-level={1}
-            className="mt-2 text-[24px] font-semibold leading-tight text-primary-900 sm:text-[27px]"
+            className="mt-2 text-2xl sm:text-3xl font-bold leading-tight text-primary-900"
           >
             {mode === "me"
               ? "ម្ហូបនៅជិតអ្នក"
@@ -125,7 +125,7 @@ export default function LocationHeader({
                 : "ការណាត់ញ៉ាំអាហារជាក្រុម"}
           </p>
 
-          <p className="mt-2 max-w-2xl text-[17px] leading-8 text-gray-500">
+          <p className="mt-2 max-w-2xl text-lg leading-relaxed text-gray-500">
             {mode === "me"
               ? "ជ្រើសរើសគណនីគ្រួសារ រួចមើលម្ហូបដែលត្រូវនឹងអ្នកនៅជុំវិញទីតាំងបច្ចុប្បន្ន"
               : mode === "single"
@@ -141,9 +141,9 @@ export default function LocationHeader({
             <button
               type="button"
               onClick={onOpenFilters}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-[17px] font-semibold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-lg font-bold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
             >
-              <IoOptionsOutline className="text-[22px]" />
+              <IoOptionsOutline className="text-[24px]" />
               តម្រង
             </button>
           )}
@@ -152,19 +152,19 @@ export default function LocationHeader({
 
       <div className="mt-5 flex flex-wrap gap-2.5">
         <InfoChip
-          icon={<IoRestaurantOutline className="text-[21px]" />}
+          icon={<IoRestaurantOutline className="text-[22px]" />}
           label={`${storeCount} មុខម្ហូប`}
           variant="green"
         />
 
         <InfoChip
-          icon={<IoLocateOutline className="text-[21px]" />}
+          icon={<IoLocateOutline className="text-[22px]" />}
           label={`ក្នុងរង្វង់ ${radiusKm} km`}
           variant="green"
         />
 
         <InfoChip
-          icon={<IoShieldCheckmarkOutline className="text-[21px]" />}
+          icon={<IoShieldCheckmarkOutline className="text-[22px]" />}
           label={sourceLabel}
           variant={
             locationSource === "live" || manualLocationActive ? "green" : "gray"
@@ -195,16 +195,16 @@ export default function LocationHeader({
               : "border-gray-200 bg-white text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
           }`}
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-            <IoLocateOutline className="text-[24px]" />
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+            <IoLocateOutline className="text-[26px]" />
           </span>
 
           <span className="min-w-0">
-            <span className="block text-[17px] font-semibold">
+            <span className="block text-lg font-bold">
               ប្រើទីតាំងបច្ចុប្បន្ន
             </span>
 
-            <span className="mt-1 block text-[15px] opacity-75">
+            <span className="mt-0.5 block text-base opacity-75">
               ប្រើ GPS របស់ឧបករណ៍
             </span>
           </span>
@@ -223,19 +223,19 @@ export default function LocationHeader({
           }`}
         >
           <span
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-sm ${
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-sm ${
               manualLocationActive ? "bg-white/15" : "bg-primary-50"
             }`}
           >
-            <IoMapOutline className="text-[24px]" />
+            <IoMapOutline className="text-[26px]" />
           </span>
 
           <span className="min-w-0">
-            <span className="block text-[17px] font-semibold">
+            <span className="block text-lg font-bold">
               ជ្រើសទីតាំងលើផែនទី
             </span>
 
-            <span className="mt-1 block text-[15px] opacity-75">
+            <span className="mt-0.5 block text-base opacity-75">
               ស្វែងរក ឬចុចលើផែនទី
             </span>
           </span>
@@ -249,16 +249,16 @@ export default function LocationHeader({
           onClick={onOpenSavedLocations || onChooseLocation}
           className="flex min-h-14 items-center gap-3 rounded-2xl border border-amber-200 bg-white px-4 py-3 text-left text-slate-800 transition hover:border-amber-300 hover:bg-amber-50/60 shadow-sm"
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700 shadow-sm">
-            <IoBookmarkOutline className="text-[22px]" />
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700 shadow-sm">
+            <IoBookmarkOutline className="text-[24px]" />
           </span>
 
           <span className="min-w-0">
-            <span className="block text-[17px] font-semibold">
+            <span className="block text-lg font-bold">
               ទីតាំងបានរក្សាទុក
             </span>
 
-            <span className="mt-1 block text-[15px] text-gray-500 opacity-80">
+            <span className="mt-0.5 block text-base text-gray-500 opacity-80">
               ផ្ទះ, ការិយាល័យ
             </span>
           </span>
@@ -283,11 +283,11 @@ export default function LocationHeader({
             </div>
 
             <div className="min-w-0">
-              <p className="text-[17px] font-semibold leading-8 text-orange-700">
+              <p className="text-lg font-bold leading-relaxed text-orange-700">
                 មិនអាចប្រើទីតាំងបច្ចុប្បន្នបាន
               </p>
 
-              <p className="mt-1 text-[17px] leading-8 text-orange-600">
+              <p className="mt-1 text-lg leading-relaxed text-orange-600">
                 {locationError ||
                   "អ្នកអាចស្វែងរក ឬជ្រើសទីតាំងដោយផ្ទាល់លើផែនទី។"}
               </p>
@@ -311,7 +311,7 @@ type InfoChipProps = {
 function InfoChip({ icon, label, variant }: InfoChipProps) {
   return (
     <div
-      className={`flex min-h-10 items-center gap-2 rounded-full border px-3.5 py-2 ${
+      className={`flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 ${
         variant === "green"
           ? "border-primary-100 bg-primary-50 text-primary-800 dark:text-primary-dark"
           : "border-gray-200 bg-gray-50 text-gray-600"
@@ -319,7 +319,7 @@ function InfoChip({ icon, label, variant }: InfoChipProps) {
     >
       <span className="shrink-0">{icon}</span>
 
-      <span className="text-[17px] font-medium">{label}</span>
+      <span className="text-lg font-semibold">{label}</span>
     </div>
   );
 }

@@ -335,7 +335,7 @@ export default function GroupRecommendation({
 
   const handleShareTelegram = () => {
     const text = encodeURIComponent(
-      `🍽️ Join our FoodHub Meetup: "${createdMeetup?.title}"!\nVote for what to eat together:\n${shareUrl}`,
+      `Join our FoodHub Meetup: "${createdMeetup?.title}"!\nVote for what to eat together:\n${shareUrl}`,
     );
     window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${text}`, "_blank");
   };
@@ -348,37 +348,37 @@ export default function GroupRecommendation({
         className="rounded-[24px] border border-gray-100 bg-white p-5 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-5"
       >
         {/* Header Title inside Setup */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-100 pb-4 dark:border-slate-800">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-4 dark:border-slate-800">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-primary-900 dark:text-white flex items-center gap-2">
+            <h3 className="flex items-center gap-2 text-2xl font-bold text-primary-900 dark:text-white">
               {activeMode === "friends" ? (
                 <>
-                  <Users className="h-5 w-5 text-primary-800 dark:text-emerald-400" />
+                  <Users className="h-6 w-6 text-primary-800 dark:text-emerald-400" />
                   <span>រៀបចំការណាត់ជួបជាមួយមិត្តភក្តិ</span>
                 </>
               ) : (
                 <>
-                  <Link2 className="h-5 w-5 text-primary-800 dark:text-emerald-400" />
+                  <Link2 className="h-6 w-6 text-primary-800 dark:text-emerald-400" />
                   <span>រៀបចំការណាត់ជួបតាមតំណភ្ញៀវ</span>
                 </>
               )}
             </h3>
-            <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
+            <p className="mt-1 text-lg text-gray-500 dark:text-slate-400 leading-relaxed">
               {activeMode === "friends"
                 ? "ជ្រើសរើសមិត្តភក្តិដើម្បីប្រព័ន្ធភ្ជាប់ទិន្នន័យសុវត្ថិភាពម្ហូបអាហារ និងផ្ញើដំណឹងអញ្ជើញដោយស្វ័យប្រវត្តិ"
                 : "កំណត់កាំស្វែងរក និងរយៈពេលបោះឆ្នោត ដើម្បីបង្កើតបន្ទប់ចែករំលែកជាសាធារណៈ"}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-semibold text-primary-800 bg-primary-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-3 py-1.5 rounded-full self-start sm:self-auto">
-            <MapPin className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 text-base font-semibold text-primary-800 bg-primary-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-4 py-2 rounded-full self-start sm:self-auto">
+            <MapPin className="h-4 w-4" />
             <span>{filteredStores.length} ហាង &bull; {menuItemCards.length} មុខម្ហូប</span>
           </div>
         </div>
 
         {/* Meetup Title Input */}
         <div>
-          <label className="block text-sm font-semibold text-primary-900 dark:text-slate-200">
+          <label className="block text-lg font-bold text-primary-900 dark:text-slate-200">
             ឈ្មោះការណាត់ជួប
           </label>
           <input
@@ -390,7 +390,7 @@ export default function GroupRecommendation({
             }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-primary-700 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-lg text-gray-800 placeholder:text-gray-400 focus:border-primary-700 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
           />
         </div>
 
@@ -398,10 +398,10 @@ export default function GroupRecommendation({
         {activeMode === "friends" && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-primary-900 dark:text-slate-200">
+              <label className="text-lg font-bold text-primary-900 dark:text-slate-200">
                 ជ្រើសរើសមិត្តភក្តិ ({selectedFriendUuids.length} នាក់បានជ្រើសរើស)
               </label>
-              <span className="text-xs text-primary-700 dark:text-emerald-400 font-medium">
+              <span className="text-base text-primary-700 dark:text-emerald-400 font-medium">
                 ភ្ជាប់ប្រវត្តិសុវត្ថិភាព & ផ្ញើ Notification ស្វ័យប្រវត្តិ
               </span>
             </div>
@@ -411,9 +411,9 @@ export default function GroupRecommendation({
                 <Loader2 className="h-6 w-6 animate-spin text-primary-800" />
               </div>
             ) : friends.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500 dark:border-slate-800">
-                <p className="font-medium">អ្នកមិនទាន់មានមិត្តភក្តិក្នុងបញ្ជីនៅឡើយទេ។</p>
-                <p className="mt-1 text-xs text-gray-400">
+              <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-lg text-gray-500 dark:border-slate-800">
+                <p className="font-semibold">អ្នកមិនទាន់មានមិត្តភក្តិក្នុងបញ្ជីនៅឡើយទេ។</p>
+                <p className="mt-1 text-base text-gray-400">
                   សូមចូលទៅកាន់ទំព័រ <span className="font-bold text-primary-800 dark:text-emerald-400">មិត្តភក្តិ</span> ដើម្បីស្កេន QR ឬបន្ថែមមិត្តភក្តិ!
                 </p>
               </div>
@@ -426,28 +426,28 @@ export default function GroupRecommendation({
                       type="button"
                       key={friend.friendshipUuid}
                       onClick={() => toggleFriend(friend.userUuid)}
-                      className={`flex items-start gap-3 rounded-2xl border p-3 text-left transition ${
+                      className={`flex items-start gap-3 rounded-2xl border p-3.5 text-left transition ${
                         isSelected
                           ? "border-primary-700 bg-primary-50/60 shadow-xs dark:border-emerald-500 dark:bg-emerald-950/40"
                           : "border-gray-200 bg-white hover:border-gray-300 dark:border-slate-800 dark:bg-slate-900"
                       }`}
                     >
                       <div
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border mt-0.5 transition ${
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border mt-0.5 transition ${
                           isSelected
                             ? "border-primary-800 bg-primary-800 text-white"
                             : "border-gray-300 bg-white dark:border-slate-700 dark:bg-slate-800"
                         }`}
                       >
-                        {isSelected && <Check className="h-3.5 w-3.5" />}
+                        {isSelected && <Check className="h-4 w-4" />}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-sm text-primary-900 dark:text-white">
+                        <p className="truncate font-bold text-lg text-primary-900 dark:text-white">
                           @{friend.username}
                         </p>
-                        <div className="mt-0.5 flex items-center gap-1 text-xs text-primary-700 dark:text-emerald-400">
-                          <Shield className="h-3 w-3 shrink-0" />
+                        <div className="mt-0.5 flex items-center gap-1 text-base text-primary-700 dark:text-emerald-400">
+                          <Shield className="h-4 w-4 shrink-0" />
                           <span className="truncate">
                             {friend.defaultProfileName || "Standard Profile"}
                           </span>
@@ -464,9 +464,9 @@ export default function GroupRecommendation({
         {/* MODE 2: Guest Mode Location Mode (PIN vs AREA) */}
         {activeMode === "guest" && (
           <div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
-            <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
-              <span className="flex items-center gap-1.5">
-                <Compass className="h-4 w-4 text-primary-800" />
+            <div className="flex items-center justify-between text-lg font-bold text-primary-900 dark:text-slate-200">
+              <span className="flex items-center gap-2">
+                <Compass className="h-5 w-5 text-primary-800" />
                 របៀបកំណត់ទីតាំង
               </span>
             </div>
@@ -475,42 +475,42 @@ export default function GroupRecommendation({
               <button
                 type="button"
                 onClick={() => setGuestLocationMode("PIN")}
-                className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition ${
+                className={`flex items-center justify-center gap-2 rounded-xl py-3 text-lg font-bold transition ${
                   guestLocationMode === "PIN"
                     ? "bg-primary-800 text-white shadow-xs"
                     : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
                 }`}
               >
-                <MapPin className="h-3.5 w-3.5" />
+                <MapPin className="h-4 w-4" />
                 <span>ចំណុចផែនទី</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setGuestLocationMode("AREA")}
-                className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition ${
+                className={`flex items-center justify-center gap-2 rounded-xl py-3 text-lg font-bold transition ${
                   guestLocationMode === "AREA"
                     ? "bg-primary-800 text-white shadow-xs"
                     : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
                 }`}
               >
-                <Compass className="h-3.5 w-3.5" />
+                <Compass className="h-4 w-4" />
                 <span>តំបន់គោលដៅ</span>
               </button>
             </div>
 
             {guestLocationMode === "AREA" && (
               <div className="space-y-2 pt-2">
-                <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300">
+                <label className="block text-base font-semibold text-gray-600 dark:text-slate-300">
                   ជ្រើសរើសតំបន់ ឬសង្កាត់ក្នុងរាជធានីភ្នំពេញ
                 </label>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {POPULAR_AREAS.map((area) => (
                     <button
                       type="button"
                       key={area}
                       onClick={() => setTargetAreaName(area)}
-                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                      className={`rounded-xl px-3.5 py-1.5 text-base font-semibold transition ${
                         targetAreaName === area
                           ? "bg-primary-800 text-white"
                           : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
@@ -528,7 +528,7 @@ export default function GroupRecommendation({
         {/* Dynamic Search Radius (Active for both modes) */}
         <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
+            <div className="flex items-center justify-between text-lg font-bold text-primary-900 dark:text-slate-200">
               <span>កាំស្វែងរកហាង</span>
               <span className="text-primary-800 dark:text-emerald-400 font-bold">{searchRadiusKm} km</span>
             </div>
@@ -538,7 +538,7 @@ export default function GroupRecommendation({
                   type="button"
                   key={r}
                   onClick={() => handleRadiusSelect(r)}
-                  className={`rounded-xl py-2 text-xs font-bold transition ${
+                  className={`rounded-xl py-2.5 text-lg font-bold transition ${
                     searchRadiusKm === r
                       ? "bg-primary-800 text-white shadow-xs"
                       : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
@@ -553,12 +553,12 @@ export default function GroupRecommendation({
           {/* Duration Selector (for Guest Mode) */}
           {activeMode === "guest" && (
             <div className="space-y-2 pt-2 border-t border-gray-200/60 dark:border-slate-800">
-              <div className="flex items-center justify-between text-sm font-semibold text-primary-900 dark:text-slate-200">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-primary-800" />
+              <div className="flex items-center justify-between text-lg font-bold text-primary-900 dark:text-slate-200">
+                <span className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary-800" />
                   រយៈពេលបោះឆ្នោត
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-base text-gray-500 font-semibold">
                   {durationMinutes === 0 ? "បិទដោយផ្ទាល់" : `${durationMinutes} នាទី`}
                 </span>
               </div>
@@ -573,7 +573,7 @@ export default function GroupRecommendation({
                     type="button"
                     key={item.val}
                     onClick={() => setDurationMinutes(item.val)}
-                    className={`rounded-xl py-2 text-xs font-bold transition ${
+                    className={`rounded-xl py-2.5 text-lg font-bold transition ${
                       durationMinutes === item.val
                         ? "bg-primary-800 text-white shadow-xs"
                         : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
@@ -591,7 +591,7 @@ export default function GroupRecommendation({
         <button
           type="submit"
           disabled={isCreating}
-          className="flex w-full min-h-12 items-center justify-center gap-2 rounded-full bg-primary-800 py-3.5 text-base font-bold text-white shadow-md transition hover:bg-primary-700 active:scale-98 disabled:opacity-50"
+          className="flex w-full min-h-12 items-center justify-center gap-2 rounded-full bg-primary-800 py-3.5 text-xl font-bold text-white shadow-md transition hover:bg-primary-700 active:scale-98 disabled:opacity-50"
         >
           {isCreating ? (
             <>

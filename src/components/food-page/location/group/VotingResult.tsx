@@ -143,7 +143,7 @@ export default function VotingResult({
           </div>
 
           <h2 className="mt-2 text-[23px] font-bold leading-[1.45] text-primary-900 sm:text-[25px]">
-            អ្នកឈ្នះគឺ {displayName} 🎉
+            អ្នកឈ្នះគឺ {displayName}
           </h2>
 
           <p className="mx-auto mt-2 max-w-2xl text-[17px] leading-7 text-gray-600">
@@ -163,7 +163,7 @@ export default function VotingResult({
 
             <div className="flex min-w-0 flex-col p-5 sm:p-6">
               <span className="w-fit rounded-full bg-yellow-100 px-3 py-2 text-[17px] font-bold text-yellow-700">
-                🏆 Group favorite
+                Group favorite
               </span>
 
               <h3 className="mt-4 text-[22px] font-bold leading-[1.45] text-primary-900 sm:text-[25px]">

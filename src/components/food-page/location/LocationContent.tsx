@@ -880,10 +880,10 @@ export default function LocationContent({
                 <>
                   <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                     <div className="min-w-0">
-                      <p className="text-[17px] font-semibold text-primary-900 dark:text-white">
+                      <p className="text-lg font-bold text-primary-900 dark:text-white">
                         គណនីដែលកំពុងប្រើ
                       </p>
-                      <p className="mt-1 text-[15px] text-gray-500 dark:text-slate-400 lg:text-[17px]">
+                      <p className="mt-1 text-lg text-gray-500 dark:text-slate-400">
                         ការណែនាំគិតបញ្ចូលអាឡែស៊ី និងរបបអាហាររបស់គណនីដែលបានជ្រើស
                       </p>
                     </div>
@@ -895,13 +895,13 @@ export default function LocationContent({
                       onSelectAll={handleSelectAllProfiles}
                       allSelected={allActiveProfilesSelected}
                       emptyLabel="ជ្រើសរើសគណនីគ្រួសារ"
-                      triggerClassName="flex min-h-11 items-center gap-2 rounded-full bg-primary-50 py-1 pl-1 pr-3 text-[15px] font-semibold text-primary-800 transition hover:bg-primary-100 dark:bg-primary-950/40 dark:text-primary-300"
+                      triggerClassName="flex min-h-12 items-center gap-2 rounded-full bg-primary-50 py-1.5 pl-2 pr-4 text-lg font-bold text-primary-800 transition hover:bg-primary-100 dark:bg-primary-950/40 dark:text-primary-300"
                     />
                   </div>
 
                   {/* Search Radius for "For Me" mode */}
                   <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
-                    <div className="flex items-center justify-between text-sm sm:text-base font-semibold text-primary-900 dark:text-slate-200">
+                    <div className="flex items-center justify-between text-lg font-bold text-primary-900 dark:text-slate-200">
                       <span className="font-bold">កាំស្វែងរកហាង</span>
                       <span className="text-primary-800 dark:text-emerald-400 font-bold">{singleRadiusKm} km</span>
                     </div>
@@ -917,7 +917,7 @@ export default function LocationContent({
                               maximumDistanceKm: r,
                             }));
                           }}
-                          className={`rounded-xl py-2.5 text-xs sm:text-sm font-bold transition ${
+                          className={`rounded-xl py-2.5 text-lg font-bold transition ${
                             singleRadiusKm === r
                               ? "bg-primary-800 text-white shadow-xs dark:bg-emerald-700"
                               : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-300"

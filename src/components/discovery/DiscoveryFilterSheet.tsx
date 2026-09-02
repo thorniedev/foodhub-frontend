@@ -224,10 +224,10 @@ export default function DiscoveryFilterSheet({
                     value={draft.sort || "NEWEST"}
                     onChange={(val) => setDraft({ ...draft, sort: val })}
                     options={[
-                      { value: "NEWEST", label: "ថ្មីបំផុត", icon: "✨" },
-                      { value: "DISTANCE_ASC", label: "ចំងាយជិតបំផុត", icon: "📍" },
-                      { value: "PRICE_ASC", label: "តម្លៃទាបទៅខ្ពស់", icon: "💵" },
-                      { value: "PRICE_DESC", label: "តម្លៃខ្ពស់ទៅទាប", icon: "💰" },
+                      { value: "NEWEST", label: "ថ្មីបំផុត" },
+                      { value: "DISTANCE_ASC", label: "ចំងាយជិតបំផុត" },
+                      { value: "PRICE_ASC", label: "តម្លៃទាបទៅខ្ពស់" },
+                      { value: "PRICE_DESC", label: "តម្លៃខ្ពស់ទៅទាប" },
                     ]}
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-[15px] font-medium text-slate-900 dark:text-white"
                   />
@@ -236,7 +236,7 @@ export default function DiscoveryFilterSheet({
                 {/* Open Now Toggle */}
                 <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                   <span className="font-semibold text-sm text-slate-900 dark:text-white">
-                    🏪 បើកដំណើរការឥឡូវនេះ
+                    បើកដំណើរការឥឡូវនេះ
                   </span>
                   <input
                     type="checkbox"
@@ -275,7 +275,7 @@ export default function DiscoveryFilterSheet({
                             : "text-slate-500 dark:text-slate-400"
                         }`}
                       >
-                        🍲 ម្ហូប
+                        ម្ហូប
                       </button>
                       <button
                         type="button"
@@ -286,7 +286,7 @@ export default function DiscoveryFilterSheet({
                             : "text-slate-500 dark:text-slate-400"
                         }`}
                       >
-                        🥤 ភេសជ្ជៈ
+                        ភេសជ្ជៈ
                       </button>
                     </div>
 
@@ -380,7 +380,7 @@ export default function DiscoveryFilterSheet({
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
                             }`}
                           >
-                            🌱 {d.name}
+                            {d.name}
                           </button>
                         );
                       })}
@@ -408,7 +408,7 @@ export default function DiscoveryFilterSheet({
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
                             }`}
                           >
-                            👶 {formatAgeGroupOptionLabel(a)}
+                            {formatAgeGroupOptionLabel(a)}
                           </button>
                         );
                       })}
@@ -436,7 +436,7 @@ export default function DiscoveryFilterSheet({
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                             }`}
                           >
-                            🚫 {alg.name}
+                            {alg.name}
                           </button>
                         );
                       })}
@@ -515,7 +515,7 @@ export default function DiscoveryFilterSheet({
                               : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-amber-50"
                           }`}
                         >
-                          🔥 {spice.label}
+                          {spice.label}
                         </button>
                       );
                     })}

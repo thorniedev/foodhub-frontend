@@ -134,10 +134,11 @@ export default function StoreMenuItemList({
               </div>
 
               {/* Distance, Rating, Prep Time */}
-              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-gray-500 dark:text-slate-400">
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-gray-500 dark:text-slate-400">
                 {card.distanceKm !== null && (
-                  <span className="font-bold text-primary-800 dark:text-emerald-400">
-                    📍 {card.distanceKm.toFixed(1)} គ.ម
+                  <span className="inline-flex items-center gap-1 font-bold text-primary-800 dark:text-emerald-400">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {card.distanceKm.toFixed(1)} គ.ម
                   </span>
                 )}
 
@@ -169,7 +170,7 @@ export default function StoreMenuItemList({
                   {card.dietaryTypes.slice(0, 3).map((dietary) => (
                     <span
                       key={`${card.key}-${dietary}`}
-                      className="rounded-full bg-secondary-50 px-2 py-0.5 text-[11px] font-bold text-secondary-700 dark:bg-secondary-950/40 dark:text-secondary-300"
+                      className="rounded-full bg-secondary-50 px-2.5 py-0.5 text-xs font-bold text-secondary-700 dark:bg-secondary-950/40 dark:text-secondary-300"
                     >
                       {dietary}
                     </span>
@@ -178,9 +179,9 @@ export default function StoreMenuItemList({
                   {card.allergens && card.allergens.slice(0, 2).map((allergen) => (
                     <span
                       key={`${card.key}-allergen-${allergen}`}
-                      className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                      className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
                     >
-                      ⚠️ គ្មាន {allergen}
+                      គ្មាន {allergen}
                     </span>
                   ))}
                 </div>
