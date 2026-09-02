@@ -36,7 +36,7 @@ export type LocationSource = LocationSelectionSource;
 
 type LocationHeaderProps = {
   mode: RecommendationMode;
-
+  onModeChange?: (mode: RecommendationMode) => void;
   storeCount: number;
   radiusKm: number;
 
@@ -63,6 +63,7 @@ type LocationHeaderProps = {
 
 export default function LocationHeader({
   mode,
+  onModeChange,
   storeCount,
   radiusKm,
   locationStatus,
@@ -135,11 +136,17 @@ export default function LocationHeader({
         </div>
 
         <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center xl:w-auto xl:justify-end">
+          {onModeChange && (
+            <div className="w-full sm:w-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <RecommendationModeTabs mode={mode} onChange={onModeChange} />
+            </div>
+          )}
+
           {onOpenFilters && (
             <button
               type="button"
               onClick={onOpenFilters}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-lg font-bold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-lg font-bold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden shrink-0"
             >
               <IoOptionsOutline className="text-[24px]" />
               តម្រង

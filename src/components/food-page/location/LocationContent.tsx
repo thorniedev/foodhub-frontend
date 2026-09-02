@@ -75,6 +75,7 @@ interface LocationContentProps {
   menuItems: CatalogMenuItem[];
   searchQuery?: string;
   mode: RecommendationMode;
+  onModeChange?: (mode: RecommendationMode) => void;
 }
 
 function normalizeLocationAllergens(
@@ -401,6 +402,7 @@ export default function LocationContent({
   menuItems: catalogMenuItems,
   searchQuery = "",
   mode,
+  onModeChange,
 }: LocationContentProps) {
   const menuItems = useMemo(
     () => catalogMenuItems.map(toLocationMenuItem),
@@ -849,6 +851,7 @@ export default function LocationContent({
           <main className="min-w-0 flex-1">
             <LocationHeader
               mode={mode}
+              onModeChange={onModeChange}
               storeCount={resultCount}
               radiusKm={selectedRadiusKm}
               locationStatus={headerLocationStatus}

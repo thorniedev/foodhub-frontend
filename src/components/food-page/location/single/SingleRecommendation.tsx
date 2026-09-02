@@ -462,9 +462,8 @@ export default function SingleRecommendation({
 
     return sortFoods(
       foodsWithLiveDistance,
-
       foodSort,
-    );
+    ).slice(0, 50);
   }, [filteredStores, foodSort, normalizedMenuItems]);
 
   /**
