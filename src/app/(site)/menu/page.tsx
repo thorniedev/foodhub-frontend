@@ -1457,6 +1457,7 @@ function FilterSidebar({
 
   return (
     <motion.aside
+      initial={false}
       animate={{
         width: mobile ? "100%" : isCollapsed ? 78 : 300,
       }}
@@ -2432,21 +2433,81 @@ function FoodGrid({ foods, isLoading }: FoodGridProps) {
 
 function LoadingState() {
   return (
-    <div className="flex min-h-[500px] flex-col items-center justify-center gap-4">
-      <motion.div
-        animate={{
-          rotate: 360,
-        }}
-        transition={{
-          duration: 0.9,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="h-12 w-12 rounded-full border-4 border-primary-100 border-t-primary-800"
-      />
+    <>
+      <div className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/85">
+        <div className="mx-auto flex w-full max-w-7xl px-4 py-3 sm:px-6 flex-col lg:flex-row lg:items-center gap-4">
+          {/* FoodNavTabs Skeleton */}
+          <div className="flex gap-2 w-full lg:w-auto">
+            <div className="h-11 w-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="h-11 w-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="h-11 w-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          </div>
 
-      <p className="text-[16px] text-gray-500">កំពុងផ្ទុកមុខម្ហូប...</p>
-    </div>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center flex-1 w-full lg:w-auto">
+            <div className="h-14 w-full flex-1 rounded-2xl lg:rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="hidden lg:block h-14 w-32 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6">
+        <div className="mt-2 flex gap-5">
+          {/* Sidebar Skeleton */}
+          <aside className="hidden shrink-0 self-start lg:block w-[300px] h-[calc(100vh-8rem)] rounded-[24px] border border-gray-100 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden animate-pulse">
+            <div className="p-4 space-y-6">
+              <div className="h-6 w-32 bg-gray-200 dark:bg-gray-800 rounded-md" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="h-5 w-24 bg-gray-200 dark:bg-gray-800 rounded-md" />
+                  <div className="flex flex-wrap gap-2">
+                    <div className="h-9 w-20 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                    <div className="h-9 w-24 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                    <div className="h-9 w-16 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          {/* Main Content Skeleton */}
+          <main className="min-w-0 flex-1 relative">
+            {/* Category Tabs Skeleton */}
+            <div className="py-2 -mx-2 px-2 flex gap-2 overflow-hidden mb-3">
+              <div className="h-10 w-20 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-10 w-28 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-10 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-10 w-32 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            </div>
+
+            {/* Header Text Skeleton */}
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4 mt-3">
+              <div className="h-8 w-64 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
+            </div>
+
+            {/* Grid Skeleton */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full">
+              {Array.from({ length: 9 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="flex flex-col w-full gap-4 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm rounded-[24px] p-2.5 animate-pulse"
+                >
+                  <div className="rounded-[14px] w-full h-[150px] md:h-37.5 lg:h-46.25 bg-gray-200 dark:bg-gray-700" />
+                  <div className="flex flex-col gap-2 px-1 pb-2">
+                    <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                    <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                      <div className="h-6 w-1/5 rounded-full bg-gray-200 dark:bg-gray-700" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </main>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -3055,7 +3116,9 @@ function FoodPageContent() {
      RENDER
   ======================================================= */
 
-  // Loading state is now handled by FoodGrid instead of an early return
+  if (isLoading) {
+    return <LoadingState />;
+  }
 
   if (isError) {
     return (
