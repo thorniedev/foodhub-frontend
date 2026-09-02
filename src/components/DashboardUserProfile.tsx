@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Camera,
   Check,
   ChevronDown,
   Loader2,
@@ -23,6 +24,8 @@ import {
 import {
   useGetMemberProfilesQuery,
   useGetMediaAccessUrlQuery,
+  useUploadMediaMutation,
+  useUpdateMemberProfileMutation,
 } from "@/app/store/memberProfileApi";
 
 import type { MemberProfile } from "@/types/member-profile/member-profile";
@@ -116,8 +119,17 @@ export default function DashboardUserProfile({
   const [updateCurrentUser, { isLoading: isUpdating }] =
     useUpdateCurrentUserMutation();
 
+  /* Upload & update avatar */
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [uploadMedia, { isLoading: isUploadingAvatar }] =
+    useUploadMediaMutation();
+  const [updateMemberProfile, { isLoading: isUpdatingProfile }] =
+    useUpdateMemberProfileMutation();
+
   /* Fetch default profile to get its avatarMediaUuid */
-  const { data: profilesData } = useGetMemberProfilesQuery();
+  const { data: profilesData, refetch: refetchProfiles } =
+    useGetMemberProfilesQuery();
   const defaultProfile = useMemo<MemberProfile | undefined>(
     () => profilesData?.contents?.find((p) => p.isDefault),
     [profilesData],
@@ -130,7 +142,57 @@ export default function DashboardUserProfile({
   );
 
   /* Use fetched CDN URL, falling back to the avatarUrl prop */
-  const resolvedAvatarUrl = avatarAccessUrlData?.url ?? avatarUrl ?? null;
+  const resolvedAvatarUrl =
+    avatarPreviewUrl || avatarAccessUrlData?.url || avatarUrl || null;
+
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("សូមជ្រើសរើសរូបភាព JPG, PNG ឬ WebP");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("ទំហំរូបភាពមិនត្រូវលើសពី 5 MB ទេ");
+      return;
+    }
+
+    setErrorMessage("");
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreviewUrl(objectUrl);
+
+    try {
+      const mediaResult = await uploadMedia({
+        file,
+        purpose: "PROFILE_AVATAR",
+      }).unwrap();
+
+      if (defaultProfile?.uuid) {
+        await updateMemberProfile({
+          uuid: defaultProfile.uuid,
+          body: { avatarMediaUuid: mediaResult.uuid },
+        }).unwrap();
+      }
+
+      setSuccessMessage("បានផ្លាស់ប្ដូររូបតំណាងដោយជោគជ័យ។");
+      void refetchProfiles();
+      setTimeout(() => setSuccessMessage(""), 4000);
+    } catch (err: unknown) {
+      URL.revokeObjectURL(objectUrl);
+      setAvatarPreviewUrl(null);
+      const msg =
+        err && typeof err === "object" && "data" in err
+          ? ((err as { data?: { message?: string } }).data?.message ??
+            "មិនអាចផ្លាស់ប្ដូររូបតំណាងបានទេ")
+          : "មិនអាចផ្លាស់ប្ដូររូបតំណាងបានទេ";
+      setErrorMessage(msg);
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -411,19 +473,54 @@ export default function DashboardUserProfile({
           </div>
           <div className="space-y-6">
             <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-900">
-              {resolvedAvatarUrl ? (
-                <Image
-                  src={resolvedAvatarUrl}
-                  alt={userName}
-                  width={64}
-                  height={64}
-                  className="h-16 w-16 rounded-2xl object-cover"
-                />
-              ) : (
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#E36914] text-2xl font-bold text-white">
-                  {avatarInitial}
-                </div>
-              )}
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => void handleAvatarChange(e)}
+                disabled={isUploadingAvatar || isUpdatingProfile}
+              />
+
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isUploadingAvatar || isUpdatingProfile}
+                title="ផ្លាស់ប្ដូររូបតំណាង (ចុចដើម្បីផ្ទុករូបភាពថ្មី)"
+                aria-label="ផ្លាស់ប្ដូររូបតំណាង"
+                className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl ring-2 ring-emerald-500/20 transition hover:ring-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {resolvedAvatarUrl ? (
+                  <Image
+                    src={resolvedAvatarUrl}
+                    alt={userName}
+                    fill
+                    className="object-cover"
+                    sizes="64px"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-[#E36914] text-2xl font-bold text-white">
+                    {avatarInitial}
+                  </div>
+                )}
+
+                {/* Upload spinner */}
+                {(isUploadingAvatar || isUpdatingProfile) && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  </span>
+                )}
+
+                {/* Hover camera edit overlay */}
+                {!isUploadingAvatar && !isUpdatingProfile && (
+                  <span className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Camera className="h-5 w-5 text-white" />
+                    <span className="text-[9px] font-semibold text-white">
+                      Edit
+                    </span>
+                  </span>
+                )}
+              </button>
 
               <div className="min-w-0">
                 <p className="truncate text-xl font-bold">{userName}</p>

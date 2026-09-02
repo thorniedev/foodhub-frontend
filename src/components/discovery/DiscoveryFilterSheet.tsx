@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
+import { CustomSelect } from "@/components/shared/CustomSelect";
 import type { CustomerSearchRequest, FilterItemOption } from "@/types/search";
 
 interface DiscoveryFilterSheetProps {
@@ -182,7 +183,7 @@ export default function DiscoveryFilterSheet({
               </div>
             ) : (
               <>
-                {/* Profile Safety Evaluation */}
+                {/* Profile Safety Evaluation (Hidden per request)
                 <div className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 font-semibold text-sm text-emerald-800 dark:text-emerald-300">
@@ -193,40 +194,43 @@ export default function DiscoveryFilterSheet({
                   <p className="text-xs text-slate-600 dark:text-slate-400">
                     ជ្រើសរើសប្រវត្តិរូបដើម្បីពិនិត្យអាលែហ្ស៊ី និងការហាមឃាត់ធាតុផ្សំសម្រាប់អ្នក។
                   </p>
-                  <select
+                  <CustomSelect
                     value={draft.profileUuid || ""}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       setDraft({
                         ...draft,
-                        profileUuid: e.target.value || undefined,
+                        profileUuid: val || undefined,
                       })
                     }
-                    className="w-full rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="">-- មិនជ្រើសរើសប្រវត្តិរូប --</option>
-                    {memberProfiles.map((p) => (
-                      <option key={p.uuid} value={p.uuid}>
-                        👤 {p.profileName || (p as any).name} {p.relationship ? `(${p.relationship})` : ""}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: "", label: "-- មិនជ្រើសរើសប្រវត្តិរូប --" },
+                      ...memberProfiles.map((p) => ({
+                        value: p.uuid,
+                        label: `${p.profileName || (p as any).name} ${p.relationship ? `(${p.relationship})` : ""}`,
+                        icon: "👤",
+                      })),
+                    ]}
+                    className="w-full rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-[15px] font-medium text-slate-900 dark:text-white"
+                  />
                 </div>
+                */}
 
                 {/* Sort Option */}
                 <div className="space-y-2">
                   <label className="block font-semibold text-sm text-slate-900 dark:text-white">
                     តម្រៀបតាម
                   </label>
-                  <select
+                  <CustomSelect
                     value={draft.sort || "NEWEST"}
-                    onChange={(e) => setDraft({ ...draft, sort: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="NEWEST">✨ ថ្មីបំផុត</option>
-                    <option value="DISTANCE_ASC">📍 ចំងាយជិតបំផុត</option>
-                    <option value="PRICE_ASC">💵 តម្លៃទាបទៅខ្ពស់</option>
-                    <option value="PRICE_DESC">💰 តម្លៃខ្ពស់ទៅទាប</option>
-                  </select>
+                    onChange={(val) => setDraft({ ...draft, sort: val })}
+                    options={[
+                      { value: "NEWEST", label: "ថ្មីបំផុត", icon: "✨" },
+                      { value: "DISTANCE_ASC", label: "ចំងាយជិតបំផុត", icon: "📍" },
+                      { value: "PRICE_ASC", label: "តម្លៃទាបទៅខ្ពស់", icon: "💵" },
+                      { value: "PRICE_DESC", label: "តម្លៃខ្ពស់ទៅទាប", icon: "💰" },
+                    ]}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-[15px] font-medium text-slate-900 dark:text-white"
+                  />
                 </div>
 
                 {/* Open Now Toggle */}

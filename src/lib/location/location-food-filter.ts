@@ -40,7 +40,9 @@ function normalizeText(value: unknown): string {
   return String(value ?? "")
     .trim()
     .toLowerCase()
-    .normalize("NFKC");
+    .normalize("NFKC")
+    .replace(/[_\-]+/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function matchesPriceTier(price: number, tier: LocationFoodPriceTier): boolean {
@@ -59,6 +61,8 @@ function matchesSearch(food: MenuItem, query: string): boolean {
   const context = contextFood.recommendationContext;
 
   const searchableValues: unknown[] = [
+    food.uuid,
+    food.legacyId,
     food.name,
     food.localName,
     food.description,
@@ -81,6 +85,7 @@ function matchesSearch(food: MenuItem, query: string): boolean {
     food.store?.district,
     food.store?.city,
     food.store?.operatingStatus,
+    food.food?.uuid,
     food.food?.canonicalName,
     food.food?.category?.code,
     food.food?.category?.name,
@@ -135,9 +140,15 @@ function matchesSearch(food: MenuItem, query: string): boolean {
     ...(food.recommendation?.reasonCodes ?? []),
   ];
 
-  return searchableValues.some((value) =>
-    normalizeText(value).includes(normalizedQuery),
+  const fullSearchableText = normalizeText(
+    searchableValues.filter(Boolean).join(" "),
   );
+  const tokens = normalizedQuery
+    .split(" ")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  return tokens.every((token) => fullSearchableText.includes(token));
 }
 
 export function filterLocationMenuItems(

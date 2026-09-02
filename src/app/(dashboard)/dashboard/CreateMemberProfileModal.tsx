@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import type { FormEvent, ReactNode } from "react";
+import Image from "next/image";
 
 import {
   ArrowLeft,
   ArrowRight,
   CalendarDays,
+  Camera,
   Check,
   ChevronDown,
   Crown,
   HeartPulse,
-  Languages,
+  ImageIcon,
   LoaderCircle,
   Salad,
   ShieldAlert,
@@ -28,6 +30,7 @@ import {
   useSaveMemberAllergiesMutation,
   useSaveMemberDietaryTypesMutation,
   useSaveMemberMedicalConditionsMutation,
+  useUploadMediaMutation,
 } from "@/app/store/memberProfileApi";
 
 import type {
@@ -193,6 +196,13 @@ export default function CreateMemberProfileModal({
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  /* ---- Avatar upload state ---- */
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [uploadMedia, { isLoading: isUploadingAvatar }] =
+    useUploadMediaMutation();
+
   /*
    * Store the created profile UUID.
    *
@@ -285,6 +295,8 @@ export default function CreateMemberProfileModal({
       ...initialFormState,
       isDefault: forceDefault || initialFormState.isDefault,
     });
+    setAvatarPreviewUrl(null);
+    setAvatarError(null);
     setCreatedProfileUuid(null);
     setErrorMessage(null);
   };
@@ -296,6 +308,46 @@ export default function CreateMemberProfileModal({
 
     resetModal();
     onClose();
+  };
+
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setAvatarError("សូមជ្រើសរើសរូបភាព JPG, PNG ឬ WebP");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("ទំហំឯកសារមិនត្រូវលើសពី 5 MB");
+      return;
+    }
+
+    setAvatarError(null);
+
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreviewUrl(objectUrl);
+
+    try {
+      const mediaResult = await uploadMedia({
+        file,
+        purpose: "PROFILE_AVATAR",
+      }).unwrap();
+
+      setForm((previous) => ({
+        ...previous,
+        avatarMediaUuid: mediaResult.uuid,
+      }));
+    } catch (err) {
+      URL.revokeObjectURL(objectUrl);
+      setAvatarPreviewUrl(null);
+      setAvatarError(getErrorMessage(err));
+    }
   };
 
   const retrySafetyOptions = () => {
@@ -338,7 +390,7 @@ export default function CreateMemberProfileModal({
     relationship: form.relationship,
     gender: form.gender,
     dateOfBirth: form.dateOfBirth,
-    preferredLanguage: form.preferredLanguage,
+    preferredLanguage: form.preferredLanguage || "km",
     avatarMediaUuid: form.avatarMediaUuid,
     isDefault: form.relationship === "SELF" ? true : form.isDefault,
   });
@@ -593,14 +645,7 @@ export default function CreateMemberProfileModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          closeModal();
-        }
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6">
       <div className="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-white/70 bg-slate-50 shadow-[0_30px_100px_rgba(15,23,42,0.25)]">
         {/* Header */}
         <header className="flex shrink-0 items-start justify-between gap-5 border-b border-slate-200/80 bg-white px-5 py-5 sm:px-7 sm:py-6">
@@ -707,6 +752,80 @@ export default function CreateMemberProfileModal({
                     <p className="mt-2 text-lg leading-7 text-slate-500">
                       បញ្ចូលព័ត៌មានមូលដ្ឋានសម្រាប់សមាជិកគ្រួសារ។
                     </p>
+                  </div>
+                </div>
+
+                {/* Avatar upload */}
+                <div className="mb-8 flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-6">
+                  <input
+                    ref={avatarInputRef}
+                    id="create-avatar-input"
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(e) => void handleAvatarChange(e)}
+                    disabled={isUploadingAvatar}
+                  />
+
+                  {/* Avatar preview */}
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    title="ផ្លាស់ប្ដូររូបតំណាង"
+                    aria-label="ផ្លាស់ប្ដូររូបតំណាង"
+                    className="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[22px] ring-4 ring-primary-800/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {avatarPreviewUrl ? (
+                      <Image
+                        src={avatarPreviewUrl}
+                        alt="Preview"
+                        fill
+                        className="object-cover"
+                        sizes="96px"
+                      />
+                    ) : form.profileName.trim() ? (
+                      <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-[34px] font-bold text-primary-800">
+                        {form.profileName.trim().charAt(0).toUpperCase()}
+                      </span>
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-primary-800">
+                        <ImageIcon className="h-9 w-9 text-primary-800/60" />
+                      </span>
+                    )}
+
+                    {/* Spinner while uploading */}
+                    {isUploadingAvatar && (
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/50">
+                        <LoaderCircle className="h-7 w-7 animate-spin text-white" />
+                      </span>
+                    )}
+
+                    {/* Camera hover overlay */}
+                    {!isUploadingAvatar && (
+                      <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Camera className="h-6 w-6 text-white" />
+                        <span className="text-[11px] font-semibold text-white">
+                          {avatarPreviewUrl ? "ផ្លាស់ប្ដូរ" : "ផ្ទុកឡើង"}
+                        </span>
+                      </span>
+                    )}
+                  </button>
+
+                  <div className="text-center sm:text-left">
+                    <p className="text-lg font-semibold text-slate-700">
+                      រូបតំណាង
+                    </p>
+                    <p className="mt-1 text-[15px] leading-6 text-slate-500">
+                      ចុចលើរូបភាពដើម្បីផ្ទុករូបថ្មី។
+                      <br />
+                      JPG, PNG ឬ WebP · អតិបរមា 5 MB
+                    </p>
+                    {avatarError && (
+                      <p className="mt-2 text-[15px] text-red-600">
+                        {avatarError}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -848,84 +967,40 @@ export default function CreateMemberProfileModal({
                     </div>
                   </div>
 
-                  {/* Language */}
-                  <div>
-                    <label
-                      htmlFor="preferredLanguage"
-                      className="mb-2.5 block text-lg font-semibold text-slate-700"
-                    >
-                      ភាសាដែលពេញចិត្ត
-                    </label>
-
-                    <div className="relative">
-                      <Languages className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
-                      <select
-                        id="preferredLanguage"
-                        value={form.preferredLanguage}
-                        onChange={(event) =>
-                          setForm((previous) => ({
-                            ...previous,
-                            preferredLanguage: event.target.value,
-                          }))
-                        }
-                        className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
-                      >
-                        <option value="km" className="text-lg">
-                          ភាសាខ្មែរ
-                        </option>
-                        <option value="en" className="text-lg">
-                          English
-                        </option>
-                      </select>
-
-                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                    </div>
-                  </div>
-
-                  {/* Default profile toggle — hidden when forceDefault is true */}
-                  {forceDefault ? (
-                    <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:col-span-2">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                        <Crown className="h-5 w-5" />
+                  {/* Default profile toggle (Right beside DOB) */}
+                  <div className="flex flex-col justify-end">
+                    {forceDefault ? (
+                      <div className="flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <Crown className="h-5 w-5 text-emerald-600" />
+                          <span className="text-lg font-semibold text-emerald-800">
+                            កំណត់ជាគណនីលំនាំដើម
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-lg font-semibold text-emerald-800">
-                          គណនីលំនាំដើម
-                        </p>
-                        <p className="mt-0.5 text-[15px] leading-6 text-emerald-700">
-                          គណនីនេះនឹងត្រូវបានកំណត់ជា profile លំនាំដើមរបស់អ្នក
-                          សម្រាប់ការណែនាំអាហារ។
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <label className="flex cursor-pointer items-center justify-between gap-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-slate-300 hover:bg-white sm:col-span-2">
-                      <div>
-                        <p className="text-lg font-semibold text-slate-700">
+                    ) : (
+                      <label className="flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 transition hover:border-slate-300 hover:bg-white">
+                        <span className="text-lg font-semibold text-slate-700">
                           កំណត់ជាគណនីលំនាំដើម
-                        </p>
-                        <p className="mt-1 text-lg leading-7 text-slate-500">
-                          គណនីនេះនឹងត្រូវបានប្រើជាលំនាំដើមសម្រាប់ការណែនាំអាហារ។
-                        </p>
-                      </div>
+                        </span>
 
-                      <div className="relative shrink-0">
-                        <input
-                          type="checkbox"
-                          checked={form.isDefault}
-                          onChange={(event) =>
-                            setForm((previous) => ({
-                              ...previous,
-                              isDefault: event.target.checked,
-                            }))
-                          }
-                          className="peer sr-only"
-                        />
-                        <div className="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-primary-800 peer-focus-visible:ring-4 peer-focus-visible:ring-primary-800/20 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-[''] peer-checked:after:translate-x-5" />
-                      </div>
-                    </label>
-                  )}
+                        <div className="relative shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={form.isDefault}
+                            onChange={(event) =>
+                              setForm((previous) => ({
+                                ...previous,
+                                isDefault: event.target.checked,
+                              }))
+                            }
+                            className="peer sr-only"
+                          />
+                          <div className="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-primary-800 peer-focus-visible:ring-4 peer-focus-visible:ring-primary-800/20 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-[''] peer-checked:after:translate-x-5" />
+                        </div>
+                      </label>
+                    )}
+                  </div>
                 </div>
               </section>
 

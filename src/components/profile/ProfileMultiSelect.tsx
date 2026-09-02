@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { AnimatePresence, motion } from "framer-motion";
 
-import { Check, ChevronDown, Users } from "lucide-react";
+import { Check, ChevronDown, Users, Settings2 } from "lucide-react";
 
 import { useGetMediaAccessUrlQuery } from "@/app/store/memberProfileApi";
 
@@ -71,7 +72,7 @@ export function ProfileAvatarStack({ profiles }: { profiles: MemberProfile[] }) 
           <ProfileAvatar
             name={profile.profileName}
             avatarMediaUuid={profile.avatarMediaUuid}
-            size={20}
+            size={24}
           />
         </span>
       ))}
@@ -96,7 +97,7 @@ export function ProfileMultiSelect({
   onSelectAll,
   allSelected,
   emptyLabel = "ជ្រើសរើសគណនី",
-  triggerClassName = "flex items-center gap-1.5 rounded-full bg-emerald-50 py-0.5 pl-0.5 pr-2 text-[12px] font-medium text-emerald-700 transition hover:bg-emerald-100",
+  triggerClassName = "flex items-center gap-1.5 rounded-full bg-emerald-50 py-1 pl-1 pr-2.5 lg:py-1.5 lg:pl-1.5 lg:pr-3 text-[13px] lg:text-[14px] font-medium text-emerald-700 transition hover:bg-emerald-100",
 }: {
   profiles: MemberProfile[];
   targetProfiles: MemberProfile[];
@@ -146,7 +147,7 @@ export function ProfileMultiSelect({
           <ProfileAvatar
             name={targetProfiles[0]?.profileName ?? "?"}
             avatarMediaUuid={targetProfiles[0]?.avatarMediaUuid ?? null}
-            size={20}
+            size={24}
           />
         )}
         <span className="max-w-[130px] truncate">
@@ -202,44 +203,57 @@ export function ProfileMultiSelect({
               const isSelected = targetUuids.has(profile.uuid);
 
               return (
-                <button
+                <div
                   key={profile.uuid}
-                  type="button"
-                  role="option"
-                  aria-selected={isSelected}
-                  onClick={() => onToggle(profile)}
-                  className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition ${
+                  className={`flex w-full items-center justify-between rounded-xl transition ${
                     isSelected ? "bg-primary-50" : "hover:bg-gray-50"
                   }`}
                 >
-                  <span
-                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border ${
-                      isSelected
-                        ? "border-primary-700 bg-primary-700"
-                        : "border-gray-300 bg-white"
-                    }`}
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => onToggle(profile)}
+                    className="flex flex-1 items-center gap-2.5 px-2.5 py-2 text-left"
                   >
-                    {isSelected && <Check className="h-3 w-3 text-white" />}
-                  </span>
-
-                  <ProfileAvatar
-                    name={profile.profileName}
-                    avatarMediaUuid={profile.avatarMediaUuid}
-                    size={32}
-                  />
-
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-semibold text-gray-900">
-                      {profile.profileName}
+                    <span
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border ${
+                        isSelected
+                          ? "border-primary-700 bg-primary-700"
+                          : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && <Check className="h-3 w-3 text-white" />}
                     </span>
-                    <span className="block truncate text-[12px] text-gray-400">
-                      {profile.isDefault
-                        ? "លំនាំដើម"
-                        : RELATIONSHIP_LABELS[profile.relationship] ??
-                          profile.relationship}
+
+                    <ProfileAvatar
+                      name={profile.profileName}
+                      avatarMediaUuid={profile.avatarMediaUuid}
+                      size={32}
+                    />
+
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[14px] font-semibold text-gray-900">
+                        {profile.profileName}
+                      </span>
+                      <span className="block truncate text-[12px] text-gray-400">
+                        {profile.isDefault
+                          ? "លំនាំដើម"
+                          : RELATIONSHIP_LABELS[profile.relationship] ??
+                            profile.relationship}
+                      </span>
                     </span>
-                  </span>
-                </button>
+                  </button>
+
+                  <Link
+                    href={`/dashboard/family-profile/${profile.uuid}`}
+                    className="mr-2 rounded-full p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-gray-700"
+                    title="Edit Preferences"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Settings2 className="h-4 w-4" />
+                  </Link>
+                </div>
               );
             })}
           </motion.div>

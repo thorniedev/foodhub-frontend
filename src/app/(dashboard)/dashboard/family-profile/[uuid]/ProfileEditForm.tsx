@@ -15,7 +15,7 @@ import {
   Compass,
   Flame,
   HeartPulse,
-  Languages,
+  ImageIcon,
   LoaderCircle,
   Plus,
   RefreshCw,
@@ -116,33 +116,33 @@ interface EditFormState {
 }
 
 export const TASTE_OPTIONS = [
-  { key: "spicy", labelKm: "ហឹរ (Spicy)", emoji: "🌶️" },
-  { key: "savory", labelKm: "ប្រៃ / ឈ្ងុយ (Savory)", emoji: "🧂" },
-  { key: "soup", labelKm: "ស៊ុប / ទឹកសម្ល (Soup)", emoji: "🍲" },
-  { key: "sweet", labelKm: "ផ្អែម (Sweet)", emoji: "🍯" },
-  { key: "sour", labelKm: "ជូរ (Sour)", emoji: "🍋" },
-  { key: "bitter", labelKm: "ល្វីង (Bitter)", emoji: "☕" },
+  { key: "spicy", labelKm: "ហឹរ (Spicy)" },
+  { key: "savory", labelKm: "ប្រៃ / ឈ្ងុយ (Savory)" },
+  { key: "soup", labelKm: "ស៊ុប / ទឹកសម្ល (Soup)" },
+  { key: "sweet", labelKm: "ផ្អែម (Sweet)" },
+  { key: "sour", labelKm: "ជូរ (Sour)" },
+  { key: "bitter", labelKm: "ល្វីង (Bitter)" },
 ];
 
 export const TEXTURE_OPTIONS = [
-  { key: "crispy", labelKm: "ស្រួយ (Crispy)", emoji: "🍗" },
-  { key: "chewy", labelKm: "ស្វិត (Chewy)", emoji: "🍡" },
-  { key: "creamy", labelKm: "ទន់ម៉ត់ / ក្រែម (Creamy)", emoji: "🍦" },
-  { key: "tender", labelKm: "ផុយទន់ (Tender)", emoji: "🥩" },
-  { key: "crunchy", labelKm: "ស្រួយក្រុប (Crunchy)", emoji: "🥨" },
+  { key: "crispy", labelKm: "ស្រួយ (Crispy)" },
+  { key: "chewy", labelKm: "ស្វិត (Chewy)" },
+  { key: "creamy", labelKm: "ទន់ម៉ត់ / ក្រែម (Creamy)" },
+  { key: "tender", labelKm: "ផុយទន់ (Tender)" },
+  { key: "crunchy", labelKm: "ស្រួយក្រុប (Crunchy)" },
 ];
 
 export const CUISINE_OPTIONS = [
-  { code: "KHMER", labelKm: "ខ្មែរ (Khmer)", flag: "🇰🇭" },
-  { code: "JAPANESE", labelKm: "ជប៉ុន (Japanese)", flag: "🇯🇵" },
-  { code: "CHINESE", labelKm: "ចិន (Chinese)", flag: "🇨🇳" },
-  { code: "KOREAN", labelKm: "កូរ៉េ (Korean)", flag: "🇰🇷" },
-  { code: "THAI", labelKm: "ថៃ (Thai)", flag: "🇹🇭" },
-  { code: "VIETNAMESE", labelKm: "វៀតណាម (Vietnamese)", flag: "🇻🇳" },
-  { code: "WESTERN", labelKm: "បស្ចិមប្រទេស (Western)", flag: "🍔" },
-  { code: "INDIAN", labelKm: "ឥណ្ឌា (Indian)", flag: "🇮🇳" },
-  { code: "ITALIAN", labelKm: "អ៊ីតាលី (Italian)", flag: "🍕" },
-  { code: "FRENCH", labelKm: "បារាំង (French)", flag: "🥐" },
+  { code: "KHMER", labelKm: "ខ្មែរ (Khmer)" },
+  { code: "JAPANESE", labelKm: "ជប៉ុន (Japanese)" },
+  { code: "CHINESE", labelKm: "ចិន (Chinese)" },
+  { code: "KOREAN", labelKm: "កូរ៉េ (Korean)" },
+  { code: "THAI", labelKm: "ថៃ (Thai)" },
+  { code: "VIETNAMESE", labelKm: "វៀតណាម (Vietnamese)" },
+  { code: "WESTERN", labelKm: "បស្ចិមប្រទេស (Western)" },
+  { code: "INDIAN", labelKm: "ឥណ្ឌា (Indian)" },
+  { code: "ITALIAN", labelKm: "អ៊ីតាលី (Italian)" },
+  { code: "FRENCH", labelKm: "បារាំង (French)" },
 ];
 
 export const PREFERENCE_LEVELS: {
@@ -180,36 +180,30 @@ export const PREFERENCE_LEVELS: {
 export function getSpiceDescriptor(level: number): {
   labelKm: string;
   colorClass: string;
-  emoji: string;
 } {
   if (level === 0)
     return {
       labelKm: "មិនហឹរទាល់តែសោះ (Mild / 0)",
       colorClass: "text-slate-500",
-      emoji: "🟢",
     };
   if (level <= 3)
     return {
       labelKm: "ហឹរតិចតួច (Mild)",
       colorClass: "text-emerald-600",
-      emoji: "🌶️",
     };
   if (level <= 6)
     return {
       labelKm: "ហឹរមធ្យម (Medium)",
       colorClass: "text-amber-600",
-      emoji: "🌶️🌶️",
     };
   if (level <= 8)
     return {
       labelKm: "ហឹរខ្លាំង (Hot)",
       colorClass: "text-orange-600",
-      emoji: "🌶️🌶️🌶️",
     };
   return {
     labelKm: "ហឹរខ្លាំងបំផុត (Extremely Spicy)",
     colorClass: "text-red-600 font-black",
-    emoji: "🔥🌶️🔥",
   };
 }
 
@@ -1473,9 +1467,13 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 className="object-cover"
                 sizes="96px"
               />
-            ) : (
+            ) : form.profileName.trim() ? (
               <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-[34px] font-bold text-primary-800">
-                {form.profileName.trim().charAt(0).toUpperCase() || "?"}
+                {form.profileName.trim().charAt(0).toUpperCase()}
+              </span>
+            ) : (
+              <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-primary-800">
+                <ImageIcon className="h-9 w-9 text-primary-800/60" />
               </span>
             )}
 
@@ -1641,42 +1639,6 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
               />
             </div>
           </div>
-
-          {/* Language */}
-          <div>
-            <label
-              htmlFor="edit-language"
-              className="mb-2.5 block text-lg font-semibold text-slate-700"
-            >
-              ភាសាដែលពេញចិត្ត
-            </label>
-
-            <div className="relative">
-              <Languages className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
-              <select
-                id="edit-language"
-                value={form.preferredLanguage}
-                onChange={(event) =>
-                  setForm((previous) => ({
-                    ...previous,
-                    preferredLanguage: event.target.value,
-                  }))
-                }
-                className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
-              >
-                <option value="km" className="text-lg">
-                  ភាសាខ្មែរ
-                </option>
-
-                <option value="en" className="text-lg">
-                  English
-                </option>
-              </select>
-
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1717,7 +1679,6 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                     getSpiceDescriptor(form.spiceTolerance).colorClass
                   }`}
                 >
-                  {getSpiceDescriptor(form.spiceTolerance).emoji}{" "}
                   {getSpiceDescriptor(form.spiceTolerance).labelKm}
                 </span>
               </div>
@@ -1918,7 +1879,6 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                         : "border-slate-200 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50/50"
                     }`}
                   >
-                    <span>{taste.emoji}</span>
                     <span>{taste.labelKm}</span>
                   </button>
                 );
@@ -1952,7 +1912,6 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                         : "border-slate-200 bg-white text-slate-700 hover:border-amber-600 hover:bg-amber-50/50"
                     }`}
                   >
-                    <span>{texture.emoji}</span>
                     <span>{texture.labelKm}</span>
                   </button>
                 );
@@ -2002,7 +1961,6 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                         : "border-slate-200 bg-white text-slate-700 hover:border-indigo-600 hover:bg-indigo-50/50"
                     }`}
                   >
-                    <span>{cuisine.flag}</span>
                     <span>{cuisine.labelKm}</span>
                   </button>
                 );
@@ -2029,8 +1987,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-xl">
-                            {cuisineMeta?.flag ?? "🍽️"}
+                          <span className="text-xl font-bold">
                           </span>
                           <span className="font-bold text-slate-900 text-base">
                             {cuisineMeta?.labelKm ?? item.cuisineCode}

@@ -12,6 +12,7 @@ import {
   useMotionValueEvent,
   useMotionTemplate,
   MotionValue,
+  AnimatePresence,
 } from "framer-motion";
 import { FaShieldAlt, FaStore, FaArrowRight } from "react-icons/fa";
 
@@ -776,20 +777,22 @@ export default function MealTimeJourneySection() {
             {/* photo aperture - circular container with food photo & details INSIDE */}
             <div className="group absolute inset-0 overflow-hidden rounded-full shadow-2xl shadow-primary-950/70 border-[2px] border-white/30 bg-primary-950">
               {/* Active Dish Food Photo */}
-              <motion.div
-                key={currentActiveMeal.id + currentActiveMeal.img}
-                initial={{ opacity: 0, scale: 1.06 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
-                className="absolute inset-0 h-full w-full"
-              >
-                <MealDishImage
-                  src={currentActiveMeal.img}
-                  alt={currentActiveMeal.dish}
-                  fallbackSrc={currentActiveMeal.fallbackImg}
-                />
-              </motion.div>
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  key={currentActiveMeal.id + currentActiveMeal.img}
+                  initial={{ opacity: 0, scale: 1.06, zIndex: 10 }}
+                  animate={{ opacity: 1, scale: 1, zIndex: 10 }}
+                  exit={{ opacity: 0.99, scale: 1, zIndex: 0 }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  className="absolute inset-0 h-full w-full"
+                >
+                  <MealDishImage
+                    src={currentActiveMeal.img}
+                    alt={currentActiveMeal.dish}
+                    fallbackSrc={currentActiveMeal.fallbackImg}
+                  />
+                </motion.div>
+              </AnimatePresence>
 
               {/* Gradient Scrim */}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
@@ -896,6 +899,7 @@ export default function MealTimeJourneySection() {
                         : "bg-white/30 hover:bg-white/60 hover:scale-110"
                   }`}
                 />
+                {/*
                 <span
                   className={`absolute -bottom-5 whitespace-nowrap text-[10px] font-medium transition-colors ${
                     i === active
@@ -905,6 +909,7 @@ export default function MealTimeJourneySection() {
                 >
                   {m.label}
                 </span>
+                */}
               </button>
             ))}
           </div>

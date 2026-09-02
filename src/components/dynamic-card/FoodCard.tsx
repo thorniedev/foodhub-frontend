@@ -467,7 +467,12 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+
+import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 
 import { CiHeart } from "react-icons/ci";
 import {
@@ -535,6 +540,11 @@ function getStoredFavoriteIds(): string[] {
 ========================================================= */
 
 export default function FoodCard({ food }: FoodCardProps) {
+  const router = useRouter();
+  const { data: user } = useGetCurrentUserQuery();
+  const { bookmarks, addBookmark, removeBookmark, findBookmark } =
+    useBookmarks();
+
   /* =======================================================
      DISPLAY VALUES
   ======================================================= */
@@ -577,6 +587,7 @@ export default function FoodCard({ food }: FoodCardProps) {
   ======================================================= */
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   /* =======================================================
      DISTANCE & TRAVEL TIME
@@ -612,14 +623,22 @@ export default function FoodCard({ food }: FoodCardProps) {
 
   const rawImage =
     food.thumbnail ||
+    (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
     foodAny.imageUrl ||
     (foodAny.primaryMediaUuid
       ? `/api/v1/media/${foodAny.primaryMediaUuid}`
-      : undefined);
+      : undefined) ||
+    (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : undefined);
 
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>(
-    toFrontendApiAssetUrl(rawImage),
-  );
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [rawImage]);
+
+  const thumbnailUrl = imgError 
+    ? DEFAULT_FOOD_IMAGE 
+    : toFrontendApiAssetUrl(rawImage);
 
   /* =======================================================
      DIETARY TAG WIDTH
@@ -637,9 +656,6 @@ export default function FoodCard({ food }: FoodCardProps) {
      BOOKMARKS & FAVORITES
   ======================================================= */
 
-  const { bookmarks, addBookmark, removeBookmark, findBookmark } =
-    useBookmarks();
-
   useEffect(() => {
     const favoriteIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
@@ -651,18 +667,15 @@ export default function FoodCard({ food }: FoodCardProps) {
   }, [food.uuid, food.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
-     THUMBNAIL
-  ======================================================= */
-
-  useEffect(() => {
-    setThumbnailUrl(toFrontendApiAssetUrl(rawImage));
-  }, [rawImage]);
-
-  /* =======================================================
      FAVORITE / BOOKMARK TOGGLE
   ======================================================= */
 
   const toggleFavorite = async () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     const currentIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: food.uuid,
@@ -836,32 +849,35 @@ export default function FoodCard({ food }: FoodCardProps) {
             IMAGE
         ======================================== */}
 
-        <div className="relative min-h-0 flex-1">
-          <Image
-            src={thumbnailUrl}
-            alt={displayName}
-            width={485}
-            height={370}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            draggable={false}
-            onError={() => {
-              if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {
-                setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-              }
-            }}
-            className="
-              h-[115px]
-              sm:h-[180px]
-              w-fullff
-              rounded-[12px] max-sm:rounded-[8px]
-              sm:rounded-[10px]
-              border
-              border-gray-100
-              dark:border-gray-800
-              object-cover
-              pointer-events-none
-            "
-          />
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-[12px] sm:rounded-[10px] max-sm:rounded-[8px] border border-gray-100 dark:border-gray-800">
+          {imgError || !rawImage ? (
+            <div className="flex h-[115px] sm:h-[180px] w-full items-center justify-center bg-gray-50 dark:bg-gray-800">
+              <div className="flex flex-col items-center gap-2 text-gray-300 dark:text-gray-600">
+                <svg className="w-8 h-8 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+              </div>
+            </div>
+          ) : (
+            <Image
+              src={thumbnailUrl}
+              alt={displayName}
+              width={485}
+              height={370}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              draggable={false}
+              onError={() => {
+                setImgError(true);
+              }}
+              className="
+                h-[115px]
+                sm:h-[180px]
+                w-full
+                object-cover
+                pointer-events-none
+              "
+            />
+          )}
 
           {/* Top-Right Bookmark Button */}
           <button
@@ -1210,6 +1226,12 @@ export default function FoodCard({ food }: FoodCardProps) {
         )}
       </button>
       */}
+
+      {/* MODAL */}
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </motion.article>
   );
 }

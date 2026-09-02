@@ -1,6 +1,8 @@
 import Aside from "@/components/layout/Aside";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import Model from "@/components/home/features/Model";
 
 export default function DashboardLayout({
   children,
@@ -9,7 +11,7 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50">
+      <div className="flex min-h-screen w-full bg-slate-50 relative pb-[90px] md:pb-0">
         {/* Sidebar includes logo at the top */}
         <Aside />
 
@@ -23,6 +25,9 @@ export default function DashboardLayout({
           </main>
         </div>
       </div>
+      
+      <MobileBottomNav />
+      <Model />
     </SidebarProvider>
   );
 }

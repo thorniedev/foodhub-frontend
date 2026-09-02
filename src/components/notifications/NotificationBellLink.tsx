@@ -25,11 +25,11 @@ export default function NotificationBellLink({
       href={href}
       aria-label="ការជូនដំណឹង"
       className={cn(
-        "relative inline-flex items-center justify-center rounded-full p-1.5 text-[#136C34] transition hover:bg-emerald-50",
+        "relative inline-flex size-10 items-center justify-center rounded-full border border-border bg-background text-[#136C34] transition-colors hover:bg-accent hover:text-accent-foreground dark:text-emerald-400",
         className,
       )}
     >
-      <Bell className="h-6 w-6" />
+      <Bell className="size-5" />
 
       {unreadCount > 0 && (
         <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E36914] px-1 text-[10px] font-bold text-white">

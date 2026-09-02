@@ -17,6 +17,8 @@ type MenuItemDetailQueryArg = string | GetCatalogMenuItemDetailParams;
 export interface GetMenuItemsParams {
   /** Hard filter to only the FOOD or only the DRINK category hierarchy. */
   rootCategoryCode?: "FOOD" | "DRINK";
+  page?: number;
+  size?: number;
 }
 
 export interface MealTypeDto {
@@ -41,8 +43,8 @@ export const menuApi = baseApi.injectEndpoints({
         url: "/catalog/menu-items",
         method: "GET",
         params: {
-          page: 0,
-          size: 100,
+          page: params?.page ?? 0,
+          size: params?.size ?? 1000,
           ...(params?.rootCategoryCode
             ? { rootCategoryCode: params.rootCategoryCode }
             : {}),

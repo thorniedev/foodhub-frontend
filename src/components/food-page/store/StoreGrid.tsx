@@ -174,23 +174,13 @@ function FeaturedStoreBanner({
             className="
               relative
               h-[205px]
-              bg-primary-50
+              bg-white
 
               sm:h-[230px]
               md:h-[270px]
             "
           >
             <StoreImage store={store} />
-
-            <div
-              className="
-                absolute inset-0
-                bg-gradient-to-t
-                from-black/20
-                via-transparent
-                to-transparent
-              "
-            />
           </div>
 
           {/* Banner content */}
@@ -569,50 +559,68 @@ export default function StoreGrid({
             )}
           </div>
 
-          <div className="relative overflow-hidden">
-            <AnimatePresence mode="wait">
-              <FeaturedStoreBanner
-                key={featuredStores[activeIndex].uuid}
-                store={featuredStores[activeIndex]}
-                distanceKm={
-                  distanceByStoreUuid[featuredStores[activeIndex].uuid]
-                }
-              />
-            </AnimatePresence>
-          </div>
+          {(() => {
+            const safeActiveIndex =
+              activeIndex >= 0 && activeIndex < featuredStores.length
+                ? activeIndex
+                : 0;
+            const currentFeaturedStore = featuredStores[safeActiveIndex] ?? null;
 
-          {featuredStores.length > 1 && (
-            <div
-              className="
-                mt-3
-                flex items-center
-                justify-center
-                gap-2
-              "
-            >
-              {featuredStores.map((store, index) => (
-                <button
-                  key={store.uuid}
-                  type="button"
-                  aria-label={`Go to featured store ${index + 1}`}
-                  aria-current={activeIndex === index ? "true" : undefined}
-                  onClick={() => setActiveIndex(index)}
-                  className={`
-                      h-2
-                      rounded-full
-                      transition-all
-                      duration-300
+            if (!currentFeaturedStore) return null;
 
-                      ${
-                        activeIndex === index
-                          ? "w-7 bg-primary-800"
-                          : "w-2 bg-primary-200 hover:bg-primary-400"
+            return (
+              <>
+                <div className="relative overflow-hidden">
+                  <AnimatePresence mode="wait">
+                    <FeaturedStoreBanner
+                      key={currentFeaturedStore.uuid}
+                      store={currentFeaturedStore}
+                      distanceKm={
+                        currentFeaturedStore.uuid
+                          ? distanceByStoreUuid[currentFeaturedStore.uuid]
+                          : undefined
                       }
-                    `}
-                />
-              ))}
-            </div>
-          )}
+                    />
+                  </AnimatePresence>
+                </div>
+
+                {featuredStores.length > 1 && (
+                  <div
+                    className="
+                      mt-3
+                      flex items-center
+                      justify-center
+                      gap-2
+                    "
+                  >
+                    {featuredStores.map((store, index) => (
+                      <button
+                        key={store.uuid}
+                        type="button"
+                        aria-label={`Go to featured store ${index + 1}`}
+                        aria-current={
+                          safeActiveIndex === index ? "true" : undefined
+                        }
+                        onClick={() => setActiveIndex(index)}
+                        className={`
+                            h-2
+                            rounded-full
+                            transition-all
+                            duration-300
+
+                            ${
+                              safeActiveIndex === index
+                                ? "w-7 bg-primary-800"
+                                : "w-2 bg-primary-200 hover:bg-primary-400"
+                            }
+                          `}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </section>
       )}
 
