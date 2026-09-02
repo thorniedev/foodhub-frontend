@@ -34,7 +34,10 @@ function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
 
   // Fallback ranges for standard FoodHub age groups
   const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
-  if (key.includes("កុមារតូច") || key.includes("toddler") || key.includes("infant")) {
+  if (key.includes("ទារក") || key.includes("infant") || key.includes("baby")) {
+    return `${a.name || "ទារក"} (0-6)`;
+  }
+  if (key.includes("កុមារតូច") || key.includes("toddler")) {
     return `${a.name} (0-2)`;
   }
   if (key.includes("កុមារ") || key.includes("child") || key.includes("kid")) {
@@ -389,13 +392,16 @@ export default function DiscoveryFilterSheet({
                 )}
 
                 {/* Age Groups */}
-                {filterOptions?.ageGroups && filterOptions.ageGroups.length > 0 && (
+                {((filterOptions?.ageGroups && filterOptions.ageGroups.length > 0) || true) && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
                       ក្រុមអាយុ
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {filterOptions.ageGroups.map((a) => {
+                      {((filterOptions?.ageGroups || []).some((a) => (a.name || "").includes("ទារក") || (a.code || "").toLowerCase().includes("infant") || (a.code || "").toLowerCase().includes("baby"))
+                        ? (filterOptions?.ageGroups || [])
+                        : [{ uuid: "age-group-infant", code: "INFANT", name: "ទារក", minAge: 0, maxAge: 6 }, ...(filterOptions?.ageGroups || [])]
+                      ).map((a) => {
                         const selected = draft.ageGroupUuids?.includes(a.uuid);
                         return (
                           <button
@@ -549,7 +555,7 @@ export default function DiscoveryFilterSheet({
                             : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                         }`}
                       >
-                        ⏱️ {pt.label}
+                        {pt.label}
                       </button>
                     ))}
                   </div>
