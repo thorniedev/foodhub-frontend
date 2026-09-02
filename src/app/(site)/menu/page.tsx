@@ -1133,13 +1133,13 @@ function CollapsibleList<T>({
       <div className="flex flex-wrap gap-2">
         {visible.map(renderItem)}
         {!expanded && !query && hiddenCount > 0 && (
-          <button type="button" onClick={() => setExpanded(true)} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-medium text-gray-500 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
-            + {hiddenCount} ទៀត
+          <button type="button" onClick={() => setExpanded(true)} className="flex items-center gap-1 rounded-full px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-semibold text-primary-700 hover:bg-primary-50 dark:text-emerald-400 dark:hover:bg-slate-800 transition">
+            + {hiddenCount} ទៀត <IoChevronDown className="text-[16px]" />
           </button>
         )}
         {expanded && !query && hiddenCount > 0 && (
-          <button type="button" onClick={() => setExpanded(false)} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-medium text-gray-500 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
-            បង្រួម
+          <button type="button" onClick={() => setExpanded(false)} className="flex items-center gap-1 rounded-full px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-semibold text-primary-700 hover:bg-primary-50 dark:text-emerald-400 dark:hover:bg-slate-800 transition">
+            បង្រួម <IoChevronDown className="rotate-180 text-[16px]" />
           </button>
         )}
       </div>
@@ -3036,7 +3036,7 @@ function FoodPageContent() {
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         placeholder="ស្វែងរកមុខម្ហូប ឈ្មោះ កូដ ប្រភេទ ហាង..."
-        className="w-full bg-transparent text-[16px] text-gray-800 placeholder-gray-400 focus:outline-none dark:text-slate-100 dark:placeholder-gray-500"
+        className="w-full bg-transparent text-[16px] text-gray-800 placeholder-gray-400 focus:outline-none dark:text-slate-100 dark:placeholder-gray-500 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden"
       />
       {searchInput && (
         <button
@@ -3048,14 +3048,6 @@ function FoodPageContent() {
           <IoClose className="text-[16px]" />
         </button>
       )}
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new Event("open-global-search"))}
-        className="hidden sm:inline-flex items-center rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700 transition"
-        title="បើកផ្ទាំងស្វែងរកសកល (Global Search)"
-      >
-        ⌘K
-      </button>
     </div>
   );
 

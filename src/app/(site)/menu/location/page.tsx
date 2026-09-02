@@ -58,7 +58,7 @@ export default function LocationPage() {
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="ស្វែងរកម្ហូប ហាង ប្រភេទម្ហូប..."
                 aria-label="Search foods"
-                className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400 dark:text-gray-100"
+                className="w-full bg-transparent text-[16px] text-gray-700 outline-none placeholder:text-gray-400 dark:text-gray-100 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden"
               />
 
               {searchInput && (
