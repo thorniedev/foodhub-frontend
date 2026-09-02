@@ -1440,6 +1440,7 @@ import { TbFlame } from "react-icons/tb";
 import {
   useGetMenuItemByUuidQuery,
   useGetMenuItemsQuery,
+  useGetFoodCatalogByUuidQuery,
 } from "@/app/store/menuApi";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useTrackInteraction } from "@/hooks/useTrackInteraction";
@@ -1887,6 +1888,15 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   const food = foodDetail ?? fallbackFood;
 
+  const masterFoodUuid = foodDetail?.food?.uuid || fallbackFood?.food?.uuid;
+
+  const { data: foodCatalog } = useGetFoodCatalogByUuidQuery(
+    masterFoodUuid ?? "",
+    {
+      skip: !masterFoodUuid,
+    },
+  );
+
   const relatedFoods = useMemo(() => {
     if (!food) {
       return [];
@@ -1990,7 +2000,12 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   }
 
   const displayName =
-    food.localName?.trim() || food.name?.trim() || "Unnamed food";
+    food.localName?.trim() || food.name?.trim() || foodCatalog?.localName?.trim() || "Unnamed food";
+
+  const englishOrCanonicalName =
+    food.food?.canonicalName?.trim() ||
+    foodCatalog?.canonicalName?.trim() ||
+    (food.name && food.name.trim() !== displayName ? food.name.trim() : null);
 
   const storeDisplayName =
     food.store.localName?.trim() || food.store.name?.trim() || "Unknown store";
@@ -2013,10 +2028,103 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   const isStoreOpen = food.store.operatingStatus === "OPEN";
   const averageRating = Number(food.store.averageRating ?? 0);
 
+  const calories =
+    food.nutrition?.calories !== undefined &&
+    food.nutrition.calories !== null &&
+    food.nutrition.calories > 0
+      ? food.nutrition.calories
+      : foodCatalog?.nutritionData?.calories ?? 0;
+
+  const proteinGrams =
+    food.nutrition?.proteinGrams !== undefined &&
+    food.nutrition.proteinGrams !== null &&
+    food.nutrition.proteinGrams > 0
+      ? food.nutrition.proteinGrams
+      : foodCatalog?.nutritionData?.proteinGrams ?? 0;
+
+  const carbsGrams =
+    food.nutrition?.carbsGrams !== undefined &&
+    food.nutrition.carbsGrams !== null &&
+    food.nutrition.carbsGrams > 0
+      ? food.nutrition.carbsGrams
+      : foodCatalog?.nutritionData?.carbohydrateGrams ?? 0;
+
+  const fatGrams =
+    food.nutrition?.fatGrams !== undefined &&
+    food.nutrition.fatGrams !== null &&
+    food.nutrition.fatGrams > 0
+      ? food.nutrition.fatGrams
+      : foodCatalog?.nutritionData?.fatGrams ?? 0;
+
+  const spiceLevel =
+    food.food?.spiceLevel !== undefined &&
+    food.food?.spiceLevel !== null &&
+    food.food?.spiceLevel > 0
+      ? food.food.spiceLevel
+      : foodCatalog?.defaultSpiceLevel ?? 0;
+
+  const dietaryTypes =
+    food.food?.dietaryTypes && food.food.dietaryTypes.length > 0
+      ? food.food.dietaryTypes
+      : (foodCatalog?.dietaryTypes ?? []).map((d) => ({
+          code: d.code,
+          name: d.name,
+          verificationStatus: d.verificationStatus || "UNVERIFIED",
+        }));
+
+  const seasons =
+    food.food?.seasons && food.food.seasons.length > 0
+      ? food.food.seasons
+      : (foodCatalog?.seasons ?? []).map((s) => ({
+          code: s.code || s.uuid || "",
+          name: s.name || "",
+          localName: s.localName || null,
+          suitabilityScore: s.suitabilityScore || 1,
+          reasonText: s.reasonText || null,
+        }));
+
+  const events =
+    food.food?.events && food.food.events.length > 0
+      ? food.food.events
+      : (foodCatalog?.events ?? []).map((e) => ({
+          code: e.code || e.uuid || "",
+          name: e.name || "",
+          localName: e.localName || null,
+          relevanceScore: e.relevanceScore || 1,
+          reasonText: e.reasonText || null,
+        }));
+
+  const suitableWeather =
+    food.food?.suitableWeather && food.food.suitableWeather.length > 0
+      ? food.food.suitableWeather
+      : (foodCatalog?.suitableWeather ?? []).map((w) => ({
+          code: w.code || w.uuid || "",
+          name: w.name || "",
+          localName: w.localName || null,
+          suitabilityScore: w.suitabilityScore || 1,
+          reasonText: w.reasonText || null,
+        }));
+
+  const mealTypes =
+    food.food?.mealTypes && food.food.mealTypes.length > 0
+      ? food.food.mealTypes
+      : (foodCatalog?.mealTypes ?? []).map((m) => ({
+          code: m.code || m.uuid || "",
+          name: m.name || "",
+        }));
+
+  const ageGroups =
+    food.food?.ageGroups && food.food.ageGroups.length > 0
+      ? food.food.ageGroups
+      : (foodCatalog?.ageRules ?? []).map((a) => ({
+          code: a.code || a.uuid || "",
+          name: a.name || "",
+        }));
+
   const hasContextRows =
-    food.food.seasons.length > 0 ||
-    food.food.events.length > 0 ||
-    food.food.suitableWeather.length > 0;
+    seasons.length > 0 ||
+    events.length > 0 ||
+    suitableWeather.length > 0;
 
   const handleShare = async () => {
     const shareData = {
@@ -2124,8 +2232,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   {displayName}
                 </p>
 
-                {food.name && food.localName && (
-                  <p className={`mt-2 ${TEXT_LABEL}`}>{food.name}</p>
+                {englishOrCanonicalName && (
+                  <p className={`mt-2 ${TEXT_LABEL}`}>{englishOrCanonicalName}</p>
                 )}
               </div>
 
@@ -2183,17 +2291,13 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               <StatTile
                 icon={<TbFlame />}
-                value={getSpiceLabel(food.food.spiceLevel)}
+                value={getSpiceLabel(spiceLevel)}
                 label="កម្រិតហឹរ"
               />
 
               <StatTile
                 icon={<MdOutlineInventory2 />}
-                value={
-                  food.nutrition?.calories != null
-                    ? `${food.nutrition.calories} kcal`
-                    : "0"
-                }
+                value={`${calories} kcal`}
                 label="កាឡូរី"
               />
             </div>
@@ -2202,9 +2306,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             <div className="mt-6">
               <p className={TEXT_LABEL}>របបអាហារ</p>
 
-              {food.food.dietaryTypes.length > 0 ? (
+              {dietaryTypes.length > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {food.food.dietaryTypes.map((dietaryType) => (
+                  {dietaryTypes.map((dietaryType) => (
                     <span
                       key={dietaryType.code}
                       className={`flex items-center gap-2 rounded-full bg-primary-800 px-4 py-2 text-white ${TEXT_BODY}`}
@@ -2447,31 +2551,19 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               {[
                 {
                   label: "Calories",
-                  value:
-                    food.nutrition?.calories != null
-                      ? `${food.nutrition.calories} kcal`
-                      : "0",
+                  value: `${calories} kcal`,
                 },
                 {
                   label: "Protein",
-                  value:
-                    food.nutrition?.proteinGrams != null
-                      ? `${food.nutrition.proteinGrams} g`
-                      : "0 g",
+                  value: `${proteinGrams} g`,
                 },
                 {
                   label: "Carbs",
-                  value:
-                    food.nutrition?.carbsGrams != null
-                      ? `${food.nutrition.carbsGrams} g`
-                      : "0 g",
+                  value: `${carbsGrams} g`,
                 },
                 {
                   label: "Fat",
-                  value:
-                    food.nutrition?.fatGrams != null
-                      ? `${food.nutrition.fatGrams} g`
-                      : "0 g",
+                  value: `${fatGrams} g`,
                 },
               ].map((nutrition) => (
                 <div key={nutrition.label} className={TILE}>
@@ -2552,9 +2644,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             <div className="mt-6 border-t border-gray-100 pt-5">
               <p className={TEXT_LABEL}>អាយុសមស្រប</p>
 
-              {food.food.ageGroups.length > 0 ? (
+              {ageGroups.length > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {food.food.ageGroups.map((ageGroup) => (
+                  {ageGroups.map((ageGroup) => (
                     <InfoPill key={ageGroup.code}>{ageGroup.name}</InfoPill>
                   ))}
                 </div>
@@ -2571,9 +2663,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         <section className={`${SECTION} ${CARD}`}>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <DetailBlock label="ពេលអាហារ">
-              {food.food.mealTypes.length > 0 ? (
+              {mealTypes.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {food.food.mealTypes.map((mealType) => (
+                  {mealTypes.map((mealType) => (
                     <InfoPill key={mealType.code}>{mealType.name}</InfoPill>
                   ))}
                 </div>
@@ -2605,10 +2697,10 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
           {hasContextRows && (
             <div className="mt-6 grid gap-6 border-t border-gray-100 pt-6 lg:grid-cols-3">
-              {food.food.seasons.length > 0 && (
+              {seasons.length > 0 && (
                 <DetailBlock label="រដូវសមស្រប">
                   <div className="space-y-3">
-                    {food.food.seasons.map((season) => (
+                    {seasons.map((season) => (
                       <div key={season.code} className={TILE}>
                         <p className="font-semibold text-primary-900">
                           {season.localName || season.name}
@@ -2627,10 +2719,10 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </DetailBlock>
               )}
 
-              {food.food.events.length > 0 && (
+              {events.length > 0 && (
                 <DetailBlock label="ព្រឹត្តិការណ៍">
                   <div className="space-y-3">
-                    {food.food.events.map((eventItem) => (
+                    {events.map((eventItem) => (
                       <div key={eventItem.code} className={TILE}>
                         <p className="font-semibold text-primary-900">
                           {eventItem.localName || eventItem.name}
@@ -2649,10 +2741,10 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </DetailBlock>
               )}
 
-              {food.food.suitableWeather.length > 0 && (
+              {suitableWeather.length > 0 && (
                 <DetailBlock label="អាកាសធាតុសមស្រប">
                   <div className="space-y-3">
-                    {food.food.suitableWeather.map((weather) => (
+                    {suitableWeather.map((weather) => (
                       <div key={weather.code} className={TILE}>
                         <p className="font-semibold text-primary-900">
                           {weather.localName || weather.name}
