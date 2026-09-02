@@ -803,12 +803,11 @@ export default function LocationPickerModal({
           transition={{
             duration: 0.2,
           }}
-          className="fixed inset-0 z-[1200] flex items-end justify-center bg-slate-950/55 backdrop-blur-sm sm:items-center sm:p-5"
+          className="fixed inset-0 z-[1200] flex items-end justify-center bg-slate-950/55 backdrop-blur-sm sm:items-center sm:p-5 font-sans"
         >
           <button
             type="button"
-            aria-label="Close location picker"
-            onClick={onClose}
+            aria-label="Location picker backdrop"
             className="absolute inset-0 cursor-default"
           />
 

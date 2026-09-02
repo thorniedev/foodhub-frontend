@@ -13,7 +13,7 @@ import { FaHeart, FaStar, FaStore } from "react-icons/fa";
 
 import { IoMdTime } from "react-icons/io";
 
-import { IoLocationOutline } from "react-icons/io5";
+import { IoLocationOutline, IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 
 import { MdDeliveryDining } from "react-icons/md";
 
@@ -312,54 +312,37 @@ export default function FooodCard({
           />
         </Link>
 
-        {/* FAVORITE BUTTON */}
-
+        {/* Top-Right Bookmark Button */}
         <button
           type="button"
           aria-label={
             isFavorite
-              ? `Remove ${displayName} from favorites`
-              : `Add ${displayName} to favorites`
+              ? "ដកចេញពីបញ្ជីចំណូលចិត្ត"
+              : "រក្សាទុកក្នុងបញ្ជីចំណូលចិត្ត"
           }
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             toggleFavorite();
           }}
-          className="
-            absolute
-            right-2
-            top-2
-            z-20
-            cursor-pointer
+          className={`
+            absolute right-1 top-1 z-10
+            flex h-7 w-7 sm:h-8 sm:w-8
+            items-center justify-center
             rounded-full
-            transition
-            active:scale-95
-          "
+            backdrop-blur-md transition-all duration-200
+            shadow-sm hover:scale-110 active:scale-95
+            ${
+              isFavorite
+                ? "bg-secondary-500 text-white shadow-secondary-500/30"
+                : "bg-white/85 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
+            }
+          `}
         >
           {isFavorite ? (
-            <FaHeart
-              className="
-                rounded-full
-                bg-primary-800
-                p-2
-                text-4xl
-                text-red-400
-                shadow
-              "
-            />
+            <IoBookmark className="text-sm sm:text-base text-white" />
           ) : (
-            <CiHeart
-              className="
-                rounded-full
-                bg-primary-800
-                p-2
-                text-4xl
-                text-white
-                shadow
-              "
-            />
+            <IoBookmarkOutline className="text-sm sm:text-base" />
           )}
         </button>
       </div>

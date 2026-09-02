@@ -28,7 +28,7 @@ export default function RecommendationModeTabs({
     <div
       role="tablist"
       aria-label="Recommendation mode"
-      className="relative flex w-full sm:w-auto items-center rounded-full bg-gray-100/90 dark:bg-slate-800/90 p-1 shadow-inner"
+      className="relative flex w-full sm:w-fit items-center rounded-full bg-gray-100/90 dark:bg-slate-800/90 p-1 shadow-inner"
     >
       {OPTIONS.map(({ value, label, Icon }) => {
         const selected = mode === value;

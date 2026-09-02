@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 import {
   useGetBookmarksQuery,
   useCreateBookmarkMutation,
@@ -79,9 +79,44 @@ function writeLocalFavoriteIds(ids: string[]) {
   window.dispatchEvent(new Event(FAVORITES_UPDATED_EVENT));
 }
 
+let cachedRawValue: string | null = null;
+let cachedEntries: LocalFavoriteEntry[] = [];
+
+function getLocalFavoritesSnapshot() {
+  if (typeof window === "undefined") return cachedEntries;
+
+  const rawValue = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+  if (rawValue !== cachedRawValue) {
+    cachedRawValue = rawValue;
+    cachedEntries = readLocalFavoriteEntries();
+  }
+  return cachedEntries;
+}
+
+function getServerSnapshot() {
+  return [];
+}
+
+function subscribeToFavorites(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+
+  window.addEventListener(FAVORITES_UPDATED_EVENT, callback);
+  window.addEventListener("storage", callback);
+
+  return () => {
+    window.removeEventListener(FAVORITES_UPDATED_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
 export function useBookmarks(page = 0, size = 50) {
   const { activeProfileUuid, activeProfile } = useActiveProfile();
-  const [localFavorites, setLocalFavorites] = useState<LocalFavoriteEntry[]>([]);
+  
+  const localFavorites = useSyncExternalStore(
+    subscribeToFavorites,
+    getLocalFavoritesSnapshot,
+    getServerSnapshot
+  );
 
   const {
     data: pageData,
@@ -97,22 +132,6 @@ export function useBookmarks(page = 0, size = 50) {
     useCreateBookmarkMutation();
   const [deleteBookmarkMutation, { isLoading: isDeleting }] =
     useDeleteBookmarkMutation();
-
-  useEffect(() => {
-    const syncLocalFavorites = () => {
-      setLocalFavorites(readLocalFavoriteEntries());
-    };
-
-    syncLocalFavorites();
-
-    window.addEventListener(FAVORITES_UPDATED_EVENT, syncLocalFavorites);
-    window.addEventListener("storage", syncLocalFavorites);
-
-    return () => {
-      window.removeEventListener(FAVORITES_UPDATED_EVENT, syncLocalFavorites);
-      window.removeEventListener("storage", syncLocalFavorites);
-    };
-  }, []);
 
   const serverBookmarks: BookmarkResponse[] = useMemo(() => {
     if (!pageData) return [];
