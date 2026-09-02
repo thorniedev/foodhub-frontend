@@ -86,8 +86,8 @@ export default function AiRecommendationSection({ authToken }: Props) {
 
       const requestPayload: CreateSessionRequest = {
         mode,
-        requestSource: "WEB",
-        searchRadiusKm: 5.0,
+        requestSource: "HOMEPAGE_AUTO",
+        searchRadiusKm: 3.0,
         currencyCode: "USD",
         requestedLimit: 50,
         profiles: targetProfiles,

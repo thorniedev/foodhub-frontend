@@ -96,8 +96,8 @@ describe("AiRecommendationSection", () => {
       expect(getRecsMock).toHaveBeenCalledWith(
         {
           mode: "SINGLE",
-          requestSource: "WEB",
-          searchRadiusKm: 5.0,
+          requestSource: "HOMEPAGE_AUTO",
+          searchRadiusKm: 3.0,
           currencyCode: "USD",
           requestedLimit: 50,
           profiles: [{ profileId: "prof-2", isPrimary: true }],
@@ -120,7 +120,7 @@ describe("AiRecommendationSection", () => {
           uuid: "session-grp",
           mode: "GROUP",
           status: "READY",
-          requestSource: "WEB",
+          requestSource: "HOMEPAGE_AUTO",
           requestedLimit: 50,
           candidateCount: 10,
           eligibleCount: 0,
@@ -142,8 +142,8 @@ describe("AiRecommendationSection", () => {
       expect(getRecsMock).toHaveBeenCalledWith(
         {
           mode: "GROUP",
-          requestSource: "WEB",
-          searchRadiusKm: 5.0,
+          requestSource: "HOMEPAGE_AUTO",
+          searchRadiusKm: 3.0,
           currencyCode: "USD",
           requestedLimit: 50,
           profiles: [

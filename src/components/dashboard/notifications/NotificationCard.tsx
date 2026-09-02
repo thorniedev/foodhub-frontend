@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { AlertTriangle, ChevronRight, Loader2, Trash2 } from "lucide-react";
+import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import { categoryStyles } from "@/lib/notifications/category-styles";
 import { formatNotificationTime } from "@/lib/formatDate";
 import type { AppNotification } from "@/types/notifications";
@@ -78,13 +79,20 @@ export default function NotificationCard({
         </button>
 
         {notification.imageUrl && (
-          <div className="relative h-40 w-full overflow-hidden rounded-xl">
-            <Image
-              src={notification.imageUrl}
+          <div className="relative h-40 w-full overflow-hidden rounded-xl bg-slate-100">
+            <img
+              src={toFrontendApiAssetUrl(
+                notification.imageUrl,
+                DEFAULT_FOOD_IMAGE,
+              )}
               alt=""
-              fill
-              sizes="(max-width: 768px) 100vw, 720px"
-              className="object-cover"
+              className="h-full w-full object-cover"
+              onError={(event) => {
+                const currentSrc = event.currentTarget.src;
+                if (!currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
+                  event.currentTarget.src = DEFAULT_FOOD_IMAGE;
+                }
+              }}
             />
           </div>
         )}

@@ -113,6 +113,8 @@ export default function Model() {
       // Prompt-driven requests have no dedicated backend enum yet.
       requestSource: promptText ? "OTHER" : "HOMEPAGE_AUTO",
       requestedLimit: 15,
+      searchRadiusKm: 3,
+      currencyCode: "USD",
       contextData: promptText ? { userPrompt: promptText } : undefined,
       profiles: targets.map((profile, index) => ({
         profileId: profile.uuid,

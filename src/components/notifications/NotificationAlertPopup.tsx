@@ -13,6 +13,7 @@ import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from "@/app/store/notificationApi";
+import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import {
   Dialog,
   DialogContent,
@@ -157,13 +158,20 @@ export default function NotificationAlertPopup() {
               </DialogHeader>
 
               {/* Recommended item image, right-aligned next to the text. */}
-              <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-xl bg-muted">
-                <Image
-                  src={activeNotification.imageUrl ?? ""}
+              <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-xl bg-muted border border-amber-100 shadow-sm">
+                <img
+                  src={toFrontendApiAssetUrl(
+                    activeNotification.imageUrl,
+                    DEFAULT_FOOD_IMAGE,
+                  )}
                   alt={activeNotification.title}
-                  fill
-                  sizes="128px"
-                  className="object-cover"
+                  className="h-full w-full object-cover"
+                  onError={(event) => {
+                    const currentSrc = event.currentTarget.src;
+                    if (!currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
+                      event.currentTarget.src = DEFAULT_FOOD_IMAGE;
+                    }
+                  }}
                 />
               </div>
             </div>

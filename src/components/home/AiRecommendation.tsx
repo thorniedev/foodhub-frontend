@@ -125,6 +125,8 @@ export default function AiRecommendation() {
         // Keep this within the backend's request_source check constraint.
         requestSource: "OTHER",
         requestedLimit: 12,
+        searchRadiusKm: 3,
+        currencyCode: "USD",
         contextData: trimmed ? { userPrompt: trimmed } : undefined,
         profiles,
       }).unwrap();
