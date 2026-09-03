@@ -117,7 +117,6 @@ export interface ProximityPingRequest {
   latitude: number;
   longitude: number;
   speed: number | null;
-  radiusMeters: number;
 }
 
 export interface ProximityNotificationResult {
