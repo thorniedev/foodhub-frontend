@@ -10,37 +10,37 @@ const DEFAULT_SEASON_CARDS = [
   {
     title: "បុណ្យភ្ជុំបិណ្ឌ",
     image: "/Image/food-picture/food-21.webp",
-    link: "/menu",
+    link: `/menu?event=${encodeURIComponent("បុណ្យភ្ជុំបិណ្ឌ")}`,
     alt: "បុណ្យភ្ជុំបិណ្ឌ",
   },
   {
     title: "បុណ្យចូលឆ្នាំខ្មែរ",
     image: "/Image/food-picture/food-20.jpg",
-    link: "/menu",
+    link: `/menu?event=${encodeURIComponent("បុណ្យចូលឆ្នាំខ្មែរ")}`,
     alt: "បុណ្យចូលឆ្នាំខ្មែរ",
   },
   {
     title: "បុណ្យអុំទូក",
     image: "/Image/food-picture/food-19.jpg",
-    link: "/menu",
+    link: `/menu?event=${encodeURIComponent("បុណ្យអុំទូក")}`,
     alt: "បុណ្យអុំទូក",
   },
   {
     title: "រដូវវស្សា",
     image: "/Image/food-picture/food-22.jpg",
-    link: "/menu",
+    link: `/menu?season=${encodeURIComponent("រដូវវស្សា")}`,
     alt: "រដូវវស្សា",
   },
   {
     title: "រដូវក្តៅ",
     image: "/Image/food-picture/food-25.jpg",
-    link: "/menu",
+    link: `/menu?season=${encodeURIComponent("រដូវក្តៅ")}`,
     alt: "រដូវក្តៅ",
   },
   {
     title: "រដូវរងា",
     image: "/Image/food-picture/food-24.jpg",
-    link: "/menu",
+    link: `/menu?season=${encodeURIComponent("រដូវរងា")}`,
     alt: "រដូវរងា",
   },
 ];
@@ -124,13 +124,24 @@ export default function EventSection() {
       return displayBanners.map((b, idx) => {
         const defaultFallback =
           DEFAULT_SEASON_CARDS[idx % DEFAULT_SEASON_CARDS.length];
+        const title = b.title || defaultFallback.title;
+        const isEvent =
+          title.includes("បុណ្យ") || defaultFallback.title.includes("បុណ្យ");
+        const defaultLink = isEvent
+          ? `/menu?event=${encodeURIComponent(title)}`
+          : `/menu?season=${encodeURIComponent(title)}`;
+        const link =
+          b.location && b.location !== "/menu" && b.location.trim() !== ""
+            ? b.location
+            : defaultLink;
+
         return {
           id: b.id || `season-b-${idx}`,
-          title: b.title || defaultFallback.title,
+          title,
           image: resolveBannerImageUrl(b, defaultFallback.image),
           fallbackImage: defaultFallback.image,
-          link: b.location || "/menu",
-          alt: b.title || defaultFallback.alt,
+          link,
+          alt: title || defaultFallback.alt,
         };
       });
     }

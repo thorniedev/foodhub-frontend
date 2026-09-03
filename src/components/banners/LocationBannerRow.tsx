@@ -69,6 +69,9 @@ export default function LocationBannerRow({
           name: banner.title,
           description: banner.description || "",
           origin: banner.location || "កម្ពុជា",
+          link: banner.location
+            ? `/menu?province=${encodeURIComponent(banner.location)}`
+            : `/menu?province=${encodeURIComponent(banner.title)}`,
         }))
       : fallbackToDefault
         ? defaultSlides

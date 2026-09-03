@@ -829,18 +829,50 @@ function applyCustomerSearchFilters(
     // 9. Seasons
     if (req.seasonUuids && req.seasonUuids.length > 0) {
       const seasons = getSeasons(food);
-      const matches = seasons.some((s) =>
-        matchesItemWithLookup(req.seasonUuids, s.code, s.name, lookupMap),
-      );
+      const master = food.food?.uuid ? foodCatalogMap.get(food.food.uuid) : null;
+      const masterSeasons = (master?.seasons || []).map((s) => ({
+        code: s.code,
+        name: s.name,
+      }));
+      const allSeasons = [...seasons, ...masterSeasons];
+      const matches =
+        allSeasons.some((s) =>
+          matchesItemWithLookup(req.seasonUuids, s.code, s.name, lookupMap),
+        ) ||
+        req.seasonUuids.some((u) => {
+          const nu = normalizeText(u);
+          if (!nu) return false;
+          return (
+            normalizeText(food.name).includes(nu) ||
+            normalizeText(food.localName).includes(nu) ||
+            normalizeText(food.description).includes(nu)
+          );
+        });
       if (!matches) return false;
     }
 
     // 10. Events
     if (req.eventUuids && req.eventUuids.length > 0) {
       const events = getEvents(food);
-      const matches = events.some((e) =>
-        matchesItemWithLookup(req.eventUuids, e.code, e.name, lookupMap),
-      );
+      const master = food.food?.uuid ? foodCatalogMap.get(food.food.uuid) : null;
+      const masterEvents = (master?.events || []).map((e) => ({
+        code: e.code,
+        name: e.name,
+      }));
+      const allEvents = [...events, ...masterEvents];
+      const matches =
+        allEvents.some((e) =>
+          matchesItemWithLookup(req.eventUuids, e.code, e.name, lookupMap),
+        ) ||
+        req.eventUuids.some((u) => {
+          const nu = normalizeText(u);
+          if (!nu) return false;
+          return (
+            normalizeText(food.name).includes(nu) ||
+            normalizeText(food.localName).includes(nu) ||
+            normalizeText(food.description).includes(nu)
+          );
+        });
       if (!matches) return false;
     }
 
@@ -931,13 +963,34 @@ function applyCustomerSearchFilters(
     }
 
     // 17. Provinces
-    if (
-      req.provinces &&
-      req.provinces.length > 0 &&
-      (!food.origin?.provinceName ||
-        !req.provinces.includes(food.origin.provinceName))
-    ) {
-      return false;
+    if (req.provinces && req.provinces.length > 0) {
+      const searchProvinces = req.provinces.map((p) => normalizeText(p)).filter(Boolean);
+      const foodProvince = normalizeText(food.origin?.provinceName || "");
+      const foodProvinceLocal = normalizeText(food.origin?.provinceLocalName || "");
+      const foodProvinceCode = normalizeText(food.origin?.provinceCode || "");
+      const storeCity = normalizeText(food.store?.city || "");
+      const storeDistrict = normalizeText(food.store?.district || "");
+      const storeAddress = normalizeText(food.store?.addressLine || "");
+      const foodName = normalizeText(food.name || "");
+      const foodLocalName = normalizeText(food.localName || "");
+      const foodDesc = normalizeText(food.description || "");
+
+      const matches = searchProvinces.some((p) => {
+        if (!p) return false;
+        return (
+          foodProvince.includes(p) ||
+          p.includes(foodProvince) ||
+          (foodProvinceLocal && (foodProvinceLocal.includes(p) || p.includes(foodProvinceLocal))) ||
+          (foodProvinceCode && (foodProvinceCode.includes(p) || p.includes(foodProvinceCode))) ||
+          (storeCity && (storeCity.includes(p) || p.includes(storeCity))) ||
+          (storeDistrict && (storeDistrict.includes(p) || p.includes(storeDistrict))) ||
+          (storeAddress && storeAddress.includes(p)) ||
+          foodName.includes(p) ||
+          foodLocalName.includes(p) ||
+          foodDesc.includes(p)
+        );
+      });
+      if (!matches) return false;
     }
 
     // 18. Cities
@@ -1648,33 +1701,6 @@ function FilterSidebar({
     });
   }, [filterOptions, activeMenuItems]);
 
-  const dietaryTypes = useMemo(() => {
-    const rawList = menuItems.flatMap((item) => {
-      if (!Array.isArray(item.food?.dietaryTypes)) return [];
-      return item.food.dietaryTypes.flatMap((dietary) => {
-        if (!dietary?.code || !dietary?.name) return [];
-        return [
-          {
-            code: dietary.code,
-            name: dietary.name,
-            uuid: dietary.code,
-          },
-        ];
-      });
-    });
-
-    const optionMap = new Map<string, { code: string; name: string; uuid: string }>();
-    rawList.forEach((item) => {
-      const key = normalizeText(item.code);
-      if (!optionMap.has(key)) {
-        optionMap.set(key, item);
-      }
-    });
-
-    return Array.from(optionMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
-  }, [menuItems]);
 
   return (
     <motion.aside
@@ -2743,6 +2769,28 @@ function FoodPageContent() {
     searchParams.get("ageGroup") ||
     searchParams.get("age") ||
     "";
+  const rawProvinceParam =
+    searchParams.get("province") ||
+    searchParams.get("provinces") ||
+    searchParams.get("location") ||
+    searchParams.get("city") ||
+    "";
+  const rawSeasonParam =
+    searchParams.get("season") ||
+    searchParams.get("seasons") ||
+    "";
+  const rawEventParam =
+    searchParams.get("event") ||
+    searchParams.get("events") ||
+    "";
+  const rawCategoryParam =
+    searchParams.get("category") ||
+    searchParams.get("categories") ||
+    "";
+  const rawCuisineParam =
+    searchParams.get("cuisine") ||
+    searchParams.get("cuisines") ||
+    "";
   const rawQueryParam =
     searchParams.get("query") ||
     searchParams.get("q") ||
@@ -2828,6 +2876,169 @@ function FoodPageContent() {
       ageGroupCodes: [decoded],
     }));
   }, [rawAgeParam, discoveryFilterOptions?.ageGroups]);
+
+  // Synchronize URL province/location search params
+  useEffect(() => {
+    if (!rawProvinceParam) return;
+    const decoded = decodeURIComponent(rawProvinceParam).trim();
+    if (!decoded) return;
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.provinces?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        provinces: [decoded],
+      };
+    });
+  }, [rawProvinceParam]);
+
+  // Synchronize URL season search params
+  useEffect(() => {
+    if (!rawSeasonParam) return;
+    const decoded = decodeURIComponent(rawSeasonParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.seasons &&
+      discoveryFilterOptions.seasons.length > 0
+    ) {
+      const matched = discoveryFilterOptions.seasons.find(
+        (s) =>
+          normalizeText(s.name) === normalizeText(decoded) ||
+          normalizeText(s.code) === normalizeText(decoded) ||
+          normalizeText(s.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.seasonUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            seasonUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.seasonUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        seasonUuids: [decoded],
+      };
+    });
+  }, [rawSeasonParam, discoveryFilterOptions?.seasons]);
+
+  // Synchronize URL event search params
+  useEffect(() => {
+    if (!rawEventParam) return;
+    const decoded = decodeURIComponent(rawEventParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.events &&
+      discoveryFilterOptions.events.length > 0
+    ) {
+      const matched = discoveryFilterOptions.events.find(
+        (e) =>
+          normalizeText(e.name) === normalizeText(decoded) ||
+          normalizeText(e.code) === normalizeText(decoded) ||
+          normalizeText(e.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.eventUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            eventUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.eventUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        eventUuids: [decoded],
+      };
+    });
+  }, [rawEventParam, discoveryFilterOptions?.events]);
+
+  // Synchronize URL category search params
+  useEffect(() => {
+    if (!rawCategoryParam) return;
+    const decoded = decodeURIComponent(rawCategoryParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.categories &&
+      discoveryFilterOptions.categories.length > 0
+    ) {
+      const matched = discoveryFilterOptions.categories.find(
+        (c) =>
+          normalizeText(c.name) === normalizeText(decoded) ||
+          normalizeText(c.code) === normalizeText(decoded) ||
+          normalizeText(c.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.categoryUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            categoryUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.categoryUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        categoryUuids: [decoded],
+      };
+    });
+  }, [rawCategoryParam, discoveryFilterOptions?.categories]);
+
+  // Synchronize URL cuisine search params
+  useEffect(() => {
+    if (!rawCuisineParam) return;
+    const decoded = decodeURIComponent(rawCuisineParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.cuisines &&
+      discoveryFilterOptions.cuisines.length > 0
+    ) {
+      const matched = discoveryFilterOptions.cuisines.find(
+        (c) =>
+          normalizeText(c.name) === normalizeText(decoded) ||
+          normalizeText(c.code) === normalizeText(decoded) ||
+          normalizeText(c.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.cuisineUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            cuisineUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.cuisineUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        cuisineUuids: [decoded],
+      };
+    });
+  }, [rawCuisineParam, discoveryFilterOptions?.cuisines]);
 
   // Synchronize search query param if provided
   useEffect(() => {

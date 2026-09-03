@@ -1430,6 +1430,7 @@ import {
   IoAlertCircleOutline,
   IoChevronForward,
   IoNutritionOutline,
+  IoPeopleOutline,
   IoRefresh,
   IoRestaurantOutline,
 } from "react-icons/io5";
@@ -2633,45 +2634,36 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
           <article className={CARD}>
             <CardHeader
-              icon={<IoAlertCircleOutline className="text-2xl" />}
-              title="អាឡែស៊ី និងសុវត្ថិភាព"
+              icon={<IoPeopleOutline className="text-2xl" />}
+              title="អាយុសមស្រប"
               tone="secondary"
             />
 
-            {allergenLabels.length === 0 ? (
-              <div className={`mt-5 flex items-start gap-3 ${TILE}`}>
-                <FaCheckCircle className="mt-1 shrink-0 text-xl text-primary-700" />
-
-                <p className={`leading-7 text-primary-800 ${TEXT_BODY}`}>
-                  មិនមានការប្រកាសអាឡែស៊ីនៅក្នុងទិន្នន័យនេះទេ។
-                </p>
-              </div>
-            ) : (
+            {ageGroups.length > 0 ? (
               <div className="mt-5 flex flex-wrap gap-2">
-                {allergenLabels.map((allergen, index) => (
-                  <span
-                    key={`${allergen}-${index}`}
-                    className={`rounded-full border border-secondary-100 bg-secondary-50 px-4 py-2 font-medium text-secondary-700 ${TEXT_BODY}`}
-                  >
-                    {allergen}
-                  </span>
+                {ageGroups.map((ageGroup) => (
+                  <InfoPill key={ageGroup.code}>{ageGroup.name}</InfoPill>
                 ))}
               </div>
+            ) : (
+              <p className={`mt-5 ${TEXT_LABEL}`}>មិនមានទិន្នន័យក្រុមអាយុ។</p>
             )}
 
-            <div className="mt-6 border-t border-gray-100 pt-5">
-              <p className={TEXT_LABEL}>អាយុសមស្រប</p>
-
-              {ageGroups.length > 0 ? (
+            {allergenLabels.length > 0 && (
+              <div className="mt-6 border-t border-gray-100 pt-5">
+                <p className={TEXT_LABEL}>អាឡែស៊ី</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {ageGroups.map((ageGroup) => (
-                    <InfoPill key={ageGroup.code}>{ageGroup.name}</InfoPill>
+                  {allergenLabels.map((allergen, index) => (
+                    <span
+                      key={`${allergen}-${index}`}
+                      className={`rounded-full border border-secondary-100 bg-secondary-50 px-4 py-2 font-medium text-secondary-700 ${TEXT_BODY}`}
+                    >
+                      {allergen}
+                    </span>
                   ))}
                 </div>
-              ) : (
-                <p className={`mt-3 ${TEXT_LABEL}`}>មិនមានទិន្នន័យក្រុមអាយុ។</p>
-              )}
-            </div>
+              </div>
+            )}
           </article>
         </section>
 
