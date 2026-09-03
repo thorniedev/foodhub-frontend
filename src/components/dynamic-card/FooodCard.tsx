@@ -8,23 +8,16 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 import { CiHeart } from "react-icons/ci";
-import {
-  FaClock,
-  FaHeart,
-  FaLocationArrow,
-  FaMotorcycle,
-  FaStar,
-  FaStore,
-} from "react-icons/fa";
+
+import { FaHeart, FaStar, FaStore } from "react-icons/fa";
+
 import { IoMdTime } from "react-icons/io";
 
-import { IoLocationOutline } from "react-icons/io5";
+import { IoLocationOutline, IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 
 import { MdDeliveryDining } from "react-icons/md";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
-import { useUserLocation } from "@/hooks/useUserLocation";
-import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useTrackInteraction } from "@/hooks/useTrackInteraction";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
@@ -96,7 +89,7 @@ function cleanKhmerLabel(label: string): string {
    COMPONENT
 ========================================================= */
 
-export default function FoodCard({
+export default function FooodCard({
   food,
   onViewMap,
   isMapSelected = false,
@@ -106,56 +99,13 @@ export default function FoodCard({
 
   const [isFavorite, setIsFavorite] = useState(false);
 
-  /* =======================================================
-     DISTANCE & TRAVEL TIME
-  ======================================================= */
-
-  const { coordinates: userCoordinates } = useUserLocation();
-
-  let travelTimeMin: number | null = null;
-  let computedDistanceKm: number | null = food.distanceKm ?? null;
-
-  if (
-    userCoordinates &&
-    food.store?.latitude !== undefined &&
-    food.store?.latitude !== null &&
-    food.store?.longitude !== undefined &&
-    food.store?.longitude !== null
-  ) {
-    const storeCoordinates = {
-      latitude: Number(food.store.latitude),
-      longitude: Number(food.store.longitude),
-    };
-    if (isValidCoordinates(storeCoordinates)) {
-      computedDistanceKm = calculateDistanceKm(
-        userCoordinates,
-        storeCoordinates,
-      );
-
-      // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
-      travelTimeMin = Math.ceil(computedDistanceKm * 2 + 5);
-    }
-  }
-
-  const formattedDistance =
-    computedDistanceKm !== null && Number.isFinite(computedDistanceKm)
-      ? computedDistanceKm < 1
-        ? `${Math.round(computedDistanceKm * 1000)} m`
-        : `${computedDistanceKm.toFixed(1)} km`
-      : null;
-
-  const itemUuid =
-    food.uuid ||
-    (food as unknown as { menuItemUuid?: string }).menuItemUuid ||
-    "";
-
-  const rawImage =
+  const effectiveThumbnail =
     food.thumbnail ||
     (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
     (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string>(
-    toFrontendApiAssetUrl(rawImage),
+    toFrontendApiAssetUrl(effectiveThumbnail),
   );
 
   /* =======================================================
@@ -341,7 +291,6 @@ export default function FoodCard({
             alt={displayName}
             width={485}
             height={370}
-            unoptimized={typeof thumbnailUrl === "string" && thumbnailUrl.startsWith("http")}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             draggable={false}
             onError={() => {
@@ -363,54 +312,37 @@ export default function FoodCard({
           />
         </Link>
 
-        {/* FAVORITE BUTTON */}
-
+        {/* Top-Right Bookmark Button */}
         <button
           type="button"
           aria-label={
             isFavorite
-              ? `Remove ${displayName} from favorites`
-              : `Add ${displayName} to favorites`
+              ? "ដកចេញពីបញ្ជីចំណូលចិត្ត"
+              : "រក្សាទុកក្នុងបញ្ជីចំណូលចិត្ត"
           }
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             toggleFavorite();
           }}
-          className="
-            absolute
-            right-2
-            top-2
-            z-20
-            cursor-pointer
+          className={`
+            absolute right-1 top-1 z-10
+            flex h-7 w-7 sm:h-8 sm:w-8
+            items-center justify-center
             rounded-full
-            transition
-            active:scale-95
-          "
+            backdrop-blur-md transition-all duration-200
+            shadow-sm hover:scale-110 active:scale-95
+            ${
+              isFavorite
+                ? "bg-secondary-500 text-white shadow-secondary-500/30"
+                : "bg-white/85 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
+            }
+          `}
         >
           {isFavorite ? (
-            <FaHeart
-              className="
-                rounded-full
-                bg-primary-800
-                p-2
-                text-4xl
-                text-red-400
-                shadow
-              "
-            />
+            <IoBookmark className="text-sm sm:text-base text-white" />
           ) : (
-            <CiHeart
-              className="
-                rounded-full
-                bg-primary-800
-                p-2
-                text-4xl
-                text-white
-                shadow
-              "
-            />
+            <IoBookmarkOutline className="text-sm sm:text-base" />
           )}
         </button>
       </div>
@@ -477,19 +409,13 @@ export default function FoodCard({
               </div>
             )}
 
-          {formattedDistance ? (
-            <div className="flex items-center gap-1.5 text-primary-400">
-              <FaLocationArrow className="text-xs" />
-
-              <span>{formattedDistance}</span>
-            </div>
-          ) : distanceKm !== null ? (
-            <div className="flex items-center gap-1.5 text-primary-400">
-              <FaLocationArrow className="text-xs" />
+          {distanceKm !== null && (
+            <div className="flex items-center gap-2 text-primary-400">
+              <MdDeliveryDining className="text-xl" />
 
               <span>{distanceKm.toFixed(distanceKm < 10 ? 1 : 0)} km</span>
             </div>
-          ) : null}
+          )}
         </div>
 
         {/* ======================================

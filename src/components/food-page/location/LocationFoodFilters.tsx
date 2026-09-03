@@ -1254,7 +1254,7 @@ export default function LocationFoodFilters({
                 <button
                   type="button"
                   onClick={() => setCategoryType("ALL")}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "ALL"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
@@ -1265,24 +1265,24 @@ export default function LocationFoodFilters({
                 <button
                   type="button"
                   onClick={() => setCategoryType("FOOD")}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "FOOD"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  🍲 ម្ហូប
+                  ម្ហូប
                 </button>
                 <button
                   type="button"
                   onClick={() => setCategoryType("DRINK")}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "DRINK"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  🥤 ភេសជ្ជៈ
+                  ភេសជ្ជៈ
                 </button>
               </div>
 

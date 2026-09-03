@@ -210,8 +210,8 @@ function FilterSection({
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between text-left"
       >
-        <span className="flex items-center gap-2 text-[16px] font-semibold text-primary-900">
-          <span className="text-[20px] text-primary-700">{icon}</span>
+        <span className="flex items-center gap-2 text-lg font-bold text-primary-900">
+          <span className="text-[22px] text-primary-700">{icon}</span>
           {title}
         </span>
 
@@ -220,7 +220,7 @@ function FilterSection({
           transition={{ duration: 0.2 }}
           className="text-gray-400"
         >
-          <IoChevronDown className="text-[20px]" />
+          <IoChevronDown className="text-[22px]" />
         </motion.span>
       </button>
 
@@ -254,7 +254,7 @@ function CheckboxOption({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.22 }}
-      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2 transition hover:bg-primary-50"
+      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2.5 transition hover:bg-primary-50"
     >
       <span className="flex min-w-0 items-center gap-3">
         <input
@@ -263,11 +263,11 @@ function CheckboxOption({
           onChange={onChange}
           className="h-4 w-4 shrink-0 accent-primary-800"
         />
-        <span className="truncate text-[16px] text-gray-600">{label}</span>
+        <span className="truncate text-lg text-gray-700">{label}</span>
       </span>
 
       {typeof count === "number" && (
-        <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[16px] text-gray-500">
+        <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-base font-semibold text-gray-500">
           {count}
         </span>
       )}
@@ -290,7 +290,7 @@ function SingleChoice<T extends string | number>({
             key={String(option.value)}
             type="button"
             onClick={() => onChange(isSelected ? null : option.value)}
-            className={`rounded-full border px-3 py-2 text-[16px] transition ${
+            className={`rounded-full border px-4 py-2 text-lg font-semibold transition ${
               isSelected
                 ? "border-primary-800 bg-primary-800 text-white"
                 : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50"
@@ -677,14 +677,14 @@ export default function LocationFilters({
 
           {(!collapsed || isDrawer) && (
             <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2.5">
-              <p className="text-[16px] text-gray-500">
+              <p className="text-lg font-medium text-gray-500">
                 {activeFilterCount} តម្រងបានជ្រើស
               </p>
               <button
                 type="button"
                 disabled={activeFilterCount === 0}
                 onClick={() => onChange({ ...DEFAULT_LOCATION_FOOD_FILTERS })}
-                className="text-[16px] font-medium text-secondary-500 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+                className="text-lg font-bold text-secondary-500 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
               >
                 សម្អាតទាំងអស់
               </button>
@@ -745,7 +745,7 @@ export default function LocationFilters({
                           onChange={() => update("sortBy", option.value)}
                           className="h-4 w-4 shrink-0 accent-primary-800"
                         />
-                        <span className="text-[16px]">{option.label}</span>
+                        <span className="text-lg font-medium">{option.label}</span>
                       </motion.label>
                     );
                   })}
@@ -764,7 +764,7 @@ export default function LocationFilters({
                 <button
                   type="button"
                   onClick={() => setCategoryType("ALL")}
-                  className={`flex-1 rounded-lg py-2 text-[15px] font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "ALL"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
@@ -775,30 +775,30 @@ export default function LocationFilters({
                 <button
                   type="button"
                   onClick={() => setCategoryType("FOOD")}
-                  className={`flex-1 rounded-lg py-2 text-[15px] font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "FOOD"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  🍲 ម្ហូប
+                  ម្ហូប
                 </button>
                 <button
                   type="button"
                   onClick={() => setCategoryType("DRINK")}
-                  className={`flex-1 rounded-lg py-2 text-[15px] font-semibold transition ${
+                  className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "DRINK"
                       ? "bg-white text-primary-800 shadow-sm"
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  🥤 ភេសជ្ជៈ
+                  ភេសជ្ជៈ
                 </button>
               </div>
 
               {/* Keep Searchbox */}
-              <div className="mb-3 flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 transition focus-within:border-primary-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-50">
-                <IoSearchOutline className="shrink-0 text-[20px] text-gray-400" />
+              <div className="mb-3 flex min-h-12 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 transition focus-within:border-primary-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-50">
+                <IoSearchOutline className="shrink-0 text-[22px] text-gray-400" />
                 <input
                   value={categoryQuery}
                   onChange={(event) => setCategoryQuery(event.target.value)}
@@ -809,7 +809,7 @@ export default function LocationFilters({
                         ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
                         : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
                   }
-                  className="w-full bg-transparent text-[16px] text-gray-600 outline-none placeholder:text-gray-400"
+                  className="w-full bg-transparent text-lg text-gray-700 outline-none placeholder:text-gray-400"
                 />
               </div>
               <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">

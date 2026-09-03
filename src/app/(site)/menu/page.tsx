@@ -25,6 +25,7 @@ import { CustomSelect } from "@/components/shared/CustomSelect";
 
 import FoodCard from "@/components/dynamic-card/FoodCard";
 import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
+import FoodNavTabs from "@/components/food-page/FoodNavTabs";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import {
@@ -273,9 +274,15 @@ function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
   // Fallback ranges for standard FoodHub age groups if not returned from backend
   const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
   if (
+    key.includes("ទារក") ||
+    key.includes("infant") ||
+    key.includes("baby")
+  ) {
+    return `${a.name || "ទារក"} (0-6)`;
+  }
+  if (
     key.includes("កុមារតូច") ||
-    key.includes("toddler") ||
-    key.includes("infant")
+    key.includes("toddler")
   ) {
     return `${a.name} (0-2)`;
   }
@@ -745,6 +752,20 @@ function applyCustomerSearchFilters(
             if (token === aName || token === aCode) return true;
             if (aName.includes(token) || token.includes(aName)) return true;
             if (
+              (token.includes("ទារក") ||
+                token.includes("0-6") ||
+                token.includes("0-1") ||
+                token.includes("0-2") ||
+                token.includes("infant") ||
+                token.includes("baby")) &&
+              (aName.includes("ទារក") ||
+                aCode.includes("infant") ||
+                aCode.includes("baby") ||
+                aName.includes("baby"))
+            ) {
+              return true;
+            }
+            if (
               (token.includes("យុវវ័យ") || token.includes("13-17")) &&
               (aName.includes("យុវវ័យ") || aCode.includes("youth"))
             ) {
@@ -1060,31 +1081,44 @@ function FilterSection({
   );
 }
 
-function CollapsibleList<T>({ items, limit = 6, renderItem, hideSearch = false }: { items: T[], limit?: number, renderItem: (item: T) => React.ReactNode, hideSearch?: boolean }) {
+function CollapsibleList<T>({
+  items,
+  limit = 6,
+  renderItem,
+  hideSearch = false,
+  showSearch = false,
+}: {
+  items: T[];
+  limit?: number;
+  renderItem: (item: T) => React.ReactNode;
+  hideSearch?: boolean;
+  showSearch?: boolean;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
 
   const filteredItems = useMemo(() => {
     if (!query) return items;
     const q = query.toLowerCase();
-    return items.filter(item => {
+    return items.filter((item) => {
       let str = "";
-      if (typeof item === 'string') {
+      if (typeof item === "string") {
         str = item;
-      } else if (item && typeof item === 'object') {
-        if ('name' in item) str = String(item.name);
-        else if ('label' in item) str = String(item.label);
+      } else if (item && typeof item === "object") {
+        if ("name" in item) str = String((item as any).name);
+        else if ("label" in item) str = String((item as any).label);
       }
       return str.toLowerCase().includes(q);
     });
   }, [items, query]);
 
-  const visible = expanded || query ? filteredItems : filteredItems.slice(0, limit);
+  const visible =
+    expanded || query ? filteredItems : filteredItems.slice(0, limit);
   const hiddenCount = filteredItems.length - limit;
 
   return (
     <div className="flex flex-col gap-3">
-      {!hideSearch && items.length > limit && (
+      {!hideSearch && (showSearch || items.length > limit) && (
         <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/80">
           <IoSearchOutline className="text-[18px] text-gray-400 dark:text-slate-500" />
           <input
@@ -1099,13 +1133,13 @@ function CollapsibleList<T>({ items, limit = 6, renderItem, hideSearch = false }
       <div className="flex flex-wrap gap-2">
         {visible.map(renderItem)}
         {!expanded && !query && hiddenCount > 0 && (
-          <button type="button" onClick={() => setExpanded(true)} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-medium text-gray-500 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
-            + {hiddenCount} ទៀត
+          <button type="button" onClick={() => setExpanded(true)} className="flex items-center gap-1 rounded-full px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-semibold text-primary-700 hover:bg-primary-50 dark:text-emerald-400 dark:hover:bg-slate-800 transition">
+            + {hiddenCount} ទៀត <IoChevronDown className="text-[16px]" />
           </button>
         )}
         {expanded && !query && hiddenCount > 0 && (
-          <button type="button" onClick={() => setExpanded(false)} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-medium text-gray-500 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
-            បង្រួម
+          <button type="button" onClick={() => setExpanded(false)} className="flex items-center gap-1 rounded-full px-3 py-1.5 lg:px-4 lg:py-2 text-[14px] font-semibold text-primary-700 hover:bg-primary-50 dark:text-emerald-400 dark:hover:bg-slate-800 transition">
+            បង្រួម <IoChevronDown className="rotate-180 text-[16px]" />
           </button>
         )}
       </div>
@@ -1279,6 +1313,7 @@ function FilterSidebar({
   onClose,
 }: FilterSidebarProps) {
   const { data: filterOptions } = useGetDiscoveryFiltersQuery();
+  const { data: menuItems = [] } = useGetMenuItemsQuery();
   const { data: profileResponse } = useGetMemberProfilesQuery();
 
   const memberProfiles = Array.isArray(profileResponse)
@@ -1305,9 +1340,7 @@ function FilterSidebar({
     season: false,
     event: false,
     weather: false,
-    availability: false,
     province: false,
-    city: false,
   });
 
   // Auto-expand age group section if ageGroup filter is active
@@ -1361,6 +1394,29 @@ function FilterSidebar({
     });
   };
 
+  const ageGroupList = useMemo(() => {
+    const rawList = filterOptions?.ageGroups || [];
+    const hasInfant = rawList.some(
+      (a) =>
+        normalizeText(a.name).includes("ទារក") ||
+        (a.code && normalizeText(a.code).includes("infant")) ||
+        (a.code && normalizeText(a.code).includes("baby")),
+    );
+    if (!hasInfant) {
+      return [
+        {
+          uuid: "age-group-infant",
+          code: "INFANT",
+          name: "ទារក",
+          minAge: 0,
+          maxAge: 6,
+        },
+        ...rawList,
+      ];
+    }
+    return rawList;
+  }, [filterOptions?.ageGroups]);
+
   const activeFilterCount =
     (customerSearchRequest.categoryUuids?.length || 0) +
     (customerSearchRequest.cuisineUuids?.length || 0) +
@@ -1372,9 +1428,7 @@ function FilterSidebar({
     (customerSearchRequest.dietaryTypeUuids?.length || 0) +
     (customerSearchRequest.excludeAllergenUuids?.length || 0) +
     (customerSearchRequest.storePriceLevels?.length || 0) +
-    (customerSearchRequest.availabilityStatuses?.length || 0) +
     (customerSearchRequest.provinces?.length || 0) +
-    (customerSearchRequest.cities?.length || 0) +
     (customerSearchRequest.featuredOnly ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
     (customerSearchRequest.minimumPrice !== undefined ||
@@ -1389,7 +1443,21 @@ function FilterSidebar({
     (customerSearchRequest.profileUuid ? 1 : 0);
 
   const categories = useMemo(() => {
-    let list = filterOptions?.categories || [];
+    const activeCategoryNamesOrCodes = new Set(
+      menuItems.flatMap((item) => {
+        const cat = item.food?.category;
+        return cat ? [normalizeText(cat.name), normalizeText(cat.code)] : [];
+      }),
+    );
+
+    let list = (filterOptions?.categories || []).filter((cat) => {
+      if (activeCategoryNamesOrCodes.size === 0) return true;
+      return (
+        activeCategoryNamesOrCodes.has(normalizeText(cat.name)) ||
+        activeCategoryNamesOrCodes.has(normalizeText(cat.code))
+      );
+    });
+
     if (categoryType === "FOOD") {
       list = list.filter((cat) => isFoodCategory(cat));
     } else if (categoryType === "DRINK") {
@@ -1400,10 +1468,31 @@ function FilterSidebar({
       list = list.filter((cat) => normalizeText(cat.name).includes(q));
     }
     return list;
-  }, [filterOptions?.categories, categoryType, categoryQuery]);
+  }, [filterOptions?.categories, menuItems, categoryType, categoryQuery]);
+
+  const cuisines = useMemo(() => {
+    const activeCuisineNamesOrCodes = new Set(
+      menuItems.flatMap((item) => {
+        const c = item.food?.cuisine;
+        return c ? [normalizeText(c.name), normalizeText(c.code)] : [];
+      }),
+    );
+
+    return (filterOptions?.cuisines || []).filter((c) => {
+      const name = normalizeText(c.name);
+      const code = normalizeText(c.code);
+      if (name.includes("ថៃ") || code.includes("thai")) return false;
+      if (activeCuisineNamesOrCodes.size === 0) return true;
+      return (
+        activeCuisineNamesOrCodes.has(name) ||
+        activeCuisineNamesOrCodes.has(code)
+      );
+    });
+  }, [filterOptions?.cuisines, menuItems]);
 
   return (
     <motion.aside
+      initial={false}
       animate={{
         width: mobile ? "100%" : isCollapsed ? 78 : 300,
       }}
@@ -1664,15 +1753,15 @@ function FilterSidebar({
               )}
 
             {/* CUISINE */}
-            {filterOptions?.cuisines && filterOptions.cuisines.length > 0 && (
+            {cuisines.length > 0 && (
               <FilterSection
-                title="ម្ហូបតាមតំបន់"
+                title="ម្ហូបតាមប្រទេស"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.cuisine}
                 onToggle={() => toggleSection("cuisine")}
               >
                 <CollapsibleList
-                  items={filterOptions.cuisines}
+                  items={cuisines}
                   renderItem={(c) => (
                     <PillOption
                       key={c.uuid}
@@ -1857,7 +1946,7 @@ function FilterSidebar({
                         : "bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700"
                       }`}
                   >
-                    ⏱️ {pt.label}
+                    {pt.label}
                   </button>
                 ))}
               </div>
@@ -1888,7 +1977,7 @@ function FilterSidebar({
             )}
 
             {/* AGE GROUPS */}
-            {filterOptions?.ageGroups && filterOptions.ageGroups.length > 0 && (
+            {ageGroupList.length > 0 && (
               <FilterSection
                 title="ក្រុមអាយុ"
                 icon={<IoNutritionOutline />}
@@ -1896,7 +1985,7 @@ function FilterSidebar({
                 onToggle={() => toggleSection("ageGroup")}
               >
                 <CollapsibleList
-                  items={filterOptions.ageGroups}
+                  items={ageGroupList}
                   renderItem={(a) => {
                     const isChecked = Boolean(
                       customerSearchRequest.ageGroupUuids?.includes(a.uuid) ||
@@ -1909,6 +1998,13 @@ function FilterSidebar({
                         return (
                           normU === aName ||
                           normU === aCode ||
+                          ((normU.includes("ទារក") ||
+                            normU.includes("0-6") ||
+                            normU.includes("infant") ||
+                            normU.includes("baby")) &&
+                            (aName.includes("ទារក") ||
+                              aCode.includes("infant") ||
+                              aCode.includes("baby"))) ||
                           (normU.includes("យុវវ័យ") &&
                             (aName.includes("យុវវ័យ") ||
                               aCode.includes("youth"))) ||
@@ -2078,35 +2174,6 @@ function FilterSidebar({
                 </FilterSection>
               )}
 
-            {/* AVAILABILITY */}
-            {filterOptions?.availabilityStatuses &&
-              filterOptions.availabilityStatuses.length > 0 && (
-                <FilterSection
-                  title="ស្ថានភាពលក់"
-                  icon={<MdOutlineCategory />}
-                  isOpen={openSections.availability}
-                  onToggle={() => toggleSection("availability")}
-                >
-                  <CollapsibleList
-                    items={filterOptions.availabilityStatuses}
-                    renderItem={(status) => (
-                      <PillOption
-                        key={status}
-                        label={AVAILABILITY_LABELS[status] ?? status}
-                        checked={Boolean(
-                          customerSearchRequest.availabilityStatuses?.includes(
-                            status,
-                          ),
-                        )}
-                        onChange={() =>
-                          toggleArrayItem("availabilityStatuses", status)
-                        }
-                      />
-                    )}
-                  />
-                </FilterSection>
-              )}
-
             {/* FEATURED ONLY */}
             <div className="my-4 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
               <span className="text-[16px] font-semibold text-gray-700">
@@ -2128,12 +2195,13 @@ function FilterSidebar({
             {/* PROVINCES */}
             {filterOptions?.provinces && filterOptions.provinces.length > 0 && (
               <FilterSection
-                title="ខេត្ត"
+                title="ខេត្ត/រាជធានី"
                 icon={<MdOutlineCategory />}
                 isOpen={openSections.province}
                 onToggle={() => toggleSection("province")}
               >
                 <CollapsibleList
+                  showSearch={true}
                   items={filterOptions.provinces}
                   renderItem={(prov) => (
                     <PillOption
@@ -2143,30 +2211,6 @@ function FilterSidebar({
                         customerSearchRequest.provinces?.includes(prov),
                       )}
                       onChange={() => toggleArrayItem("provinces", prov)}
-                    />
-                  )}
-                />
-              </FilterSection>
-            )}
-
-            {/* CITIES */}
-            {filterOptions?.cities && filterOptions.cities.length > 0 && (
-              <FilterSection
-                title="ទីក្រុង"
-                icon={<MdOutlineCategory />}
-                isOpen={openSections.city}
-                onToggle={() => toggleSection("city")}
-              >
-                <CollapsibleList
-                  items={filterOptions.cities}
-                  renderItem={(city) => (
-                    <PillOption
-                      key={city}
-                      label={city}
-                      checked={Boolean(
-                        customerSearchRequest.cities?.includes(city),
-                      )}
-                      onChange={() => toggleArrayItem("cities", city)}
                     />
                   )}
                 />
@@ -2205,6 +2249,18 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
     }
   };
 
+  const scrollLeftBy = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({ left: -300, behavior: "smooth" });
+    }
+  };
+
+  const scrollRightBy = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  };
+
   useEffect(() => {
     checkScroll();
     window.addEventListener("resize", checkScroll);
@@ -2220,22 +2276,31 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-none absolute left-0 top-0 bottom-2 w-16 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10"
-          />
+            className="pointer-events-none absolute left-0 top-0 bottom-2 w-24 bg-gradient-to-r from-[#fafaf8] dark:from-black to-transparent z-10 flex items-center justify-start pl-1"
+          >
+            <button
+              type="button"
+              onClick={scrollLeftBy}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md text-gray-600 hover:bg-gray-50 border border-gray-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 transition active:scale-95"
+              aria-label="Scroll left"
+            >
+              <IoChevronBack className="text-[18px]" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 
       <div
         ref={containerRef}
         onScroll={checkScroll}
-        className="scrollbar-hide flex gap-3 overflow-x-auto pb-2 relative z-0 w-full"
+        className="scrollbar-hide flex gap-2 overflow-x-auto pb-2 relative z-0 w-full"
       >
         <button
           type="button"
           onClick={() => onChange([])}
-          className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${allSelected
-              ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
-              : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
+          className={`shrink-0 rounded-full px-5 py-2 text-[14px] md:text-[15px] font-semibold transition-all ${allSelected
+              ? "bg-primary-800 text-white shadow-md shadow-primary-800/20 dark:bg-emerald-600 dark:shadow-emerald-600/20"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
         >
           ទាំងអស់
@@ -2255,15 +2320,19 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
                     : [...selectedCodes, option.code],
                 )
               }
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-[14px] md:px-5 md:py-2.5 md:text-[16px] font-semibold transition ${isSelected
-                  ? "border-primary-800 bg-primary-800 text-white dark:bg-emerald-600 dark:border-emerald-600"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700"
+              className={`shrink-0 rounded-full px-5 py-2 text-[14px] md:text-[15px] font-semibold transition-all flex items-center justify-center gap-1.5 ${isSelected
+                  ? "bg-primary-800 text-white shadow-md shadow-primary-800/20 dark:bg-emerald-600 dark:shadow-emerald-600/20"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 }`}
             >
-              {option.name}
+              <span>{option.name}</span>
 
               {option.count > 0 && (
-                <span className="ml-2 opacity-70">{option.count}</span>
+                <span className="opacity-70">{option.count}</span>
+              )}
+              
+              {isSelected && (
+                <IoClose className="text-[16px] opacity-90 transition-opacity" />
               )}
             </button>
           );
@@ -2277,8 +2346,17 @@ function CategoryTabs({ options, selectedCodes, onChange }: CategoryTabsProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-none absolute right-0 top-0 bottom-2 w-16 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10"
-          />
+            className="pointer-events-none absolute right-0 top-0 bottom-2 w-24 bg-gradient-to-l from-[#fafaf8] dark:from-black to-transparent z-10 flex items-center justify-end pr-1"
+          >
+            <button
+              type="button"
+              onClick={scrollRightBy}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md text-gray-600 hover:bg-gray-50 border border-gray-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 transition active:scale-95"
+              aria-label="Scroll right"
+            >
+              <IoChevronBack className="text-[18px] rotate-180" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
@@ -2349,7 +2427,7 @@ function FoodGrid({ foods, isLoading }: FoodGridProps) {
   return (
     <motion.div
       layout
-      className={`grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full min-h-[850px] lg:min-h-[900px] content-start transition-opacity duration-300 ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+      className={`grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full min-h-[850px] lg:min-h-[900px] content-start transition-opacity duration-300 ${isLoading ? "pointer-events-none" : ""}`}
     >
       <AnimatePresence mode="popLayout">
         {foods.map((food) => (
@@ -2390,21 +2468,81 @@ function FoodGrid({ foods, isLoading }: FoodGridProps) {
 
 function LoadingState() {
   return (
-    <div className="flex min-h-[500px] flex-col items-center justify-center gap-4">
-      <motion.div
-        animate={{
-          rotate: 360,
-        }}
-        transition={{
-          duration: 0.9,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-        className="h-12 w-12 rounded-full border-4 border-primary-100 border-t-primary-800"
-      />
+    <>
+      <div className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/85">
+        <div className="mx-auto flex w-full max-w-7xl px-4 py-3 sm:px-6 flex-col lg:flex-row lg:items-center gap-4">
+          {/* FoodNavTabs Skeleton */}
+          <div className="flex gap-2 w-full lg:w-auto">
+            <div className="h-11 w-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="h-11 w-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="h-11 w-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          </div>
 
-      <p className="text-[16px] text-gray-500">កំពុងផ្ទុកមុខម្ហូប...</p>
-    </div>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center flex-1 w-full lg:w-auto">
+            <div className="h-14 w-full flex-1 rounded-2xl lg:rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="hidden lg:block h-14 w-32 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6">
+        <div className="mt-2 flex gap-5">
+          {/* Sidebar Skeleton */}
+          <aside className="hidden shrink-0 self-start lg:block w-[300px] h-[calc(100vh-8rem)] rounded-[24px] border border-gray-100 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden animate-pulse">
+            <div className="p-4 space-y-6">
+              <div className="h-6 w-32 bg-gray-200 dark:bg-gray-800 rounded-md" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="h-5 w-24 bg-gray-200 dark:bg-gray-800 rounded-md" />
+                  <div className="flex flex-wrap gap-2">
+                    <div className="h-9 w-20 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                    <div className="h-9 w-24 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                    <div className="h-9 w-16 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          {/* Main Content Skeleton */}
+          <main className="min-w-0 flex-1 relative">
+            {/* Category Tabs Skeleton */}
+            <div className="py-2 -mx-2 px-2 flex gap-2 overflow-hidden mb-3">
+              <div className="h-10 w-20 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-10 w-28 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-10 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-10 w-32 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            </div>
+
+            {/* Header Text Skeleton */}
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4 mt-3">
+              <div className="h-8 w-64 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
+            </div>
+
+            {/* Grid Skeleton */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 w-full">
+              {Array.from({ length: 9 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="flex flex-col w-full gap-4 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm rounded-[24px] p-2.5 animate-pulse"
+                >
+                  <div className="rounded-[14px] w-full h-[150px] md:h-37.5 lg:h-46.25 bg-gray-200 dark:bg-gray-700" />
+                  <div className="flex flex-col gap-2 px-1 pb-2">
+                    <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                    <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                      <div className="h-6 w-1/5 rounded-full bg-gray-200 dark:bg-gray-700" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </main>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -2430,6 +2568,23 @@ function FoodPageContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isApiFilterSheetOpen, setIsApiFilterSheetOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const stickyHeaderRef = useRef<HTMLDivElement>(null);
+  const [stickyTop, setStickyTop] = useState(64); // default to top-16 (64px)
+
+  useEffect(() => {
+    if (!stickyHeaderRef.current) return;
+    
+    // Create a ResizeObserver to monitor the sticky header's height
+    const observer = new ResizeObserver((entries) => {
+      // 64 is the global navbar height
+      setStickyTop(64 + entries[0].contentRect.height);
+    });
+    
+    observer.observe(stickyHeaderRef.current);
+    
+    return () => observer.disconnect();
+  }, []);
 
   const [customerSearchRequest, setCustomerSearchRequest] =
     useState<CustomerSearchRequest>({
@@ -2977,7 +3132,7 @@ function FoodPageContent() {
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         placeholder="ស្វែងរកមុខម្ហូប ឈ្មោះ កូដ ប្រភេទ ហាង..."
-        className="w-full bg-transparent text-[16px] text-gray-800 placeholder-gray-400 focus:outline-none dark:text-slate-100 dark:placeholder-gray-500"
+        className="w-full bg-transparent text-[16px] text-gray-800 placeholder-gray-400 focus:outline-none dark:text-slate-100 dark:placeholder-gray-500 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden"
       />
       {searchInput && (
         <button
@@ -2989,14 +3144,6 @@ function FoodPageContent() {
           <IoClose className="text-[16px]" />
         </button>
       )}
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new Event("open-global-search"))}
-        className="hidden sm:inline-flex items-center rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700 transition"
-        title="បើកផ្ទាំងស្វែងរកសកល (Global Search)"
-      >
-        ⌘K
-      </button>
     </div>
   );
 
@@ -3004,7 +3151,9 @@ function FoodPageContent() {
      RENDER
   ======================================================= */
 
-  // Loading state is now handled by FoodGrid instead of an early return
+  if (isLoading) {
+    return <LoadingState />;
+  }
 
   if (isError) {
     return (
@@ -3041,82 +3190,84 @@ function FoodPageContent() {
 
   return (
     <>
-      {/* SEARCH */}
+      <div 
+        ref={stickyHeaderRef}
+        className="sticky top-16 z-30 w-full border-b border-gray-100 bg-white/85 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/85"
+      >
+        <div className="mx-auto flex w-full max-w-7xl px-4 py-3 sm:px-6 flex-col lg:flex-row lg:items-center gap-4">
+          <FoodNavTabs />
+          
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center flex-1 w-full lg:w-auto">
+            <div className="flex w-full items-center gap-3 lg:w-auto lg:flex-1">
+              {renderSearch()}
 
-      <section className="lg:rounded-full lg:border lg:border-gray-100 dark:lg:border-slate-800 lg:bg-white dark:lg:bg-slate-900 lg:p-1 lg:shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          {renderSearch()}
+              {/* Mobile / tablet Action Button */}
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(true)}
+                className="flex lg:hidden items-center justify-center gap-2 rounded-2xl border border-gray-200/80 bg-white px-4 min-h-[56px] text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300 shrink-0"
+                aria-label="Filter options"
+              >
+                <IoFilterOutline className="text-[22px] text-primary-700 dark:text-emerald-400" />
+                <span>តម្រង</span>
+              </button>
+            </div>
 
-          {/* Mobile / tablet Action Buttons */}
-          <div className="flex w-full items-center gap-3 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(true)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
-              aria-label="Sort options"
-            >
-              <IoSwapVerticalOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
-              <span>តម្រៀប</span>
-            </button>
+            <div className="hidden lg:flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3 shrink-0">
+              <FaStar className="text-[20px] text-yellow-500" />
 
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(true)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white py-3.5 px-4 text-[16px] font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300"
-              aria-label="Filter options"
-            >
-              <IoGridOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
-              <span>តម្រង</span>
-            </button>
+              <p className="text-[16px] text-primary-800 dark:text-emerald-400">
+                រកឃើញ
+                <span className="font-semibold px-1">{displayFoods.length}</span>
+                មុខម្ហូប
+              </p>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInput("");
+                  setCustomerSearchRequest({ sort: "NEWEST" });
+                  setFilters(DEFAULT_FILTERS);
+                }}
+                className="rounded-full border border-secondary-200 dark:border-slate-700 px-5 py-3 text-[16px] font-semibold text-secondary-500 dark:text-amber-400 transition hover:bg-secondary-50 dark:hover:bg-slate-800 shrink-0"
+              >
+                សម្អាតតម្រង {activeFilterCount}
+              </button>
+            )}
           </div>
-
-          <div className="hidden lg:flex items-center justify-between gap-3 rounded-full bg-primary-50 dark:bg-slate-800 border border-primary-100/60 dark:border-slate-700 px-5 py-3">
-            <FaStar className="text-[20px] text-yellow-500" />
-
-            <p className="text-[16px] text-primary-800 dark:text-emerald-400">
-              រកឃើញ
-              <span className="font-semibold px-1">{displayFoods.length}</span>
-              មុខម្ហូប
-            </p>
-          </div>
-
-          {activeFilterCount > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchInput("");
-                setCustomerSearchRequest({ sort: "NEWEST" });
-                setFilters(DEFAULT_FILTERS);
-              }}
-              className="rounded-full border border-secondary-200 dark:border-slate-700 px-5 py-3 text-[16px] font-semibold text-secondary-500 dark:text-amber-400 transition hover:bg-secondary-50 dark:hover:bg-slate-800"
-            >
-              សម្អាតតម្រង {activeFilterCount}
-            </button>
-          )}
         </div>
-      </section>
+      </div>
 
-      <div className="mt-6 flex gap-8">
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6">
+
+      <div className="mt-2 flex gap-5">
         <FilterSidebar
           customerSearchRequest={customerSearchRequest}
           onSearchRequestChange={setCustomerSearchRequest}
         />
 
-        <main className="min-w-0 flex-1">
-          <CategoryTabs
-            options={apiCategoryOptions}
-            selectedCodes={customerSearchRequest.categoryUuids ?? []}
-            onChange={(categoryUuids) =>
-              setCustomerSearchRequest((current) => ({
-                ...current,
-                categoryUuids: categoryUuids.length ? categoryUuids : undefined,
-              }))
-            }
-          />
+        <main className="min-w-0 flex-1 relative">
+          <div 
+            className="sticky z-20 bg-[#fafaf8] dark:bg-black py-2 -mx-2 px-2 shadow-sm shadow-[#fafaf8]/50 dark:shadow-black/50" 
+            style={{ top: `${stickyTop - 1}px` }}
+          >
+            <CategoryTabs
+              options={apiCategoryOptions}
+              selectedCodes={customerSearchRequest.categoryUuids ?? []}
+              onChange={(categoryUuids) =>
+                setCustomerSearchRequest((current) => ({
+                  ...current,
+                  categoryUuids: categoryUuids.length ? categoryUuids : undefined,
+                }))
+              }
+            />
+          </div>
 
           {/* ALL FOODS */}
 
-          <section className="mt-6">
+          <section className="mt-3">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
@@ -3164,7 +3315,7 @@ function FoodPageContent() {
             )}
           </section>
 
-          <section className="mt-14 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
+          <section className="mt-8 overflow-hidden rounded-[28px] bg-gradient-to-br from-primary-900 to-primary-800 px-6 py-12 text-center text-white">
             <h2 className="text-[28px] font-semibold md:text-[36px]">
               បទពិសោធន៍ថ្មីក្នុងការស្វែងរកអាហារ
             </h2>
@@ -3264,6 +3415,7 @@ function FoodPageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </>
   );
 }

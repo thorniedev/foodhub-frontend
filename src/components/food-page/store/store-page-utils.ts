@@ -189,6 +189,8 @@ export function applyStoreFilters(
       }
       case "name-asc":
         return first.storeName.localeCompare(second.storeName);
+      case "name-desc":
+        return second.storeName.localeCompare(first.storeName);
       case "rating":
         return (
           Number(second.averageRating ?? 0) - Number(first.averageRating ?? 0)
@@ -223,10 +225,8 @@ export function applyStoreFilters(
 
 export function countActiveStoreFilters(filters: StorePageFilters): number {
   return (
-    filters.cities.length +
     filters.provinces.length +
     filters.operatingStatuses.length +
-    (filters.openNowOnly ? 1 : 0) +
     (filters.minimumRating !== null ? 1 : 0) +
     (filters.maxDistanceKm !== null && filters.maxDistanceKm !== undefined ? 1 : 0) +
     (filters.sortBy !== "default" ? 1 : 0)

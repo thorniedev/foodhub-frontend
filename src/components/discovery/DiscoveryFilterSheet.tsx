@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, Filter, RotateCcw, Check, Flame, DollarSign, Clock, ShieldCheck, ChevronDown, User, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 import { CustomSelect } from "@/components/shared/CustomSelect";
@@ -34,7 +35,10 @@ function formatAgeGroupOptionLabel(a: FilterItemOption | any): string {
 
   // Fallback ranges for standard FoodHub age groups
   const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
-  if (key.includes("កុមារតូច") || key.includes("toddler") || key.includes("infant")) {
+  if (key.includes("ទារក") || key.includes("infant") || key.includes("baby")) {
+    return `${a.name || "ទារក"} (0-6)`;
+  }
+  if (key.includes("កុមារតូច") || key.includes("toddler")) {
     return `${a.name} (0-2)`;
   }
   if (key.includes("កុមារ") || key.includes("child") || key.includes("kid")) {
@@ -61,6 +65,7 @@ export default function DiscoveryFilterSheet({
   onResetFilters,
 }: DiscoveryFilterSheetProps) {
   const { data: filterOptions, isLoading } = useGetDiscoveryFiltersQuery();
+  const { data: menuItems = [] } = useGetMenuItemsQuery();
   const { data: profileResponse } = useGetMemberProfilesQuery();
 
   const memberProfiles = Array.isArray(profileResponse)
@@ -78,13 +83,48 @@ export default function DiscoveryFilterSheet({
     }
   }, [isOpen, filters]);
 
+  const activeCategoryNamesOrCodes = new Set(
+    menuItems.flatMap((item) => {
+      const cat = item.food?.category;
+      return cat ? [(cat.name || "").toLowerCase(), (cat.code || "").toLowerCase()].filter(Boolean) : [];
+    }),
+  );
+
   const filteredCategories = (filterOptions?.categories || []).filter((cat) => {
+    if (
+      activeCategoryNamesOrCodes.size > 0 &&
+      !activeCategoryNamesOrCodes.has((cat.name || "").toLowerCase()) &&
+      !activeCategoryNamesOrCodes.has((cat.code || "").toLowerCase())
+    ) {
+      return false;
+    }
     if (categoryType === "FOOD" && !isFoodCategory(cat)) return false;
     if (categoryType === "DRINK" && !isDrinkCategory(cat)) return false;
     if (categoryQuery.trim()) {
       return (cat.name || "")
         .toLowerCase()
         .includes(categoryQuery.trim().toLowerCase());
+    }
+    return true;
+  });
+
+  const activeCuisineNamesOrCodes = new Set(
+    menuItems.flatMap((item) => {
+      const c = item.food?.cuisine;
+      return c ? [(c.name || "").toLowerCase(), (c.code || "").toLowerCase()].filter(Boolean) : [];
+    }),
+  );
+
+  const filteredCuisines = (filterOptions?.cuisines || []).filter((c) => {
+    const name = (c.name || "").toLowerCase();
+    const code = (c.code || "").toLowerCase();
+    if (name.includes("ថៃ") || code.includes("thai")) return false;
+    if (
+      activeCuisineNamesOrCodes.size > 0 &&
+      !activeCuisineNamesOrCodes.has(name) &&
+      !activeCuisineNamesOrCodes.has(code)
+    ) {
+      return false;
     }
     return true;
   });
@@ -224,10 +264,10 @@ export default function DiscoveryFilterSheet({
                     value={draft.sort || "NEWEST"}
                     onChange={(val) => setDraft({ ...draft, sort: val })}
                     options={[
-                      { value: "NEWEST", label: "ថ្មីបំផុត", icon: "✨" },
-                      { value: "DISTANCE_ASC", label: "ចំងាយជិតបំផុត", icon: "📍" },
-                      { value: "PRICE_ASC", label: "តម្លៃទាបទៅខ្ពស់", icon: "💵" },
-                      { value: "PRICE_DESC", label: "តម្លៃខ្ពស់ទៅទាប", icon: "💰" },
+                      { value: "NEWEST", label: "ថ្មីបំផុត" },
+                      { value: "DISTANCE_ASC", label: "ចំងាយជិតបំផុត" },
+                      { value: "PRICE_ASC", label: "តម្លៃទាបទៅខ្ពស់" },
+                      { value: "PRICE_DESC", label: "តម្លៃខ្ពស់ទៅទាប" },
                     ]}
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-[15px] font-medium text-slate-900 dark:text-white"
                   />
@@ -236,7 +276,7 @@ export default function DiscoveryFilterSheet({
                 {/* Open Now Toggle */}
                 <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                   <span className="font-semibold text-sm text-slate-900 dark:text-white">
-                    🏪 បើកដំណើរការឥឡូវនេះ
+                    បើកដំណើរការឥឡូវនេះ
                   </span>
                   <input
                     type="checkbox"
@@ -275,7 +315,7 @@ export default function DiscoveryFilterSheet({
                             : "text-slate-500 dark:text-slate-400"
                         }`}
                       >
-                        🍲 ម្ហូប
+                        ម្ហូប
                       </button>
                       <button
                         type="button"
@@ -286,7 +326,7 @@ export default function DiscoveryFilterSheet({
                             : "text-slate-500 dark:text-slate-400"
                         }`}
                       >
-                        🥤 ភេសជ្ជៈ
+                        ភេសជ្ជៈ
                       </button>
                     </div>
 
@@ -333,13 +373,13 @@ export default function DiscoveryFilterSheet({
                 )}
 
                 {/* Cuisines */}
-                {filterOptions?.cuisines && filterOptions.cuisines.length > 0 && (
+                {filteredCuisines.length > 0 && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
                       ស្ទាយម្ហូប / តំបន់
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {filterOptions.cuisines.map((c) => {
+                      {filteredCuisines.map((c) => {
                         const selected = draft.cuisineUuids?.includes(c.uuid);
                         return (
                           <button
@@ -380,7 +420,7 @@ export default function DiscoveryFilterSheet({
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
                             }`}
                           >
-                            🌱 {d.name}
+                            {d.name}
                           </button>
                         );
                       })}
@@ -389,13 +429,16 @@ export default function DiscoveryFilterSheet({
                 )}
 
                 {/* Age Groups */}
-                {filterOptions?.ageGroups && filterOptions.ageGroups.length > 0 && (
+                {((filterOptions?.ageGroups && filterOptions.ageGroups.length > 0) || true) && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
                       ក្រុមអាយុ
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {filterOptions.ageGroups.map((a) => {
+                      {((filterOptions?.ageGroups || []).some((a) => (a.name || "").includes("ទារក") || (a.code || "").toLowerCase().includes("infant") || (a.code || "").toLowerCase().includes("baby"))
+                        ? (filterOptions?.ageGroups || [])
+                        : [{ uuid: "age-group-infant", code: "INFANT", name: "ទារក", minAge: 0, maxAge: 6 }, ...(filterOptions?.ageGroups || [])]
+                      ).map((a) => {
                         const selected = draft.ageGroupUuids?.includes(a.uuid);
                         return (
                           <button
@@ -408,7 +451,7 @@ export default function DiscoveryFilterSheet({
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
                             }`}
                           >
-                            👶 {formatAgeGroupOptionLabel(a)}
+                            {formatAgeGroupOptionLabel(a)}
                           </button>
                         );
                       })}
@@ -436,7 +479,7 @@ export default function DiscoveryFilterSheet({
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                             }`}
                           >
-                            🚫 {alg.name}
+                            {alg.name}
                           </button>
                         );
                       })}
@@ -515,7 +558,7 @@ export default function DiscoveryFilterSheet({
                               : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-amber-50"
                           }`}
                         >
-                          🔥 {spice.label}
+                          {spice.label}
                         </button>
                       );
                     })}
@@ -549,7 +592,7 @@ export default function DiscoveryFilterSheet({
                             : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                         }`}
                       >
-                        ⏱️ {pt.label}
+                        {pt.label}
                       </button>
                     ))}
                   </div>

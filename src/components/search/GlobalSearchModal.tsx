@@ -377,7 +377,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   <Utensils className="h-4 w-4" />
-                  🍲 មុខម្ហូប ({menuItems.length})
+                  មុខម្ហូប ({menuItems.length})
                 </div>
 
                 <div className="space-y-2">

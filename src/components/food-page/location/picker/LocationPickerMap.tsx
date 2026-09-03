@@ -620,7 +620,7 @@ export default function LocationPickerMap({
         maxZoom={20}
         zoomControl={false}
         scrollWheelZoom
-        className="h-full min-h-[440px] w-full"
+        className="h-full min-h-[440px] w-full font-sans"
       >
         {mapTheme === "satellite" ? (
           <TileLayer
@@ -632,7 +632,7 @@ export default function LocationPickerMap({
           <TileLayer
             key="street"
             attribution="&copy; OpenStreetMap contributors &copy; CARTO"
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${process.env.NEXT_PUBLIC_CARTO_API_KEY?.trim() || "cb1_2u6t_1_6c42fea79701558f0f0f175e"}`}
           />
         )}
 
@@ -666,7 +666,7 @@ export default function LocationPickerMap({
         >
           {selectedPlace && (
             <Popup closeButton={false} minWidth={270} maxWidth={340}>
-              <div className="min-w-0 py-1">
+              <div className="min-w-0 py-1 font-sans">
                 <div className="flex items-start gap-3">
                   <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
                     <svg

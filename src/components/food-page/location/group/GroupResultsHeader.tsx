@@ -62,7 +62,7 @@ export default function GroupResultsHeader({
       try {
         await navigator.share({
           title: `${groupName} — FoodHub`,
-          text: "ចូលរួមបោះឆ្នោតជ្រើសរើសហាងជាមួយពួកយើង 🍜",
+          text: "ចូលរួមបោះឆ្នោតជ្រើសរើសហាងជាមួយពួកយើង",
           url: shareUrl,
         });
 

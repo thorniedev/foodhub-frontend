@@ -40,21 +40,21 @@ function getAddressLabel(store: FoodStore): string {
   return Array.from(new Set(values)).join(", ") || "មិនមានអាសយដ្ឋាន";
 }
 
-function formatReviewCount(totalReviews?: number): string {
+function formatReviewCount(totalReviews?: number): string | null {
   const value = Number(totalReviews ?? 0);
 
   if (!Number.isFinite(value) || value <= 0) {
-    return "ថ្មី";
+    return null;
   }
 
   return `${Math.round(value)} review`;
 }
 
-function formatRating(averageRating?: number): string {
+function formatRating(averageRating?: number): string | null {
   const value = Number(averageRating ?? 0);
 
   if (!Number.isFinite(value) || value <= 0) {
-    return "ថ្មី";
+    return null;
   }
 
   return value.toFixed(1);
@@ -198,10 +198,12 @@ function FeaturedStoreCard({
         </p>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[18px]">
-          <span className="inline-flex items-center gap-1.5 text-accent-400">
-            <FaStar className="text-[16px]" />
-            {formatRating(store.averageRating)}
-          </span>
+          {formatRating(store.averageRating) && (
+            <span className="inline-flex items-center gap-1.5 text-accent-400">
+              <FaStar className="text-[16px]" />
+              {formatRating(store.averageRating)}
+            </span>
+          )}
 
           <span className="inline-flex items-center gap-1.5 text-primary-600">
             <IoNavigateOutline className="text-[18px]" />
@@ -270,19 +272,23 @@ function GridStoreCard({
 
         {/* Rating, distance, reviews */}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[18px]">
-          <span className="inline-flex items-center gap-1.5 text-accent-400">
-            <FaStar className="text-[16px]" />
-            <span>{ratingLabel}</span>
-          </span>
+          {ratingLabel && (
+            <span className="inline-flex items-center gap-1.5 text-accent-400">
+              <FaStar className="text-[16px]" />
+              <span>{ratingLabel}</span>
+            </span>
+          )}
 
           <span className="inline-flex items-center gap-1.5 text-primary-600">
             <IoNavigateOutline className="text-[18px]" />
             <span>{distanceLabel}</span>
           </span>
 
-          <span className="truncate text-[18px] text-gray-500">
-            {reviewCountLabel}
-          </span>
+          {reviewCountLabel && (
+            <span className="truncate text-[18px] text-gray-500">
+              {reviewCountLabel}
+            </span>
+          )}
         </div>
 
         {/* Status */}

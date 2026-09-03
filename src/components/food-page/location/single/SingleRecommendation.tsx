@@ -462,9 +462,8 @@ export default function SingleRecommendation({
 
     return sortFoods(
       foodsWithLiveDistance,
-
       foodSort,
-    );
+    ).slice(0, 50);
   }, [filteredStores, foodSort, normalizedMenuItems]);
 
   /**
@@ -571,14 +570,15 @@ export default function SingleRecommendation({
           className={`
             grid
             min-w-0
-            grid-cols-1
-            gap-x-5
+            grid-cols-2
+            gap-x-3
             gap-y-4
+            sm:gap-x-5
             md:grid-cols-2
             2xl:grid-cols-1
             2xl:gap-y-4
             transition-opacity duration-300
-            ${isLoading ? "opacity-50 pointer-events-none" : "opacity-100"}
+            ${isLoading ? "pointer-events-none" : ""}
           `}
         >
           <AnimatePresence mode="popLayout">
