@@ -1250,17 +1250,21 @@ interface MapTileConfig {
   subdomains?: string;
 }
 
+const CARTO_API_KEY =
+  process.env.NEXT_PUBLIC_CARTO_API_KEY?.trim() ||
+  "cb1_2u6t_1_6c42fea79701558f0f0f175e";
+
 const MAP_TILES: Record<MapStyle, MapTileConfig> = {
   voyager: {
     label: "ផែនទី",
-    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
     attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
     subdomains: "abcd",
   },
 
   light: {
     label: "ស្រាល",
-    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    url: `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
     attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
     subdomains: "abcd",
   },
