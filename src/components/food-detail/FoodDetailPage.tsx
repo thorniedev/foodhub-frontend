@@ -2007,7 +2007,10 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   }
 
   const displayName =
-    food.localName?.trim() || food.name?.trim() || foodCatalog?.localName?.trim() || "Unnamed food";
+    food.localName?.trim() ||
+    food.name?.trim() ||
+    foodCatalog?.localName?.trim() ||
+    "Unnamed food";
 
   const englishOrCanonicalName =
     food.food?.canonicalName?.trim() ||
@@ -2030,7 +2033,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     food.store.latitude && food.store.longitude
       ? `https://www.google.com/maps/dir/?api=1&destination=${food.store.latitude},${food.store.longitude}`
       : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-          storeAddress || storeDisplayName
+          storeAddress || storeDisplayName,
         )}`;
 
   let computedDistanceKm: number | null = food.distanceKm ?? null;
@@ -2066,35 +2069,35 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     food.nutrition.calories !== null &&
     food.nutrition.calories > 0
       ? food.nutrition.calories
-      : foodCatalog?.nutritionData?.calories ?? 0;
+      : (foodCatalog?.nutritionData?.calories ?? 0);
 
   const proteinGrams =
     food.nutrition?.proteinGrams !== undefined &&
     food.nutrition.proteinGrams !== null &&
     food.nutrition.proteinGrams > 0
       ? food.nutrition.proteinGrams
-      : foodCatalog?.nutritionData?.proteinGrams ?? 0;
+      : (foodCatalog?.nutritionData?.proteinGrams ?? 0);
 
   const carbsGrams =
     food.nutrition?.carbsGrams !== undefined &&
     food.nutrition.carbsGrams !== null &&
     food.nutrition.carbsGrams > 0
       ? food.nutrition.carbsGrams
-      : foodCatalog?.nutritionData?.carbohydrateGrams ?? 0;
+      : (foodCatalog?.nutritionData?.carbohydrateGrams ?? 0);
 
   const fatGrams =
     food.nutrition?.fatGrams !== undefined &&
     food.nutrition.fatGrams !== null &&
     food.nutrition.fatGrams > 0
       ? food.nutrition.fatGrams
-      : foodCatalog?.nutritionData?.fatGrams ?? 0;
+      : (foodCatalog?.nutritionData?.fatGrams ?? 0);
 
   const spiceLevel =
     food.food?.spiceLevel !== undefined &&
     food.food?.spiceLevel !== null &&
     food.food?.spiceLevel > 0
       ? food.food.spiceLevel
-      : foodCatalog?.defaultSpiceLevel ?? 0;
+      : (foodCatalog?.defaultSpiceLevel ?? 0);
 
   const dietaryTypes =
     food.food?.dietaryTypes && food.food.dietaryTypes.length > 0
@@ -2155,9 +2158,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         }));
 
   const hasContextRows =
-    seasons.length > 0 ||
-    events.length > 0 ||
-    suitableWeather.length > 0;
+    seasons.length > 0 || events.length > 0 || suitableWeather.length > 0;
 
   const handleShare = async () => {
     const shareData = {
@@ -2266,7 +2267,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </p>
 
                 {englishOrCanonicalName && (
-                  <p className={`mt-2 ${TEXT_LABEL}`}>{englishOrCanonicalName}</p>
+                  <p className={`mt-2 ${TEXT_LABEL}`}>
+                    {englishOrCanonicalName}
+                  </p>
                 )}
               </div>
 

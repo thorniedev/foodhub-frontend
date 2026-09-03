@@ -465,12 +465,16 @@
 
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+import {
+  useGetFoodCatalogByUuidQuery,
+  useGetMenuItemByUuidQuery,
+} from "@/app/store/menuApi";
 
 import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 
@@ -546,20 +550,73 @@ export default function FoodCard({ food }: FoodCardProps) {
   const { bookmarks, addBookmark, removeBookmark, findBookmark } =
     useBookmarks();
 
+  const { coordinates: userCoordinates } = useUserLocation();
+
+  const itemUuid =
+    food.uuid ||
+    (food as unknown as { menuItemUuid?: string }).menuItemUuid ||
+    "";
+
+  // Data fetching: fetch menu item using the same endpoint as the detail page:
+  // GET /api/v1/catalog/menu-items/{uuid}/detail
+  const { data: detailData } = useGetMenuItemByUuidQuery(
+    userCoordinates && isValidCoordinates(userCoordinates)
+      ? {
+          uuid: itemUuid,
+          latitude: userCoordinates.latitude,
+          longitude: userCoordinates.longitude,
+        }
+      : itemUuid,
+    {
+      skip: !itemUuid,
+    },
+  );
+
+  // Master Food definition UUID from detail endpoint or prop
+  const masterFoodUuid = detailData?.food?.uuid || food.food?.uuid || "";
+
+  // Data fetching: fetch master Food Catalog definition using the same endpoint as the detail page:
+  // GET /api/v1/catalog/foods/{uuid}
+  const { data: foodCatalog } = useGetFoodCatalogByUuidQuery(masterFoodUuid, {
+    skip: !masterFoodUuid,
+  });
+
+  // Merge the fetched detail with initial food prop, keeping the exact same UI
+  const activeFood = useMemo(() => {
+    if (!detailData) return food;
+    return {
+      ...food,
+      ...detailData,
+      store: {
+        ...(food.store ?? {}),
+        ...(detailData.store ?? {}),
+      },
+      food: {
+        ...(food.food ?? {}),
+        ...(detailData.food ?? {}),
+      },
+    };
+  }, [food, detailData]);
+
   /* =======================================================
      DISPLAY VALUES
   ======================================================= */
 
   const displayName =
-    food.localName?.trim() || food.name?.trim() || "Unnamed food";
+    activeFood.localName?.trim() ||
+    activeFood.name?.trim() ||
+    foodCatalog?.localName?.trim() ||
+    "Unnamed food";
 
   /**
-   * Catalog menu items keep dietaryTypes inside `food.food`.
-   * Discovery currently does not return dietaryTypes, so this becomes [] there.
-   * If backend adds a root dietaryTypes field later, this also supports it.
+   * Catalog menu items keep dietaryTypes inside `food.food` or on the master food catalog.
+   * Matches FoodDetailPage mapping 100%:
+   * 1. activeFood.food.dietaryTypes
+   * 2. foodCatalog.dietaryTypes
+   * 3. rootDietaryTypes
    */
   const rootDietaryTypes = (
-    food as unknown as {
+    activeFood as unknown as {
       dietaryTypes?: {
         code: string;
         name: string;
@@ -567,21 +624,70 @@ export default function FoodCard({ food }: FoodCardProps) {
     }
   ).dietaryTypes;
 
-  const dietaryTypes = food.food?.dietaryTypes ?? rootDietaryTypes ?? [];
+  const dietaryTypes = useMemo(() => {
+    if (
+      activeFood.food?.dietaryTypes &&
+      activeFood.food.dietaryTypes.length > 0
+    ) {
+      return activeFood.food.dietaryTypes;
+    }
+    if (foodCatalog?.dietaryTypes && foodCatalog.dietaryTypes.length > 0) {
+      return foodCatalog.dietaryTypes.map((d) => ({
+        code: d.code,
+        name: d.name,
+        verificationStatus: d.verificationStatus || "UNVERIFIED",
+      }));
+    }
+    return rootDietaryTypes ?? [];
+  }, [
+    activeFood.food?.dietaryTypes,
+    foodCatalog?.dietaryTypes,
+    rootDietaryTypes,
+  ]);
 
   /**
-   * Catalog responses keep category/cuisine inside `food.food`,
+   * Catalog responses keep category/cuisine inside `food.food` or foodCatalog,
    * while discovery search returns category/cuisine at the menu-item root.
    * Support both response shapes without changing the card UI.
    */
-  const foodAny = food as unknown as {
+  const foodAny = activeFood as unknown as {
     cuisine?: { code?: string; name: string } | null;
     category?: { code?: string; name: string } | null;
     imageUrl?: string | null;
     primaryMediaUuid?: string | null;
   };
-  const cuisine = food.food?.cuisine ?? foodAny.cuisine ?? null;
-  const category = food.food?.category ?? foodAny.category ?? null;
+
+  const cuisine = useMemo(() => {
+    if (activeFood.food?.cuisine) return activeFood.food.cuisine;
+    if (foodCatalog?.cuisineName) {
+      return {
+        code: foodCatalog.cuisineUuid || "",
+        name: foodCatalog.cuisineName,
+      };
+    }
+    return foodAny.cuisine ?? null;
+  }, [
+    activeFood.food?.cuisine,
+    foodCatalog?.cuisineName,
+    foodCatalog?.cuisineUuid,
+    foodAny.cuisine,
+  ]);
+
+  const category = useMemo(() => {
+    if (activeFood.food?.category) return activeFood.food.category;
+    if (foodCatalog?.categoryName) {
+      return {
+        code: foodCatalog.categoryUuid || "",
+        name: foodCatalog.categoryName,
+      };
+    }
+    return foodAny.category ?? null;
+  }, [
+    activeFood.food?.category,
+    foodCatalog?.categoryName,
+    foodCatalog?.categoryUuid,
+    foodAny.category,
+  ]);
 
   /* =======================================================
      STATE
@@ -594,21 +700,19 @@ export default function FoodCard({ food }: FoodCardProps) {
      DISTANCE & TRAVEL TIME
   ======================================================= */
 
-  const { coordinates: userCoordinates } = useUserLocation();
-
   let travelTimeMin: number | null = null;
-  let computedDistanceKm: number | null = food.distanceKm ?? null;
+  let computedDistanceKm: number | null = activeFood.distanceKm ?? null;
 
   if (
     userCoordinates &&
-    food.store?.latitude !== undefined &&
-    food.store?.latitude !== null &&
-    food.store?.longitude !== undefined &&
-    food.store?.longitude !== null
+    activeFood.store?.latitude !== undefined &&
+    activeFood.store?.latitude !== null &&
+    activeFood.store?.longitude !== undefined &&
+    activeFood.store?.longitude !== null
   ) {
     const storeCoordinates = {
-      latitude: Number(food.store.latitude),
-      longitude: Number(food.store.longitude),
+      latitude: Number(activeFood.store.latitude),
+      longitude: Number(activeFood.store.longitude),
     };
     if (isValidCoordinates(storeCoordinates)) {
       computedDistanceKm = calculateDistanceKm(
@@ -628,19 +732,14 @@ export default function FoodCard({ food }: FoodCardProps) {
         : `${computedDistanceKm.toFixed(1)} km`
       : null;
 
-  const itemUuid =
-    food.uuid ||
-    (food as unknown as { menuItemUuid?: string }).menuItemUuid ||
-    "";
-
   const rawImage =
-    food.thumbnail ||
-    (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
+    activeFood.thumbnail ||
+    (activeFood.gallery && activeFood.gallery.length > 0 ? activeFood.gallery[0] : null) ||
     foodAny.imageUrl ||
     (foodAny.primaryMediaUuid
       ? `/api/v1/media/${foodAny.primaryMediaUuid}`
       : undefined) ||
-    (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : undefined);
+    (activeFood.uuid ? `/api/v1/catalog/menu-items/${activeFood.uuid}/images/1` : undefined);
 
   const [imgError, setImgError] = useState(false);
 
@@ -671,12 +770,12 @@ export default function FoodCard({ food }: FoodCardProps) {
   useEffect(() => {
     const favoriteIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
-      menuItemUuid: food.uuid,
-      foodUuid: food.food?.uuid,
+      menuItemUuid: activeFood.uuid,
+      foodUuid: activeFood.food?.uuid,
     });
 
-    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(food.uuid));
-  }, [food.uuid, food.food?.uuid, findBookmark, bookmarks]);
+    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(activeFood.uuid));
+  }, [activeFood.uuid, activeFood.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
      FAVORITE / BOOKMARK TOGGLE
@@ -690,16 +789,16 @@ export default function FoodCard({ food }: FoodCardProps) {
 
     const currentIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
-      menuItemUuid: food.uuid,
-      foodUuid: food.food?.uuid,
+      menuItemUuid: activeFood.uuid,
+      foodUuid: activeFood.food?.uuid,
     });
 
     const isAlreadyFavorite =
-      isFavorite || Boolean(serverBookmark) || currentIds.includes(food.uuid);
+      isFavorite || Boolean(serverBookmark) || currentIds.includes(activeFood.uuid);
 
     const nextIds = isAlreadyFavorite
-      ? currentIds.filter((id) => id !== food.uuid)
-      : [...currentIds, food.uuid];
+      ? currentIds.filter((id) => id !== activeFood.uuid)
+      : [...currentIds, activeFood.uuid];
 
     try {
       window.localStorage.setItem(
@@ -723,9 +822,9 @@ export default function FoodCard({ food }: FoodCardProps) {
         }
       } else {
         await addBookmark({
-          menuItemUuid: food.uuid,
-          foodUuid: food.food?.uuid,
-          storeUuid: food.store?.uuid,
+          menuItemUuid: activeFood.uuid,
+          foodUuid: activeFood.food?.uuid,
+          storeUuid: activeFood.store?.uuid,
         });
       }
     } catch (err) {
@@ -937,13 +1036,13 @@ export default function FoodCard({ food }: FoodCardProps) {
             <div className="flex items-center gap-1 sm:gap-1 flex-1 min-w-0">
               <FaStore className="shrink-0 text-xs sm:text-lg" />
               <p className="truncate pt-[2px] text-xs sm:text-lg ">
-                {food.store?.name || "Unknown store"}
+                {activeFood.store?.localName || activeFood.store?.name || "Unknown store"}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <FaClock className="text-[10px] sm:text-lg" />
               <p className="whitespace-nowrap mt-[2px] text-[10px] sm:text-sm">
-                {food.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
+                {activeFood.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
               </p>
             </div>
           </div>
@@ -977,9 +1076,9 @@ export default function FoodCard({ food }: FoodCardProps) {
                 dark:text-emerald-400
               "
             >
-              {food.currencyCode === "USD"
-                ? `$${food.price}`
-                : `${food.price} ${food.currencyCode ?? ""}`}
+              {activeFood.currencyCode === "USD"
+                ? `$${activeFood.price}`
+                : `${activeFood.price} ${activeFood.currencyCode ?? ""}`}
             </p>
           </div>
 
@@ -1015,12 +1114,12 @@ export default function FoodCard({ food }: FoodCardProps) {
 
                 <span>{travelTimeMin} min</span>
               </div>
-            ) : food.preparationTimeMinutes !== null &&
-              food.preparationTimeMinutes !== undefined ? (
+            ) : activeFood.preparationTimeMinutes !== null &&
+              activeFood.preparationTimeMinutes !== undefined ? (
               <div className="flex items-center gap-2 text-primary-400">
                 <FaMotorcycle />
 
-                <span className="mt-1">{food.preparationTimeMinutes} min</span>
+                <span className="mt-1">{activeFood.preparationTimeMinutes} min</span>
               </div>
             ) : null}
 

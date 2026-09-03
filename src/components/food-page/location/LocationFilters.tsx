@@ -375,7 +375,7 @@ export default function LocationFilters({
     () =>
       getUniqueOptions(
         menuItems.flatMap((item) =>
-          (item.dietaryTypes ?? []).map((option) => ({
+          (item.dietaryTypes ?? (item.food as any)?.dietaryTypes ?? []).map((option: any) => ({
             code: option.code,
             name: option.name,
           })),
