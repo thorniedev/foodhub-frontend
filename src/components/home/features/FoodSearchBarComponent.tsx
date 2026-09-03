@@ -2236,6 +2236,7 @@ import {
 } from "react-icons/io5";
 
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
 import FoodCard from "@/components/dynamic-card/FoodCard";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 import SortDropdown from "./SortDropdown";
@@ -2271,8 +2272,8 @@ type SortOption =
   | "price-desc"
   | "preparation-asc"
   | "preparation-desc"
-  | "rating-desc"
-  | "name-asc";
+  | "name-asc"
+  | "name-desc";
 
 type PreparationRangeCode = "UNDER_10" | "MIN_11_20" | "MIN_21_30" | "OVER_30";
 
@@ -2305,12 +2306,12 @@ const mobileSortOptions: {
     label: "រៀបចំយូរជាងគេ",
   },
   {
-    value: "rating-desc",
-    label: "ការវាយតម្លៃខ្ពស់",
+    value: "name-asc",
+    label: "ឈ្មោះ A → Z",
   },
   {
-    value: "name-asc",
-    label: "តម្រៀបតាមឈ្មោះ",
+    value: "name-desc",
+    label: "ឈ្មោះ Z → A",
   },
 ];
 
@@ -2405,16 +2406,145 @@ function getAgeGroups(food: CatalogMenuItem): FilterOption[] {
   }
 
   return food.food.ageGroups.flatMap((ageGroup) => {
-    if (!ageGroup?.code || !ageGroup?.name) {
+    if (!ageGroup?.code && !ageGroup?.name) {
       return [];
     }
 
     return [
       {
-        code: ageGroup.code,
-        name: ageGroup.name,
+        code: ageGroup.code || ageGroup.name,
+        name: ageGroup.name || ageGroup.code,
       },
     ];
+  });
+}
+
+function formatAgeGroupOptionLabel(a: FilterOption | any): string {
+  const item = a as any;
+  const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
+  if (
+    key.includes("ទារក") ||
+    key.includes("infant") ||
+    key.includes("baby")
+  ) {
+    return `${a.name || "ទារក"} (0-6)`;
+  }
+  const min = item?.minAge ?? item?.minimumAge ?? item?.min_age;
+  const max = item?.maxAge ?? item?.maximumAge ?? item?.max_age;
+
+  if (min !== undefined && min !== null && max !== undefined && max !== null) {
+    return `${a.name} (${min}-${max})`;
+  }
+  if (
+    min !== undefined &&
+    min !== null &&
+    (max === undefined || max === null)
+  ) {
+    return `${a.name} (${min}+)`;
+  }
+  if (
+    (min === undefined || min === null) &&
+    max !== undefined &&
+    max !== null
+  ) {
+    return `${a.name} (≤${max})`;
+  }
+
+  // Fallback ranges for standard FoodHub age groups if not returned from backend
+  if (
+    key.includes("កុមារតូច") ||
+    key.includes("toddler")
+  ) {
+    return `${a.name} (0-2)`;
+  }
+  if (key.includes("កុមារ") || key.includes("child") || key.includes("kid")) {
+    return `${a.name} (3-12)`;
+  }
+  if (
+    key.includes("យុវវ័យ") ||
+    key.includes("យុវជន") ||
+    key.includes("teen") ||
+    key.includes("youth")
+  ) {
+    return `${a.name} (13-17)`;
+  }
+  if (key.includes("មនុស្សពេញវ័យ") || key.includes("adult")) {
+    return `${a.name} (18-59)`;
+  }
+  if (
+    key.includes("មនុស្សវ័យចំណាស់") ||
+    key.includes("វ័យចំណាស់") ||
+    key.includes("senior") ||
+    key.includes("elderly")
+  ) {
+    return `${a.name} (60+)`;
+  }
+
+  return a.name;
+}
+
+function matchesAgeGroup(
+  foodAgeGroups: FilterOption[],
+  selectedAgeCodes: Set<string>,
+): boolean {
+  if (selectedAgeCodes.size === 0) return true;
+
+  return [...selectedAgeCodes].some((selectedCode) => {
+    const normSelected = normalizeText(selectedCode);
+
+    return foodAgeGroups.some((ag) => {
+      const aName = normalizeText(ag.name);
+      const aCode = normalizeText(ag.code);
+
+      if (normSelected === aCode || normSelected === aName) return true;
+      if (aName.includes(normSelected) || aCode.includes(normSelected)) return true;
+
+      if (
+        (normSelected.includes("ទារក") ||
+          normSelected.includes("0-6") ||
+          normSelected.includes("0-1") ||
+          normSelected.includes("0-2") ||
+          normSelected.includes("infant") ||
+          normSelected.includes("baby")) &&
+        (aName.includes("ទារក") || aCode.includes("infant") || aCode.includes("baby"))
+      ) {
+        return true;
+      }
+      if (
+        (normSelected.includes("យុវវ័យ") || normSelected.includes("13-17") || normSelected.includes("youth")) &&
+        (aName.includes("យុវវ័យ") || aCode.includes("youth") || aCode.includes("teen"))
+      ) {
+        return true;
+      }
+      if (
+        (normSelected.includes("កុមារតូច") || normSelected.includes("toddler")) &&
+        (aName.includes("កុមារតូច") || aCode.includes("toddler"))
+      ) {
+        return true;
+      }
+      if (
+        (normSelected.includes("កុមារ") || normSelected.includes("3-12") || normSelected.includes("child")) &&
+        (aName.includes("កុមារ") || aCode.includes("child") || aCode.includes("children")) &&
+        !normSelected.includes("តូច") &&
+        !aName.includes("តូច")
+      ) {
+        return true;
+      }
+      if (
+        (normSelected.includes("ពេញវ័យ") || normSelected.includes("18-59") || normSelected.includes("adult")) &&
+        (aName.includes("ពេញវ័យ") || aCode.includes("adult"))
+      ) {
+        return true;
+      }
+      if (
+        (normSelected.includes("ចំណាស់") || normSelected.includes("60+") || normSelected.includes("senior")) &&
+        (aName.includes("ចំណាស់") || aCode.includes("senior") || aCode.includes("elderly"))
+      ) {
+        return true;
+      }
+
+      return false;
+    });
   });
 }
 
@@ -2665,13 +2795,6 @@ function sortFoods(
         return second - first;
       });
 
-    case "rating-desc":
-      return sorted.sort(
-        (a, b) =>
-          Number(b.store?.averageRating ?? 0) -
-          Number(a.store?.averageRating ?? 0),
-      );
-
     case "name-asc":
       return sorted.sort((a, b) => {
         const first = a.localName?.trim() || a.name;
@@ -2679,6 +2802,15 @@ function sortFoods(
         const second = b.localName?.trim() || b.name;
 
         return first.localeCompare(second);
+      });
+
+    case "name-desc":
+      return sorted.sort((a, b) => {
+        const first = a.localName?.trim() || a.name;
+
+        const second = b.localName?.trim() || b.name;
+
+        return second.localeCompare(first);
       });
 
     case "default":
@@ -2816,6 +2948,8 @@ export default function FoodSearchBar() {
     refetch,
   } = useGetMenuItemsQuery();
 
+  const { data: discoveryFilters } = useGetDiscoveryFiltersQuery();
+
   /* =======================================================
      DESKTOP CLICK OUTSIDE
   ======================================================= */
@@ -2871,42 +3005,41 @@ export default function FoodSearchBar() {
 
         return cuisine ? [cuisine] : [];
       }),
-    );
+    ).filter((c) => {
+      const name = normalizeText(c.name);
+      const code = normalizeText(c.code);
+      return !name.includes("ថៃ") && !code.includes("thai");
+    });
 
     const dietaryTypes = getUniqueOptions(
       menuItems.flatMap((item) => getDietaryOptions(item)),
     );
 
-    const ageGroups = getUniqueOptions(
+    const rawAgeGroups = getUniqueOptions(
       menuItems.flatMap((item) => getAgeGroups(item)),
     );
 
-    const mealTypes = getUniqueOptions(
-      menuItems.flatMap((item) => getMealTypes(item)),
+    const hasInfant = rawAgeGroups.some(
+      (a) =>
+        normalizeText(a.name).includes("ទារក") ||
+        (a.code && normalizeText(a.code).includes("infant")) ||
+        (a.code && normalizeText(a.code).includes("baby")),
     );
 
-    const allergens = getUniqueOptions(
-      menuItems.flatMap((item) => getAllergenOptions(item)),
-    );
+    const fullAgeGroups = hasInfant
+      ? rawAgeGroups
+      : [
+          {
+            code: "INFANT",
+            name: "ទារក",
+          },
+          ...rawAgeGroups,
+        ];
 
-    const preparationOptions: FilterOption[] = [
-      {
-        code: "UNDER_10",
-        name: "≤ 10 នាទី",
-      },
-      {
-        code: "MIN_11_20",
-        name: "11 - 20 នាទី",
-      },
-      {
-        code: "MIN_21_30",
-        name: "21 - 30 នាទី",
-      },
-      {
-        code: "OVER_30",
-        name: "> 30 នាទី",
-      },
-    ];
+    const ageGroups: FilterOption[] = fullAgeGroups.map((a) => ({
+      code: a.code || a.name,
+      name: formatAgeGroupOptionLabel(a),
+    }));
 
     const groups: ChipGroup[] = [
       {
@@ -2929,26 +3062,10 @@ export default function FoodSearchBar() {
         key: "age",
         options: ageGroups,
       },
-      {
-        title: "ពេលអាហារ",
-        key: "mealType",
-        options: mealTypes,
-      },
-      {
-        title: "ជៀសវាងអាឡែស៊ី",
-        key: "allergen",
-        options: allergens,
-        description: "មុខម្ហូបដែលមានអាឡែស៊ីដែលបានជ្រើសនឹងត្រូវដកចេញពីលទ្ធផល។",
-      },
-      {
-        title: "ពេលរៀបចំ",
-        key: "preparationTime",
-        options: preparationOptions,
-      },
     ];
 
     return groups.filter((group) => group.options.length > 0);
-  }, [menuItems]);
+  }, [menuItems, discoveryFilters]);
 
   /* =======================================================
      SELECTION HELPERS
@@ -3050,8 +3167,8 @@ export default function FoodSearchBar() {
         groupedSelected.dietary,
       );
 
-      const matchesAge = hasSelectedValue(
-        ageGroups.map((ageGroup) => ageGroup.code),
+      const matchesAge = matchesAgeGroup(
+        getAgeGroups(food),
         groupedSelected.age,
       );
 
@@ -3075,10 +3192,7 @@ export default function FoodSearchBar() {
         matchesCategory &&
         matchesCuisine &&
         matchesDietary &&
-        matchesAge &&
-        matchesMealType &&
-        !containsAllergy &&
-        matchesPreparation
+        matchesAge
       );
     });
 

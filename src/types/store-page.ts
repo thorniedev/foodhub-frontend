@@ -10,6 +10,7 @@ export type StoreSortBy =
   | "default"
   | "nearest"
   | "name-asc"
+  | "name-desc"
   | "rating"
   | "reviews";
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, Filter, RotateCcw, Check, Flame, DollarSign, Clock, ShieldCheck, ChevronDown, User, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { isDrinkCategory, isFoodCategory, type CategoryFilterType } from "@/lib/category-filter";
 import { CustomSelect } from "@/components/shared/CustomSelect";
@@ -64,6 +65,7 @@ export default function DiscoveryFilterSheet({
   onResetFilters,
 }: DiscoveryFilterSheetProps) {
   const { data: filterOptions, isLoading } = useGetDiscoveryFiltersQuery();
+  const { data: menuItems = [] } = useGetMenuItemsQuery();
   const { data: profileResponse } = useGetMemberProfilesQuery();
 
   const memberProfiles = Array.isArray(profileResponse)
@@ -81,13 +83,48 @@ export default function DiscoveryFilterSheet({
     }
   }, [isOpen, filters]);
 
+  const activeCategoryNamesOrCodes = new Set(
+    menuItems.flatMap((item) => {
+      const cat = item.food?.category;
+      return cat ? [(cat.name || "").toLowerCase(), (cat.code || "").toLowerCase()].filter(Boolean) : [];
+    }),
+  );
+
   const filteredCategories = (filterOptions?.categories || []).filter((cat) => {
+    if (
+      activeCategoryNamesOrCodes.size > 0 &&
+      !activeCategoryNamesOrCodes.has((cat.name || "").toLowerCase()) &&
+      !activeCategoryNamesOrCodes.has((cat.code || "").toLowerCase())
+    ) {
+      return false;
+    }
     if (categoryType === "FOOD" && !isFoodCategory(cat)) return false;
     if (categoryType === "DRINK" && !isDrinkCategory(cat)) return false;
     if (categoryQuery.trim()) {
       return (cat.name || "")
         .toLowerCase()
         .includes(categoryQuery.trim().toLowerCase());
+    }
+    return true;
+  });
+
+  const activeCuisineNamesOrCodes = new Set(
+    menuItems.flatMap((item) => {
+      const c = item.food?.cuisine;
+      return c ? [(c.name || "").toLowerCase(), (c.code || "").toLowerCase()].filter(Boolean) : [];
+    }),
+  );
+
+  const filteredCuisines = (filterOptions?.cuisines || []).filter((c) => {
+    const name = (c.name || "").toLowerCase();
+    const code = (c.code || "").toLowerCase();
+    if (name.includes("ថៃ") || code.includes("thai")) return false;
+    if (
+      activeCuisineNamesOrCodes.size > 0 &&
+      !activeCuisineNamesOrCodes.has(name) &&
+      !activeCuisineNamesOrCodes.has(code)
+    ) {
+      return false;
     }
     return true;
   });
@@ -336,13 +373,13 @@ export default function DiscoveryFilterSheet({
                 )}
 
                 {/* Cuisines */}
-                {filterOptions?.cuisines && filterOptions.cuisines.length > 0 && (
+                {filteredCuisines.length > 0 && (
                   <div className="space-y-2">
                     <label className="block font-semibold text-sm text-slate-900 dark:text-white">
                       ស្ទាយម្ហូប / តំបន់
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {filterOptions.cuisines.map((c) => {
+                      {filteredCuisines.map((c) => {
                         const selected = draft.cuisineUuids?.includes(c.uuid);
                         return (
                           <button

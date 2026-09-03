@@ -58,19 +58,19 @@ const DISTANCE_OPTIONS: Array<{
   },
   {
     value: 2,
-    label: "< 2 km",
+    label: "2 km",
   },
   {
     value: 5,
-    label: "< 5 km",
+    label: "5 km",
   },
   {
     value: 10,
-    label: "< 10 km",
+    label: "10 km",
   },
   {
     value: 20,
-    label: "< 20 km",
+    label: "20 km",
   },
 ];
 
@@ -113,19 +113,13 @@ const SORT_OPTIONS: Array<{
     label: "ឈ្មោះ A ដល់ Z",
   },
   {
-    value: "rating",
-    label: "ការវាយតម្លៃខ្ពស់",
-  },
-  {
-    value: "reviews",
-    label: "មតិច្រើនបំផុត",
+    value: "name-desc",
+    label: "ឈ្មោះ Z ដល់ A",
   },
 ];
 
 const OPEN_SECTION_DEFAULTS: Record<string, boolean> = {
-  status: true,
   distance: true,
-  city: false,
   province: false,
   operatingStatus: true,
   rating: false,
@@ -413,12 +407,6 @@ export default function StoreFilters({
 
   const collapsedItems = [
     {
-      key: "status",
-      label: "បើកឥឡូវនេះ",
-      icon: <FaStore />,
-      visible: true,
-    },
-    {
       key: "distance",
       label: "ចម្ងាយ",
       icon: <IoNavigateOutline />,
@@ -429,12 +417,6 @@ export default function StoreFilters({
       label: "ស្ថានភាពហាង",
       icon: <FaStore />,
       visible: operatingStatusOptions.length > 0,
-    },
-    {
-      key: "city",
-      label: "ទីក្រុង",
-      icon: <IoLocationOutline />,
-      visible: cityOptions.length > 0,
     },
     {
       key: "province",
@@ -720,26 +702,7 @@ export default function StoreFilters({
               [&::-webkit-scrollbar-thumb:hover]:bg-gray-400
             "
           >
-            {/* -------------------------------------------------------------- */}
-            {/* Open now                                                       */}
-            {/* -------------------------------------------------------------- */}
 
-            <FilterSection
-              title="ស្ថានភាពឥឡូវនេះ"
-              icon={<FaStore />}
-              isOpen={openSections.status}
-              onToggle={() => toggleSection("status")}
-            >
-              <div className="space-y-1">
-                <CheckboxOption
-                  label="បង្ហាញតែហាងដែលកំពុងបើកឥឡូវនេះ"
-                  checked={filters.openNowOnly}
-                  onChange={() =>
-                    updateFilter("openNowOnly", !filters.openNowOnly)
-                  }
-                />
-              </div>
-            </FilterSection>
 
             {/* -------------------------------------------------------------- */}
             {/* Distance / Near Me                                             */}
@@ -791,7 +754,7 @@ export default function StoreFilters({
 
             {operatingStatusOptions.length > 0 && (
               <FilterSection
-                title="ស្ថានភាពប្រតិបត្តិការ"
+                title="ស្ថានភាពហាង"
                 icon={<FaStore />}
                 isOpen={openSections.operatingStatus}
                 onToggle={() => toggleSection("operatingStatus")}
@@ -809,29 +772,7 @@ export default function StoreFilters({
               </FilterSection>
             )}
 
-            {/* -------------------------------------------------------------- */}
-            {/* City                                                           */}
-            {/* -------------------------------------------------------------- */}
 
-            {cityOptions.length > 0 && (
-              <FilterSection
-                title="ទីក្រុង"
-                icon={<IoLocationOutline />}
-                isOpen={openSections.city}
-                onToggle={() => toggleSection("city")}
-              >
-                <OptionList
-                  options={cityOptions}
-                  selectedValues={filters.cities}
-                  onToggle={(value) =>
-                    updateFilter(
-                      "cities",
-                      toggleStoreFilterValue(filters.cities, value),
-                    )
-                  }
-                />
-              </FilterSection>
-            )}
 
             {/* -------------------------------------------------------------- */}
             {/* Province                                                       */}

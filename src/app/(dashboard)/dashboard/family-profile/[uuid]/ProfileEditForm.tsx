@@ -137,7 +137,6 @@ export const CUISINE_OPTIONS = [
   { code: "JAPANESE", labelKm: "ជប៉ុន (Japanese)" },
   { code: "CHINESE", labelKm: "ចិន (Chinese)" },
   { code: "KOREAN", labelKm: "កូរ៉េ (Korean)" },
-  { code: "THAI", labelKm: "ថៃ (Thai)" },
   { code: "VIETNAMESE", labelKm: "វៀតណាម (Vietnamese)" },
   { code: "WESTERN", labelKm: "បស្ចិមប្រទេស (Western)" },
   { code: "INDIAN", labelKm: "ឥណ្ឌា (Indian)" },

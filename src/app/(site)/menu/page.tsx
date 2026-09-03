@@ -1313,6 +1313,7 @@ function FilterSidebar({
   onClose,
 }: FilterSidebarProps) {
   const { data: filterOptions } = useGetDiscoveryFiltersQuery();
+  const { data: menuItems = [] } = useGetMenuItemsQuery();
   const { data: profileResponse } = useGetMemberProfilesQuery();
 
   const memberProfiles = Array.isArray(profileResponse)
@@ -1442,7 +1443,21 @@ function FilterSidebar({
     (customerSearchRequest.profileUuid ? 1 : 0);
 
   const categories = useMemo(() => {
-    let list = filterOptions?.categories || [];
+    const activeCategoryNamesOrCodes = new Set(
+      menuItems.flatMap((item) => {
+        const cat = item.food?.category;
+        return cat ? [normalizeText(cat.name), normalizeText(cat.code)] : [];
+      }),
+    );
+
+    let list = (filterOptions?.categories || []).filter((cat) => {
+      if (activeCategoryNamesOrCodes.size === 0) return true;
+      return (
+        activeCategoryNamesOrCodes.has(normalizeText(cat.name)) ||
+        activeCategoryNamesOrCodes.has(normalizeText(cat.code))
+      );
+    });
+
     if (categoryType === "FOOD") {
       list = list.filter((cat) => isFoodCategory(cat));
     } else if (categoryType === "DRINK") {
@@ -1453,7 +1468,27 @@ function FilterSidebar({
       list = list.filter((cat) => normalizeText(cat.name).includes(q));
     }
     return list;
-  }, [filterOptions?.categories, categoryType, categoryQuery]);
+  }, [filterOptions?.categories, menuItems, categoryType, categoryQuery]);
+
+  const cuisines = useMemo(() => {
+    const activeCuisineNamesOrCodes = new Set(
+      menuItems.flatMap((item) => {
+        const c = item.food?.cuisine;
+        return c ? [normalizeText(c.name), normalizeText(c.code)] : [];
+      }),
+    );
+
+    return (filterOptions?.cuisines || []).filter((c) => {
+      const name = normalizeText(c.name);
+      const code = normalizeText(c.code);
+      if (name.includes("ថៃ") || code.includes("thai")) return false;
+      if (activeCuisineNamesOrCodes.size === 0) return true;
+      return (
+        activeCuisineNamesOrCodes.has(name) ||
+        activeCuisineNamesOrCodes.has(code)
+      );
+    });
+  }, [filterOptions?.cuisines, menuItems]);
 
   return (
     <motion.aside
@@ -1718,7 +1753,7 @@ function FilterSidebar({
               )}
 
             {/* CUISINE */}
-            {filterOptions?.cuisines && filterOptions.cuisines.length > 0 && (
+            {cuisines.length > 0 && (
               <FilterSection
                 title="ម្ហូបតាមប្រទេស"
                 icon={<MdOutlineCategory />}
@@ -1726,7 +1761,7 @@ function FilterSidebar({
                 onToggle={() => toggleSection("cuisine")}
               >
                 <CollapsibleList
-                  items={filterOptions.cuisines}
+                  items={cuisines}
                   renderItem={(c) => (
                     <PillOption
                       key={c.uuid}
