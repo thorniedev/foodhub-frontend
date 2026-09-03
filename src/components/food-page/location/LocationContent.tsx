@@ -74,6 +74,8 @@ import {
 interface LocationContentProps {
   menuItems: CatalogMenuItem[];
   searchQuery?: string;
+  mode: RecommendationMode;
+  onModeChange?: (mode: RecommendationMode) => void;
 }
 
 function normalizeLocationAllergens(
@@ -399,12 +401,13 @@ function hasValidCoordinates(
 export default function LocationContent({
   menuItems: catalogMenuItems,
   searchQuery = "",
+  mode,
+  onModeChange,
 }: LocationContentProps) {
   const menuItems = useMemo(
     () => catalogMenuItems.map(toLocationMenuItem),
     [catalogMenuItems],
   );
-  const [mode, setMode] = useState<RecommendationMode>("me");
 
   /*
    * IMPORTANT:
@@ -752,12 +755,6 @@ export default function LocationContent({
     };
   }, [filtersOpen]);
 
-  const handleModeChange = (nextMode: RecommendationMode) => {
-    setMode(nextMode);
-    setFiltersOpen(false);
-    setResultCount(0);
-  };
-
   const handleRefresh = () => {
     refreshLocation();
     void refetchStores();
@@ -840,20 +837,41 @@ export default function LocationContent({
     xl:block
   "
           >
-            {usesFoodFilters ? (
-              <LocationFilters
-                menuItems={menuItems}
-                filters={foodFilters}
-                onChange={setFoodFilters}
-              />
-            ) : (
-              <StoreFilters {...groupStoreFilterProps} />
-            )}
+            <AnimatePresence mode="popLayout" initial={false}>
+              {usesFoodFilters ? (
+                <motion.div
+                  key="food-filters"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <LocationFilters
+                    menuItems={menuItems}
+                    filters={foodFilters}
+                    onChange={setFoodFilters}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="store-filters"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <StoreFilters {...groupStoreFilterProps} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <main className="min-w-0 flex-1">
             <LocationHeader
               mode={mode}
+              onModeChange={onModeChange}
               storeCount={resultCount}
               radiusKm={selectedRadiusKm}
               locationStatus={headerLocationStatus}
@@ -861,7 +879,6 @@ export default function LocationContent({
               locationError={error}
               locationLabel={activeLocationLabel}
               isRefreshing={isRefreshing}
-              onModeChange={handleModeChange}
               onRefresh={handleRefresh}
               onOpenFilters={() => setFiltersOpen(true)}
               onUseCurrentLocation={handleUseCurrentLocation}
@@ -873,18 +890,24 @@ export default function LocationContent({
                 setLocationPickerTab("saved");
                 setLocationPickerOpen(true);
               }}
-            />
-
-            <div className="mt-6 pb-10">
-              {mode === "me" ? (
-                <>
-                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            >
+              <AnimatePresence initial={false}>
+                {mode === "me" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden space-y-4"
+                  >
+                    {/* Profile Selection */}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-lg font-bold text-primary-900 dark:text-white">
+                      <p className="text-[16px] font-bold text-primary-900 dark:text-white">
                         គណនីដែលកំពុងប្រើ
                       </p>
-                      <p className="mt-1 text-lg text-gray-500 dark:text-slate-400">
-                        ការណែនាំគិតបញ្ចូលអាឡែស៊ី និងរបបអាហាររបស់គណនីដែលបានជ្រើស
+                      <p className="mt-0.5 text-[15px] text-gray-500 dark:text-slate-400">
+                        ការណែនាំគិតបញ្ចូលអាឡែស៊ី និងរបបអាហារ
                       </p>
                     </div>
 
@@ -895,15 +918,15 @@ export default function LocationContent({
                       onSelectAll={handleSelectAllProfiles}
                       allSelected={allActiveProfilesSelected}
                       emptyLabel="ជ្រើសរើសគណនីគ្រួសារ"
-                      triggerClassName="flex min-h-12 items-center gap-2 rounded-full bg-primary-50 py-1.5 pl-2 pr-4 text-lg font-bold text-primary-800 transition hover:bg-primary-100 dark:bg-primary-950/40 dark:text-primary-300"
+                      triggerClassName="flex min-h-11 items-center gap-2 rounded-full border border-gray-200/80 bg-white py-1 pl-2 pr-4 text-[15px] font-bold text-gray-700 transition hover:bg-gray-50 hover:border-gray-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                     />
                   </div>
 
                   {/* Search Radius for "For Me" mode */}
-                  <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
-                    <div className="flex items-center justify-between text-lg font-bold text-primary-900 dark:text-slate-200">
-                      <span className="font-bold">កាំស្វែងរកហាង</span>
-                      <span className="text-primary-800 dark:text-emerald-400 font-bold">{singleRadiusKm} km</span>
+                  <div className="space-y-2 pt-2">
+                    <div className="flex items-center justify-between text-[15px] font-bold text-primary-900 dark:text-slate-200">
+                      <span>កាំស្វែងរកហាង</span>
+                      <span className="text-primary-800 dark:text-emerald-400">{singleRadiusKm} km</span>
                     </div>
                     <div className="grid grid-cols-5 gap-2">
                       {[1, 2, 3, 4, 5].map((r) => (
@@ -917,10 +940,10 @@ export default function LocationContent({
                               maximumDistanceKm: r,
                             }));
                           }}
-                          className={`rounded-xl py-2.5 text-lg font-bold transition ${
+                          className={`rounded-full py-2.5 text-[15px] font-bold transition ${
                             singleRadiusKm === r
-                              ? "bg-primary-800 text-white shadow-xs dark:bg-emerald-700"
-                              : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-300"
+                              ? "bg-primary-700 text-white shadow-sm dark:bg-emerald-600"
+                              : "bg-white border border-gray-200/80 text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:bg-gray-50 hover:border-gray-300 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
                           }`}
                         >
                           {r} km
@@ -928,37 +951,60 @@ export default function LocationContent({
                       ))}
                     </div>
                   </div>
-
-                  <SingleRecommendation
-                    /* Same runtime shape, declared against @/types/manu1. */
-                    menuItems={
-                      matchingFoods as unknown as ComponentProps<
-                        typeof SingleRecommendation
-                      >["menuItems"]
-                    }
-                    stores={foodStores}
-                    userLocation={coordinates}
-                    filters={singleLocationFilters}
-                    foodSort={foodFilters.sortBy}
-                    searchQuery={searchQuery}
-                    onOpenFilters={() => setFiltersOpen(true)}
-                    onResultCountChange={setResultCount}
-                    isLoading={isRecommendationSessionLoading || isEnriching}
-                  />
-                </>
-              ) : (
-                <GroupRecommendation
-                  meetupMode={mode === "single" ? "friends" : "guest"}
-                  menuItems={menuItems}
-                  stores={groupFilteredStores}
-                  userLocation={coordinates}
-                  filters={groupLocationFilters}
-                  searchQuery={searchQuery}
-                  onOpenFilters={() => setFiltersOpen(true)}
-                  onResultCountChange={setResultCount}
-                  onRadiusChange={setSelectedRadiusKm}
-                />
+                </motion.div>
               )}
+              </AnimatePresence>
+            </LocationHeader>
+
+            <div className="mt-6 pb-10 relative">
+              <AnimatePresence mode="popLayout" initial={false}>
+                {mode === "me" ? (
+                  <motion.div
+                    key="single-recommendation"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <SingleRecommendation
+                      /* Same runtime shape, declared against @/types/manu1. */
+                      menuItems={
+                        matchingFoods as unknown as ComponentProps<
+                          typeof SingleRecommendation
+                        >["menuItems"]
+                      }
+                      stores={foodStores}
+                      userLocation={coordinates}
+                      filters={singleLocationFilters}
+                      foodSort={foodFilters.sortBy}
+                      searchQuery={searchQuery}
+                      onOpenFilters={() => setFiltersOpen(true)}
+                      onResultCountChange={setResultCount}
+                      isLoading={isRecommendationSessionLoading || isEnriching}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="group-recommendation"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <GroupRecommendation
+                      meetupMode={mode === "single" ? "friends" : "guest"}
+                      menuItems={menuItems}
+                      stores={groupFilteredStores}
+                      userLocation={coordinates}
+                      filters={groupLocationFilters}
+                      searchQuery={searchQuery}
+                      onOpenFilters={() => setFiltersOpen(true)}
+                      onResultCountChange={setResultCount}
+                      onRadiusChange={setSelectedRadiusKm}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </main>
         </div>

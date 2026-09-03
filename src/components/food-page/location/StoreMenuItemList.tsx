@@ -49,7 +49,7 @@ export default function StoreMenuItemList({
 
   return (
     <div
-      className={`space-y-3.5 2xl:max-h-[calc(100dvh-220px)] 2xl:overflow-y-auto 2xl:pr-1.5 2xl:[scrollbar-width:none] 2xl:[&::-webkit-scrollbar]:hidden ${className}`}
+      className={`grid grid-cols-2 gap-3 sm:grid-cols-1 sm:gap-3.5 2xl:max-h-[calc(100dvh-220px)] 2xl:overflow-y-auto 2xl:pr-1.5 2xl:[scrollbar-width:none] 2xl:[&::-webkit-scrollbar]:hidden ${className}`}
     >
       {cards.map((card) => {
         const selected = selectedStoreId === card.storeUuid;
@@ -59,7 +59,7 @@ export default function StoreMenuItemList({
           <div
             key={card.key}
             onClick={() => onSelectStore(card.storeUuid)}
-            className={`group relative flex flex-col sm:flex-row items-start gap-3.5 rounded-[22px] border p-3.5 sm:p-4 text-left transition-all duration-200 cursor-pointer shadow-xs ${
+            className={`group relative flex flex-col sm:flex-row items-start gap-2.5 sm:gap-3.5 rounded-[22px] border p-2.5 sm:p-4 text-left transition-all duration-200 cursor-pointer shadow-xs ${
               selected
                 ? "border-primary-800 bg-primary-50/70 ring-2 ring-primary-700/40 shadow-md dark:border-emerald-500 dark:bg-emerald-950/40 dark:ring-emerald-500/40"
                 : "border-gray-100/90 bg-white hover:border-primary-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
