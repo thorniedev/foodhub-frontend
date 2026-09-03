@@ -480,6 +480,39 @@ async function forwardRequest(
         }
       }
 
+      // RESILIENT RECOVERY: If updating notification preferences hit 409 unique constraint race, retry once
+      if (
+        backendResponse.status === 409 &&
+        backendPath.startsWith("notification-preferences/") &&
+        request.method === "PUT"
+      ) {
+        console.warn(
+          "[FOODHUB PROXY RECOVERY] 409 Conflict on notification preference. Retrying after short delay...",
+        );
+        await new Promise((res) => setTimeout(res, 200));
+        const retryRes = await fetch(targetUrl, {
+          method: "PUT",
+          headers: requestHeaders,
+          body:
+            requestBody && requestBody.byteLength > 0
+              ? requestBody
+              : undefined,
+          cache: "no-store",
+        });
+
+        if (retryRes.ok) {
+          const retryBody = await retryRes.arrayBuffer();
+          const nextResponse = new NextResponse(retryBody, {
+            status: retryRes.status,
+            headers: retryRes.headers,
+          });
+          if (refreshedTokens) {
+            setAuthCookies(nextResponse, refreshedTokens);
+          }
+          return nextResponse;
+        }
+      }
+
       // RESILIENT RECOVERY: If backend catalog/menu-items hits broken entity in batch query
       if (backendPath === "catalog/menu-items" && request.method === "GET") {
         console.warn(

@@ -9,7 +9,7 @@ import { IoMdArrowBack, IoMdArrowForward, IoMdTime } from "react-icons/io";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart, FaStar, FaStore } from "react-icons/fa";
 import { MdDeliveryDining, MdSwipe } from "react-icons/md";
-import { Compass, Sparkles } from "lucide-react";
+import { Compass, Sparkles, User } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperInstance } from "swiper";
@@ -382,6 +382,13 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
   const reasonText = food.recommendation?.reasonText?.trim() || null;
   const isExploration = food.isExploration === true;
 
+  // Set only in GROUP mode, and only when one selected profile's own
+  // preference score for this item stood out from the rest — never a safety
+  // claim. Every item shown here already passed every selected profile's
+  // safety check, whether or not one is highlighted by name.
+  const bestMatchProfileName =
+    food.recommendation?.bestMatchProfileName?.trim() || null;
+
   return (
     <Link
       href={`/menu/${food.uuid}`}
@@ -414,7 +421,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           className="pointer-events-none h-full w-full object-cover"
         />
 
-        {(matchScore != null || isExploration) && (
+        {(matchScore != null || isExploration || bestMatchProfileName) && (
           <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
             {matchScore != null && (
               <span
@@ -422,6 +429,13 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
                 className="rounded-full bg-emerald-500/95 px-2.5 py-1 text-sm font-bold text-white shadow-sm"
               >
                 {matchScore}% Match
+              </span>
+            )}
+
+            {bestMatchProfileName && (
+              <span className="flex items-center gap-1 rounded-full bg-primary-800/95 px-2.5 py-1 text-sm font-bold text-white shadow-sm">
+                <User className="h-3.5 w-3.5" />
+                សម្រាប់ {bestMatchProfileName}
               </span>
             )}
 

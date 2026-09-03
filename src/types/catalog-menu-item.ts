@@ -353,6 +353,15 @@ export interface CatalogRecommendation {
   reasonText?: string | null;
   reasonCodes?: string[] | null;
   scoreBreakdown?: CatalogRecommendationScoreBreakdown | null;
+  /**
+   * Which profile in a GROUP session this item scored best for — a UI
+   * attribution label only. Null for SINGLE-mode sessions and for groups
+   * where no profile stood out; never implies the item is unsafe for anyone
+   * else in the group, since only items safe for every selected profile are
+   * ever recommended at all.
+   */
+  bestMatchProfileUuid?: string | null;
+  bestMatchProfileName?: string | null;
 }
 
 export interface CatalogOrigin {

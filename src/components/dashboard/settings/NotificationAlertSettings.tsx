@@ -137,10 +137,20 @@ export default function NotificationAlertSettings() {
         body: { isEnabled: nextEnabled },
       }).unwrap();
     } catch {
-      // Saving failed, so the switch must not keep showing the new position as
-      // though it had been stored. Dropping the pending value falls back to the
-      // server value, which is still the old one.
-      setFailedTypeId(typeId);
+      // In case of a temporary 409 unique constraint race on first toggle, retry once
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        await updatePreference({
+          notificationTypeId: typeId,
+          channelType: IN_APP_CHANNEL,
+          body: { isEnabled: nextEnabled },
+        }).unwrap();
+      } catch {
+        // Saving failed, so the switch must not keep showing the new position as
+        // though it had been stored. Dropping the pending value falls back to the
+        // server value, which is still the old one.
+        setFailedTypeId(typeId);
+      }
     } finally {
       setPending((current) => {
         const next = { ...current };
