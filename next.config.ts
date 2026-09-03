@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     "idealist-distrust-buffed.ngrok-free.dev",
   ],
   images: {
+    unoptimized: true,
     // Cache optimized images for 1 year (they are content-addressed by URL)
     minimumCacheTTL: 31536000,
     // Breakpoints that match the card grid (50vw → 33vw → 25vw)
