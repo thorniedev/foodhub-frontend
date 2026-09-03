@@ -230,6 +230,25 @@ export const menuApi = baseApi.injectEndpoints({
         return normalizeArrayPayload<MealTypeDto>(response);
       },
     }),
+
+    // =========================================================
+    // GET ALL FOOD CATALOG ITEMS (Master Foods)
+    // GET /api/v1/catalog/foods
+    // =========================================================
+    getFoodCatalogList: builder.query<FoodCatalogDetail[], void>({
+      query: () => ({
+        url: "/catalog/foods",
+        method: "GET",
+        params: {
+          page: 0,
+          size: 200,
+        },
+      }),
+      transformResponse: (response: unknown): FoodCatalogDetail[] => {
+        return normalizeArrayPayload<FoodCatalogDetail>(response);
+      },
+      providesTags: ["Food"],
+    }),
   }),
 
   overrideExisting: false,
@@ -239,5 +258,6 @@ export const {
   useGetMenuItemsQuery,
   useGetMenuItemByUuidQuery,
   useGetFoodCatalogByUuidQuery,
+  useGetFoodCatalogListQuery,
   useGetMealTypesQuery,
 } = menuApi;

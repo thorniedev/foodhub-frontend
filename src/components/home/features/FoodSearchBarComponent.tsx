@@ -2235,7 +2235,13 @@ import {
   IoChevronForwardOutline,
 } from "react-icons/io5";
 
-import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/app/store/store";
+import {
+  menuApi,
+  useGetFoodCatalogListQuery,
+  useGetMenuItemsQuery,
+} from "@/app/store/menuApi";
 import { useGetDiscoveryFiltersQuery } from "@/app/store/searchApi";
 import FoodCard from "@/components/dynamic-card/FoodCard";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
@@ -2949,6 +2955,59 @@ export default function FoodSearchBar() {
   } = useGetMenuItemsQuery();
 
   const { data: discoveryFilters } = useGetDiscoveryFiltersQuery();
+  const { data: foodCatalogList = [] } = useGetFoodCatalogListQuery();
+
+  const dispatch = useDispatch<AppDispatch>();
+  const [detailedItemsMap, setDetailedItemsMap] = useState<
+    Map<string, CatalogMenuItem>
+  >(new Map());
+
+  // Fetch full item detail using getMenuItemByUuid endpoint for all menu items
+  useEffect(() => {
+    if (!menuItems || menuItems.length === 0) return;
+    let cancelled = false;
+
+    Promise.all(
+      menuItems.map((item) =>
+        dispatch(menuApi.endpoints.getMenuItemByUuid.initiate(item.uuid))
+          .unwrap()
+          .then((detail) => ({ uuid: item.uuid, detail }))
+          .catch(() => ({ uuid: item.uuid, detail: item })),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      const map = new Map<string, CatalogMenuItem>();
+      results.forEach((r) => {
+        if (r.detail) map.set(r.uuid, r.detail);
+      });
+      setDetailedItemsMap(map);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [menuItems, dispatch]);
+
+  // Combine menuItems with full detail data from getMenuItemByUuid
+  const activeMenuItems = useMemo(() => {
+    if (detailedItemsMap.size === 0) return menuItems;
+    return menuItems.map((item) => {
+      const detail = detailedItemsMap.get(item.uuid);
+      if (!detail) return item;
+      return {
+        ...item,
+        ...detail,
+        food: {
+          ...(item.food ?? {}),
+          ...(detail.food ?? {}),
+        },
+        store: {
+          ...(item.store ?? {}),
+          ...(detail.store ?? {}),
+        },
+      };
+    });
+  }, [menuItems, detailedItemsMap]);
 
   /* =======================================================
      DESKTOP CLICK OUTSIDE
@@ -2991,8 +3050,12 @@ export default function FoodSearchBar() {
   ======================================================= */
 
   const chipGroups = useMemo<ChipGroup[]>(() => {
+    const foodCatalogMap = new Map(
+      (foodCatalogList || []).map((f) => [f.uuid, f]),
+    );
+
     const categories = getUniqueOptions(
-      menuItems.flatMap((item) => {
+      activeMenuItems.flatMap((item) => {
         const category = getCategory(item);
 
         return category ? [category] : [];
@@ -3000,7 +3063,7 @@ export default function FoodSearchBar() {
     );
 
     const cuisines = getUniqueOptions(
-      menuItems.flatMap((item) => {
+      activeMenuItems.flatMap((item) => {
         const cuisine = getCuisine(item);
 
         return cuisine ? [cuisine] : [];
@@ -3011,12 +3074,28 @@ export default function FoodSearchBar() {
       return !name.includes("ថៃ") && !code.includes("thai");
     });
 
-    const dietaryTypes = getUniqueOptions(
-      menuItems.flatMap((item) => getDietaryOptions(item)),
-    );
+    const itemDietary = activeMenuItems.flatMap((item) => {
+      const masterFood = item.food?.uuid ? foodCatalogMap.get(item.food.uuid) : null;
+      const rootDiets = Array.isArray((item as any).dietaryTypes)
+        ? ((item as any).dietaryTypes as Array<{ code?: string; name?: string }>).map((d) => ({
+            code: d.code || d.name || "",
+            name: d.name || d.code || "",
+          }))
+        : [];
+      return [
+        ...rootDiets,
+        ...getDietaryOptions(item),
+        ...(masterFood?.dietaryTypes || []).map((d) => ({
+          code: d.code,
+          name: d.name,
+        })),
+      ];
+    });
+
+    const dietaryTypes = getUniqueOptions(itemDietary);
 
     const rawAgeGroups = getUniqueOptions(
-      menuItems.flatMap((item) => getAgeGroups(item)),
+      activeMenuItems.flatMap((item) => getAgeGroups(item)),
     );
 
     const hasInfant = rawAgeGroups.some(
@@ -3065,7 +3144,7 @@ export default function FoodSearchBar() {
     ];
 
     return groups.filter((group) => group.options.length > 0);
-  }, [menuItems, discoveryFilters]);
+  }, [activeMenuItems, discoveryFilters, foodCatalogList]);
 
   /* =======================================================
      SELECTION HELPERS
@@ -3141,12 +3220,43 @@ export default function FoodSearchBar() {
   ======================================================= */
 
   const filteredFoods = useMemo(() => {
-    const result = menuItems.filter((food) => {
+    const foodCatalogMap = new Map(
+      (foodCatalogList || []).map((f) => [f.uuid, f]),
+    );
+
+    const result = activeMenuItems.filter((food) => {
       const category = getCategory(food);
 
       const cuisine = getCuisine(food);
 
-      const dietaryTypes = getDietaryOptions(food);
+      const masterFood = food.food?.uuid
+        ? foodCatalogMap.get(food.food.uuid)
+        : null;
+
+      const rootDiets = Array.isArray((food as any).dietaryTypes)
+        ? ((food as any).dietaryTypes as Array<{ code?: string; name?: string }>).map((d) => ({
+            code: d.code || d.name || "",
+            name: d.name || d.code || "",
+          }))
+        : [];
+
+      const itemDietary = getDietaryOptions(food);
+      const masterDietary = (masterFood?.dietaryTypes || []).map((d) => ({
+        code: d.code,
+        name: d.name,
+      }));
+
+      const allDietaryOptions = getUniqueOptions([
+        ...rootDiets,
+        ...itemDietary,
+        ...masterDietary,
+      ]);
+
+      const dietaryCodes = new Set<string>();
+      allDietaryOptions.forEach((d) => {
+        if (d.code) dietaryCodes.add(d.code);
+        if (d.name) dietaryCodes.add(d.name);
+      });
 
       const ageGroups = getAgeGroups(food);
 
@@ -3162,10 +3272,17 @@ export default function FoodSearchBar() {
         groupedSelected.cuisine,
       );
 
-      const matchesDietary = hasSelectedValue(
-        dietaryTypes.map((diet) => diet.code),
-        groupedSelected.dietary,
-      );
+      const matchesDietary =
+        groupedSelected.dietary.size === 0 ||
+        [...groupedSelected.dietary].some(
+          (selectedCode) =>
+            dietaryCodes.has(selectedCode) ||
+            allDietaryOptions.some(
+              (d) =>
+                normalizeText(d.code) === normalizeText(selectedCode) ||
+                normalizeText(d.name) === normalizeText(selectedCode),
+            ),
+        );
 
       const matchesAge = matchesAgeGroup(
         getAgeGroups(food),
@@ -3197,7 +3314,7 @@ export default function FoodSearchBar() {
     });
 
     return sortFoods(result, sortBy);
-  }, [menuItems, searchInput, groupedSelected, sortBy]);
+  }, [activeMenuItems, searchInput, groupedSelected, sortBy, foodCatalogList]);
 
   const totalPages = Math.ceil(filteredFoods.length / ITEMS_PER_PAGE) || 1;
 
