@@ -42,7 +42,7 @@
     "react-leaflet": "^5.0.0",
     "react-redux": "^9.3.0",
     "shadcn": "^4.13.1",
-    "sharp": "^0.33.5",
+    "sharp": "^0.34.5",
     "swiper": "^14.0.6",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4",
