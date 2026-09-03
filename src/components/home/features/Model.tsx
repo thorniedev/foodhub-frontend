@@ -23,6 +23,11 @@ import {
   useRecommendationProfileSelection,
 } from "@/hooks/useRecommendationProfileSelection";
 import { useEnrichedRecommendationItems } from "@/hooks/useEnrichedRecommendationItems";
+import {
+  isDrinkItem,
+  isFoodItem,
+  type CategoryFilterType,
+} from "@/lib/category-filter";
 
 import SwipeCardTinderStyle from "./SwipeCardTinderStyle";
 import SpinFood from "./SpinFood";
@@ -85,6 +90,7 @@ export default function Model() {
     useCreateRecommendationSessionMutation();
 
   const [prompt, setPrompt] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>("ALL");
   const hasAutoTriggeredRef = useRef(false);
   // Synchronous in-flight lock for createSession. See runRecommendation.
   const sessionInFlightRef = useRef(false);
@@ -122,8 +128,10 @@ export default function Model() {
   const runRecommendation = (
     promptText?: string,
     targetProfilesOverride?: MemberProfile[],
+    categoryFilterOverride?: CategoryFilterType,
   ) => {
     const targets = targetProfilesOverride ?? targetProfiles;
+    const cat = categoryFilterOverride ?? categoryFilter;
     // isSessionLoading alone cannot prevent a duplicate: it is React state
     // and only becomes true on a later render, so two calls in the same tick
     // (an effect plus a click, or a double click) both read it as false and
@@ -149,6 +157,7 @@ export default function Model() {
         requestedLimit: 15,
         searchRadiusKm: 3,
         currencyCode: "USD",
+        rootCategoryCode: cat === "ALL" ? undefined : cat,
         contextData: promptText ? { userPrompt: promptText } : undefined,
         profiles: targets.map((profile, index) => ({
           profileId: profile.uuid,
@@ -158,6 +167,12 @@ export default function Model() {
     ).finally(() => {
       sessionInFlightRef.current = false;
     });
+  };
+
+  const handleCategoryChange = (newCat: CategoryFilterType) => {
+    if (newCat === categoryFilter) return;
+    setCategoryFilter(newCat);
+    runRecommendation(prompt.trim() || undefined, targetProfiles, newCat);
   };
 
   const handlePromptSubmit = (event: React.FormEvent) => {
@@ -208,6 +223,33 @@ export default function Model() {
   const { enrichedItems: enrichedSwipeFoods, isEnriching } =
     useEnrichedRecommendationItems(session, sessionItems);
 
+  const displayedFoods = useMemo(() => {
+    if (categoryFilter === "FOOD") {
+      return enrichedSwipeFoods.filter((f) => isFoodItem(f));
+    }
+    if (categoryFilter === "DRINK") {
+      return enrichedSwipeFoods.filter((f) => isDrinkItem(f));
+    }
+    return enrichedSwipeFoods;
+  }, [enrichedSwipeFoods, categoryFilter]);
+
+  const categoryCounts = useMemo(() => {
+    let foodCount = 0;
+    let drinkCount = 0;
+    for (const f of enrichedSwipeFoods) {
+      if (isDrinkItem(f)) {
+        drinkCount++;
+      } else {
+        foodCount++;
+      }
+    }
+    return {
+      ALL: enrichedSwipeFoods.length,
+      FOOD: foodCount,
+      DRINK: drinkCount,
+    };
+  }, [enrichedSwipeFoods]);
+
   const activeTabInformation =
     MODAL_TABS.find((tab) => tab.id === activeTab) ?? MODAL_TABS[0];
 
@@ -252,7 +294,7 @@ export default function Model() {
     if (activeTab === "spin") {
       return (
         <SpinFood
-          foods={enrichedSwipeFoods}
+          foods={displayedFoods}
           isLoading={isSessionLoading || isEnriching}
         />
       );
@@ -266,7 +308,7 @@ export default function Model() {
           onSubmit={handlePromptSubmit}
           isLoading={isSessionLoading}
           error={sessionError}
-          items={enrichedSwipeFoods}
+          items={displayedFoods}
           canRecommend={canRecommend}
           isLoadingProfiles={isLoadingProfiles}
           targetProfiles={targetProfiles}
@@ -385,7 +427,7 @@ export default function Model() {
         );
       }
 
-      if (session && enrichedSwipeFoods.length === 0) {
+      if (session && displayedFoods.length === 0) {
         return (
           <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 px-6 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-50">
@@ -393,13 +435,17 @@ export default function Model() {
             </div>
 
             <p className="text-[20px] font-semibold text-primary-900">
-              រកមិនឃើញម្ហូបដែលត្រូវគ្នាទេ
+              {categoryFilter === "DRINK"
+                ? "រកមិនឃើញភេសជ្ជៈដែលត្រូវគ្នាទេ"
+                : categoryFilter === "FOOD"
+                ? "រកមិនឃើញមុខម្ហូបដែលត្រូវគ្នាទេ"
+                : "រកមិនឃើញម្ហូបដែលត្រូវគ្នាទេ"}
             </p>
 
             <p className="max-w-[350px] text-[16px] leading-7 text-gray-500">
-              គ្មានមុខម្ហូបណាត្រូវនឹងលក្ខខណ្ឌសុវត្ថិភាព អាឡែហ្ស៊ី ឬរបបអាហាររបស់អ្នកទេ។
-              សូមសាកល្បងជ្រើសរើសប្រវត្តិរូបតែម្នាក់ជំនួសឱ្យទាំងអស់គ្នា ឬកែប្រែពាក្យសុំ
-              និងការកំណត់សុវត្ថិភាពប្រវត្តិរូប។
+              {categoryFilter === "DRINK"
+                ? "មិនទាន់មានភេសជ្ជៈណាត្រូវនឹងលក្ខខណ្ឌសុវត្ថិភាព ឬចំណូលចិត្តរបស់អ្នកទេ។ សូមសាកល្បងជ្រើសរើសប្រភេទផ្សេង ឬចុចព្យាយាមម្តងទៀត។"
+                : "គ្មានមុខម្ហូបណាត្រូវនឹងលក្ខខណ្ឌសុវត្ថិភាព អាឡែហ្ស៊ី ឬរបបអាហាររបស់អ្នកទេ។ សូមសាកល្បងជ្រើសរើសប្រវត្តិរូបតែម្នាក់ជំនួសឱ្យទាំងអស់គ្នា ឬកែប្រែពាក្យសុំ និងការកំណត់សុវត្ថិភាពប្រវត្តិរូប។"}
             </p>
 
             <button
@@ -414,7 +460,7 @@ export default function Model() {
         );
       }
 
-      if (enrichedSwipeFoods.length === 0) {
+      if (displayedFoods.length === 0) {
         // Session hasn't been created yet (e.g. the auto-trigger effect
         // hasn't fired on this render). Keep this brief — the effect above
         // runs immediately once canRecommend/targetProfiles are ready.
@@ -425,7 +471,7 @@ export default function Model() {
         );
       }
 
-      return <SwipeCardTinderStyle foods={enrichedSwipeFoods} />;
+      return <SwipeCardTinderStyle foods={displayedFoods} />;
     })();
 
     return (
@@ -893,6 +939,65 @@ export default function Model() {
                           </motion.button>
                         );
                       })}
+                    </div>
+                  </div>
+
+                  {/* Category Filter Bar (All / Food / Drink) */}
+                  <div className="flex items-center justify-between border-b border-gray-200 bg-white/95 px-4 py-2 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+                    <span className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">
+                      តម្រងប្រភេទ៖
+                    </span>
+                    <div className="inline-flex items-center rounded-xl bg-gray-100 p-1 dark:bg-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => handleCategoryChange("ALL")}
+                        className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                          categoryFilter === "ALL"
+                            ? "bg-primary-800 text-white shadow-sm"
+                            : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                        }`}
+                      >
+                        <span>✨ ទាំងអស់</span>
+                        {categoryCounts.ALL > 0 && (
+                          <span className="text-[11px] opacity-80">
+                            ({categoryCounts.ALL})
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCategoryChange("FOOD")}
+                        className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                          categoryFilter === "FOOD"
+                            ? "bg-primary-800 text-white shadow-sm"
+                            : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                        }`}
+                      >
+                        <span>🍲 ម្ហូប</span>
+                        {categoryCounts.FOOD > 0 && (
+                          <span className="text-[11px] opacity-80">
+                            ({categoryCounts.FOOD})
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCategoryChange("DRINK")}
+                        className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                          categoryFilter === "DRINK"
+                            ? "bg-primary-800 text-white shadow-sm"
+                            : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                        }`}
+                      >
+                        <span>🥤 ភេសជ្ជៈ</span>
+                        {categoryCounts.DRINK > 0 && (
+                          <span className="text-[11px] opacity-80">
+                            ({categoryCounts.DRINK})
+                          </span>
+                        )}
+                      </button>
                     </div>
                   </div>
 

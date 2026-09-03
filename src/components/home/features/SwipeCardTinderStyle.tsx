@@ -99,6 +99,13 @@ export default function SwipeCardTinderStyle({
   const safeFoods = Array.isArray(foods) ? foods : [];
   const total = safeFoods.length;
 
+  useEffect(() => {
+    setActiveIndex(0);
+    if (swiperRef.current && !swiperRef.current.destroyed) {
+      swiperRef.current.slideTo(0);
+    }
+  }, [foods]);
+
   const markInteracted = () => {
     setPulseKey((current) => current + 1);
   };

@@ -14,6 +14,12 @@ export const DRINK_KEYWORDS = [
   "shake",
   "boba",
   "frappe",
+  "latte",
+  "cappuccino",
+  "espresso",
+  "americano",
+  "mocha",
+  "matcha",
   "ភេសជ្ជៈ",
   "កាហ្វេ",
   "តែ",
@@ -23,6 +29,17 @@ export const DRINK_KEYWORDS = [
   "ទឹកសុទ្ធ",
   "ទឹកក្រូច",
   "ដោះគោ",
+  "សូដា",
+  "ស្រាបៀរ",
+  "ស្រា",
+  "ទឹកដូង",
+  "ទឹកអំពៅ",
+  "ទឹកតែ",
+  "ស្ម៊ូតធី",
+  "ឡាតេ",
+  "កាពូឈីណូ",
+  "ម៉ាចា",
+  "ផាសិន",
 ];
 
 export function isDrinkCategory(cat: {
@@ -73,3 +90,32 @@ export function isFoodCategory(cat: {
 }
 
 export type CategoryFilterType = "ALL" | "FOOD" | "DRINK";
+
+export function isDrinkItem(item: {
+  name?: string | null;
+  localName?: string | null;
+  food?: {
+    category?: { code?: string; name?: string; type?: string } | null;
+    cuisine?: { code?: string; name?: string } | null;
+  } | null;
+  category?: { code?: string; name?: string; type?: string } | null;
+  rootCategoryCode?: string | null;
+}): boolean {
+  if (!item) return false;
+  if (item.rootCategoryCode === "DRINK") return true;
+  if (item.rootCategoryCode === "FOOD") return false;
+
+  if (item.food?.category && isDrinkCategory(item.food.category)) {
+    return true;
+  }
+  if (item.category && isDrinkCategory(item.category)) {
+    return true;
+  }
+
+  const combined = `${item.name || ""} ${item.localName || ""}`.toLowerCase();
+  return DRINK_KEYWORDS.some((kw) => combined.includes(kw.toLowerCase()));
+}
+
+export function isFoodItem(item: Parameters<typeof isDrinkItem>[0]): boolean {
+  return !isDrinkItem(item);
+}
