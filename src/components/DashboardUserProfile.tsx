@@ -115,7 +115,6 @@ export default function DashboardUserProfile({
     isError,
     refetch,
   } = useGetCurrentUserQuery();
-  console.log("current user data ,", user);
   const [updateCurrentUser, { isLoading: isUpdating }] =
     useUpdateCurrentUserMutation();
 

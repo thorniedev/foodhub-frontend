@@ -98,10 +98,6 @@ export default function RecommandSection({
     isError,
     error,
   } = useGetFoodsQuery();
-  console.log(recommendedFoods);
-  if (error) {
-    console.log("RTK Query error:", JSON.stringify(error, null, 2));
-  }
 
   const filteredFoods = useMemo(
     () =>
