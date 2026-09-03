@@ -1490,6 +1490,34 @@ function FilterSidebar({
     });
   }, [filterOptions?.cuisines, menuItems]);
 
+  const dietaryTypes = useMemo(() => {
+    const rawList = menuItems.flatMap((item) => {
+      if (!Array.isArray(item.food?.dietaryTypes)) return [];
+      return item.food.dietaryTypes.flatMap((dietary) => {
+        if (!dietary?.code || !dietary?.name) return [];
+        return [
+          {
+            code: dietary.code,
+            name: dietary.name,
+            uuid: dietary.code,
+          },
+        ];
+      });
+    });
+
+    const optionMap = new Map<string, { code: string; name: string; uuid: string }>();
+    rawList.forEach((item) => {
+      const key = normalizeText(item.code);
+      if (!optionMap.has(key)) {
+        optionMap.set(key, item);
+      }
+    });
+
+    return Array.from(optionMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+  }, [menuItems]);
+
   return (
     <motion.aside
       initial={false}
@@ -1777,33 +1805,33 @@ function FilterSidebar({
             )}
 
             {/* DIETARY TYPES */}
-            {filterOptions?.dietaryTypes &&
-              filterOptions.dietaryTypes.length > 0 && (
-                <FilterSection
-                  title="របបអាហារ"
-                  icon={<IoNutritionOutline />}
-                  isOpen={openSections.dietary}
-                  onToggle={() => toggleSection("dietary")}
-                >
-                  <CollapsibleList
-                    items={filterOptions.dietaryTypes}
-                    renderItem={(d) => (
-                      <PillOption
-                        key={d.uuid}
-                        label={d.name}
-                        checked={Boolean(
-                          customerSearchRequest.dietaryTypeUuids?.includes(
-                            d.uuid,
-                          ),
-                        )}
-                        onChange={() =>
-                          toggleArrayItem("dietaryTypeUuids", d.uuid)
-                        }
-                      />
-                    )}
-                  />
-                </FilterSection>
-              )}
+            {dietaryTypes.length > 0 && (
+              <FilterSection
+                title="របបអាហារ"
+                icon={<IoNutritionOutline />}
+                isOpen={openSections.dietary}
+                onToggle={() => toggleSection("dietary")}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {dietaryTypes.map((d) => (
+                    <PillOption
+                      key={d.code}
+                      label={d.name}
+                      checked={Boolean(
+                        customerSearchRequest.dietaryTypeUuids?.some(
+                          (u) =>
+                            normalizeText(u) === normalizeText(d.code) ||
+                            normalizeText(u) === normalizeText(d.name),
+                        ),
+                      )}
+                      onChange={() =>
+                        toggleArrayItem("dietaryTypeUuids", d.code)
+                      }
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+            )}
 
             {/* ALLERGEN EXCLUSIONS */}
             {filterOptions?.allergens && filterOptions.allergens.length > 0 && (
