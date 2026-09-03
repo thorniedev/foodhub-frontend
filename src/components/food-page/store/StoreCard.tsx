@@ -129,6 +129,7 @@ export function StoreImage({ store }: { store: FoodStore }) {
       src={imageUrl}
       alt={`${displayName} store logo`}
       fill
+      unoptimized
       sizes="(max-width: 640px) 100px, 140px"
       draggable={false}
       onError={() => setImageFailed(true)}

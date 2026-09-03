@@ -121,6 +121,7 @@ export default function DashboardUserProfile({
   /* Upload & update avatar */
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const [uploadMedia, { isLoading: isUploadingAvatar }] =
     useUploadMediaMutation();
   const [updateMemberProfile, { isLoading: isUpdatingProfile }] =
@@ -142,7 +143,7 @@ export default function DashboardUserProfile({
 
   /* Use fetched CDN URL, falling back to the avatarUrl prop */
   const resolvedAvatarUrl =
-    avatarPreviewUrl || avatarAccessUrlData?.url || avatarUrl || null;
+    !avatarFailed && (avatarPreviewUrl || avatarAccessUrlData?.url || avatarUrl || null);
 
   const handleAvatarChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -343,6 +344,8 @@ export default function DashboardUserProfile({
                 alt={userName}
                 width={40}
                 height={40}
+                unoptimized
+                onError={() => setAvatarFailed(true)}
                 className="h-10 w-10 rounded-full border border-slate-200 object-cover"
               />
             ) : (
@@ -389,6 +392,8 @@ export default function DashboardUserProfile({
                 alt={userName}
                 width={48}
                 height={48}
+                unoptimized
+                onError={() => setAvatarFailed(true)}
                 className="h-12 w-12 rounded-full object-cover"
               />
             ) : (
@@ -494,6 +499,8 @@ export default function DashboardUserProfile({
                     src={resolvedAvatarUrl}
                     alt={userName}
                     fill
+                    unoptimized
+                    onError={() => setAvatarFailed(true)}
                     className="object-cover"
                     sizes="64px"
                   />

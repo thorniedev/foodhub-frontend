@@ -212,6 +212,7 @@ function StoreMediaImage({
       src={imageUrl}
       alt={alt}
       fill
+      unoptimized
       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 1200px"
       draggable={false}
       onError={() => setFailed(true)}

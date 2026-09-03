@@ -291,6 +291,7 @@ export default function FoodCard({
             alt={displayName}
             width={485}
             height={370}
+            unoptimized={typeof thumbnailUrl === "string" && thumbnailUrl.startsWith("http")}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             draggable={false}
             onError={() => {
