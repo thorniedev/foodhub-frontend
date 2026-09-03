@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 const SLATS = 6;
-const MIN_MS = 1600; // minimum time the loader stays up
+const MIN_MS = 0; // immediate release as soon as page assets are ready
 const ONCE_PER_SESSION = true;
 
 export default function Preloader({
@@ -32,12 +32,11 @@ export default function Preloader({
     if (!mounted || !visible) return;
 
     document.body.style.overflow = "hidden";
-    const started = performance.now();
     let raf = 0;
 
     const tick = () => {
       setPct((p) => {
-        const next = p + (target.current - p) * 0.07;
+        const next = p + (target.current - p) * 0.15;
         return target.current - next < 0.2 ? target.current : next;
       });
       raf = requestAnimationFrame(tick);
@@ -45,15 +44,15 @@ export default function Preloader({
     raf = requestAnimationFrame(tick);
 
     const finish = () => {
-      const wait = Math.max(0, MIN_MS - (performance.now() - started));
-      window.setTimeout(() => {
-        target.current = 100;
-        window.setTimeout(() => {
-          setVisible(false);
-          sessionStorage.setItem("foodhub:loaded", "1");
-          window.dispatchEvent(new CustomEvent("foodhub:reveal"));
-        }, 500);
-      }, wait);
+      target.current = 100;
+      setVisible(false);
+      document.body.style.overflow = "";
+      try {
+        sessionStorage.setItem("foodhub:loaded", "1");
+      } catch {
+        // ignore storage errors
+      }
+      window.dispatchEvent(new CustomEvent("foodhub:reveal"));
     };
 
     const ready = Promise.all([

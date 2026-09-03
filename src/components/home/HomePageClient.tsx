@@ -1,33 +1,29 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
-import EventSection from "@/components/home/event";
-import FitFoodSection from "@/components/home/fitfood";
-import LocationSection from "@/components/home/location";
-import MealsByAgeSection from "@/components/home/age";
-import SeasonSection from "@/components/home/season";
-
-import FilterByMealTime from "@/components/home/features/FilterByMealTime";
-import FoodSearchBar from "@/components/home/features/FoodSearchBarComponent";
-import Model from "@/components/home/features/Model";
+import dynamic from "next/dynamic";
 
 import Hero from "@/components/home/Hero";
-import LocationPermissionModal from "@/components/LocationPermissionModal";
-import NearbyStoreVoiceAlert from "@/components/home/NearbyStoreVoiceAlert";
+import MealTimeJourneySection from "@/components/MealTimeJourneySection";
+
+const PopularSection = dynamic(() => import("@/components/home/popular"), {
+  loading: () => <div className="min-h-[300px] animate-pulse rounded-2xl bg-slate-50/50" />,
+});
+const FilterByMealTime = dynamic(() => import("@/components/home/features/FilterByMealTime"));
+const FoodSearchBar = dynamic(() => import("@/components/home/features/FoodSearchBarComponent"));
+const SeasonSection = dynamic(() => import("@/components/home/season"));
+const EventSection = dynamic(() => import("@/components/home/event"));
+const LocationSection = dynamic(() => import("@/components/home/location"), {
+  loading: () => <div className="min-h-[400px] animate-pulse rounded-2xl bg-slate-50/50" />,
+});
+const MealsByAgeSection = dynamic(() => import("@/components/home/age"));
+const FitFoodSection = dynamic(() => import("@/components/home/fitfood"));
 
 import { useGetStoresQuery } from "@/app/store/locationApi";
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useUserLocation } from "@/hooks/useUserLocation";
 
 import type { VoiceAlertStore } from "@/hooks/useNearbyStoreVoiceAlert";
-import PopularSection from "@/components/home/popular";
-import RegionFlightSection from "@/components/home/RegionFlightSection";
-import MealTimeJourneySection from "@/components/MealTimeJourneySection";
-import FlavorIndexSection from "@/components/Flavorindexsection";
-
-import ZoomThroughSection from "@/components/Zoomthroughsection";
-import BrushRevealSection from "@/components/Brushrevealsection ";
 
 type StoreVoiceSource = {
   uuid?: string;

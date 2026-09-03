@@ -188,7 +188,7 @@
 //   clearLoginCookies(response);
 // }
 
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "crypto";
 import type { NextResponse } from "next/server";
 
 export const AUTH_COOKIES = {

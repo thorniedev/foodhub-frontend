@@ -362,9 +362,20 @@ async function forwardRequest(
       responseHeaders.set("Location", location);
     }
 
+    const isStaticAsset =
+      backendPath.startsWith("media/") ||
+      backendPath.includes("/images/") ||
+      backendPath.startsWith("banners") ||
+      Boolean(responseContentType?.startsWith("image/"));
+
     const cacheControl = backendResponse.headers.get("cache-control");
     if (cacheControl) {
       responseHeaders.set("Cache-Control", cacheControl);
+    } else if (isStaticAsset && backendResponse.ok) {
+      responseHeaders.set(
+        "Cache-Control",
+        "public, max-age=31536000, immutable",
+      );
     }
 
     console.log("[FOODHUB PROXY RESPONSE]", {
