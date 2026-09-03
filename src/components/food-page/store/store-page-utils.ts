@@ -393,7 +393,7 @@ export async function resolveStoreMediaUrl(
       });
     }
 
-    return null;
+    return `/api/media/${encodeURIComponent(uuid)}/file`;
   } catch (error) {
     console.warn("[STORE MEDIA] Could not resolve store media", {
       uuid,
@@ -401,6 +401,6 @@ export async function resolveStoreMediaUrl(
       error: error instanceof Error ? error.message : String(error),
     });
 
-    return null;
+    return `/api/media/${encodeURIComponent(uuid)}/file`;
   }
 }
