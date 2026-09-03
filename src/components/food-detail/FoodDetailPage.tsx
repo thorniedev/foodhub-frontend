@@ -1444,6 +1444,8 @@ import {
 } from "@/app/store/menuApi";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useTrackInteraction } from "@/hooks/useTrackInteraction";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
@@ -1520,9 +1522,13 @@ function formatPrice(value: number, currencyCode: string) {
   }
 }
 
-function formatDistance(value: number | null) {
+function formatDistance(value: number | null | undefined) {
   if (!isFiniteNumber(value)) {
     return "N/A";
+  }
+
+  if (value < 1) {
+    return `${Math.round(value * 1000)} m`;
   }
 
   return `${value.toFixed(1)} km`;
@@ -1860,6 +1866,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     activeProfileUuid,
   } = useBookmarks();
   const { track } = useTrackInteraction();
+  const { coordinates: userCoordinates } = useUserLocation();
 
   const [activeImage, setActiveImage] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -2019,14 +2026,40 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
       ? Math.round(recommendation.finalScore * 100)
       : null;
 
-  const locationUrl = `https://www.google.com/maps?q=${food.store.latitude},${food.store.longitude}`;
+  const locationUrl =
+    food.store.latitude && food.store.longitude
+      ? `https://www.google.com/maps/dir/?api=1&destination=${food.store.latitude},${food.store.longitude}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+          storeAddress || storeDisplayName
+        )}`;
+
+  let computedDistanceKm: number | null = food.distanceKm ?? null;
+
+  if (
+    userCoordinates &&
+    food.store?.latitude !== undefined &&
+    food.store?.latitude !== null &&
+    food.store?.longitude !== undefined &&
+    food.store?.longitude !== null
+  ) {
+    const storeCoordinates = {
+      latitude: Number(food.store.latitude),
+      longitude: Number(food.store.longitude),
+    };
+
+    if (isValidCoordinates(storeCoordinates)) {
+      computedDistanceKm = calculateDistanceKm(
+        userCoordinates,
+        storeCoordinates,
+      );
+    }
+  }
 
   const pairingLabels = (food.beveragePairings ?? []).map(getUnknownLabel);
   const allergenLabels = (food.allergenDeclarations ?? []).map(getUnknownLabel);
 
   const isAvailable = food.availabilityStatus === "AVAILABLE";
   const isStoreOpen = food.store.operatingStatus === "OPEN";
-  const averageRating = Number(food.store.averageRating ?? 0);
 
   const calories =
     food.nutrition?.calories !== undefined &&
@@ -2285,7 +2318,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               <StatTile
                 icon={<MdDeliveryDining />}
-                value={formatDistance(food.distanceKm)}
+                value={formatDistance(computedDistanceKm)}
                 label="ចម្ងាយ"
               />
 
@@ -2453,26 +2486,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </div>
               </div>
 
-              {/* Rating + reviews + link */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3">
-                  <FaStar className="text-xl text-secondary-500" />
-
-                  <div>
-                    <p className={TEXT_VALUE}>{averageRating.toFixed(1)}</p>
-                    <p className={TEXT_LABEL}>ការវាយតម្លៃ</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3">
-                  <FaStore className="text-xl text-primary-700" />
-
-                  <div>
-                    <p className={TEXT_VALUE}>{food.store.totalReviews ?? 0}</p>
-                    <p className={TEXT_LABEL}>មតិយោបល់</p>
-                  </div>
-                </div>
-
+              {/* Store link */}
+              <div className="flex items-center">
                 <span
                   className={`flex items-center gap-1 font-semibold text-primary-700 transition group-hover:translate-x-1 ${TEXT_BODY}`}
                 >

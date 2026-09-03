@@ -478,6 +478,7 @@ import { CiHeart } from "react-icons/ci";
 import {
   FaClock,
   FaHeart,
+  FaLocationArrow,
   FaMotorcycle,
   FaStar,
   FaStore,
@@ -598,23 +599,34 @@ export default function FoodCard({ food }: FoodCardProps) {
   let travelTimeMin: number | null = null;
   let computedDistanceKm: number | null = food.distanceKm ?? null;
 
-  if (userCoordinates && food.store?.latitude && food.store?.longitude) {
+  if (
+    userCoordinates &&
+    food.store?.latitude !== undefined &&
+    food.store?.latitude !== null &&
+    food.store?.longitude !== undefined &&
+    food.store?.longitude !== null
+  ) {
     const storeCoordinates = {
-      latitude: food.store.latitude,
-      longitude: food.store.longitude,
+      latitude: Number(food.store.latitude),
+      longitude: Number(food.store.longitude),
     };
     if (isValidCoordinates(storeCoordinates)) {
-      if (computedDistanceKm === null) {
-        computedDistanceKm = calculateDistanceKm(
-          userCoordinates,
-          storeCoordinates,
-        );
-      }
+      computedDistanceKm = calculateDistanceKm(
+        userCoordinates,
+        storeCoordinates,
+      );
 
       // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
       travelTimeMin = Math.ceil(computedDistanceKm * 2 + 5);
     }
   }
+
+  const formattedDistance =
+    computedDistanceKm !== null && Number.isFinite(computedDistanceKm)
+      ? computedDistanceKm < 1
+        ? `${Math.round(computedDistanceKm * 1000)} m`
+        : `${computedDistanceKm.toFixed(1)} km`
+      : null;
 
   const itemUuid =
     food.uuid ||
@@ -1011,6 +1023,14 @@ export default function FoodCard({ food }: FoodCardProps) {
                 <span className="mt-1">{food.preparationTimeMinutes} min</span>
               </div>
             ) : null}
+
+            {formattedDistance && (
+              <div className="flex items-center gap-1.5 text-primary-400">
+                <FaLocationArrow className="text-xs" />
+
+                <span>{formattedDistance}</span>
+              </div>
+            )}
           </div>
 
           {/* ======================================
