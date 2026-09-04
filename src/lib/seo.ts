@@ -305,11 +305,17 @@ export async function fetchStoreForSeo(
     });
 
     if (!response.ok) {
-      console.error("[SEO] Store API failed:", {
-        uuid,
-        status: response.status,
-        url,
-      });
+      if (
+        response.status !== 401 &&
+        response.status !== 403 &&
+        response.status !== 404
+      ) {
+        console.warn("[SEO] Store API failed:", {
+          uuid,
+          status: response.status,
+          url,
+        });
+      }
 
       return null;
     }
@@ -318,7 +324,7 @@ export async function fetchStoreForSeo(
 
     return unwrapResponse<StoreSeoData>(json);
   } catch (error) {
-    console.error("[SEO] Store fetch error:", error);
+    console.warn("[SEO] Store fetch error:", error);
 
     return null;
   }
