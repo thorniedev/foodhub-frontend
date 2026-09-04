@@ -602,7 +602,7 @@ const FoodCard = React.memo(function FoodCard({
               toggleFavorite();
             }}
             className={`
-              absolute right-1 top-1 z-10
+              absolute  right-0.5 top-0.5 z-10
               flex h-7 w-7 sm:h-8 sm:w-8
               items-center justify-center
               rounded-full
@@ -611,7 +611,7 @@ const FoodCard = React.memo(function FoodCard({
               ${
                 isFavorite
                   ? "bg-secondary-500 text-white shadow-secondary-500/30"
-                  : "bg-white/85 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
+                  : "bg-white/95 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
               }
             `}
           >

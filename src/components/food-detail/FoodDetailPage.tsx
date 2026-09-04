@@ -79,14 +79,14 @@ import FoodCard from "../dynamic-card/FoodCard";
 ================================================================== */
 
 const TEXT_BODY = "text-base lg:text-lg";
-const TEXT_LABEL = "text-base lg:text-lg text-gray-500";
-const TEXT_VALUE = "text-lg lg:text-xl font-semibold text-primary-900";
-const TEXT_TITLE = "text-xl lg:text-2xl font-semibold text-primary-900";
+const TEXT_LABEL = "text-base lg:text-lg text-gray-500 dark:text-gray-400";
+const TEXT_VALUE = "text-lg lg:text-xl font-semibold text-primary-900 dark:text-white";
+const TEXT_TITLE = "text-xl lg:text-2xl font-semibold text-primary-900 dark:text-white";
 const TEXT_EYEBROW =
   "text-base lg:text-lg font-semibold uppercase tracking-wide text-secondary-500";
 
-const CARD = "rounded-3xl border border-gray-200 bg-white p-6";
-const TILE = "rounded-2xl bg-primary-50 p-4";
+const CARD = "rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6";
+const TILE = "rounded-2xl bg-primary-50 dark:bg-primary-950 p-4";
 const SECTION = "mt-6";
 
 type FoodDetailPageProps = {
@@ -254,8 +254,8 @@ function CardHeader({
       <div
         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
           tone === "secondary"
-            ? "bg-secondary-50 text-secondary-500"
-            : "bg-primary-50 text-primary-700"
+            ? "bg-secondary-50 dark:bg-secondary-900/30 text-secondary-500"
+            : "bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-400"
         }`}
       >
         {icon}
@@ -269,7 +269,7 @@ function CardHeader({
 function InfoPill({ children }: { children: ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50 px-4 py-2 font-medium text-primary-800 ${TEXT_BODY}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-950 px-4 py-2 font-medium text-primary-800 dark:text-primary-300 ${TEXT_BODY}`}
     >
       {children}
     </span>
@@ -288,7 +288,7 @@ function StatusPill({
   return (
     <span
       className={`inline-flex items-center rounded-full px-4 py-2 font-semibold ${TEXT_BODY} ${
-        isOn ? "bg-primary-100 text-primary-800" : "bg-gray-100 text-gray-500"
+        isOn ? "bg-primary-100 text-primary-800 dark:text-primary-300" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
       }`}
     >
       {isOn ? onLabel : offLabel}
@@ -306,8 +306,8 @@ function StatTile({
   label: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 text-center">
-      <div className="flex justify-center text-2xl text-primary-700">
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 text-center">
+      <div className="flex justify-center text-2xl text-primary-700 dark:text-primary-400">
         {icon}
       </div>
 
@@ -338,9 +338,9 @@ function ScoreBar({ label, value }: ScoreBarProps) {
 
   return (
     <div className="grid gap-2 sm:grid-cols-[160px_1fr_56px] sm:items-center">
-      <p className={`font-medium text-gray-600 ${TEXT_BODY}`}>{label}</p>
+      <p className={`font-medium text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>{label}</p>
 
-      <div className="h-2 overflow-hidden rounded-full bg-primary-50">
+      <div className="h-2 overflow-hidden rounded-full bg-primary-50 dark:bg-primary-950">
         <motion.div
           initial={{ width: 0 }}
           whileInView={{ width: `${percentage}%` }}
@@ -351,7 +351,7 @@ function ScoreBar({ label, value }: ScoreBarProps) {
       </div>
 
       <p
-        className={`font-semibold text-primary-800 sm:text-right ${TEXT_BODY}`}
+        className={`font-semibold text-primary-800 dark:text-primary-300 sm:text-right ${TEXT_BODY}`}
       >
         {percentage}%
       </p>
@@ -363,21 +363,21 @@ function ScoreBar({ label, value }: ScoreBarProps) {
 
 function LoadingPage() {
   return (
-    <main className="min-h-screen bg-[#f7f9f7]">
+    <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {/* Back Button Skeleton */}
-        <div className="mb-4 h-10 w-32 animate-pulse rounded-full border border-gray-100 bg-white shadow-sm" />
+        <div className="mb-4 h-10 w-32 animate-pulse rounded-full border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm" />
 
         {/* 1. Hero Section */}
         <section className="mt-6 grid gap-6 lg:grid-cols-2 lg:gap-8">
           {/* Gallery Skeleton */}
           <div className="space-y-4">
-            <div className="aspect-[4/3] w-full animate-pulse rounded-3xl bg-gray-200/80" />
+            <div className="aspect-[4/3] w-full animate-pulse rounded-3xl bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
             <div className="grid grid-cols-4 gap-3">
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-200/60"
+                  className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60"
                 />
               ))}
             </div>
@@ -387,97 +387,98 @@ function LoadingPage() {
           <div className="flex flex-col">
             <div className="flex justify-between gap-4">
               <div className="w-2/3 space-y-3">
-                <div className="h-10 w-full animate-pulse rounded-xl bg-gray-200/90" />
-                <div className="h-5 w-1/2 animate-pulse rounded-md bg-gray-200/70" />
+                <div className="h-10 w-full animate-pulse rounded-xl bg-gray-200 dark:bg-gray-800/90 dark:bg-gray-800/90" />
+                <div className="h-5 w-1/2 animate-pulse rounded-md bg-gray-200 dark:bg-gray-800/70 dark:bg-gray-800/70" />
               </div>
-              <div className="h-10 w-24 shrink-0 animate-pulse rounded-xl bg-gray-200/90" />
+              <div className="h-10 w-24 shrink-0 animate-pulse rounded-xl bg-gray-200 dark:bg-gray-800/90 dark:bg-gray-800/90" />
             </div>
 
             <div className="mt-6 flex gap-2">
-              <div className="h-10 w-24 animate-pulse rounded-full bg-gray-200/80" />
-              <div className="h-10 w-28 animate-pulse rounded-full bg-primary-50" />
-              <div className="h-10 w-32 animate-pulse rounded-full bg-primary-50" />
+              <div className="h-10 w-24 animate-pulse rounded-full bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
+              <div className="h-10 w-28 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
+              <div className="h-10 w-32 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
             </div>
 
             <div className="mt-6 space-y-3">
-              <div className="h-4 w-full animate-pulse rounded-md bg-gray-200/60" />
-              <div className="h-4 w-full animate-pulse rounded-md bg-gray-200/60" />
-              <div className="h-4 w-3/4 animate-pulse rounded-md bg-gray-200/60" />
+              <div className="h-4 w-full animate-pulse rounded-md bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
+              <div className="h-4 w-full animate-pulse rounded-md bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
+              <div className="h-4 w-3/4 animate-pulse rounded-md bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="flex h-28 flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
+                  className="flex h-28 flex-col items-center justify-center rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm"
                 >
-                  <div className="h-8 w-8 animate-pulse rounded-full bg-primary-50" />
-                  <div className="mt-3 h-5 w-16 animate-pulse rounded-md bg-gray-200/80" />
-                  <div className="mt-2 h-4 w-12 animate-pulse rounded-md bg-gray-100" />
+                  <div className="h-8 w-8 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
+                  <div className="mt-3 h-5 w-16 animate-pulse rounded-md bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
+                  <div className="mt-2 h-4 w-12 animate-pulse rounded-md bg-gray-100 dark:bg-gray-800" />
                 </div>
               ))}
             </div>
 
             <div className="mt-6">
-              <div className="h-5 w-24 animate-pulse rounded-md bg-gray-200/80" />
+              <div className="h-5 w-24 animate-pulse rounded-md bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
               <div className="mt-3 flex gap-2">
                 <div className="h-10 w-28 animate-pulse rounded-full bg-primary-800/20" />
                 <div className="h-10 w-32 animate-pulse rounded-full bg-primary-800/20" />
               </div>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <div className="h-14 animate-pulse rounded-full bg-primary-800/30" />
-              <div className="h-14 animate-pulse rounded-full border border-primary-200 bg-white" />
-              <div className="h-14 animate-pulse rounded-full border border-primary-200 bg-white" />
+            {/* Actions */}
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="col-span-2 sm:col-span-1 h-14 animate-pulse rounded-full bg-primary-800/30" />
+              <div className="h-14 animate-pulse rounded-full border border-primary-200 dark:border-primary-800 bg-white dark:bg-gray-900" />
+              <div className="h-14 animate-pulse rounded-full border border-primary-200 dark:border-primary-800 bg-white dark:bg-gray-900" />
             </div>
           </div>
         </section>
 
         {/* 2. Store Section */}
         <section className="mt-6">
-          <div className="flex items-center gap-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="h-20 w-20 shrink-0 animate-pulse rounded-2xl bg-primary-50" />
+          <div className="flex items-center gap-6 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <div className="h-20 w-20 shrink-0 animate-pulse rounded-2xl bg-primary-50 dark:bg-primary-950" />
             <div className="flex-1 space-y-3">
               <div className="flex gap-3">
-                <div className="h-6 w-48 animate-pulse rounded-md bg-gray-200/80" />
-                <div className="h-6 w-16 animate-pulse rounded-full bg-gray-100" />
+                <div className="h-6 w-48 animate-pulse rounded-md bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
+                <div className="h-6 w-16 animate-pulse rounded-full bg-gray-100 dark:bg-gray-800" />
               </div>
-              <div className="h-4 w-1/3 animate-pulse rounded-md bg-gray-100" />
+              <div className="h-4 w-1/3 animate-pulse rounded-md bg-gray-100 dark:bg-gray-800" />
             </div>
-            <div className="hidden h-6 w-20 animate-pulse rounded-md bg-gray-100 sm:block" />
+            <div className="hidden h-6 w-20 animate-pulse rounded-md bg-gray-100 dark:bg-gray-800 sm:block" />
           </div>
         </section>
 
         {/* 3. Recommendation + Nutrition */}
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="flex justify-between border-b border-gray-100 pb-5">
+          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-5">
               <div className="space-y-3">
-                <div className="h-4 w-24 animate-pulse rounded bg-secondary-100" />
-                <div className="h-6 w-48 animate-pulse rounded bg-gray-200/80" />
+                <div className="h-4 w-24 animate-pulse rounded bg-secondary-100 dark:bg-secondary-800" />
+                <div className="h-6 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
               </div>
-              <div className="h-10 w-16 animate-pulse rounded bg-gray-200/80" />
+              <div className="h-10 w-16 animate-pulse rounded bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
             </div>
             <div className="mt-6 space-y-5">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="h-4 w-24 animate-pulse rounded bg-gray-200/60" />
-                  <div className="h-2 flex-1 animate-pulse rounded-full bg-primary-50" />
-                  <div className="h-4 w-10 animate-pulse rounded bg-gray-200/60" />
+                  <div className="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
+                  <div className="h-2 flex-1 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
+                  <div className="h-4 w-10 animate-pulse rounded bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 animate-pulse rounded-2xl bg-primary-50" />
-              <div className="h-6 w-32 animate-pulse rounded bg-gray-200/80" />
+              <div className="h-11 w-11 animate-pulse rounded-2xl bg-primary-50 dark:bg-primary-950" />
+              <div className="h-6 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="rounded-2xl bg-primary-50 p-4">
+                <div key={i} className="rounded-2xl bg-primary-50 dark:bg-primary-950 p-4">
                   <div className="h-4 w-16 animate-pulse rounded bg-primary-100" />
                   <div className="mt-3 h-6 w-20 animate-pulse rounded bg-primary-200/50" />
                 </div>
@@ -488,62 +489,62 @@ function LoadingPage() {
 
         {/* 4. Ingredients + Allergens */}
         <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 animate-pulse rounded-2xl bg-primary-50" />
-              <div className="h-6 w-32 animate-pulse rounded bg-gray-200/80" />
+              <div className="h-11 w-11 animate-pulse rounded-2xl bg-primary-50 dark:bg-primary-950" />
+              <div className="h-6 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-10 w-24 animate-pulse rounded-full bg-gray-100" />
+                <div key={i} className="h-10 w-24 animate-pulse rounded-full bg-gray-100 dark:bg-gray-800" />
               ))}
             </div>
-            <div className="mt-6 border-t border-gray-100 pt-5">
-              <div className="h-4 w-24 animate-pulse rounded bg-gray-200/60" />
+            <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
+              <div className="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
               <div className="mt-3 flex gap-2">
-                <div className="h-10 w-20 animate-pulse rounded-full bg-primary-50" />
-                <div className="h-10 w-24 animate-pulse rounded-full bg-primary-50" />
+                <div className="h-10 w-20 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
+                <div className="h-10 w-24 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 animate-pulse rounded-2xl bg-secondary-50" />
-              <div className="h-6 w-32 animate-pulse rounded bg-gray-200/80" />
+              <div className="h-11 w-11 animate-pulse rounded-2xl bg-secondary-50 dark:bg-secondary-900/30" />
+              <div className="h-6 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-800/80 dark:bg-gray-800/80" />
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-10 w-28 animate-pulse rounded-full bg-primary-50" />
+                <div key={i} className="h-10 w-28 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
               ))}
             </div>
-            <div className="mt-6 border-t border-gray-100 pt-5">
-              <div className="h-4 w-20 animate-pulse rounded bg-gray-200/60" />
+            <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
+              <div className="h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
               <div className="mt-3 flex gap-2">
-                <div className="h-10 w-24 animate-pulse rounded-full bg-secondary-50" />
+                <div className="h-10 w-24 animate-pulse rounded-full bg-secondary-50 dark:bg-secondary-900/30" />
               </div>
             </div>
           </div>
         </section>
 
         {/* 5. Context */}
-        <section className="mt-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="mt-6 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <div key={i}>
-                <div className="h-4 w-20 animate-pulse rounded bg-gray-200/60" />
-                <div className="mt-3 h-6 w-32 animate-pulse rounded bg-gray-200/90" />
+                <div className="h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
+                <div className="mt-3 h-6 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-800/90 dark:bg-gray-800/90" />
               </div>
             ))}
           </div>
 
-          <div className="mt-6 grid gap-6 border-t border-gray-100 pt-6 lg:grid-cols-3">
+          <div className="mt-6 grid gap-6 border-t border-gray-100 dark:border-gray-800 pt-6 lg:grid-cols-3">
             {[...Array(3)].map((_, i) => (
               <div key={i}>
-                <div className="h-4 w-24 animate-pulse rounded bg-gray-200/60" />
+                <div className="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
                 <div className="mt-3 space-y-3">
                   {[...Array(2)].map((_, j) => (
-                    <div key={j} className="h-24 animate-pulse rounded-2xl bg-primary-50" />
+                    <div key={j} className="h-24 animate-pulse rounded-2xl bg-primary-50 dark:bg-primary-950" />
                   ))}
                 </div>
               </div>
@@ -557,14 +558,14 @@ function LoadingPage() {
 
 function ErrorPage({ onRetry }: { onRetry: () => void }) {
   return (
-    <main className="min-h-screen bg-[#f7f9f7]">
+    <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950">
       <div className="mx-auto flex min-h-[600px] max-w-7xl flex-col items-center justify-center gap-5 px-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary-50">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary-50 dark:bg-secondary-900/30">
           <IoAlertCircleOutline className="text-4xl text-secondary-500" />
         </div>
 
         <div>
-          <p className="text-2xl font-semibold text-primary-900 lg:text-3xl">
+          <p className="text-2xl font-semibold text-primary-900 dark:text-white lg:text-3xl">
             មិនអាចបង្ហាញព័ត៌មានម្ហូបបានទេ
           </p>
 
@@ -770,9 +771,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   if (!food) {
     return (
-      <main className="min-h-screen bg-[#f7f9f7]">
+      <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950">
         <div className="mx-auto flex min-h-[600px] max-w-7xl flex-col items-center justify-center gap-4 px-4 text-center">
-          <p className="text-2xl font-semibold text-primary-900 lg:text-3xl">
+          <p className="text-2xl font-semibold text-primary-900 dark:text-white lg:text-3xl">
             រកមិនឃើញមុខម្ហូប
           </p>
 
@@ -972,7 +973,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f9f7] ">
+    <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950 ">
       <AuthRequiredModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
@@ -981,11 +982,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         {/* ============================================================
             BACK
         ============================================================ */}
-        <div className="sticky cursor-pointer top-20 z-40 mb-4 w-fit rounded-full bg-white/80 px-4 py-2  shadow-sm backdrop-blur-xl">
+        <div className="sticky cursor-pointer top-20 z-40 mb-4 w-fit rounded-full bg-white dark:bg-gray-900/80 px-4 py-2  shadow-sm backdrop-blur-xl">
           <button
             type="button"
             onClick={() => router.back()}
-            className={`flex w-fit items-center gap-2 font-semibold text-primary-800 transition hover:text-primary-600 ${TEXT_BODY}`}
+            className={`flex w-fit items-center gap-2 font-semibold text-primary-800 dark:text-primary-300 transition hover:text-primary-600 ${TEXT_BODY}`}
           >
             <FaArrowLeft />
             ត្រឡប់ក្រោយ
@@ -1007,7 +1008,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.25 }}
-                className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-gray-200 bg-gray-100"
+                className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800"
               >
                 <ApiImage
                   src={gallery[activeImage]}
@@ -1018,7 +1019,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                   {matchPercentage !== null && (
                     <span
-                      className={`rounded-full bg-secondary-500 px-4 py-2 font-semibold text-white ${TEXT_BODY}`}
+                      className={`rounded-full bg-secondary-50 dark:bg-secondary-900/300 px-4 py-2 font-semibold text-white ${TEXT_BODY}`}
                     >
                       {matchPercentage}% Match
                     </span>
@@ -1026,7 +1027,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
                   {food.isFeatured && (
                     <span
-                      className={`rounded-full bg-white/95 px-4 py-2 font-semibold text-primary-900 ${TEXT_BODY}`}
+                      className={`rounded-full bg-white dark:bg-gray-900/95 px-4 py-2 font-semibold text-primary-900 dark:text-white ${TEXT_BODY}`}
                     >
                       មុខម្ហូបពេញនិយម
                     </span>
@@ -1045,7 +1046,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                     className={`relative aspect-[4/3] overflow-hidden rounded-2xl border-2 transition ${
                       activeImage === index
                         ? "border-primary-700"
-                        : "border-gray-200 hover:border-primary-300"
+                        : "border-gray-200 dark:border-gray-800 hover:border-primary-300"
                     }`}
                   >
                     <ApiImage
@@ -1064,7 +1065,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             {/* Title + price */}
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-3xl font-bold leading-tight text-primary-900 lg:text-4xl">
+                <p className="text-3xl font-bold leading-tight text-primary-900 dark:text-white lg:text-4xl">
                   {displayName}
                 </p>
 
@@ -1075,7 +1076,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 )}
               </div>
 
-              <p className="shrink-0 text-3xl font-bold text-primary-800 lg:text-4xl">
+              <p className="shrink-0 text-3xl font-bold text-primary-800 dark:text-primary-300 lg:text-4xl">
                 {formatPrice(food.price, food.currencyCode)}
               </p>
             </div>
@@ -1096,13 +1097,13 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             {(food.localDescription || food.description) && (
               <div className="mt-5 space-y-3">
                 {food.localDescription && (
-                  <p className={`leading-8 text-gray-600 ${TEXT_BODY}`}>
+                  <p className={`leading-8 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>
                     {food.localDescription}
                   </p>
                 )}
 
                 {/* {food.description && (
-                  <p className={`leading-8 text-gray-500 ${TEXT_BODY}`}>
+                  <p className={`leading-8 text-gray-500 dark:text-gray-400 ${TEXT_BODY}`}>
                     {food.description}
                   </p>
                 )} */}
@@ -1165,7 +1166,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             </div>
 
             {/* Actions */}
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
               <button
                 type="button"
                 onClick={async () => {
@@ -1217,9 +1218,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   }
                   window.dispatchEvent(new Event("foodhub-favorites-updated"));
                 }}
-                className={`flex items-center justify-center gap-2 rounded-full px-6 py-3.5 font-semibold transition active:scale-95 ${TEXT_BODY} ${
+                className={`col-span-2 sm:col-span-1 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 font-semibold transition active:scale-95 ${TEXT_BODY} ${
                   isBookmarked
-                    ? "bg-secondary-500 text-white hover:bg-secondary-400"
+                    ? "bg-secondary-50 dark:bg-secondary-900/300 text-white hover:bg-secondary-400"
                     : "bg-primary-800 text-white hover:bg-primary-700"
                 }`}
               >
@@ -1235,7 +1236,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 href={locationUrl}
                 target="_blank"
                 rel="noreferrer"
-                className={`flex items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3.5 font-semibold text-primary-800 transition hover:bg-primary-50 active:scale-95 ${TEXT_BODY}`}
+                className={`flex items-center justify-center gap-2 rounded-full border border-primary-200 dark:border-primary-800 bg-white dark:bg-gray-900 px-6 py-3.5 font-semibold text-primary-800 dark:text-primary-300 transition hover:bg-primary-50 dark:bg-primary-950 active:scale-95 ${TEXT_BODY}`}
               >
                 <FaMapMarkerAlt />
                 មើលទីតាំង
@@ -1244,7 +1245,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               <button
                 type="button"
                 onClick={handleShare}
-                className={`flex items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3.5 font-semibold text-primary-800 transition hover:bg-primary-50 active:scale-95 ${TEXT_BODY}`}
+                className={`flex items-center justify-center gap-2 rounded-full border border-primary-200 dark:border-primary-800 bg-white dark:bg-gray-900 px-6 py-3.5 font-semibold text-primary-800 dark:text-primary-300 transition hover:bg-primary-50 dark:bg-primary-950 active:scale-95 ${TEXT_BODY}`}
               >
                 <FaShareAlt />
                 ចែករំលែក
@@ -1262,11 +1263,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
           <Link
             href={`/store/${food.store.uuid}`}
             aria-label={`View ${storeDisplayName} store profile`}
-            className="group block rounded-3xl border border-gray-200 bg-white p-6 transition hover:border-primary-200 hover:bg-primary-50/40"
+            className="group block rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 transition hover:border-primary-200 dark:border-primary-800 hover:bg-primary-50 dark:bg-primary-950/40"
           >
             <div className="grid gap-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
               {/* Logo */}
-              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-primary-50">
+              <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-primary-50 dark:bg-primary-950">
                 {food.store.logoUrl ? (
                   <ApiImage
                     src={food.store.logoUrl}
@@ -1274,7 +1275,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <FaStore className="text-3xl text-primary-700" />
+                  <FaStore className="text-3xl text-primary-700 dark:text-primary-400" />
                 )}
               </div>
 
@@ -1282,7 +1283,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-3">
                   <p
-                    className={`line-clamp-1 ${TEXT_TITLE} transition group-hover:text-primary-700`}
+                    className={`line-clamp-1 ${TEXT_TITLE} transition group-hover:text-primary-700 dark:text-primary-400`}
                   >
                     {storeDisplayName}
                   </p>
@@ -1291,9 +1292,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 </div>
 
                 <div
-                  className={`mt-3 flex items-start gap-2 leading-7 text-gray-600 ${TEXT_BODY}`}
+                  className={`mt-3 flex items-start gap-2 leading-7 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
                 >
-                  <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700" />
+                  <FaMapMarkerAlt className="mt-1 shrink-0 text-primary-700 dark:text-primary-400" />
 
                   <span className="line-clamp-2">
                     {storeAddress || "មិនមានអាសយដ្ឋាន"}
@@ -1304,7 +1305,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               {/* Store link */}
               <div className="flex items-center">
                 <span
-                  className={`flex items-center gap-1 font-semibold text-primary-700 transition group-hover:translate-x-1 ${TEXT_BODY}`}
+                  className={`flex items-center gap-1 font-semibold text-primary-700 dark:text-primary-400 transition group-hover:translate-x-1 ${TEXT_BODY}`}
                 >
                   មើលហាង
                   <IoChevronForward className="text-xl" />
@@ -1319,7 +1320,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         ============================================================ */}
         <section className={`${SECTION} grid gap-6 lg:grid-cols-[1.2fr_0.8fr]`}>
           <article className={CARD}>
-            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-100 pb-5">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-100 dark:border-gray-800 pb-5">
               <div>
                 <p className={TEXT_EYEBROW}>FoodHub AI</p>
                 <p className={`mt-2 ${TEXT_TITLE}`}>កម្រិតសមស្របសម្រាប់អ្នក</p>
@@ -1327,7 +1328,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               {matchPercentage !== null && (
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-primary-800 lg:text-4xl">
+                  <p className="text-3xl font-bold text-primary-800 dark:text-primary-300 lg:text-4xl">
                     {matchPercentage}%
                   </p>
 
@@ -1339,7 +1340,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             {recommendation ? (
               <>
                 {recommendation.reasonText && (
-                  <p className={`mt-5 leading-8 text-gray-600 ${TEXT_BODY}`}>
+                  <p className={`mt-5 leading-8 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>
                     {recommendation.reasonText}
                   </p>
                 )}
@@ -1363,7 +1364,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </>
             ) : (
               <div className={`mt-5 ${TILE}`}>
-                <p className={`leading-7 text-gray-600 ${TEXT_BODY}`}>
+                <p className={`leading-7 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>
                   មិនទាន់មានទិន្នន័យណែនាំសម្រាប់មុខម្ហូបនេះទេ។ សូមចូលគណនី
                   ឬកំណត់ចំណូលចិត្តរបស់អ្នក ដើម្បីទទួលការណែនាំ។
                 </p>
@@ -1420,7 +1421,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 {food.ingredients.map((ingredient, index) => (
                   <span
                     key={`${ingredient}-${index}`}
-                    className={`rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-gray-600 ${TEXT_BODY}`}
+                    className={`rounded-full border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
                   >
                     {ingredient}
                   </span>
@@ -1431,7 +1432,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             )}
 
             {pairingLabels.length > 0 && (
-              <div className="mt-6 border-t border-gray-100 pt-5">
+              <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
                 <p className={TEXT_LABEL}>ភេសជ្ជៈដែលសម</p>
 
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -1461,13 +1462,13 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             )}
 
             {allergenLabels.length > 0 && (
-              <div className="mt-6 border-t border-gray-100 pt-5">
+              <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
                 <p className={TEXT_LABEL}>អាឡែស៊ី</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {allergenLabels.map((allergen, index) => (
                     <span
                       key={`${allergen}-${index}`}
-                      className={`rounded-full border border-secondary-100 bg-secondary-50 px-4 py-2 font-medium text-secondary-700 ${TEXT_BODY}`}
+                      className={`rounded-full border border-secondary-100 dark:border-secondary-800 bg-secondary-50 dark:bg-secondary-900/30 px-4 py-2 font-medium text-secondary-700 ${TEXT_BODY}`}
                     >
                       {allergen}
                     </span>
@@ -1508,7 +1509,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
               {food.origin.isTraditional && (
                 <span
-                  className={`mt-2 inline-flex rounded-full bg-primary-50 px-3 py-1 font-medium text-primary-800 ${TEXT_BODY}`}
+                  className={`mt-2 inline-flex rounded-full bg-primary-50 dark:bg-primary-950 px-3 py-1 font-medium text-primary-800 dark:text-primary-300 ${TEXT_BODY}`}
                 >
                   Traditional
                 </span>
@@ -1517,19 +1518,19 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
           </div>
 
           {hasContextRows && (
-            <div className="mt-6 grid gap-6 border-t border-gray-100 pt-6 lg:grid-cols-3">
+            <div className="mt-6 grid gap-6 border-t border-gray-100 dark:border-gray-800 pt-6 lg:grid-cols-3">
               {seasons.length > 0 && (
                 <DetailBlock label="រដូវសមស្រប">
                   <div className="space-y-3">
                     {seasons.map((season) => (
                       <div key={season.code} className={TILE}>
-                        <p className="font-semibold text-primary-900">
+                        <p className="font-semibold text-primary-900 dark:text-white">
                           {season.localName || season.name}
                         </p>
 
                         {season.reasonText && (
                           <p
-                            className={`mt-1 leading-7 text-gray-600 ${TEXT_BODY}`}
+                            className={`mt-1 leading-7 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
                           >
                             {season.reasonText}
                           </p>
@@ -1545,13 +1546,13 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   <div className="space-y-3">
                     {events.map((eventItem) => (
                       <div key={eventItem.code} className={TILE}>
-                        <p className="font-semibold text-primary-900">
+                        <p className="font-semibold text-primary-900 dark:text-white">
                           {eventItem.localName || eventItem.name}
                         </p>
 
                         {eventItem.reasonText && (
                           <p
-                            className={`mt-1 leading-7 text-gray-600 ${TEXT_BODY}`}
+                            className={`mt-1 leading-7 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
                           >
                             {eventItem.reasonText}
                           </p>
@@ -1567,13 +1568,13 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   <div className="space-y-3">
                     {suitableWeather.map((weather) => (
                       <div key={weather.code} className={TILE}>
-                        <p className="font-semibold text-primary-900">
+                        <p className="font-semibold text-primary-900 dark:text-white">
                           {weather.localName || weather.name}
                         </p>
 
                         {weather.reasonText && (
                           <p
-                            className={`mt-1 leading-7 text-gray-600 ${TEXT_BODY}`}
+                            className={`mt-1 leading-7 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
                           >
                             {weather.reasonText}
                           </p>
@@ -1597,7 +1598,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               action={
                 <Link
                   href="/food"
-                  className={`flex items-center gap-2 font-semibold text-primary-800 transition hover:text-primary-600 ${TEXT_BODY}`}
+                  className={`flex items-center gap-2 font-semibold text-primary-800 dark:text-primary-300 transition hover:text-primary-600 ${TEXT_BODY}`}
                 >
                   មើលទាំងអស់
                   <IoChevronForward />
