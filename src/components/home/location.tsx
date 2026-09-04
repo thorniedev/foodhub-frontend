@@ -16,12 +16,15 @@ export const CircularBadge = () => (
           d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0"
           fill="none"
         />
-        <text
-          className="text-[11px] font-black tracking-[0.11em] uppercase"
-          fill="white"
-        >
-          <textPath className="text-white" href="#circlePath" startOffset="0%">
-            •ស្វែងរកអាហារជាមួយទីតាំងហាងដែលនៅជិតអ្នក
+        <text className="text-[12px] font-black uppercase" fill="white">
+          <textPath
+            className="text-white"
+            href="#circlePath"
+            startOffset="0%"
+            textLength="220"
+            lengthAdjust="spacing"
+          >
+            ________________________
           </textPath>
         </text>
       </svg>
