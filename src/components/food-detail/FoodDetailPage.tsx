@@ -665,10 +665,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     };
 
     if (isValidCoordinates(storeCoordinates)) {
-      const dist = calculateDistanceKm(
-        userCoordinates,
-        storeCoordinates,
-      );
+      const dist = calculateDistanceKm(userCoordinates, storeCoordinates);
       if (Number.isFinite(dist) && dist >= 0 && dist <= 500) {
         computedDistanceKm = dist;
       }
@@ -793,7 +790,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f9f7] pt-15">
+    <main className="min-h-screen bg-[#f7f9f7] ">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 ">
         {/* ============================================================
             BACK
@@ -916,11 +913,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   </p>
                 )}
 
-                {food.description && (
+                {/* {food.description && (
                   <p className={`leading-8 text-gray-500 ${TEXT_BODY}`}>
                     {food.description}
                   </p>
-                )}
+                )} */}
               </div>
             )}
 
