@@ -259,45 +259,37 @@ const FoodCard = React.memo(function FoodCard({
      ✅ PERFORMANCE FIX: Memoize distance calculations
   ======================================================= */
 
-  const { travelTimeMin, formattedDistance } = useMemo(() => {
-    let travelTime: number | null = null;
-    let computedDistanceKm: number | null = null;
+  let travelTimeMin: number | null = null;
+  let computedDistanceKm: number | null =
+    activeFood.distanceKm !== undefined &&
+    activeFood.distanceKm !== null &&
+    Number.isFinite(Number(activeFood.distanceKm))
+      ? Number(activeFood.distanceKm)
+      : null;
 
-    if (
-      activeFood.distanceKm !== undefined &&
-      activeFood.distanceKm !== null &&
-      Number.isFinite(activeFood.distanceKm) &&
-      activeFood.distanceKm >= 0 &&
-      activeFood.distanceKm <= 500
-    ) {
-      computedDistanceKm = activeFood.distanceKm;
+  if (
+    userCoordinates &&
+    activeFood.store?.latitude !== undefined &&
+    activeFood.store?.latitude !== null &&
+    activeFood.store?.longitude !== undefined &&
+    activeFood.store?.longitude !== null
+  ) {
+    const storeCoordinates = {
+      latitude: Number(activeFood.store.latitude),
+      longitude: Number(activeFood.store.longitude),
+    };
+    if (isValidCoordinates(storeCoordinates)) {
+      computedDistanceKm = calculateDistanceKm(
+        userCoordinates,
+        storeCoordinates,
+      );
     }
+  }
 
-    if (
-      userCoordinates &&
-      isValidCoordinates(userCoordinates) &&
-      activeFood.store?.latitude !== undefined &&
-      activeFood.store?.latitude !== null &&
-      activeFood.store?.longitude !== undefined &&
-      activeFood.store?.longitude !== null
-    ) {
-      const storeCoordinates = {
-        latitude: Number(activeFood.store.latitude),
-        longitude: Number(activeFood.store.longitude),
-      };
-      if (isValidCoordinates(storeCoordinates)) {
-        const dist = calculateDistanceKm(
-          userCoordinates,
-          storeCoordinates,
-        );
-
-        if (Number.isFinite(dist) && dist >= 0 && dist <= 500) {
-          computedDistanceKm = dist;
-          // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
-          travelTime = Math.ceil(computedDistanceKm * 2 + 5);
-        }
-      }
-    }
+  if (computedDistanceKm !== null && Number.isFinite(computedDistanceKm)) {
+    // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
+    travelTimeMin = Math.ceil(computedDistanceKm * 2 + 5);
+  }
 
     const formatted =
       computedDistanceKm !== null &&

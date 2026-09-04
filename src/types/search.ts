@@ -112,6 +112,8 @@ export interface CustomerSearchRequest {
   minimumStoreRating?: number;
   openNow?: boolean;
   maxPreparationTimeMinutes?: number;
+  latitude?: number;
+  longitude?: number;
   sort?: string;
 }
 
