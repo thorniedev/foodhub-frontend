@@ -38,7 +38,7 @@ export default function FitFoodSection() {
   return (
     <section
       id="menu"
-      className=" py-15 min-md:px-4   lg:px-2 max-w-7xl mx-auto text-center"
+      className=" py-15 max-sm:py-4  min-md:px-4   lg:px-2 max-w-7xl mx-auto text-center"
     >
       <section className="  flex flex-col items-center justify-center md:gap-12.5  max-md:gap-6 sm:gap- container  max-7-xl mx-auto   relative z-20   w-full">
         <p className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">

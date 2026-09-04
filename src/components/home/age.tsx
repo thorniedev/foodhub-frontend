@@ -192,7 +192,7 @@ const MealsByAgeSection = React.memo(function MealsByAgeSection() {
   }, [menuItems, randomSeed]);
 
   return (
-    <section className="relative w-full py-12 sm:py-16">
+    <section className="relative w-full py-12 sm:py-16 max-sm:py-4">
       <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <section className="container mx-auto flex max-w-7xl flex-col items-center justify-center max-md:gap-6 md:gap-12.5">
@@ -215,7 +215,9 @@ const MealsByAgeSection = React.memo(function MealsByAgeSection() {
             ? Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={`skeleton-age-${i}`}
-                  className="group border border-gray-100/80 flex flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6 animate-pulse"
+                  className={`group border border-gray-100/80 flex flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6 animate-pulse ${
+                    i === 4 ? "max-sm:col-span-2" : ""
+                  }`}
                 >
                   <div className="h-24 w-24 rounded-full bg-gray-200 dark:bg-gray-700 sm:h-28 sm:w-28 lg:h-32 lg:w-32" />
                   <div className="mt-4 h-5 w-24 rounded bg-gray-200 dark:bg-gray-700 sm:mt-6 sm:h-6 sm:w-28" />
@@ -230,11 +232,13 @@ const MealsByAgeSection = React.memo(function MealsByAgeSection() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
               whileHover={{ y: -6 }}
-              className="group border border-gray-100/80 flex cursor-pointer flex-col items-center justify-between rounded-[2rem]  bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+              className={`group border border-gray-100/80 flex cursor-pointer flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6 ${
+                i === 4 ? "max-sm:col-span-2" : ""
+              }`}
             >
               <Link
                 href={group.href}
-                className="flex h-full w-full flex-col items-center"
+                className="flex h-full w-full flex-col items-center justify-center"
               >
                 {/* Dynamic Image in Circle */}
                 <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-primary-700 border-[2px]  bg-emerald-50/80 shadow-inner transition-transform duration-500 group-hover:scale-105 dark:border-emerald-900/50 dark:bg-slate-800 sm:h-28 sm:w-28 lg:h-32 lg:w-32">
