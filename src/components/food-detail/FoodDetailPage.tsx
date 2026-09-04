@@ -364,14 +364,192 @@ function ScoreBar({ label, value }: ScoreBarProps) {
 function LoadingPage() {
   return (
     <main className="min-h-screen bg-[#f7f9f7]">
-      <div className="mx-auto flex min-h-[600px] max-w-7xl flex-col items-center justify-center gap-5 px-4">
-        <motion.div
-          className="h-12 w-12 rounded-full border-4 border-primary-100 border-t-primary-800"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
-        />
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        {/* Back Button Skeleton */}
+        <div className="mb-4 h-10 w-32 animate-pulse rounded-full border border-gray-100 bg-white shadow-sm" />
 
-        <p className={TEXT_LABEL}>កំពុងផ្ទុកព័ត៌មានម្ហូប...</p>
+        {/* 1. Hero Section */}
+        <section className="mt-6 grid gap-6 lg:grid-cols-2 lg:gap-8">
+          {/* Gallery Skeleton */}
+          <div className="space-y-4">
+            <div className="aspect-[4/3] w-full animate-pulse rounded-3xl bg-gray-200/80" />
+            <div className="grid grid-cols-4 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[4/3] animate-pulse rounded-2xl bg-gray-200/60"
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Summary Skeleton */}
+          <div className="flex flex-col">
+            <div className="flex justify-between gap-4">
+              <div className="w-2/3 space-y-3">
+                <div className="h-10 w-full animate-pulse rounded-xl bg-gray-200/90" />
+                <div className="h-5 w-1/2 animate-pulse rounded-md bg-gray-200/70" />
+              </div>
+              <div className="h-10 w-24 shrink-0 animate-pulse rounded-xl bg-gray-200/90" />
+            </div>
+
+            <div className="mt-6 flex gap-2">
+              <div className="h-10 w-24 animate-pulse rounded-full bg-gray-200/80" />
+              <div className="h-10 w-28 animate-pulse rounded-full bg-primary-50" />
+              <div className="h-10 w-32 animate-pulse rounded-full bg-primary-50" />
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <div className="h-4 w-full animate-pulse rounded-md bg-gray-200/60" />
+              <div className="h-4 w-full animate-pulse rounded-md bg-gray-200/60" />
+              <div className="h-4 w-3/4 animate-pulse rounded-md bg-gray-200/60" />
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex h-28 flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
+                >
+                  <div className="h-8 w-8 animate-pulse rounded-full bg-primary-50" />
+                  <div className="mt-3 h-5 w-16 animate-pulse rounded-md bg-gray-200/80" />
+                  <div className="mt-2 h-4 w-12 animate-pulse rounded-md bg-gray-100" />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <div className="h-5 w-24 animate-pulse rounded-md bg-gray-200/80" />
+              <div className="mt-3 flex gap-2">
+                <div className="h-10 w-28 animate-pulse rounded-full bg-primary-800/20" />
+                <div className="h-10 w-32 animate-pulse rounded-full bg-primary-800/20" />
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="h-14 animate-pulse rounded-full bg-primary-800/30" />
+              <div className="h-14 animate-pulse rounded-full border border-primary-200 bg-white" />
+              <div className="h-14 animate-pulse rounded-full border border-primary-200 bg-white" />
+            </div>
+          </div>
+        </section>
+
+        {/* 2. Store Section */}
+        <section className="mt-6">
+          <div className="flex items-center gap-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="h-20 w-20 shrink-0 animate-pulse rounded-2xl bg-primary-50" />
+            <div className="flex-1 space-y-3">
+              <div className="flex gap-3">
+                <div className="h-6 w-48 animate-pulse rounded-md bg-gray-200/80" />
+                <div className="h-6 w-16 animate-pulse rounded-full bg-gray-100" />
+              </div>
+              <div className="h-4 w-1/3 animate-pulse rounded-md bg-gray-100" />
+            </div>
+            <div className="hidden h-6 w-20 animate-pulse rounded-md bg-gray-100 sm:block" />
+          </div>
+        </section>
+
+        {/* 3. Recommendation + Nutrition */}
+        <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex justify-between border-b border-gray-100 pb-5">
+              <div className="space-y-3">
+                <div className="h-4 w-24 animate-pulse rounded bg-secondary-100" />
+                <div className="h-6 w-48 animate-pulse rounded bg-gray-200/80" />
+              </div>
+              <div className="h-10 w-16 animate-pulse rounded bg-gray-200/80" />
+            </div>
+            <div className="mt-6 space-y-5">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="h-4 w-24 animate-pulse rounded bg-gray-200/60" />
+                  <div className="h-2 flex-1 animate-pulse rounded-full bg-primary-50" />
+                  <div className="h-4 w-10 animate-pulse rounded bg-gray-200/60" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 animate-pulse rounded-2xl bg-primary-50" />
+              <div className="h-6 w-32 animate-pulse rounded bg-gray-200/80" />
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="rounded-2xl bg-primary-50 p-4">
+                  <div className="h-4 w-16 animate-pulse rounded bg-primary-100" />
+                  <div className="mt-3 h-6 w-20 animate-pulse rounded bg-primary-200/50" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Ingredients + Allergens */}
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 animate-pulse rounded-2xl bg-primary-50" />
+              <div className="h-6 w-32 animate-pulse rounded bg-gray-200/80" />
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-10 w-24 animate-pulse rounded-full bg-gray-100" />
+              ))}
+            </div>
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <div className="h-4 w-24 animate-pulse rounded bg-gray-200/60" />
+              <div className="mt-3 flex gap-2">
+                <div className="h-10 w-20 animate-pulse rounded-full bg-primary-50" />
+                <div className="h-10 w-24 animate-pulse rounded-full bg-primary-50" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 animate-pulse rounded-2xl bg-secondary-50" />
+              <div className="h-6 w-32 animate-pulse rounded bg-gray-200/80" />
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-10 w-28 animate-pulse rounded-full bg-primary-50" />
+              ))}
+            </div>
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <div className="h-4 w-20 animate-pulse rounded bg-gray-200/60" />
+              <div className="mt-3 flex gap-2">
+                <div className="h-10 w-24 animate-pulse rounded-full bg-secondary-50" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Context */}
+        <section className="mt-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i}>
+                <div className="h-4 w-20 animate-pulse rounded bg-gray-200/60" />
+                <div className="mt-3 h-6 w-32 animate-pulse rounded bg-gray-200/90" />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-6 border-t border-gray-100 pt-6 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i}>
+                <div className="h-4 w-24 animate-pulse rounded bg-gray-200/60" />
+                <div className="mt-3 space-y-3">
+                  {[...Array(2)].map((_, j) => (
+                    <div key={j} className="h-24 animate-pulse rounded-2xl bg-primary-50" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );
