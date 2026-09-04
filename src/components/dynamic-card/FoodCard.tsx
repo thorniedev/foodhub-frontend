@@ -102,7 +102,7 @@ const FoodCard = React.memo(function FoodCard({
   const hasCompleteData = Boolean(
     (food.name || food.localName) &&
     food.price !== undefined &&
-    food.store?.name
+    food.store?.name,
   );
 
   // Data fetching: fetch menu item only if not already provided by parent:
@@ -129,7 +129,7 @@ const FoodCard = React.memo(function FoodCard({
     !food.food?.dietaryTypes &&
     !detailData?.food?.dietaryTypes &&
     !food.food?.cuisine &&
-    !food.food?.category
+    !food.food?.category,
   );
 
   const { data: foodCatalog } = useGetFoodCatalogByUuidQuery(masterFoodUuid, {
@@ -311,12 +311,16 @@ const FoodCard = React.memo(function FoodCard({
 
   const rawImage =
     activeFood.thumbnail ||
-    (activeFood.gallery && activeFood.gallery.length > 0 ? activeFood.gallery[0] : null) ||
+    (activeFood.gallery && activeFood.gallery.length > 0
+      ? activeFood.gallery[0]
+      : null) ||
     foodAny.imageUrl ||
     (foodAny.primaryMediaUuid
       ? `/api/v1/media/${foodAny.primaryMediaUuid}`
       : undefined) ||
-    (activeFood.uuid ? `/api/v1/catalog/menu-items/${activeFood.uuid}/images/1` : undefined);
+    (activeFood.uuid
+      ? `/api/v1/catalog/menu-items/${activeFood.uuid}/images/1`
+      : undefined);
 
   const [imgError, setImgError] = useState(false);
 
@@ -351,7 +355,9 @@ const FoodCard = React.memo(function FoodCard({
       foodUuid: activeFood.food?.uuid,
     });
 
-    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(activeFood.uuid));
+    setIsFavorite(
+      Boolean(serverBookmark) || favoriteIds.includes(activeFood.uuid),
+    );
   }, [activeFood.uuid, activeFood.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
@@ -371,7 +377,9 @@ const FoodCard = React.memo(function FoodCard({
     });
 
     const isAlreadyFavorite =
-      isFavorite || Boolean(serverBookmark) || currentIds.includes(activeFood.uuid);
+      isFavorite ||
+      Boolean(serverBookmark) ||
+      currentIds.includes(activeFood.uuid);
 
     const nextIds = isAlreadyFavorite
       ? currentIds.filter((id) => id !== activeFood.uuid)
@@ -531,8 +539,18 @@ const FoodCard = React.memo(function FoodCard({
           {imgError || !rawImage ? (
             <div className="flex h-[115px] sm:h-[180px] w-full items-center justify-center bg-gray-50 dark:bg-gray-800">
               <div className="flex flex-col items-center gap-2 text-gray-300 dark:text-gray-600">
-                <svg className="w-8 h-8 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                <svg
+                  className="w-8 h-8 sm:w-12 sm:h-12"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                  />
                 </svg>
               </div>
             </div>
@@ -603,13 +621,17 @@ const FoodCard = React.memo(function FoodCard({
             <div className="flex items-center gap-1 sm:gap-1 flex-1 min-w-0">
               <FaStore className="shrink-0 text-xs sm:text-lg" />
               <p className="truncate pt-[2px] text-xs sm:text-lg ">
-                {activeFood.store?.localName || activeFood.store?.name || "Unknown store"}
+                {activeFood.store?.localName ||
+                  activeFood.store?.name ||
+                  "Unknown store"}
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <FaClock className="text-[10px] sm:text-lg" />
               <p className="whitespace-nowrap mt-[2px] text-[10px] sm:text-sm">
-                {activeFood.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
+                {activeFood.store?.operatingStatus === "OPEN"
+                  ? "Open"
+                  : "Closed"}
               </p>
             </div>
           </div>
@@ -663,7 +685,9 @@ const FoodCard = React.memo(function FoodCard({
               activeFood.preparationTimeMinutes !== undefined ? (
               <div className="flex items-center gap-2 text-primary-400">
                 <FaMotorcycle />
-                <span className="mt-1">{activeFood.preparationTimeMinutes} min</span>
+                <span className="mt-1">
+                  {activeFood.preparationTimeMinutes} min
+                </span>
               </div>
             ) : null}
 
@@ -748,7 +772,7 @@ const FoodCard = React.memo(function FoodCard({
                       px-2
                       py-1
                       text-center
-                      text-sm max-sm:text-[8px]
+                      text-sm max-sm:text-[12px]
                       text-gray-100
                     "
                 >
@@ -765,13 +789,14 @@ const FoodCard = React.memo(function FoodCard({
                   className="
                     h-8
                     w-8
-                    shrink-0
+                 
                     justify-center
                     rounded-full
                     bg-gray-100
-                    py-1
+                    flex
                     text-center
-                    text-sm max-sm:text-[8px]
+                    items-center 
+                    text-sm max-sm:text-[16px]
                     font-medium
                     text-gray-600
                     dark:bg-gray-800

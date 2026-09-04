@@ -206,11 +206,11 @@ function FloatingFoodCard({
           />
         </div>
 
-        <div className="relative mt-4 text-center text-primary-700">
-          <p className="text-sm font-extrabold sm:text-base md:text-lg">
+        <div className="relative mt-4 text-center text-primary-700 max-sm:!text-white">
+          <p className="text-sm font-extrabold sm:text-base md:text-lg max-sm:!text-white">
             {title}
           </p>
-          <p className="mt-1 text-xs font-medium text-primary-700/70 sm:text-sm md:text-base">
+          <p className="mt-1 text-xs font-medium text-primary-700/70 sm:text-sm md:text-base max-sm:!text-white">
             {subtitle}
           </p>
         </div>

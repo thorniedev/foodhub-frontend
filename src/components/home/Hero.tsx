@@ -942,7 +942,7 @@ max-sm:hidden
 
                   {/* Text */}
 
-                  <div className="mt-2 text-center text-primary-500">
+                  <div className="mt-2 text-center max-sm:text-white text-primary-500">
                     <p className="line-clamp-1 text-sm font-bold md:text-lg">
                       {card1Title}
                     </p>
@@ -1077,7 +1077,7 @@ max-sm:hidden
 
                   {/* Text */}
 
-                  <div className="mt-2 text-center text-primary-500">
+                  <div className="mt-2 text-center max-sm:text-white text-primary-500">
                     <p className="line-clamp-1 text-sm font-bold md:text-lg">
                       {card2Title}
                     </p>
@@ -1556,7 +1556,9 @@ max-sm:hidden
                         play with
                       </div>
 
-                      <div className="px-4 text-base font-bold">swipe style</div>
+                      <div className="px-4 text-base font-bold">
+                        swipe style
+                      </div>
                     </div>
 
                     <motion.div
