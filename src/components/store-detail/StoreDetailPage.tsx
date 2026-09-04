@@ -640,7 +640,9 @@ function LoadingPage() {
     <main className="min-h-screen bg-slate-50 pb-14">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
         {/* Back Link Skeleton */}
-        <div className="mb-5 h-6 w-32 animate-pulse rounded-md bg-gray-200" />
+        <div className="sticky top-20 z-50 mb-5 w-fit rounded-full bg-white/80 px-4 py-2 shadow-sm backdrop-blur-xl">
+          <div className="h-6 w-24 animate-pulse rounded-md bg-gray-200" />
+        </div>
 
         {/* Main Grid: Left Content (Hero + Menu) | Right Sidebar */}
         <div className="grid items-start gap-6 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px]">
@@ -880,13 +882,16 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
       <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
         {/* Back */}
 
-        <Link
-          href="/store"
-          className="mb-5 inline-flex items-center gap-2 text-[18px] font-medium text-gray-500 transition hover:text-primary-800"
-        >
-          <IoArrowBack className="text-[21px]" />
-          ត្រឡប់ទៅរកហាង
-        </Link>
+        {/* Back Link */}
+        <div className="sticky top-20 z-50 mb-5 w-fit rounded-full bg-white/80 px-4 py-2 shadow-sm backdrop-blur-xl transition-all hover:bg-white">
+          <Link
+            href="/store"
+            className="flex items-center gap-2 text-[16px] font-semibold text-primary-800 transition hover:text-primary-600"
+          >
+            <IoArrowBack className="text-[20px]" />
+            ត្រឡប់ទៅរកហាង
+          </Link>
+        </div>
 
         {/* Main Layout Grid */}
         <div className="grid items-start gap-6 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px]">
