@@ -3756,8 +3756,8 @@ function FoodPageContent() {
 
           {/* ALL FOODS */}
 
-          <section className="mt-3">
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <section className="">
+            <div className="mb-6  flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
                   ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត

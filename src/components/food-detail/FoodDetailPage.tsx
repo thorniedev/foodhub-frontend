@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
@@ -795,14 +795,16 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         {/* ============================================================
             BACK
         ============================================================ */}
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className={`flex items-center gap-2 font-semibold text-primary-800 transition hover:text-primary-600 ${TEXT_BODY}`}
-        >
-          <FaArrowLeft />
-          ត្រឡប់ក្រោយ
-        </button>
+        <div className="sticky cursor-pointer top-20 z-40 mb-4 w-fit rounded-full bg-white/80 px-4 py-2  shadow-sm backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className={`flex w-fit items-center gap-2 font-semibold text-primary-800 transition hover:text-primary-600 ${TEXT_BODY}`}
+          >
+            <FaArrowLeft />
+            ត្រឡប់ក្រោយ
+          </button>
+        </div>
 
         {/* ============================================================
             1. HERO — gallery + food summary
@@ -922,7 +924,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             )}
 
             {/* Quick stats */}
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <StatTile
                 icon={<IoMdTime />}
                 value={
@@ -953,7 +955,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             </div>
 
             {/* Dietary */}
-            <div className="mt-6">
+            <div className="mt-5">
               <p className={TEXT_LABEL}>របបអាហារ</p>
 
               {dietaryTypes.length > 0 ? (
@@ -976,8 +978,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               )}
             </div>
 
-            {/* Actions — pinned to the bottom of this column */}
-            <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:mt-auto lg:pt-8">
+            {/* Actions */}
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <button
                 type="button"
                 onClick={async () => {
@@ -1395,8 +1397,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
         {relatedFoods.length > 0 && (
           <section className={SECTION}>
             <SectionHeader
-              eyebrow="អ្នកប្រហែលជាចូលចិត្ត"
-              title="មុខម្ហូបស្រដៀងគ្នា"
+              title="អ្នកប្រហែលជាចូលចិត្ត"
               action={
                 <Link
                   href="/food"
