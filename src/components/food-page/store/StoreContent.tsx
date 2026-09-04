@@ -426,12 +426,11 @@ export default function StoreContent({
             self-start
 
             xl:sticky
-            xl:top-24
+            xl:top-[160px]
             xl:block
-            xl:h-[calc(100dvh-7rem)]
-            xl:max-h-[calc(100dvh-7rem)]
+            xl:h-[calc(100dvh-170px)]
+            xl:max-h-[calc(100dvh-170px)]
             xl:overflow-hidden
-            lg:pb-8
           "
         >
           <StoreFilters {...filterProps} />
