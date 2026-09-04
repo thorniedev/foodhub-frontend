@@ -22,6 +22,8 @@ import { IoMdTime } from "react-icons/io";
 
 import {
   IoAlertCircleOutline,
+  IoBookmark,
+  IoBookmarkOutline,
   IoChevronForward,
   IoNutritionOutline,
   IoPeopleOutline,
@@ -43,6 +45,7 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
+import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 
 import type {
   CatalogMenuItem,
@@ -466,6 +469,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   const [activeImage, setActiveImage] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const {
     data: foodDetail,
@@ -791,6 +795,10 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   return (
     <main className="min-h-screen bg-[#f7f9f7] ">
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 ">
         {/* ============================================================
             BACK
@@ -983,6 +991,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               <button
                 type="button"
                 onClick={async () => {
+                  if (!activeProfileUuid) {
+                    setShowAuthModal(true);
+                    return;
+                  }
+
                   const serverBookmark = findBookmark({
                     menuItemUuid: uuid,
                     foodUuid: food?.food?.uuid,
@@ -990,6 +1003,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
                   if (isBookmarked || serverBookmark) {
                     setIsBookmarked(false);
+
                     if (serverBookmark) {
                       try {
                         await removeBookmark(serverBookmark.uuid);
@@ -1005,17 +1019,17 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                     });
                   } else {
                     setIsBookmarked(true);
-                    if (activeProfileUuid) {
-                      try {
-                        await addBookmark({
-                          menuItemUuid: uuid,
-                          foodUuid: food?.food?.uuid,
-                          storeUuid: food?.store?.uuid,
-                        });
-                      } catch (err) {
-                        console.warn("[FOOD DETAIL BOOKMARK ERROR]", err);
-                      }
+
+                    try {
+                      await addBookmark({
+                        menuItemUuid: uuid,
+                        foodUuid: food?.food?.uuid,
+                        storeUuid: food?.store?.uuid,
+                      });
+                    } catch (err) {
+                      console.warn("[FOOD DETAIL BOOKMARK ERROR]", err);
                     }
+                    
                     track({
                       eventType: "BOOKMARK",
                       menuItemUuid: uuid,
@@ -1031,7 +1045,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                     : "bg-primary-800 text-white hover:bg-primary-700"
                 }`}
               >
-                <FaRegHeart />
+                {isBookmarked ? (
+                  <IoBookmark className="text-xl" />
+                ) : (
+                  <IoBookmarkOutline className="text-xl" />
+                )}
                 {isBookmarked ? "បានរក្សាទុក" : "រក្សាទុក"}
               </button>
 

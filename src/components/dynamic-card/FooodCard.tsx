@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { motion } from "framer-motion";
 
@@ -96,6 +97,7 @@ export default function FooodCard({
 }: FoodCardProps) {
   const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
   const { track } = useTrackInteraction();
+  const router = useRouter();
 
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -140,6 +142,11 @@ export default function FooodCard({
   ======================================================= */
 
   const toggleFavorite = async () => {
+    if (!activeProfileUuid) {
+      router.push("/api/auth/login");
+      return;
+    }
+
     const currentIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: food.uuid,
@@ -150,11 +157,6 @@ export default function FooodCard({
 
     if (isCurrentlyFavorite) {
       // Unfavorite
-      const nextIds = currentIds.filter((id) => id !== food.uuid);
-      try {
-        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
-      } catch {}
-
       setIsFavorite(false);
 
       if (serverBookmark) {
@@ -173,11 +175,6 @@ export default function FooodCard({
       });
     } else {
       // Favorite
-      const nextIds = [...currentIds.filter((id) => id !== food.uuid), food.uuid];
-      try {
-        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
-      } catch {}
-
       setIsFavorite(true);
 
       if (activeProfileUuid) {
