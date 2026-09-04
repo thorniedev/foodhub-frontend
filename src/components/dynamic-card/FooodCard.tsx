@@ -21,6 +21,7 @@ import { MdDeliveryDining } from "react-icons/md";
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useTrackInteraction } from "@/hooks/useTrackInteraction";
+import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 /* =========================================================
@@ -100,6 +101,7 @@ export default function FooodCard({
   const router = useRouter();
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const effectiveThumbnail =
     food.thumbnail ||
@@ -143,7 +145,7 @@ export default function FooodCard({
 
   const toggleFavorite = async () => {
     if (!activeProfileUuid) {
-      router.push("/api/auth/login");
+      setShowAuthModal(true);
       return;
     }
 
@@ -239,9 +241,14 @@ export default function FooodCard({
   ======================================================= */
 
   return (
-    <motion.article
-      layout
-      initial={{
+    <>
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
+      <motion.article
+        layout
+        initial={{
         opacity: 0,
         y: 12,
       }}
@@ -514,5 +521,6 @@ export default function FooodCard({
         </div>
       </div>
     </motion.article>
+    </>
   );
 }
