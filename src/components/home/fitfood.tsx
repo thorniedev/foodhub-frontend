@@ -13,7 +13,7 @@ const menuItems: MenuItem[] = [
     id: "power-bowl",
     image: "/Image/food01.png",
     title: "អាហារពេញនិយម",
-    description: "ស្វែងរកមុខម្ហូបជាច្រើនប្រភេទទៅតាមចំណូលចិត្តរបស់អ្នក។",
+    description: "ស្វែងរកមុខម្ហូបជាច្រើនប្រភេទទៅ​​​តាមចំណូលចិត្តរបស់អ្នក។",
     aosDelay: 200,
   },
   {
@@ -74,7 +74,7 @@ export default function FitFoodSection() {
               />
             </div>
             <h3 className="text-white font-bold text-xl mb-3">{item.title}</h3>
-            <p className="text-gray-100 text-xl px-4">{item.description}</p>
+            <p className="text-gray-100 text-xl lg:max-w-[290px] px-4">{item.description}</p>
           </div>
         ))}
       </div>

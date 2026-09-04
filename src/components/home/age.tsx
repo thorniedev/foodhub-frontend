@@ -192,13 +192,13 @@ const MealsByAgeSection = React.memo(function MealsByAgeSection() {
   }, [menuItems, randomSeed]);
 
   return (
-    <section className="relative w-full py-12 sm:py-16 max-sm:py-4">
+    <section className="relative w-full lg:py-0 py-12 sm:py-16 max-sm:py-4">
       <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <section className="container mx-auto flex max-w-7xl flex-col items-center justify-center max-md:gap-6 md:gap-12.5">
           <p className="py-2 text-center text-2xl font-semibold text-primary-800 dark:text-primary-dark max-md:text-2xl md:text-4xl lg:text-6xl">
             ចំណីអាហារ
-            <span className="text-secondary-500">ទៅតាមវ័យ</span>
+            <span className="text-secondary-500">ស្របតាមវ័យ</span>
           </p>
 
           <p className="text-center text-[16px] font-light text-gray-700 dark:text-gray-100 md:text-[20px] lg:text-[24px]">
