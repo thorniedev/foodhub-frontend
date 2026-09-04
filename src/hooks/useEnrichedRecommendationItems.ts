@@ -85,8 +85,35 @@ export function useEnrichedRecommendationItems(
     sessionItems.forEach((item, index) => {
       // 1. Try to find the item in catalogMenuItems first:
       const catalogMatch = catalogMenuItemsRef.current.find((c) => {
-        if (item.menuItemUuid && c.uuid === item.menuItemUuid) return true;
-        if (item.menuItemId && c.legacyId === item.menuItemId) return true;
+        // If menuItemUuid is specified, ONLY match by exact menuItemUuid:
+        if (item.menuItemUuid) {
+          if (c.uuid !== item.menuItemUuid) return false;
+          if (item.storeUuid && c.store?.uuid && c.store.uuid !== item.storeUuid) return false;
+          return true;
+        }
+
+        // If menuItemId (legacyId) is specified:
+        if (item.menuItemId) {
+          if (c.legacyId !== item.menuItemId) return false;
+          if (item.storeUuid && c.store?.uuid && c.store.uuid !== item.storeUuid) return false;
+          return true;
+        }
+
+        // Only fallback to foodUuid / name if store identifier is present and matches strictly:
+        const hasStoreIdentifier = Boolean(item.storeUuid || item.storeName);
+        if (!hasStoreIdentifier) {
+          return false;
+        }
+
+        const storeMatches =
+          (!item.storeUuid || c.store?.uuid === item.storeUuid) &&
+          (!item.storeName ||
+            c.store?.name?.trim().toLowerCase() === item.storeName.trim().toLowerCase());
+
+        if (!storeMatches) {
+          return false;
+        }
+
         if (item.foodUuid && c.food?.uuid === item.foodUuid) return true;
         if (
           item.menuItemName &&
@@ -148,7 +175,16 @@ export function useEnrichedRecommendationItems(
         }),
       )
         .unwrap()
-        .then((food): EnrichedRecommendationItem => {
+        .then((food): EnrichedRecommendationItem | null => {
+          // Verify store match if storeUuid was explicitly specified by recommendation
+          if (
+            item.storeUuid &&
+            food.store?.uuid &&
+            food.store.uuid !== item.storeUuid
+          ) {
+            return null;
+          }
+
           const sourceItem =
             itemsByUuid.get(food.uuid) ||
             itemsByUuid.get(menuItemUuid) ||
