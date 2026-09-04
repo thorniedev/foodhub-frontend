@@ -27,6 +27,23 @@ const inFlightExchanges = new Map<
   }>
 >();
 
+/**
+ * Pulls the human-readable reason out of the backend's error envelope
+ * (`{ status, errorCode, message, ... }`) so the login screen can explain what
+ * actually blocked the account instead of showing a bare status code.
+ */
+function backendSyncMessage(errorBody: string): string | null {
+  try {
+    const parsed = JSON.parse(errorBody) as { message?: unknown };
+
+    return typeof parsed.message === "string" && parsed.message.trim()
+      ? parsed.message.trim()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function createLoginErrorResponse(
   request: NextRequest,
   error: string,
@@ -244,32 +261,28 @@ export async function GET(request: NextRequest) {
     if (!syncResponse.ok) {
       const errorBody = await syncResponse.text();
 
-      // 409 Conflict means the user is already registered/synced in the backend.
-      // This is expected for returning users. Treat it as successful and let login proceed.
-      if (syncResponse.status === 409) {
-        console.log("[USER SYNC CONFLICT - OK]", {
-          status: 409,
-          message:
-            "User already exists in backend (idempotent sync). Proceeding with login.",
-          url: syncUrl,
-        });
-      } else {
-        console.error("[USER SYNC ERROR]", {
-          status: syncResponse.status,
-          statusText: syncResponse.statusText,
-          response: errorBody,
-          url: syncUrl,
-        });
+      console.error("[USER SYNC ERROR]", {
+        status: syncResponse.status,
+        statusText: syncResponse.statusText,
+        response: errorBody,
+        url: syncUrl,
+      });
 
-        return createLoginErrorResponse(
-          request,
-          "user_sync_failed",
+      // The sync endpoint is idempotent: a returning user gets 200, not 409.
+      // A 409 means the backend could not link this Keycloak identity to a
+      // FoodHub account — usually because another identity already owns the
+      // email. Letting the login proceed here is what produced a session that
+      // could authenticate but got "user not found" from every data call, so
+      // the reason is surfaced instead of swallowed.
+      return createLoginErrorResponse(
+        request,
+        syncResponse.status === 409 ? "user_sync_conflict" : "user_sync_failed",
+        backendSyncMessage(errorBody) ??
           `User synchronization failed with status ${syncResponse.status}.`,
-        );
-      }
+      );
     }
 
-    const syncText = syncResponse.ok ? await syncResponse.text() : "";
+    const syncText = await syncResponse.text();
 
     console.log("[USER SYNC PROCESSED]", {
       status: syncResponse.status,
