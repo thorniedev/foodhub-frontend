@@ -41,9 +41,11 @@ export const navItems: NavItem[] = [
   },
 ];
 
-// Finds the label for the current route. Longest matching href wins,
-// so /dashboard/review beats /dashboard.
 export function getActiveLabel(pathname: string): string {
+  if (pathname.startsWith("/dashboard/settings")) {
+    return "ការកំណត់";
+  }
+
   const match = [...navItems]
     .sort((a, b) => b.href.length - a.href.length)
     .find((item) =>
@@ -53,3 +55,4 @@ export function getActiveLabel(pathname: string): string {
     );
   return match?.label ?? "";
 }
+
