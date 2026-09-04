@@ -363,7 +363,7 @@ function ScoreBar({ label, value }: ScoreBarProps) {
 
 function LoadingPage() {
   return (
-    <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950">
+    <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950 ">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {/* Back Button Skeleton */}
         <div className="mb-4 h-10 w-32 animate-pulse rounded-full border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm" />
@@ -558,7 +558,7 @@ function LoadingPage() {
 
 function ErrorPage({ onRetry }: { onRetry: () => void }) {
   return (
-    <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950">
+    <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950 ">
       <div className="mx-auto flex min-h-[600px] max-w-7xl flex-col items-center justify-center gap-5 px-4 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary-50 dark:bg-secondary-900/30">
           <IoAlertCircleOutline className="text-4xl text-secondary-500" />
@@ -771,7 +771,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
   if (!food) {
     return (
-      <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950">
+      <main className="min-h-screen bg-[#f7f9f7] dark:bg-gray-950 ">
         <div className="mx-auto flex min-h-[600px] max-w-7xl flex-col items-center justify-center gap-4 px-4 text-center">
           <p className="text-2xl font-semibold text-primary-900 dark:text-white lg:text-3xl">
             រកមិនឃើញមុខម្ហូប

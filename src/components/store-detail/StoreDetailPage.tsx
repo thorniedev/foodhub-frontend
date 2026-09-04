@@ -260,9 +260,9 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
   };
 
   return (
-    <section className="relative rounded-[32px] border border-gray-100/50 bg-white p-3 shadow-sm ring-1 ring-black/5 sm:p-4">
+    <section className="relative rounded-3xl border border-gray-100/50 bg-white p-2.5 shadow-sm ring-1 ring-black/5 sm:p-3">
       {/* Cover Image & Overlay */}
-      <div className="relative h-[280px] w-full overflow-hidden rounded-[24px] sm:h-[360px] lg:h-[420px]">
+      <div className="relative h-[240px] w-full overflow-hidden rounded-2xl sm:h-[280px] lg:h-[320px]">
         <StoreMediaImage
           mediaUuid={store.coverMediaUuid}
           fallbackMediaUuid={store.logoMediaUuid}
@@ -294,10 +294,10 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
         </div>
 
         {/* Hero Content inside the image */}
-        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 lg:p-10">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
+        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             {/* Logo */}
-            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full border-[3px] border-white/90 bg-white shadow-xl sm:h-36 sm:w-36">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-[3px] border-white/90 bg-white shadow-xl sm:h-32 sm:w-32">
               <StoreMediaImage
                 mediaUuid={store.logoMediaUuid}
                 alt={`${store.storeName} logo`}
@@ -347,7 +347,7 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
       </div>
 
       {/* Info Section under Hero */}
-      <div className="px-3 pt-6 sm:px-4 sm:pt-8 lg:px-6">
+      <div className="px-3 pt-5 sm:px-4 sm:pt-6">
         {store.description && (
           <p className="mb-6 max-w-4xl text-lg leading-relaxed text-slate-600">
             {store.description}
@@ -458,7 +458,7 @@ function StoreLocationMapCard({ store }: { store: FoodStoreDetail }) {
   };
 
   return (
-    <section className="rounded-[32px] border border-gray-100/50 bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-7">
+    <section className="rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
       <div className="flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
           <IoMapOutline className="text-[23px]" />
@@ -542,7 +542,7 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
   const hasMore = schedules.length > MAX_VISIBLE;
 
   return (
-    <section className="rounded-[32px] border border-gray-100/50 bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-7">
+    <section className="rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
@@ -635,51 +635,52 @@ function LoadingPage() {
         {/* Back Link Skeleton */}
         <div className="mb-5 h-6 w-32 animate-pulse rounded-md bg-gray-200" />
 
-        {/* Top Profile Section Skeleton */}
-        <div className="mb-8 grid items-start gap-6 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px]">
-          {/* Hero Skeleton */}
-          <div className="h-[320px] animate-pulse rounded-[32px] border border-gray-100 bg-white p-3 shadow-sm ring-1 ring-black/5 sm:h-[390px] sm:p-4 lg:h-[450px]">
-            <div className="h-full w-full rounded-[24px] bg-gray-100/80"></div>
-          </div>
+        {/* Main Grid: Left Content (Hero + Menu) | Right Sidebar */}
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px] xl:grid-cols-[1fr_360px]">
+          {/* Left Column */}
+          <div className="flex min-w-0 flex-col gap-8">
+            {/* Hero Skeleton */}
+            <div className="h-[280px] animate-pulse rounded-3xl border border-gray-100 bg-white p-2.5 shadow-sm ring-1 ring-black/5 sm:h-[320px] sm:p-3 lg:h-[360px]">
+              <div className="h-full w-full rounded-2xl bg-gray-100/80"></div>
+            </div>
 
-          {/* Schedule Sidebar Skeleton */}
-          <div className="animate-pulse rounded-[32px] border border-gray-100/50 bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100"></div>
-              <div className="space-y-2">
-                <div className="h-5 w-24 rounded-md bg-gray-200"></div>
-                <div className="h-4 w-32 rounded-md bg-gray-100"></div>
+            {/* Mobile Sidebar Skeleton */}
+            <div className="flex flex-col gap-6 lg:hidden">
+              <div className="animate-pulse rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100"></div>
+                  <div className="space-y-2">
+                    <div className="h-5 w-24 rounded-md bg-gray-200"></div>
+                    <div className="h-4 w-32 rounded-md bg-gray-100"></div>
+                  </div>
+                </div>
+                <div className="mt-6 flex flex-col gap-3">
+                  <div className="h-11 w-full rounded-xl bg-gray-50"></div>
+                  <div className="h-11 w-full rounded-xl bg-gray-50"></div>
+                </div>
               </div>
             </div>
-            <div className="mt-6 flex flex-col gap-3">
-              <div className="h-11 w-full rounded-xl bg-gray-50"></div>
-              <div className="h-11 w-full rounded-xl bg-gray-50"></div>
-              <div className="h-11 w-full rounded-xl bg-gray-50"></div>
-              <div className="h-11 w-full rounded-xl bg-gray-50"></div>
-            </div>
-          </div>
-        </div>
 
-        {/* Menu Section Header Skeleton */}
-        <div className="space-y-6">
-          <div className="flex flex-col gap-6 border-b border-gray-100 pb-8 pt-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-3">
-              <div className="h-8 w-48 animate-pulse rounded-md bg-gray-200"></div>
-              <div className="h-5 w-64 animate-pulse rounded-md bg-gray-100"></div>
-            </div>
+            {/* Menu Section Header Skeleton */}
+            <div className="space-y-6">
+              <div className="flex flex-col gap-6 border-b border-gray-100 pb-8 pt-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-3">
+                  <div className="h-8 w-48 animate-pulse rounded-md bg-gray-200"></div>
+                  <div className="h-5 w-64 animate-pulse rounded-md bg-gray-100"></div>
+                </div>
 
-            <div className="flex w-full items-center gap-3 sm:min-w-[400px]">
-              <div className="h-[56px] flex-1 animate-pulse rounded-[20px] bg-gray-100/80"></div>
-              <div className="h-[56px] w-[56px] shrink-0 animate-pulse rounded-[20px] bg-gray-100 xl:hidden"></div>
-            </div>
-          </div>
+                <div className="flex w-full items-center gap-3 sm:min-w-[400px]">
+                  <div className="h-[56px] flex-1 animate-pulse rounded-[20px] bg-gray-100/80"></div>
+                  <div className="h-[56px] w-[56px] shrink-0 animate-pulse rounded-[20px] bg-gray-100 xl:hidden"></div>
+                </div>
+              </div>
 
-          {/* Grid Layout Skeleton */}
-          <div className="flex gap-7">
-            {/* Desktop Filters Skeleton */}
-            <div className="hidden w-[280px] shrink-0 xl:block">
-              <div className="h-[600px] w-full animate-pulse rounded-[24px] border border-gray-100 bg-white shadow-sm ring-1 ring-black/5"></div>
-            </div>
+              {/* Grid Layout Skeleton */}
+              <div className="flex gap-7">
+                {/* Desktop Filters Skeleton */}
+                <div className="hidden w-[280px] shrink-0 xl:block">
+                  <div className="h-[600px] w-full animate-pulse rounded-[24px] border border-gray-100 bg-white shadow-sm ring-1 ring-black/5"></div>
+                </div>
 
             {/* Menu Items Skeleton Grid */}
             <div className="grid flex-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
@@ -699,6 +700,26 @@ function LoadingPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar Skeleton */}
+      <div className="hidden flex-col gap-6 lg:sticky lg:top-24 lg:flex">
+            <div className="animate-pulse rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100"></div>
+                <div className="space-y-2">
+                  <div className="h-5 w-24 rounded-md bg-gray-200"></div>
+                  <div className="h-4 w-32 rounded-md bg-gray-100"></div>
+                </div>
+              </div>
+              <div className="mt-6 flex flex-col gap-3">
+                <div className="h-11 w-full rounded-xl bg-gray-50"></div>
+                <div className="h-11 w-full rounded-xl bg-gray-50"></div>
+                <div className="h-11 w-full rounded-xl bg-gray-50"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -860,18 +881,21 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
           ត្រឡប់ទៅរកហាង
         </Link>
 
-        <div className="mb-8 grid items-start gap-6 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px]">
-          <StoreHero store={store} />
+        {/* Main Layout Grid */}
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px] xl:grid-cols-[1fr_360px]">
+          {/* Left Column */}
+          <div className="flex min-w-0 flex-col gap-8">
+            <StoreHero store={store} />
 
-          <div className="flex flex-col gap-6">
-            <StoreLocationMapCard store={store} />
-            <StoreOpeningHoursCard store={store} />
-            <StoreSocialMediaCard store={store} />
-          </div>
-        </div>
+            {/* Mobile Sidebar */}
+            <div className="flex flex-col gap-6 lg:hidden">
+              <StoreLocationMapCard store={store} />
+              <StoreOpeningHoursCard store={store} />
+              <StoreSocialMediaCard store={store} />
+            </div>
 
-        {/* Menu Section Header */}
-        <div className="space-y-6">
+            {/* Menu Section */}
+            <div className="space-y-6">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between border-b border-gray-100 pb-8 pt-4">
           <div>
             <h2 className="text-3xl font-extrabold text-slate-900">
@@ -945,14 +969,6 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
                   <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500">
                     មិនមាន Menu Item ណាមួយក្នុងទិន្នន័យដែលភ្ជាប់ជាមួយហាងនេះទេ។
                   </p>
-
-                  {process.env.NODE_ENV === "development" && (
-                    <div className="mx-auto mt-5 max-w-2xl rounded-2xl bg-gray-50 p-4 text-left text-[16px] leading-7 text-gray-500">
-                      <p>Store UUID: {store.uuid}</p>
-                      <p>Loaded menu items: {allMenuItems.length}</p>
-                      <p>Check Console: [STORE DETAIL MENU DEBUG]</p>
-                    </div>
-                  )}
                 </div>
               ) : filteredMenuItems.length > 0 ? (
                 <motion.div
@@ -1007,6 +1023,15 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
           </div>
         </div>
       </div>
+
+      {/* Desktop Right Sidebar (Sticky) */}
+      <div className="hidden flex-col gap-6 lg:sticky lg:top-24 lg:flex">
+        <StoreLocationMapCard store={store} />
+        <StoreOpeningHoursCard store={store} />
+        <StoreSocialMediaCard store={store} />
+      </div>
+    </div>
+  </div>
 
       {/* Mobile filter drawer */}
 

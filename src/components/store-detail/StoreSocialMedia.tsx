@@ -430,7 +430,7 @@ export function StoreSocialMediaCard({
 
   return (
     <section
-      className={`rounded-[32px] border border-gray-100/50 bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-7 ${className}`}
+      className={`rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6 ${className}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3">

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useTrackInteraction } from "@/hooks/useTrackInteraction";
+import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 
 interface BookmarkButtonProps {
   initialBookmarkUuid?: string | null;
@@ -24,11 +25,12 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   className = "",
   onToggled,
 }) => {
-  const { bookmarks, addBookmark, removeBookmark, findBookmark } = useBookmarks();
+  const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
   const { track } = useTrackInteraction();
 
   const [bookmarkUuid, setBookmarkUuid] = useState<string | null>(initialBookmarkUuid);
   const [submitting, setSubmitting] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Sync state from profile's current bookmarks
   useEffect(() => {
@@ -47,6 +49,12 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (!isBookmarked && !activeProfileUuid) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (submitting) return;
 
     setSubmitting(true);
@@ -88,29 +96,35 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
-      disabled={submitting}
-      aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this item"}
-      className={`inline-flex items-center justify-center gap-1.5 p-2 rounded-full transition-all duration-200 active:scale-95 disabled:opacity-50 ${
-        isBookmarked
-          ? "bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
-          : "bg-black/5 hover:bg-black/10 text-neutral-600 dark:bg-white/10 dark:hover:bg-white/20 dark:text-neutral-300"
-      } ${className}`}
-    >
-      {submitting ? (
-        <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
-      ) : isBookmarked ? (
-        <BookmarkCheck className="w-5 h-5 fill-current" />
-      ) : (
-        <Bookmark className="w-5 h-5" />
-      )}
-      {showText && (
-        <span className="text-sm font-medium pr-1">
-          {isBookmarked ? "Bookmarked" : "Bookmark"}
-        </span>
-      )}
-    </button>
+    <>
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
+      <button
+        type="button"
+        onClick={handleToggle}
+        disabled={submitting}
+        aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this item"}
+        className={`inline-flex items-center justify-center gap-1.5 p-2 rounded-full transition-all duration-200 active:scale-95 disabled:opacity-50 ${
+          isBookmarked
+            ? "bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
+            : "bg-black/5 hover:bg-black/10 text-neutral-600 dark:bg-white/10 dark:hover:bg-white/20 dark:text-neutral-300"
+        } ${className}`}
+      >
+        {submitting ? (
+          <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+        ) : isBookmarked ? (
+          <BookmarkCheck className="w-5 h-5 fill-current" />
+        ) : (
+          <Bookmark className="w-5 h-5" />
+        )}
+        {showText && (
+          <span className="text-sm font-medium pr-1">
+            {isBookmarked ? "Bookmarked" : "Bookmark"}
+          </span>
+        )}
+      </button>
+    </>
   );
 };
