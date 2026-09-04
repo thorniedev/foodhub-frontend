@@ -49,6 +49,10 @@ import type { FoodStoreDetail, StoreOpeningHour } from "@/types/store-page";
 import type { StoreMenuFilterState } from "@/types/store-menu-filter";
 
 import StoreMenuFilterSidebar from "./StoreMenuFilterSidebar";
+import {
+  StoreSocialMediaPills,
+  StoreSocialMediaCard,
+} from "./StoreSocialMedia";
 
 type StoreDetailPageProps = {
   storeUuid: string;
@@ -413,6 +417,11 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
               {store.email}
             </a>
           )}
+
+          <StoreSocialMediaPills
+            socialLinks={store.socialLinks}
+            phoneNumber={store.phoneNumber}
+          />
         </div>
       </div>
     </section>
@@ -856,6 +865,7 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
           <div className="flex flex-col gap-6">
             <StoreLocationMapCard store={store} />
             <StoreOpeningHoursCard store={store} />
+            <StoreSocialMediaCard store={store} />
           </div>
         </div>
 

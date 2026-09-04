@@ -1,3 +1,5 @@
+import type { StoreSocialLink } from "./store-page";
+
 export type StoreOperatingStatus =
   | "OPEN"
   | "CLOSED"
@@ -32,7 +34,7 @@ export interface BackendStoreDto {
   operatingStatus: StoreOperatingStatus;
   accountStatus: string;
   isOpenNow: boolean | null;
-  socialLinks: unknown[];
+  socialLinks: StoreSocialLink[];
   openingHours: unknown[];
   externalSource: string | null;
 }
@@ -70,7 +72,7 @@ export interface Store {
   operatingStatus: StoreOperatingStatus;
   accountStatus: string;
   isOpenNow: boolean | null;
-  socialLinks: unknown[];
+  socialLinks: StoreSocialLink[];
   openingHours: unknown[];
   externalSource: string | null;
   deliveryAvailable?: boolean;

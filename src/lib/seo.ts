@@ -99,6 +99,7 @@ export interface StoreSeoData {
   totalReviews?: number | null;
 
   isOpenNow?: boolean | null;
+  socialLinks?: Array<{ platform?: string; profileUrl?: string; url?: string }> | null;
 }
 
 /* =========================================================
@@ -729,6 +730,14 @@ export function generateStoreJsonLd(store: StoreSeoData, uuid: string): object {
 
             worstRating: 1,
           },
+        }
+      : {}),
+
+    ...(Array.isArray(store.socialLinks) && store.socialLinks.length > 0
+      ? {
+          sameAs: store.socialLinks
+            .map((s) => s.profileUrl || s.url)
+            .filter((u): u is string => Boolean(u && typeof u === "string")),
         }
       : {}),
   };
