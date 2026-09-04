@@ -201,11 +201,7 @@ function getAgeGroups(food: CatalogMenuItem): FilterOption[] {
 function formatAgeGroupOptionLabel(a: FilterOption | any): string {
   const item = a as any;
   const key = `${a.name || ""} ${a.code || ""}`.toLowerCase();
-  if (
-    key.includes("ទារក") ||
-    key.includes("infant") ||
-    key.includes("baby")
-  ) {
+  if (key.includes("ទារក") || key.includes("infant") || key.includes("baby")) {
     return `${a.name || "ទារក"} (0-6)`;
   }
   const min = item?.minAge ?? item?.minimumAge ?? item?.min_age;
@@ -230,10 +226,7 @@ function formatAgeGroupOptionLabel(a: FilterOption | any): string {
   }
 
   // Fallback ranges for standard FoodHub age groups if not returned from backend
-  if (
-    key.includes("កុមារតូច") ||
-    key.includes("toddler")
-  ) {
+  if (key.includes("កុមារតូច") || key.includes("toddler")) {
     return `${a.name} (0-2)`;
   }
   if (key.includes("កុមារ") || key.includes("child") || key.includes("kid")) {
@@ -276,7 +269,8 @@ function matchesAgeGroup(
       const aCode = normalizeText(ag.code);
 
       if (normSelected === aCode || normSelected === aName) return true;
-      if (aName.includes(normSelected) || aCode.includes(normSelected)) return true;
+      if (aName.includes(normSelected) || aCode.includes(normSelected))
+        return true;
 
       if (
         (normSelected.includes("ទារក") ||
@@ -285,39 +279,56 @@ function matchesAgeGroup(
           normSelected.includes("0-2") ||
           normSelected.includes("infant") ||
           normSelected.includes("baby")) &&
-        (aName.includes("ទារក") || aCode.includes("infant") || aCode.includes("baby"))
+        (aName.includes("ទារក") ||
+          aCode.includes("infant") ||
+          aCode.includes("baby"))
       ) {
         return true;
       }
       if (
-        (normSelected.includes("យុវវ័យ") || normSelected.includes("13-17") || normSelected.includes("youth")) &&
-        (aName.includes("យុវវ័យ") || aCode.includes("youth") || aCode.includes("teen"))
+        (normSelected.includes("យុវវ័យ") ||
+          normSelected.includes("13-17") ||
+          normSelected.includes("youth")) &&
+        (aName.includes("យុវវ័យ") ||
+          aCode.includes("youth") ||
+          aCode.includes("teen"))
       ) {
         return true;
       }
       if (
-        (normSelected.includes("កុមារតូច") || normSelected.includes("toddler")) &&
+        (normSelected.includes("កុមារតូច") ||
+          normSelected.includes("toddler")) &&
         (aName.includes("កុមារតូច") || aCode.includes("toddler"))
       ) {
         return true;
       }
       if (
-        (normSelected.includes("កុមារ") || normSelected.includes("3-12") || normSelected.includes("child")) &&
-        (aName.includes("កុមារ") || aCode.includes("child") || aCode.includes("children")) &&
+        (normSelected.includes("កុមារ") ||
+          normSelected.includes("3-12") ||
+          normSelected.includes("child")) &&
+        (aName.includes("កុមារ") ||
+          aCode.includes("child") ||
+          aCode.includes("children")) &&
         !normSelected.includes("តូច") &&
         !aName.includes("តូច")
       ) {
         return true;
       }
       if (
-        (normSelected.includes("ពេញវ័យ") || normSelected.includes("18-59") || normSelected.includes("adult")) &&
+        (normSelected.includes("ពេញវ័យ") ||
+          normSelected.includes("18-59") ||
+          normSelected.includes("adult")) &&
         (aName.includes("ពេញវ័យ") || aCode.includes("adult"))
       ) {
         return true;
       }
       if (
-        (normSelected.includes("ចំណាស់") || normSelected.includes("60+") || normSelected.includes("senior")) &&
-        (aName.includes("ចំណាស់") || aCode.includes("senior") || aCode.includes("elderly"))
+        (normSelected.includes("ចំណាស់") ||
+          normSelected.includes("60+") ||
+          normSelected.includes("senior")) &&
+        (aName.includes("ចំណាស់") ||
+          aCode.includes("senior") ||
+          aCode.includes("elderly"))
       ) {
         return true;
       }
@@ -696,7 +707,7 @@ function CheckIcon({ className }: { className?: string }) {
    COMPONENT
 ========================================================= */
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 export default function FoodSearchBar() {
   const [searchInput, setSearchInput] = useState("");
@@ -848,9 +859,16 @@ export default function FoodSearchBar() {
     });
 
     const itemDietary = activeMenuItems.flatMap((item) => {
-      const masterFood = item.food?.uuid ? foodCatalogMap.get(item.food.uuid) : null;
+      const masterFood = item.food?.uuid
+        ? foodCatalogMap.get(item.food.uuid)
+        : null;
       const rootDiets = Array.isArray((item as any).dietaryTypes)
-        ? ((item as any).dietaryTypes as Array<{ code?: string; name?: string }>).map((d) => ({
+        ? (
+            (item as any).dietaryTypes as Array<{
+              code?: string;
+              name?: string;
+            }>
+          ).map((d) => ({
             code: d.code || d.name || "",
             name: d.name || d.code || "",
           }))
@@ -1007,7 +1025,12 @@ export default function FoodSearchBar() {
         : null;
 
       const rootDiets = Array.isArray((food as any).dietaryTypes)
-        ? ((food as any).dietaryTypes as Array<{ code?: string; name?: string }>).map((d) => ({
+        ? (
+            (food as any).dietaryTypes as Array<{
+              code?: string;
+              name?: string;
+            }>
+          ).map((d) => ({
             code: d.code || d.name || "",
             name: d.name || d.code || "",
           }))
@@ -1665,78 +1688,82 @@ mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-col
           PAGINATION CONTROLS (10 items / page)
       =================================================== */}
 
-      {!isLoading && !isFetching && !isError && filteredFoods.length > 0 && totalPages > 1 && (
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 px-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6">
-          <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
-            បង្ហាញ{" "}
-            <span className="font-semibold text-primary-800 dark:text-emerald-400">
-              {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-            </span>{" "}
-            -{" "}
-            <span className="font-semibold text-primary-800 dark:text-emerald-400">
-              {Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}
-            </span>{" "}
-            នៃ{" "}
-            <span className="font-semibold text-primary-800 dark:text-emerald-400">
-              {filteredFoods.length}
-            </span>{" "}
-            មុខម្ហូប
-          </p>
+      {!isLoading &&
+        !isFetching &&
+        !isError &&
+        filteredFoods.length > 0 &&
+        totalPages > 1 && (
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 px-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6">
+            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
+              បង្ហាញ{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </span>{" "}
+              -{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}
+              </span>{" "}
+              នៃ{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {filteredFoods.length}
+              </span>{" "}
+              មុខម្ហូប
+            </p>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <button
-              type="button"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              aria-label="Previous page"
-            >
-              <IoChevronBackOutline className="text-[18px]" />
-            </button>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Previous page"
+              >
+                <IoChevronBackOutline className="text-[18px]" />
+              </button>
 
-            {visiblePages.map((page, idx) => {
-              if (page === "...") {
+              {visiblePages.map((page, idx) => {
+                if (page === "...") {
+                  return (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="flex h-10 w-8 items-center justify-center text-sm font-semibold text-gray-400 dark:text-slate-500"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+
+                const pageNum = Number(page);
+                const isSelected = pageNum === currentPage;
+
                 return (
-                  <span
-                    key={`ellipsis-${idx}`}
-                    className="flex h-10 w-8 items-center justify-center text-sm font-semibold text-gray-400 dark:text-slate-500"
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`flex h-10 min-w-10 items-center justify-center rounded-xl px-2 text-sm font-bold transition ${
+                      isSelected
+                        ? "bg-primary-800 text-white shadow-sm dark:bg-emerald-600"
+                        : "border border-gray-200 bg-white text-gray-700 hover:border-primary-700 hover:bg-primary-50/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    }`}
                   >
-                    ...
-                  </span>
+                    {pageNum}
+                  </button>
                 );
-              }
+              })}
 
-              const pageNum = Number(page);
-              const isSelected = pageNum === currentPage;
-
-              return (
-                <button
-                  key={pageNum}
-                  type="button"
-                  onClick={() => handlePageChange(pageNum)}
-                  className={`flex h-10 min-w-10 items-center justify-center rounded-xl px-2 text-sm font-bold transition ${
-                    isSelected
-                      ? "bg-primary-800 text-white shadow-sm dark:bg-emerald-600"
-                      : "border border-gray-200 bg-white text-gray-700 hover:border-primary-700 hover:bg-primary-50/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-
-            <button
-              type="button"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              aria-label="Next page"
-            >
-              <IoChevronForwardOutline className="text-[18px]" />
-            </button>
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 hover:border-primary-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                aria-label="Next page"
+              >
+                <IoChevronForwardOutline className="text-[18px]" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* ===================================================
           MOBILE SORT OVERLAY
