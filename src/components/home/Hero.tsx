@@ -1383,7 +1383,7 @@ max-sm:hidden
                   "
                       >
                         <Image
-                          src="https://i.pinimg.com/736x/c7/f9/cd/c7f9cd69787cfb858d686150d097597f.jpg"
+                          src="/about/souheng.jpg"
                           alt="Avatar"
                           width={32}
                           height={32}
@@ -1392,19 +1392,19 @@ max-sm:hidden
                       </div>
 
                       <div className="text-left">
-                        <p className="text-[14px] font-bold leading-none">
-                          Default profile
+                        <p className="text-[14px]  lg:text-lg font-bold leading-none">
+                          souheng
                         </p>
 
                         <p
                           className="
                   mt-1
-                  text-[12px]
+                  text-[12px] lg:text-base
                   leading-none
                   text-white/70
                 "
                         >
-                          23 422 points
+                          គនណីគោល
                         </p>
                       </div>
                     </div>
@@ -1418,7 +1418,7 @@ max-sm:hidden
               rounded-xl
               bg-secondary-400
               px-3 py-2
-              text-[10px]
+              text-[10px] lg:text-[12px]
               font-black
               text-white
               shadow-md max-sm:right-5 max-sm:mt-3
@@ -1508,9 +1508,9 @@ max-sm:hidden
                 md:text-2xl
               "
                   >
-                    កំណត់ចំណង់ចំណូលចិត្ត
+                    អូសដើម្បីជ្រើសរើស
                     <br />
-                    របស់លោកអ្នក
+                    លើម្ហូបណាមួយ
                   </motion.h3>
 
                   <motion.p
@@ -1521,7 +1521,7 @@ max-sm:hidden
                 text-black/60
               "
                   >
-                    ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
+                    អូសទៅស្ដាំឬឆ្វេងសម្រាប់សម្រាប់មើលម្ហូបដែលអ្នកចង់ញ៉ាំ
                   </motion.p>
 
                   <motion.div
@@ -1675,9 +1675,9 @@ max-sm:hidden
                 md:text-2xl
               "
                   >
-                    កំណត់ចំណង់ចំណូលចិត្ត
+                    ជ្រើសរើសនិងរីករាយ
                     <br />
-                    របស់លោកអ្នក
+                    ជាមួយម្ហូបជាច្រើន
                   </motion.h3>
 
                   <motion.p
@@ -1688,7 +1688,7 @@ max-sm:hidden
                 text-black/60
               "
                   >
-                    ជ្រើសរើសប្រភេទម្ហូប និងចំណូលចិត្តរបស់អ្នក
+                    មើលព័ត៌មានម្ហូប និងជ្រើសរើសអ្វីដែលអ្នកចង់ញ៉ាំ
                   </motion.p>
 
                   <motion.div
