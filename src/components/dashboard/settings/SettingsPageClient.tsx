@@ -1,6 +1,5 @@
 "use client";
 
-import NotificationAlertSettings from "@/components/dashboard/settings/NotificationAlertSettings";
 import MealReminderSettings from "@/components/dashboard/settings/MealReminderSettings";
 import PushNotificationManager from "@/components/dashboard/notifications/PushNotificationManager";
 
@@ -14,7 +13,6 @@ export default function SettingsPageClient() {
         </p>
       </div>
 
-      <NotificationAlertSettings />
       <MealReminderSettings />
 
       <PushNotificationManager />
