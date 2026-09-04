@@ -375,7 +375,9 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
             {copied ? (
               <>
                 <IoCheckmarkOutline className="text-xl text-emerald-600" />
-                <span className="text-emerald-700 font-semibold">បានចម្លងអាសយដ្ឋាន</span>
+                <span className="text-emerald-700 font-semibold">
+                  បានចម្លងអាសយដ្ឋាន
+                </span>
               </>
             ) : (
               <>
@@ -465,7 +467,9 @@ function StoreLocationMapCard({ store }: { store: FoodStoreDetail }) {
         </span>
 
         <div>
-          <p className="text-[20px] font-bold text-primary-900">ទីតាំងនៅលើផែនទី</p>
+          <p className="text-[20px] font-bold text-primary-900">
+            ទីតាំងនៅលើផែនទី
+          </p>
           <p className="text-[15px] text-gray-400">Google Maps</p>
         </div>
       </div>
@@ -527,9 +531,12 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
   const schedules = groupOpeningHours(store.openingHours);
 
   // JavaScript getDay(): 0 is Sunday, 1 is Monday... Map to 1 (Monday) - 7 (Sunday)
-  const currentDayOfWeek = typeof window !== "undefined"
-    ? (new Date().getDay() === 0 ? 7 : new Date().getDay())
-    : 1;
+  const currentDayOfWeek =
+    typeof window !== "undefined"
+      ? new Date().getDay() === 0
+        ? 7
+        : new Date().getDay()
+      : 1;
 
   if (schedules.length === 0) {
     return null;
@@ -593,8 +600,8 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
                   schedule.isClosed
                     ? "font-medium text-red-500"
                     : isToday
-                    ? "font-bold text-primary-800"
-                    : "text-gray-700"
+                      ? "font-bold text-primary-800"
+                      : "text-gray-700"
                 }
               >
                 {schedule.isClosed
@@ -636,7 +643,7 @@ function LoadingPage() {
         <div className="mb-5 h-6 w-32 animate-pulse rounded-md bg-gray-200" />
 
         {/* Main Grid: Left Content (Hero + Menu) | Right Sidebar */}
-        <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px] xl:grid-cols-[1fr_360px]">
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px]">
           {/* Left Column */}
           <div className="flex min-w-0 flex-col gap-8">
             {/* Hero Skeleton */}
@@ -682,31 +689,31 @@ function LoadingPage() {
                   <div className="h-[600px] w-full animate-pulse rounded-[24px] border border-gray-100 bg-white shadow-sm ring-1 ring-black/5"></div>
                 </div>
 
-            {/* Menu Items Skeleton Grid */}
-            <div className="grid flex-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-              {Array.from({ length: 9 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm ring-1 ring-black/5"
-                >
-                  <div className="h-[220px] w-full animate-pulse bg-gray-100/80" />
-                  <div className="p-5">
-                    <div className="mb-3 h-6 w-3/4 animate-pulse rounded-md bg-gray-200" />
-                    <div className="mb-5 h-4 w-1/2 animate-pulse rounded-md bg-gray-100" />
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="h-6 w-20 animate-pulse rounded-md bg-gray-200" />
-                      <div className="h-10 w-10 animate-pulse rounded-full bg-gray-100" />
+                {/* Menu Items Skeleton Grid */}
+                <div className="grid flex-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+                  {Array.from({ length: 9 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm ring-1 ring-black/5"
+                    >
+                      <div className="h-[220px] w-full animate-pulse bg-gray-100/80" />
+                      <div className="p-5">
+                        <div className="mb-3 h-6 w-3/4 animate-pulse rounded-md bg-gray-200" />
+                        <div className="mb-5 h-4 w-1/2 animate-pulse rounded-md bg-gray-100" />
+                        <div className="flex items-center justify-between pt-2">
+                          <div className="h-6 w-20 animate-pulse rounded-md bg-gray-200" />
+                          <div className="h-10 w-10 animate-pulse rounded-full bg-gray-100" />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Desktop Sidebar Skeleton */}
-      <div className="hidden flex-col gap-6 lg:sticky lg:top-24 lg:flex">
+          {/* Desktop Sidebar Skeleton */}
+          <div className="hidden flex-col gap-6 lg:sticky lg:top-24 lg:flex">
             <div className="animate-pulse rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100"></div>
@@ -882,7 +889,7 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
         </Link>
 
         {/* Main Layout Grid */}
-        <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px] xl:grid-cols-[1fr_360px]">
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px]">
           {/* Left Column */}
           <div className="flex min-w-0 flex-col gap-8">
             <StoreHero store={store} />
@@ -896,142 +903,147 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
 
             {/* Menu Section */}
             <div className="space-y-6">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between border-b border-gray-100 pb-8 pt-4">
-          <div>
-            <h2 className="text-3xl font-extrabold text-slate-900">
-              មុខម្ហូបប្រចាំហាង
-            </h2>
-            <p className="mt-2 text-lg text-slate-500">
-              ស្វែងរកមុខម្ហូបដែលអ្នកចូលចិត្តក្នុងចំណោម <span className="font-semibold text-primary-700">{storeMenuItems.length}</span> ជម្រើស
-            </p>
-          </div>
-
-          <div className="flex w-full min-w-0 sm:w-auto sm:min-w-[400px] items-center gap-3">
-            <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-[20px] bg-slate-100/80 px-5 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:shadow-md hover:bg-slate-100">
-              <IoSearchOutline className="shrink-0 text-2xl text-slate-400" />
-              <input
-                type="search"
-                value={filters.query}
-                onChange={(event) =>
-                  setFilters({
-                    ...filters,
-                    query: event.target.value,
-                  })
-                }
-                placeholder="ស្វែងរកម្ហូប..."
-                className="w-full bg-transparent text-lg text-slate-900 outline-none placeholder:text-slate-400"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setMobileFiltersOpen(true)}
-              className="relative flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-[20px] bg-primary-50 text-primary-700 transition-colors hover:bg-primary-100 xl:hidden"
-              aria-label="Open menu filters"
-            >
-              <IoFilterOutline className="text-2xl" />
-
-              {activeFilterCount > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-secondary-500 px-1.5 text-sm font-bold text-white shadow-sm ring-2 ring-white">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-          {/* Filter + menu cards */}
-
-          <div className="flex min-w-0 items-start gap-7">
-            <StoreMenuFilterSidebar
-              filters={filters}
-              options={filterOptions}
-              onChange={setFilters}
-            />
-
-            <section className="min-w-0 flex-1">
-              {busy && (
-                <div className="mb-4 rounded-xl bg-primary-50 px-4 py-3 text-[18px] text-primary-700">
-                  កំពុងធ្វើបច្ចុប្បន្នភាពទិន្នន័យ...
-                </div>
-              )}
-
-              {storeMenuItems.length === 0 ? (
-                <div className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-14 text-center shadow-sm">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-700">
-                    <FaStore className="text-[27px]" />
-                  </div>
-
-                  <h3 className="mt-4 text-[22px] font-bold text-primary-900">
-                    ហាងនេះមិនទាន់មានមុខម្ហូប
-                  </h3>
-
-                  <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500">
-                    មិនមាន Menu Item ណាមួយក្នុងទិន្នន័យដែលភ្ជាប់ជាមួយហាងនេះទេ។
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between border-b border-gray-100 pb-8 pt-4">
+                <div>
+                  <h2 className="text-3xl font-extrabold text-primary-800">
+                    មុខម្ហូបប្រចាំហាង
+                  </h2>
+                  <p className="mt-2 text-lg text-slate-500">
+                    ស្វែងរកមុខម្ហូបដែលអ្នកចូលចិត្តក្នុងចំណោម{" "}
+                    <span className="font-semibold text-primary-700">
+                      {storeMenuItems.length}
+                    </span>{" "}
+                    ជម្រើស
                   </p>
                 </div>
-              ) : filteredMenuItems.length > 0 ? (
-                <motion.div
-                  layout
-                  className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3"
-                >
-                  <AnimatePresence>
-                    {filteredMenuItems.map((food) => (
-                      <motion.div
-                        layout
-                        key={food.uuid}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <FoodCard food={food} />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
-              ) : (
-                <div className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-14 text-center shadow-sm">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-700">
-                    <IoSearchOutline className="text-[28px]" />
+
+                <div className="flex w-full min-w-0 sm:w-auto sm:min-w-[400px] items-center gap-3">
+                  <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-[20px] bg-slate-100/80 px-5 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:shadow-md hover:bg-slate-100">
+                    <IoSearchOutline className="shrink-0 text-2xl text-slate-400" />
+                    <input
+                      type="search"
+                      value={filters.query}
+                      onChange={(event) =>
+                        setFilters({
+                          ...filters,
+                          query: event.target.value,
+                        })
+                      }
+                      placeholder="ស្វែងរកម្ហូប..."
+                      className="w-full bg-transparent text-lg text-slate-900 outline-none placeholder:text-slate-400"
+                    />
                   </div>
-
-                  <h3 className="mt-4 text-[22px] font-bold text-primary-900">
-                    មិនមានមុខម្ហូបត្រូវនឹងតម្រង
-                  </h3>
-
-                  <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500">
-                    ហាងនេះមាន {storeMenuItems.length} មុខម្ហូប
-                    ប៉ុន្តែតម្រងបច្ចុប្បន្នបានដកលទ្ធផលទាំងអស់ចេញ។
-                  </p>
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setFilters({
-                        ...DEFAULT_STORE_MENU_FILTERS,
-                        query: "",
-                      })
-                    }
-                    className="mt-5 rounded-full bg-primary-800 px-5 py-3 text-[18px] font-semibold text-white transition hover:bg-primary-700"
+                    onClick={() => setMobileFiltersOpen(true)}
+                    className="relative flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-[20px] bg-primary-50 text-primary-700 transition-colors hover:bg-primary-100 xl:hidden"
+                    aria-label="Open menu filters"
                   >
-                    សម្អាតតម្រងទាំងអស់
+                    <IoFilterOutline className="text-2xl" />
+
+                    {activeFilterCount > 0 && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-secondary-500 px-1.5 text-sm font-bold text-white shadow-sm ring-2 ring-white">
+                        {activeFilterCount}
+                      </span>
+                    )}
                   </button>
                 </div>
-              )}
-            </section>
+              </div>
+
+              {/* Filter + menu cards */}
+
+              <div className="flex min-w-0 items-start gap-7">
+                <StoreMenuFilterSidebar
+                  filters={filters}
+                  options={filterOptions}
+                  onChange={setFilters}
+                />
+
+                <section className="min-w-0 flex-1">
+                  {busy && (
+                    <div className="mb-4 rounded-xl bg-primary-50 px-4 py-3 text-[18px] text-primary-700">
+                      កំពុងធ្វើបច្ចុប្បន្នភាពទិន្នន័យ...
+                    </div>
+                  )}
+
+                  {storeMenuItems.length === 0 ? (
+                    <div className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-14 text-center shadow-sm">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+                        <FaStore className="text-[27px]" />
+                      </div>
+
+                      <h3 className="mt-4 text-[22px] font-bold text-primary-900">
+                        ហាងនេះមិនទាន់មានមុខម្ហូប
+                      </h3>
+
+                      <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500">
+                        មិនមាន Menu Item
+                        ណាមួយក្នុងទិន្នន័យដែលភ្ជាប់ជាមួយហាងនេះទេ។
+                      </p>
+                    </div>
+                  ) : filteredMenuItems.length > 0 ? (
+                    <motion.div
+                      layout
+                      className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-2"
+                    >
+                      <AnimatePresence>
+                        {filteredMenuItems.map((food) => (
+                          <motion.div
+                            layout
+                            key={food.uuid}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <FoodCard food={food} />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </motion.div>
+                  ) : (
+                    <div className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-14 text-center shadow-sm">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+                        <IoSearchOutline className="text-[28px]" />
+                      </div>
+
+                      <h3 className="mt-4 text-[22px] font-bold text-primary-900">
+                        មិនមានមុខម្ហូបត្រូវនឹងតម្រង
+                      </h3>
+
+                      <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500">
+                        ហាងនេះមាន {storeMenuItems.length} មុខម្ហូប
+                        ប៉ុន្តែតម្រងបច្ចុប្បន្នបានដកលទ្ធផលទាំងអស់ចេញ។
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFilters({
+                            ...DEFAULT_STORE_MENU_FILTERS,
+                            query: "",
+                          })
+                        }
+                        className="mt-5 rounded-full bg-primary-800 px-5 py-3 text-[18px] font-semibold text-white transition hover:bg-primary-700"
+                      >
+                        សម្អាតតម្រងទាំងអស់
+                      </button>
+                    </div>
+                  )}
+                </section>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Right Sidebar (Sticky) */}
+          <div className="hidden flex-col gap-6 lg:sticky lg:top-24 lg:flex">
+            <StoreLocationMapCard store={store} />
+            <StoreOpeningHoursCard store={store} />
+            <StoreSocialMediaCard store={store} />
           </div>
         </div>
       </div>
-
-      {/* Desktop Right Sidebar (Sticky) */}
-      <div className="hidden flex-col gap-6 lg:sticky lg:top-24 lg:flex">
-        <StoreLocationMapCard store={store} />
-        <StoreOpeningHoursCard store={store} />
-        <StoreSocialMediaCard store={store} />
-      </div>
-    </div>
-  </div>
 
       {/* Mobile filter drawer */}
 
