@@ -902,24 +902,20 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
             </div>
 
             {/* Menu Section */}
-            <div className="space-y-6">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between border-b border-gray-100 pb-8 pt-4">
+            <div className="space-y-4">
+              <div className="sticky px-2 top-[64px] z-40 flex flex-col gap-4 border-b border-white/20 bg-white/70 py-1 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-3xl font-extrabold text-primary-800">
+                  {/* <h2 className="text-2xl font-extrabold text-primary-800">
                     មុខម្ហូបប្រចាំហាង
-                  </h2>
-                  <p className="mt-2 text-lg text-slate-500">
-                    ស្វែងរកមុខម្ហូបដែលអ្នកចូលចិត្តក្នុងចំណោម{" "}
-                    <span className="font-semibold text-primary-700">
-                      {storeMenuItems.length}
-                    </span>{" "}
-                    ជម្រើស
+                  </h2> */}
+                  <p className="mt-1 text-xl font-medium text-slate-500">
+                    មុខម្ហូប <span className="font-semibold text-primary-700">{storeMenuItems.length}</span> ជម្រើស
                   </p>
                 </div>
 
-                <div className="flex w-full min-w-0 sm:w-auto sm:min-w-[400px] items-center gap-3">
-                  <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-[20px] bg-slate-100/80 px-5 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:shadow-md hover:bg-slate-100">
-                    <IoSearchOutline className="shrink-0 text-2xl text-slate-400" />
+                <div className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:min-w-[320px] lg:min-w-[400px]">
+                  <div className="flex min-h-[44px] flex-1 items-center gap-3 rounded-full bg-white px-5 shadow-sm ring-1 ring-black/5 transition-all focus-within:ring-2 focus-within:ring-primary-500 hover:bg-slate-50">
+                    <IoSearchOutline className="shrink-0 text-[20px] text-slate-400" />
                     <input
                       type="search"
                       value={filters.query}
@@ -930,20 +926,20 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
                         })
                       }
                       placeholder="ស្វែងរកម្ហូប..."
-                      className="w-full bg-transparent text-lg text-slate-900 outline-none placeholder:text-slate-400"
+                      className="w-full bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
                     />
                   </div>
 
                   <button
                     type="button"
                     onClick={() => setMobileFiltersOpen(true)}
-                    className="relative flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-[20px] bg-primary-50 text-primary-700 transition-colors hover:bg-primary-100 xl:hidden"
+                    className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700 transition-colors hover:bg-primary-100 xl:hidden"
                     aria-label="Open menu filters"
                   >
-                    <IoFilterOutline className="text-2xl" />
+                    <IoFilterOutline className="text-[20px]" />
 
                     {activeFilterCount > 0 && (
-                      <span className="absolute -right-1.5 -top-1.5 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-secondary-500 px-1.5 text-sm font-bold text-white shadow-sm ring-2 ring-white">
+                      <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary-500 px-1 text-xs font-bold text-white shadow-sm ring-2 ring-white">
                         {activeFilterCount}
                       </span>
                     )}
