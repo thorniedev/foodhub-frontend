@@ -21,11 +21,10 @@ import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 const ITEMS_PER_PAGE = 8;
 
-// The recommendation session is fetched once per (meal tab, food/drink
-// filter) and paginated client-side, same as the catalog fallback — the
-// backend caps requestedLimit at 100, so that's the most this can ever ask
-// for regardless of how many pages the user scrolls through.
-const RECOMMENDATION_LIMIT = 100;
+// Fetch just enough for 2 pages up front. The session paginates client-side,
+// so 16 items = instant first render. Previously 100 caused 100 parallel
+// getMenuItemByUuid calls before anything appeared.
+const RECOMMENDATION_LIMIT = 16;
 
 /* =========================================================
    TYPES
@@ -416,10 +415,7 @@ export default function FilterByMealTime({
     isFetching: isCatalogFetching,
     isError: isCatalogError,
     refetch,
-  } = useGetMenuItemsQuery(
-    { rootCategoryCode },
-    { skip: isPersonalized },
-  );
+  } = useGetMenuItemsQuery({ rootCategoryCode });
 
   /* =========================================================
      RESET PAGE ON FILTER CHANGE
@@ -482,10 +478,27 @@ export default function FilterByMealTime({
      this the "Breakfast" tab could still show non-breakfast items.
   ========================================================= */
 
-  const sourceItems = isPersonalized ? recommendedFoods : catalogMenuItems;
+  const sourceItems = useMemo(() => {
+    if (!isPersonalized) {
+      return catalogMenuItems;
+    }
+    // When personalized, prefer recommendedFoods once loaded;
+    // fall back to catalog items if recommendation has no items or is pending
+    if (recommendedFoods.length > 0) {
+      return recommendedFoods;
+    }
+    return catalogMenuItems;
+  }, [isPersonalized, recommendedFoods, catalogMenuItems]);
 
   const filteredFoods = useMemo(() => {
+    const seenUuids = new Set<string>();
     return sourceItems
+      .filter((menuItem) => {
+        if (!menuItem.uuid) return false;
+        if (seenUuids.has(menuItem.uuid)) return false;
+        seenUuids.add(menuItem.uuid);
+        return true;
+      })
       .filter(
         (menuItem) =>
           !menuItem.availabilityStatus ||
@@ -505,11 +518,12 @@ export default function FilterByMealTime({
     filters.cuisines,
   ]);
 
+  // Show skeleton only while data is truly empty and loading
   const isLoading = isPersonalized
-    ? isSessionLoading || isEnriching
+    ? isSessionLoading && recommendedFoods.length === 0 && catalogMenuItems.length === 0
     : isCatalogLoading;
   const isFetching = isPersonalized
-    ? isSessionLoading || isEnriching
+    ? isSessionLoading
     : isCatalogFetching;
   const isError = isPersonalized ? false : isCatalogError;
 
@@ -672,7 +686,8 @@ export default function FilterByMealTime({
         <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {/* Loading */}
 
-          {(isLoading || isFetching) && sourceItems.length === 0 &&
+          {/* Skeleton: only while AI session call in flight and no items yet */}
+          {isLoading &&
             Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={`skeleton-fbm-${i}`}
@@ -718,7 +733,7 @@ export default function FilterByMealTime({
           {/* Result */}
 
           <AnimatePresence mode="popLayout">
-            {!isLoading && !isError && filteredFoods.length === 0 && (
+            {!isLoading && !isEnriching && !isError && filteredFoods.length === 0 && (
               <motion.p
                 key="empty"
                 initial={{
@@ -738,10 +753,10 @@ export default function FilterByMealTime({
 
             {!isLoading &&
               !isError &&
-              paginatedFoods.map((food) => (
+              paginatedFoods.map((food, index) => (
                 <motion.div
                   layout
-                  key={food.uuid}
+                  key={`${food.uuid}-${food.legacyId ?? index}`}
                   initial={{
                     opacity: 0,
                     y: 14,

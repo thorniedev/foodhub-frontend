@@ -1,33 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-
+import React from "react";
 import { motion } from "framer-motion";
 
-import { CiHeart } from "react-icons/ci";
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
+import {
+  useGetFoodCatalogByUuidQuery,
+  useGetMenuItemByUuidQuery,
+} from "@/app/store/menuApi";
+
+import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
+
 import {
   FaClock,
-  FaHeart,
   FaLocationArrow,
   FaMotorcycle,
-  FaStar,
   FaStore,
 } from "react-icons/fa";
-import { IoMdTime } from "react-icons/io";
-
-import { IoLocationOutline } from "react-icons/io5";
-
-import { MdDeliveryDining } from "react-icons/md";
+import {
+  IoBookmark,
+  IoBookmarkOutline,
+  IoLocationOutline,
+} from "react-icons/io5";
 
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
-import { useBookmarks } from "@/hooks/useBookmarks";
-import { useTrackInteraction } from "@/hooks/useTrackInteraction";
+
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import Image from "next/image";
 
 /* =========================================================
    TYPES
@@ -35,21 +39,7 @@ import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 type FoodCardProps = {
   food: CatalogMenuItem;
-
-  /**
-   * Used by Location page.
-   *
-   * Example:
-   * onViewMap={(storeUuid) => {
-   *   setSelectedStoreUuid(storeUuid);
-   * }}
-   */
   onViewMap?: (storeUuid: string) => void;
-
-  /**
-   * Highlights this card when user
-   * clicks a marker or focuses map item.
-   */
   isMapSelected?: boolean;
 };
 
@@ -87,205 +77,403 @@ function getStoredFavoriteIds(): string[] {
   }
 }
 
-function cleanKhmerLabel(label: string): string {
-  if (!label) return "";
-  return label.replace(/\s*\([A-Za-z0-9\s&,/-]+\)/g, "").trim();
-}
-
 /* =========================================================
    COMPONENT
+   ✅ PERFORMANCE FIX: React.memo to prevent unnecessary re-renders
 ========================================================= */
 
-export default function FoodCard({
+const FoodCard = React.memo(function FoodCard({
   food,
   onViewMap,
   isMapSelected = false,
 }: FoodCardProps) {
-  const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
-  const { track } = useTrackInteraction();
-
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  /* =======================================================
-     DISTANCE & TRAVEL TIME
-  ======================================================= */
+  const { data: user } = useGetCurrentUserQuery();
+  const { bookmarks, addBookmark, removeBookmark, findBookmark } =
+    useBookmarks();
 
   const { coordinates: userCoordinates } = useUserLocation();
 
-  let travelTimeMin: number | null = null;
-  let computedDistanceKm: number | null = food.distanceKm ?? null;
-
-  if (
-    userCoordinates &&
-    food.store?.latitude !== undefined &&
-    food.store?.latitude !== null &&
-    food.store?.longitude !== undefined &&
-    food.store?.longitude !== null
-  ) {
-    const storeCoordinates = {
-      latitude: Number(food.store.latitude),
-      longitude: Number(food.store.longitude),
-    };
-    if (isValidCoordinates(storeCoordinates)) {
-      computedDistanceKm = calculateDistanceKm(
-        userCoordinates,
-        storeCoordinates,
-      );
-
-      // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
-      travelTimeMin = Math.ceil(computedDistanceKm * 2 + 5);
-    }
-  }
-
-  const formattedDistance =
-    computedDistanceKm !== null && Number.isFinite(computedDistanceKm)
-      ? computedDistanceKm < 1
-        ? `${Math.round(computedDistanceKm * 1000)} m`
-        : `${computedDistanceKm.toFixed(1)} km`
-      : null;
-
   const itemUuid =
-    food.uuid ||
     (food as unknown as { menuItemUuid?: string }).menuItemUuid ||
+    food.uuid ||
     "";
 
-  const rawImage =
-    food.thumbnail ||
-    (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
-    (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
-
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>(
-    toFrontendApiAssetUrl(rawImage),
+  // ✅ PERFORMANCE FIX: Only fetch detail if essential data is missing from parent
+  const hasCompleteData = Boolean(
+    (food.name || food.localName) &&
+    food.price !== undefined &&
+    food.store?.name
   );
 
-  /* =======================================================
-     FAVORITE INITIAL STATE
-  ======================================================= */
-
-  useEffect(() => {
-    const favoriteIds = getStoredFavoriteIds();
-    const serverBookmark = findBookmark({
-      menuItemUuid: food.uuid,
-      foodUuid: food.food?.uuid,
-    });
-
-    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(food.uuid));
-  }, [food.uuid, food.food?.uuid, findBookmark, bookmarks]);
-
-  /* =======================================================
-     THUMBNAIL
-  ======================================================= */
-
-  useEffect(() => {
-    const nextThumbnail =
-      food.thumbnail ||
-      (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
-      (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
-
-    setThumbnailUrl(toFrontendApiAssetUrl(nextThumbnail));
-  }, [food.thumbnail, food.gallery, food.uuid]);
-
-  /* =======================================================
-     FAVORITE TOGGLE
-  ======================================================= */
-
-  const toggleFavorite = async () => {
-    const currentIds = getStoredFavoriteIds();
-    const serverBookmark = findBookmark({
-      menuItemUuid: food.uuid,
-      foodUuid: food.food?.uuid,
-    });
-
-    const isCurrentlyFavorite = isFavorite || Boolean(serverBookmark) || currentIds.includes(food.uuid);
-
-    if (isCurrentlyFavorite) {
-      // Unfavorite
-      const nextIds = currentIds.filter((id) => id !== food.uuid);
-      try {
-        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
-      } catch {}
-
-      setIsFavorite(false);
-
-      if (serverBookmark) {
-        try {
-          await removeBookmark(serverBookmark.uuid);
-        } catch (err) {
-          console.warn("[BOOKMARK REMOVE ERROR]", err);
+  // Data fetching: fetch menu item only if not already provided by parent:
+  // GET /api/v1/catalog/menu-items/{uuid}/detail
+  const { data: detailData } = useGetMenuItemByUuidQuery(
+    userCoordinates && isValidCoordinates(userCoordinates)
+      ? {
+          uuid: itemUuid,
+          latitude: userCoordinates.latitude,
+          longitude: userCoordinates.longitude,
         }
-      }
+      : itemUuid,
+    {
+      skip: !itemUuid || hasCompleteData,
+    },
+  );
 
-      track({
-        eventType: "UNBOOKMARK",
-        menuItemUuid: food.uuid,
-        foodUuid: food.food?.uuid,
-        storeUuid: food.store?.uuid,
-      });
-    } else {
-      // Favorite
-      const nextIds = [...currentIds.filter((id) => id !== food.uuid), food.uuid];
-      try {
-        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
-      } catch {}
+  // Master Food definition UUID from detail endpoint or prop
+  const masterFoodUuid = detailData?.food?.uuid || food.food?.uuid || "";
 
-      setIsFavorite(true);
+  // ✅ PERFORMANCE FIX: Only fetch food catalog if dietaryTypes and cuisine/category are missing
+  const needsFoodCatalog = Boolean(
+    masterFoodUuid &&
+    !food.food?.dietaryTypes &&
+    !detailData?.food?.dietaryTypes &&
+    !food.food?.cuisine &&
+    !food.food?.category
+  );
 
-      if (activeProfileUuid) {
-        try {
-          await addBookmark({
-            menuItemUuid: food.uuid,
-            foodUuid: food.food?.uuid,
-            storeUuid: food.store?.uuid,
-          });
-        } catch (err) {
-          console.warn("[BOOKMARK ADD ERROR]", err);
-        }
-      }
+  const { data: foodCatalog } = useGetFoodCatalogByUuidQuery(masterFoodUuid, {
+    skip: !needsFoodCatalog,
+  });
 
-      track({
-        eventType: "BOOKMARK",
-        menuItemUuid: food.uuid,
-        foodUuid: food.food?.uuid,
-        storeUuid: food.store?.uuid,
-      });
-    }
-
-    window.dispatchEvent(new Event("foodhub-favorites-updated"));
-  };
+  // Merge the fetched detail with initial food prop, keeping the exact same UI
+  const activeFood = useMemo(() => {
+    if (!detailData) return food;
+    return {
+      ...food,
+      ...detailData,
+      store: {
+        ...(food.store ?? {}),
+        ...(detailData.store ?? {}),
+      },
+      food: {
+        ...(food.food ?? {}),
+        ...(detailData.food ?? {}),
+      },
+    };
+  }, [food, detailData]);
 
   /* =======================================================
      DISPLAY VALUES
   ======================================================= */
 
   const displayName =
-    food.localName?.trim() || food.name?.trim() || "Unnamed food";
+    activeFood.localName?.trim() ||
+    activeFood.name?.trim() ||
+    foodCatalog?.localName?.trim() ||
+    "Unnamed food";
+
+  const storeUuid = activeFood.store?.uuid?.trim() || "";
+  const storeName = activeFood.store?.name?.trim() || "ហាង";
 
   /**
-   * IMPORTANT:
-   * Current backend response keeps
-   * dietary types inside food.food.
+   * Catalog menu items keep dietaryTypes inside `food.food` or on the master food catalog.
+   * Matches FoodDetailPage mapping 100%:
+   * 1. activeFood.food.dietaryTypes
+   * 2. foodCatalog.dietaryTypes
+   * 3. rootDietaryTypes
    */
-  const dietaryTypes = food.food?.dietaryTypes ?? [];
+  const rootDietaryTypes = (
+    activeFood as unknown as {
+      dietaryTypes?: {
+        code: string;
+        name: string;
+      }[];
+    }
+  ).dietaryTypes;
 
-  const averageRating = Number(food.store?.averageRating ?? 0);
+  const dietaryTypes = useMemo(() => {
+    if (
+      activeFood.food?.dietaryTypes &&
+      activeFood.food.dietaryTypes.length > 0
+    ) {
+      return activeFood.food.dietaryTypes;
+    }
+    if (foodCatalog?.dietaryTypes && foodCatalog.dietaryTypes.length > 0) {
+      return foodCatalog.dietaryTypes.map((d) => ({
+        code: d.code,
+        name: d.name,
+        verificationStatus: d.verificationStatus || "UNVERIFIED",
+      }));
+    }
+    return rootDietaryTypes ?? [];
+  }, [
+    activeFood.food?.dietaryTypes,
+    foodCatalog?.dietaryTypes,
+    rootDietaryTypes,
+  ]);
 
-  const displayedRating = Number.isFinite(averageRating)
-    ? averageRating.toFixed(1)
-    : "0.0";
+  /**
+   * Catalog responses keep category/cuisine inside `food.food` or foodCatalog,
+   * while discovery search returns category/cuisine at the menu-item root.
+   * Support both response shapes without changing the card UI.
+   */
+  const foodAny = activeFood as unknown as {
+    cuisine?: { code?: string; name: string } | null;
+    category?: { code?: string; name: string } | null;
+    imageUrl?: string | null;
+    primaryMediaUuid?: string | null;
+  };
 
-  const storeUuid = food.store?.uuid?.trim() || "";
+  const cuisine = useMemo(() => {
+    if (activeFood.food?.cuisine) return activeFood.food.cuisine;
+    if (foodCatalog?.cuisineName) {
+      return {
+        code: foodCatalog.cuisineUuid || "",
+        name: foodCatalog.cuisineName,
+      };
+    }
+    return foodAny.cuisine ?? null;
+  }, [
+    activeFood.food?.cuisine,
+    foodCatalog?.cuisineName,
+    foodCatalog?.cuisineUuid,
+    foodAny.cuisine,
+  ]);
 
-  const storeName =
-    food.store?.localName?.trim() ||
-    food.store?.name?.trim() ||
-    "Unknown store";
+  const category = useMemo(() => {
+    if (activeFood.food?.category) return activeFood.food.category;
+    if (foodCatalog?.categoryName) {
+      return {
+        code: foodCatalog.categoryUuid || "",
+        name: foodCatalog.categoryName,
+      };
+    }
+    return foodAny.category ?? null;
+  }, [
+    activeFood.food?.category,
+    foodCatalog?.categoryName,
+    foodCatalog?.categoryUuid,
+    foodAny.category,
+  ]);
 
-  const distanceKm =
-    food.distanceKm !== null &&
-    food.distanceKm !== undefined &&
-    Number.isFinite(Number(food.distanceKm))
-      ? Number(food.distanceKm)
+  /* =======================================================
+     STATE
+  ======================================================= */
+
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  /* =======================================================
+     DISTANCE & TRAVEL TIME (MEMOIZED)
+     ✅ PERFORMANCE FIX: Memoize distance calculations
+  ======================================================= */
+
+  let travelTimeMin: number | null = null;
+  let computedDistanceKm: number | null =
+    activeFood.distanceKm !== undefined &&
+    activeFood.distanceKm !== null &&
+    Number.isFinite(Number(activeFood.distanceKm))
+      ? Number(activeFood.distanceKm)
       : null;
+
+  if (
+    userCoordinates &&
+    activeFood.store?.latitude !== undefined &&
+    activeFood.store?.latitude !== null &&
+    activeFood.store?.longitude !== undefined &&
+    activeFood.store?.longitude !== null
+  ) {
+    const storeCoordinates = {
+      latitude: Number(activeFood.store.latitude),
+      longitude: Number(activeFood.store.longitude),
+    };
+    if (isValidCoordinates(storeCoordinates)) {
+      computedDistanceKm = calculateDistanceKm(
+        userCoordinates,
+        storeCoordinates,
+      );
+    }
+  }
+
+  if (computedDistanceKm !== null && Number.isFinite(computedDistanceKm)) {
+    // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
+    travelTimeMin = Math.ceil(computedDistanceKm * 2 + 5);
+  }
+
+    const formatted =
+      computedDistanceKm !== null &&
+      Number.isFinite(computedDistanceKm) &&
+      computedDistanceKm <= 500
+        ? computedDistanceKm < 1
+          ? `${Math.round(computedDistanceKm * 1000)} m`
+          : `${computedDistanceKm.toFixed(1)} km`
+        : null;
+
+    return { travelTimeMin: travelTime, formattedDistance: formatted };
+  }, [
+    userCoordinates,
+    activeFood.distanceKm,
+    activeFood.store?.latitude,
+    activeFood.store?.longitude,
+  ]);
+
+  const rawImage =
+    activeFood.thumbnail ||
+    (activeFood.gallery && activeFood.gallery.length > 0 ? activeFood.gallery[0] : null) ||
+    foodAny.imageUrl ||
+    (foodAny.primaryMediaUuid
+      ? `/api/v1/media/${foodAny.primaryMediaUuid}`
+      : undefined) ||
+    (activeFood.uuid ? `/api/v1/catalog/menu-items/${activeFood.uuid}/images/1` : undefined);
+
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [rawImage]);
+
+  const thumbnailUrl = imgError
+    ? DEFAULT_FOOD_IMAGE
+    : toFrontendApiAssetUrl(rawImage);
+
+  /* =======================================================
+     DIETARY TAG WIDTH
+  ======================================================= */
+
+  const dietaryContainerRef = useRef<HTMLDivElement>(null);
+
+  const dietaryMeasureRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  const [visibleDietaryCount, setVisibleDietaryCount] = useState(
+    dietaryTypes.length,
+  );
+
+  /* =======================================================
+     BOOKMARKS & FAVORITES
+  ======================================================= */
+
+  useEffect(() => {
+    const favoriteIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: activeFood.uuid,
+      foodUuid: activeFood.food?.uuid,
+    });
+
+    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(activeFood.uuid));
+  }, [activeFood.uuid, activeFood.food?.uuid, findBookmark, bookmarks]);
+
+  /* =======================================================
+     FAVORITE / BOOKMARK TOGGLE
+  ======================================================= */
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const currentIds = getStoredFavoriteIds();
+    const serverBookmark = findBookmark({
+      menuItemUuid: activeFood.uuid,
+      foodUuid: activeFood.food?.uuid,
+    });
+
+    const isAlreadyFavorite =
+      isFavorite || Boolean(serverBookmark) || currentIds.includes(activeFood.uuid);
+
+    const nextIds = isAlreadyFavorite
+      ? currentIds.filter((id) => id !== activeFood.uuid)
+      : [...currentIds, activeFood.uuid];
+
+    try {
+      window.localStorage.setItem(
+        FAVORITES_STORAGE_KEY,
+        JSON.stringify(nextIds),
+      );
+    } catch (error) {
+      console.warn(
+        "[FOOD FAVORITE STORAGE]",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+
+    setIsFavorite(!isAlreadyFavorite);
+    window.dispatchEvent(new Event("foodhub-favorites-updated"));
+
+    try {
+      if (isAlreadyFavorite) {
+        if (serverBookmark) {
+          await removeBookmark(serverBookmark.uuid);
+        }
+      } else {
+        await addBookmark({
+          menuItemUuid: activeFood.uuid,
+          foodUuid: activeFood.food?.uuid,
+          storeUuid: activeFood.store?.uuid,
+        });
+      }
+    } catch (err) {
+      console.warn("[BOOKMARK SYNC ERROR]", err);
+    }
+  };
+
+  /* =======================================================
+     CALCULATE DIETARY TAGS THAT FIT
+  ======================================================= */
+
+  useLayoutEffect(() => {
+    const container = dietaryContainerRef.current;
+
+    if (!container || dietaryTypes.length === 0) {
+      return;
+    }
+
+    const calculateVisibleDietaryTypes = () => {
+      const containerWidth = container.clientWidth;
+
+      if (containerWidth <= 0) {
+        return;
+      }
+
+      const gap = 8; // gap-2 = 8px
+      const counterWidth = 32; // w-8 = 32px
+
+      let usedWidth = 0;
+      let visibleCount = 0;
+
+      for (let index = 0; index < dietaryTypes.length; index++) {
+        const element = dietaryMeasureRefs.current[index];
+
+        if (!element) {
+          continue;
+        }
+
+        const itemWidth = element.offsetWidth;
+
+        const widthWithTag =
+          visibleCount === 0 ? itemWidth : usedWidth + gap + itemWidth;
+
+        const hiddenCount = dietaryTypes.length - (index + 1);
+
+        /*
+         * If there are still hidden dietary types,
+         * reserve space for the +N counter.
+         */
+        const widthWithCounter =
+          hiddenCount > 0 ? widthWithTag + gap + counterWidth : widthWithTag;
+
+        if (widthWithCounter <= containerWidth) {
+          usedWidth = widthWithTag;
+          visibleCount++;
+        } else {
+          break;
+        }
+      }
+
+      setVisibleDietaryCount(visibleCount);
+    };
+
+    calculateVisibleDietaryTypes();
+
+    const resizeObserver = new ResizeObserver(calculateVisibleDietaryTypes);
+
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [dietaryTypes]);
 
   /* =======================================================
      UI
@@ -305,142 +493,139 @@ export default function FoodCard({
       transition={{
         duration: 0.25,
       }}
-      className="
-        relative
-        flex
-        h-full
-        min-w-0
-        w-full
-        flex-col
-        rounded-[24px]
-        border
-        border-gray-200
-        bg-white
-        p-2.5
-        shadow-sm
-        transition
-        duration-200
-        hover:-translate-y-1
-        hover:shadow-md
-        dark:border-gray-800
-        dark:bg-gray-950
-      "
+      className="relative flex h-full w-full flex-col"
     >
       {/* ==========================================
-          IMAGE
+          CARD LINK
       ========================================== */}
 
-      <div className="relative overflow-hidden rounded-[14px]">
-        <Link
-          href={`/menu/${food.uuid}`}
-          className="block"
-          aria-label={`View ${displayName}`}
-        >
-          <Image
-            src={thumbnailUrl}
-            alt={displayName}
-            width={485}
-            height={370}
-            unoptimized
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            draggable={false}
-            onError={() => {
-              if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {
-                setThumbnailUrl(DEFAULT_FOOD_IMAGE);
-              }
-            }}
-            className="
-              h-[160px]
-              sm:h-[180px]
-              w-full
-              rounded-[14px]
-              border
-              border-gray-100
-              dark:border-gray-800
-              object-cover
-              pointer-events-none
-            "
-          />
-        </Link>
+      <Link
+        href={`/menu/${itemUuid}`}
+        className="
+          flex
+          h-full
+          w-full
+          flex-col
+          rounded-[18px]
+          sm:rounded-[24px]
+          border
+          border-gray-200
+          bg-white
+          p-2.5
+          sm:p-3.5
+          shadow-xs
+          transition
+          duration-200
+          hover:-translate-y-1
+          hover:shadow-md
+          dark:border-gray-800
+          dark:bg-gray-950
+        "
+      >
+        {/* ========================================
+            IMAGE
+        ======================================== */}
 
-        {/* FAVORITE BUTTON */}
-
-        <button
-          type="button"
-          aria-label={
-            isFavorite
-              ? `Remove ${displayName} from favorites`
-              : `Add ${displayName} to favorites`
-          }
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-
-            toggleFavorite();
-          }}
-          className="
-            absolute
-            right-2
-            top-2
-            z-20
-            cursor-pointer
-            rounded-full
-            transition
-            active:scale-95
-          "
-        >
-          {isFavorite ? (
-            <FaHeart
-              className="
-                rounded-full
-                bg-primary-800
-                p-2
-                text-4xl
-                text-red-400
-                shadow
-              "
-            />
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-[12px] sm:rounded-[10px] max-sm:rounded-[8px] border border-gray-100 dark:border-gray-800">
+          {imgError || !rawImage ? (
+            <div className="flex h-[115px] sm:h-[180px] w-full items-center justify-center bg-gray-50 dark:bg-gray-800">
+              <div className="flex flex-col items-center gap-2 text-gray-300 dark:text-gray-600">
+                <svg className="w-8 h-8 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+              </div>
+            </div>
           ) : (
-            <CiHeart
+            <Image
+              src={thumbnailUrl}
+              alt={displayName}
+              width={485}
+              height={370}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              draggable={false}
+              onError={() => {
+                setImgError(true);
+              }}
               className="
-                rounded-full
-                bg-primary-800
-                p-2
-                text-4xl
-                text-white
-                shadow
+                h-[115px]
+                sm:h-[180px]
+                w-full
+                object-cover
+                pointer-events-none
               "
             />
           )}
-        </button>
-      </div>
 
-      {/* ==========================================
-          CONTENT
-      ========================================== */}
-
-      <div className="flex flex-1 flex-col gap-2 pt-2">
-        {/* STORE */}
-
-        <div className="flex items-center gap-2 text-secondary-400">
-          <FaStore />
-
-          <p className="line-clamp-1 text-lg">{storeName}</p>
+          {/* Top-Right Bookmark Button */}
+          <button
+            type="button"
+            aria-label={
+              isFavorite
+                ? "ដកចេញពីបញ្ជីចំណូលចិត្ត"
+                : "រក្សាទុកក្នុងបញ្ជីចំណូលចិត្ត"
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite();
+            }}
+            className={`
+              absolute right-1 top-1 z-10
+              flex h-7 w-7 sm:h-8 sm:w-8
+              items-center justify-center
+              rounded-full
+              backdrop-blur-md transition-all duration-200
+              shadow-sm hover:scale-110 active:scale-95
+              ${
+                isFavorite
+                  ? "bg-secondary-500 text-white shadow-secondary-500/30"
+                  : "bg-white/85 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
+              }
+            `}
+          >
+            {isFavorite ? (
+              <IoBookmark className="text-sm sm:text-base text-white" />
+            ) : (
+              <IoBookmarkOutline className="text-sm sm:text-base" />
+            )}
+          </button>
         </div>
 
-        {/* NAME + PRICE */}
+        {/* ========================================
+            CONTENT
+        ======================================== */}
 
-        <Link href={`/menu/${food.uuid}`} className="group">
-          <div className="flex items-center justify-between gap-2">
+        <div className="flex shrink-0 flex-col gap-1.5 sm:gap-2 pt-2">
+          {/* STORE */}
+
+          <div className="flex items-center justify-between gap-1 sm:gap-6 text-secondary-500 dark:text-secondary-400 w-full overflow-hidden text-xs sm:text-sm">
+            <div className="flex items-center gap-1 sm:gap-1 flex-1 min-w-0">
+              <FaStore className="shrink-0 text-xs sm:text-lg" />
+              <p className="truncate pt-[2px] text-xs sm:text-lg ">
+                {activeFood.store?.localName || activeFood.store?.name || "Unknown store"}
+              </p>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <FaClock className="text-[10px] sm:text-lg" />
+              <p className="whitespace-nowrap mt-[2px] text-[10px] sm:text-sm">
+                {activeFood.store?.operatingStatus === "OPEN" ? "Open" : "Closed"}
+              </p>
+            </div>
+          </div>
+
+          {/* ======================================
+              NAME + PRICE
+          ====================================== */}
+
+          <div className="flex items-center justify-between gap-1 sm:gap-2">
             <p
               className="
                 min-w-0
                 line-clamp-1
-                text-[24px]
+                text-sm
+                sm:text-2xl
                 font-medium
                 text-primary-900
-                transition
-                group-hover:text-primary-700
                 dark:text-white
               "
             >
@@ -450,146 +635,250 @@ export default function FoodCard({
             <p
               className="
                 shrink-0
-                text-[24px]
-                font-medium
+                text-sm
+                sm:text-xl
+                font-bold
                 text-primary-800
-                dark:text-primary-300
+                dark:text-emerald-400
               "
             >
-              {food.currencyCode === "USD"
-                ? `$${food.price}`
-                : `${food.price} ${food.currencyCode ?? ""}`}
+              {activeFood.currencyCode === "USD"
+                ? `$${activeFood.price}`
+                : `${activeFood.price} ${activeFood.currencyCode ?? ""}`}
             </p>
           </div>
-        </Link>
 
-        {/* ======================================
-            TIME + DISTANCE
-        ====================================== */}
+          {/* ======================================
+              TRAVEL TIME + DISTANCE
+          ====================================== */}
 
-        <div className="flex flex-wrap gap-x-4 gap-y-2">
-          {food.preparationTimeMinutes !== null &&
-            food.preparationTimeMinutes !== undefined && (
+          <div className="flex flex-wrap gap-4">
+            {travelTimeMin !== null ? (
               <div className="flex items-center gap-2 text-primary-400">
-                <IoMdTime />
+                <FaMotorcycle />
+                <span>{travelTimeMin} min</span>
+              </div>
+            ) : activeFood.preparationTimeMinutes !== null &&
+              activeFood.preparationTimeMinutes !== undefined ? (
+              <div className="flex items-center gap-2 text-primary-400">
+                <FaMotorcycle />
+                <span className="mt-1">{activeFood.preparationTimeMinutes} min</span>
+              </div>
+            ) : null}
 
-                <span>{food.preparationTimeMinutes} min</span>
+            {formattedDistance && (
+              <div className="flex items-center gap-1.5 text-primary-400">
+                <FaLocationArrow className="text-xs" />
+                <span>{formattedDistance}</span>
               </div>
             )}
+          </div>
 
-          {formattedDistance ? (
-            <div className="flex items-center gap-1.5 text-primary-400">
-              <FaLocationArrow className="text-xs" />
+          {/* ======================================
+              DIETARY TAGS
+          ====================================== */}
 
-              <span>{formattedDistance}</span>
-            </div>
-          ) : distanceKm !== null ? (
-            <div className="flex items-center gap-1.5 text-primary-400">
-              <FaLocationArrow className="text-xs" />
+          {dietaryTypes.length > 0 && (
+            <div
+              ref={dietaryContainerRef}
+              className="
+                relative
+                flex
+                items-center
+                gap-2
+                overflow-hidden
+              "
+            >
+              {/* ==================================
+                  HIDDEN MEASUREMENT TAGS
+              ================================== */}
 
-              <span>{distanceKm.toFixed(distanceKm < 10 ? 1 : 0)} km</span>
-            </div>
-          ) : null}
-        </div>
-
-        {/* ======================================
-            DIETARY TAGS (Blank if no dietaryTypes)
-        ====================================== */}
-
-        {dietaryTypes.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            {dietaryTypes.map((diet) => (
-              <span
-                key={diet.code}
+              <div
                 className="
+                  pointer-events-none
+                  absolute
+                  left-0
+                  top-0
+                  flex
+                  items-center
+                  gap-2
+                  opacity-0
+                "
+                aria-hidden="true"
+              >
+                {dietaryTypes.map((diet, index) => (
+                  <span
+                    key={`measure-${diet.code}`}
+                    ref={(element) => {
+                      dietaryMeasureRefs.current[index] = element;
+                    }}
+                    className="
+                        shrink-0
+                        truncate
+                        whitespace-nowrap
+                        rounded-full
+                        bg-primary-800
+                        px-2
+                        py-1
+                        text-center
+                        text-sm max-sm:text-[12px]
+                        text-gray-100
+                      "
+                  >
+                    {diet.name}
+                  </span>
+                ))}
+              </div>
+
+              {/* ==================================
+                  ACTUAL VISIBLE DIETARY TAGS
+              ================================== */}
+
+              {dietaryTypes.slice(0, visibleDietaryCount).map((diet) => (
+                <span
+                  key={diet.code}
+                  title={diet.name}
+                  className="
+                      shrink-0
+                      truncate
+                      whitespace-nowrap
+                      rounded-full
+                      bg-primary-800
+                      px-2
+                      py-1
+                      text-center
+                      text-sm max-sm:text-[8px]
+                      text-gray-100
+                    "
+                >
+                  {diet.name}
+                </span>
+              ))}
+
+              {/* ==================================
+                  +N COUNTER
+              ================================== */}
+
+              {visibleDietaryCount < dietaryTypes.length && (
+                <span
+                  className="
+                    h-8
+                    w-8
+                    shrink-0
+                    justify-center
+                    rounded-full
+                    bg-gray-100
+                    py-1
+                    text-center
+                    text-sm max-sm:text-[8px]
+                    font-medium
+                    text-gray-600
+                    dark:bg-gray-800
+                    dark:text-gray-300
+                  "
+                >
+                  +{dietaryTypes.length - visibleDietaryCount}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* ======================================
+              FALLBACK TAGS
+          ====================================== */}
+
+          {dietaryTypes.length === 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {cuisine ? (
+                <span
+                  className="
+                    shrink-0
+                    truncate
                     rounded-full
                     bg-primary-800
-                    px-3
+                    px-2
                     py-1
+                    text-center
+                    text-sm max-sm:text-[12px]
+                    text-gray-100
+                  "
+                >
+                  {cuisine.name}
+                </span>
+              ) : category ? (
+                <span
+                  className="
+                    shrink-0
+                    truncate
+                    rounded-full
+                    bg-primary-800
+                    px-2
+                    py-1
+                    text-center
                     text-sm
                     text-gray-100
                   "
-              >
-                {diet.name}
-              </span>
-            ))}
-          </div>
-        )}
+                >
+                  {category.name}
+                </span>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </Link>
 
-        {/* ======================================
-            ACTIONS
+      {/* ==========================================
+          OPTIONAL VIEW ON MAP ACTION
+          Used by location page / map integration
+      ========================================== */}
 
-            onViewMap is optional:
-            - Food page: only detail button
-            - Location page: detail + map buttons
-        ====================================== */}
-
-        <div className="mt-auto flex items-center gap-2 pt-3">
-          {/* <Link
-            href={`/menu/${food.uuid}`}
-            className="
+      {storeUuid && onViewMap && (
+        <div className="mt-2 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onViewMap(storeUuid);
+            }}
+            className={`
               flex
               min-h-11
               flex-1
               items-center
               justify-center
+              gap-2
               rounded-xl
-              border
-              border-gray-200
               px-4
               text-[16px]
-              font-medium
-              text-primary-900
+              font-semibold
               transition
-              hover:bg-gray-50
-              dark:border-gray-700
-              dark:text-white
-              dark:hover:bg-gray-900
-            "
+              active:scale-[0.98]
+              ${
+                isMapSelected
+                  ? "bg-primary-800 text-white shadow-sm"
+                  : "bg-primary-50 text-primary-900 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-200"
+              }
+            `}
+            aria-pressed={isMapSelected}
+            aria-label={`Show ${storeName} on map`}
           >
-            មើលមុខម្ហូប
-          </Link> */}
-
-          {storeUuid && onViewMap && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-
-                onViewMap(storeUuid);
-              }}
-              className={`
-                  flex
-                  min-h-11
-                  flex-1
-                  items-center
-                  justify-center
-                  gap-2
-                  rounded-xl
-                  px-4
-                  text-[16px]
-                  font-semibold
-                  transition
-                  active:scale-[0.98]
-                  ${
-                    isMapSelected
-                      ? "bg-primary-800 text-white shadow-sm"
-                      : "bg-primary-50 text-primary-900 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-200"
-                  }
-                `}
-              aria-pressed={isMapSelected}
-              aria-label={`Show ${storeName} on map`}
-            >
-              <IoLocationOutline className="shrink-0 text-[19px]" />
-
-              <span className="line-clamp-1">
-                {isMapSelected ? "កំពុងបង្ហាញ" : "មើលលើផែនទី"}
-              </span>
-            </button>
-          )}
+            <IoLocationOutline className="shrink-0 text-[19px]" />
+            <span className="line-clamp-1">
+              {isMapSelected ? "កំពុងបង្ហាញ" : "មើលលើផែនទី"}
+            </span>
+          </button>
         </div>
-      </div>
+      )}
+
+      {/* MODAL */}
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </motion.article>
   );
-}
+});
+
+// ✅ PERFORMANCE FIX: Export memoized component as default
+export default FoodCard;

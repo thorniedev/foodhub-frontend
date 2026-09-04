@@ -783,6 +783,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 /* =========================================================
    TYPES
@@ -797,6 +798,7 @@ export type CarouselItem = {
   name: string;
   description: string;
   origin: string;
+  link?: string;
 };
 
 type CarouselProps = {
@@ -1058,14 +1060,14 @@ export default function Carousel({
     ----------------------------------------------------- */
 
     if (isLooping) {
-      setCanPrev(true);
-      setCanNext(true);
+      setCanPrev((prev) => (prev ? prev : true));
+      setCanNext((prev) => (prev ? prev : true));
     } else {
-      setCanPrev(element.scrollLeft > 4);
-
-      setCanNext(
-        element.scrollLeft < element.scrollWidth - element.clientWidth - 4,
-      );
+      const nextCanPrev = element.scrollLeft > 4;
+      const nextCanNext =
+        element.scrollLeft < element.scrollWidth - element.clientWidth - 4;
+      setCanPrev((prev) => (prev === nextCanPrev ? prev : nextCanPrev));
+      setCanNext((prev) => (prev === nextCanNext ? prev : nextCanNext));
     }
 
     /* -----------------------------------------------------
@@ -1092,9 +1094,9 @@ export default function Carousel({
        DOT INDEX
     ----------------------------------------------------- */
 
-    const dotIndex = isLooping ? ((closest % n) + n) % n : closest;
+    const dotIndex = isLooping && n > 0 ? ((closest % n) + n) % n : closest;
 
-    setActiveIndex(dotIndex);
+    setActiveIndex((prev) => (prev === dotIndex ? prev : dotIndex));
 
     /* -----------------------------------------------------
        NORMALIZE AFTER SCROLL SETTLES
@@ -1108,6 +1110,9 @@ export default function Carousel({
       normalizeLoop();
     }, 120);
   }, [isLooping, n, normalizeLoop]);
+
+  const updateArrowsRef = useRef(updateArrows);
+  updateArrowsRef.current = updateArrows;
 
   /* =======================================================
      INITIAL POSITION
@@ -1141,24 +1146,28 @@ export default function Carousel({
       }
     }
 
-    updateArrows();
+    const handleScrollOrResize = () => {
+      updateArrowsRef.current();
+    };
 
-    element.addEventListener("scroll", updateArrows, {
+    handleScrollOrResize();
+
+    element.addEventListener("scroll", handleScrollOrResize, {
       passive: true,
     });
 
-    window.addEventListener("resize", updateArrows);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
-      element.removeEventListener("scroll", updateArrows);
+      element.removeEventListener("scroll", handleScrollOrResize);
 
-      window.removeEventListener("resize", updateArrows);
+      window.removeEventListener("resize", handleScrollOrResize);
 
       if (settleTimeoutRef.current) {
         clearTimeout(settleTimeoutRef.current);
       }
     };
-  }, [updateArrows, isLooping, n]);
+  }, [isLooping, n]);
 
   /* =======================================================
      RESPONSIVE RESIZE REALIGNMENT
@@ -1773,12 +1782,15 @@ export default function Carousel({
                     CARD
                 ======================================= */}
 
-              <div
+              <Link
+                href={item.link || `/menu?province=${encodeURIComponent(item.origin || item.name)}`}
                 className="
                     group
                     relative
+                    block
                     w-full
                     overflow-hidden
+                    cursor-pointer
 
                     rounded-xl
                     bg-gray-100
@@ -1990,7 +2002,7 @@ export default function Carousel({
                     {item.description}
                   </p>
                 </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>
@@ -2120,6 +2132,8 @@ export const slides: CarouselItem[] = [
       "ត្រីស្រស់ចម្អិនជាមួយគ្រឿងអាម៉ុក និងខ្ទិះដូង ឈ្ងុយឆ្ងាញ់បែបខ្មែរ",
 
     origin: "សៀមរាប",
+
+    link: `/menu?province=${encodeURIComponent("សៀមរាប")}`,
   },
 
   {
@@ -2134,6 +2148,8 @@ export const slides: CarouselItem[] = [
     description: "ក្តាមស្រស់ឆាជាមួយម្រេចកំពត ក្លិនឈ្ងុយ និងរសជាតិហឹរឆ្ងាញ់",
 
     origin: "កំពត",
+
+    link: `/menu?province=${encodeURIComponent("កំពត")}`,
   },
 
   {
@@ -2147,7 +2163,9 @@ export const slides: CarouselItem[] = [
 
     description: "គុយទាវទឹកស៊ុបក្តៅឈ្ងុយ ជាមួយសាច់ និងបន្លែស្រស់",
 
-    origin: "ភ្នំពញ",
+    origin: "ភ្នំពេញ",
+
+    link: `/menu?province=${encodeURIComponent("ភ្នំពេញ")}`,
   },
 
   {
@@ -2161,7 +2179,9 @@ export const slides: CarouselItem[] = [
 
     description: "បាញ់ឆែវស្រួយ ស្នូលសាច់ និងសណ្ដែកបណ្ដុះ ញ៉ាំជាមួយបន្លែស្រស់",
 
-    origin: "ព្រែវែង",
+    origin: "ព្រៃវែង",
+
+    link: `/menu?province=${encodeURIComponent("ព្រៃវែង")}`,
   },
 
   {
@@ -2176,6 +2196,8 @@ export const slides: CarouselItem[] = [
     description: "បង្កងប៉ាកស្រស់ចម្អិនជាមួយគ្រឿងរសជាតិខ្មែរ ឈ្ងុយ និងផ្អែមសាច់",
 
     origin: "ក្រុងព្រះសីហនុ",
+
+    link: `/menu?province=${encodeURIComponent("ក្រុងព្រះសីហនុ")}`,
   },
 
   {
@@ -2190,6 +2212,8 @@ export const slides: CarouselItem[] = [
     description: "ត្រីស្រស់ដុតឈ្ងុយ សាច់ទន់ផ្អែម ញ៉ាំជាមួយទឹកជ្រលក់ខ្មែរ",
 
     origin: "ក្រចេះ",
+
+    link: `/menu?province=${encodeURIComponent("ក្រចេះ")}`,
   },
 
   {
@@ -2205,6 +2229,8 @@ export const slides: CarouselItem[] = [
       "សម្លរបែបប្រពៃណីខ្មែរ មានរសជាតិឈ្ងុយឆ្ងាញ់ និងគ្រឿងផ្សំធម្មជាតិ",
 
     origin: "មណ្ឌលគិរី",
+
+    link: `/menu?province=${encodeURIComponent("មណ្ឌលគិរី")}`,
   },
 
   {
@@ -2219,6 +2245,8 @@ export const slides: CarouselItem[] = [
     description: "មាន់អាំងខ្ទឹមសក្លិនឈ្ងុយ សាច់ទន់ និងរសជាតិចូលគ្រឿង",
 
     origin: "បាត់ដំបង",
+
+    link: `/menu?province=${encodeURIComponent("បាត់ដំបង")}`,
   },
 
   {
@@ -2228,11 +2256,13 @@ export const slides: CarouselItem[] = [
 
     alt: "Family sharing platter",
 
-    name: " ប្រហុកខ្ទិះ",
+    name: "ប្រហុកខ្ទិះ",
 
     description: "ប្រហុកខ្ទិះខ្មែរ រសជាតិខាប់ឈ្ងុយ ញ៉ាំជាមួយបន្លែស្រស់",
 
     origin: "កំពង់ធំ",
+
+    link: `/menu?province=${encodeURIComponent("កំពង់ធំ")}`,
   },
 
   {
@@ -2247,5 +2277,7 @@ export const slides: CarouselItem[] = [
     description: "នំអាកោត្នោតទន់ផ្អែម មានក្លិនត្នោតឈ្ងុយបែបបង្អែមខ្មែរ",
 
     origin: "សៀមរាប",
+
+    link: `/menu?province=${encodeURIComponent("សៀមរាប")}`,
   },
 ];

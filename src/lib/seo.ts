@@ -99,6 +99,7 @@ export interface StoreSeoData {
   totalReviews?: number | null;
 
   isOpenNow?: boolean | null;
+  socialLinks?: Array<{ platform?: string; profileUrl?: string; url?: string }> | null;
 }
 
 /* =========================================================
@@ -209,73 +210,69 @@ export async function fetchFoodForSeo(
 
   const safeUuid = encodeURIComponent(uuid);
 
+  // Read the Keycloak access token from the server-side cookie store.
+  // next/headers is only available in Server Components / Route Handlers.
+  let accessToken: string | undefined;
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    accessToken = cookieStore.get("foodhub_access_token")?.value;
+  } catch {
+    // cookies() throws outside of a request context — safe to ignore
+  }
+
+  const authHeaders: Record<string, string> = {
+    Accept: "application/json",
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  };
+
   /*
-   * Your primary endpoint.
-   *
-   * The second endpoint is just a fallback in case
-   * your backend exposes the detail directly.
+   * Endpoint priority:
+   * 1. /detail with auth token  (full data: dietary types, cuisine, store coords…)
+   * 2. /detail without token    (may work if backend relaxes auth for GET)
+   * 3. /catalog/menu-items/{uuid} public fallback (basic data)
    */
-  const endpoints = [
-    `${BACKEND_API_URL}/catalog/menu-items/${safeUuid}/detail`,
-    `${BACKEND_API_URL}/catalog/menu-items/${safeUuid}`,
+  const detailUrl = `${BACKEND_API_URL}/catalog/menu-items/${safeUuid}/detail`;
+  const publicUrl  = `${BACKEND_API_URL}/catalog/menu-items/${safeUuid}`;
+
+  const endpoints: Array<{ url: string; headers: Record<string, string> }> = [
+    { url: detailUrl, headers: authHeaders },
+    { url: publicUrl, headers: { Accept: "application/json" } },
   ];
 
-  for (const url of endpoints) {
+  for (const { url, headers } of endpoints) {
     try {
       const response = await fetch(url, {
-        headers: {
-          Accept: "application/json",
-        },
-
-        next: {
-          revalidate: 300,
-        },
+        headers,
+        next: { revalidate: 300 },
       });
 
       if (!response.ok) {
-        const body = await response.text().catch(() => "");
-
-        console.error("[SEO] Food API failed:", {
-          uuid,
-          url,
-          status: response.status,
-          statusText: response.statusText,
-          body,
-        });
-
+        if (response.status !== 401 && response.status !== 403 && response.status !== 404) {
+          const body = await response.text().catch(() => "");
+          console.warn("[SEO] Food API failure:", {
+            uuid,
+            url,
+            status: response.status,
+            body: body.slice(0, 200),
+          });
+        }
         continue;
       }
 
       const json = await response.json();
-
       const food = unwrapResponse<FoodSeoData>(json);
 
-      if (!food) {
-        console.error("[SEO] Empty food API response:", url);
-
+      if (!food?.uuid || !food?.name) {
         continue;
       }
-
-      if (!food.uuid || !food.name) {
-        console.error("[SEO] Invalid food API response:", {
-          url,
-          food,
-        });
-
-        continue;
-      }
-
-      console.log("[SEO] Food loaded:", {
-        uuid: food.uuid,
-        name: food.name,
-      });
 
       return food;
     } catch (error) {
-      console.error("[SEO] Food fetch error:", {
+      console.warn("[SEO] Food fetch network error:", {
         uuid,
         url,
-        error,
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -729,6 +726,14 @@ export function generateStoreJsonLd(store: StoreSeoData, uuid: string): object {
 
             worstRating: 1,
           },
+        }
+      : {}),
+
+    ...(Array.isArray(store.socialLinks) && store.socialLinks.length > 0
+      ? {
+          sameAs: store.socialLinks
+            .map((s) => s.profileUrl || s.url)
+            .filter((u): u is string => Boolean(u && typeof u === "string")),
         }
       : {}),
   };

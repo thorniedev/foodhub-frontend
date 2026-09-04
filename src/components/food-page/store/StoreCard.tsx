@@ -177,11 +177,10 @@ function FeaturedStoreCard({
   const displayName = getDisplayName(store);
 
   return (
-    <motion.article
-      layout
+    <article
       className="group flex w-[300px] shrink-0 snap-start gap-3 overflow-hidden rounded-[20px] border border-gray-200 bg-white p-3 shadow-sm sm:w-[360px]"
     >
-      <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] bg-primary-50">
+      <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] border border-gray-200 bg-primary-50">
         <StoreImage store={store} />
       </div>
 
@@ -211,7 +210,7 @@ function FeaturedStoreCard({
           </span>
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }
 
@@ -236,15 +235,10 @@ function GridStoreCard({
   const isClosed = !isOpen;
 
   return (
-    <motion.article
-      layout
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 8 }}
-      transition={{ duration: 0.24, ease: "easeOut" }}
-      className="group overflow-hidden rounded-[22px] border border-gray-200 bg-white p-3 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-3.5"
+    <article
+      className="group h-full overflow-hidden rounded-[28px] sm:rounded-[32px] border border-gray-200 bg-white p-3 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-3.5"
     >
-      <div className="relative overflow-hidden rounded-[18px]">
+      <div className="relative overflow-hidden rounded-[16px] sm:rounded-[18px] border border-gray-200">
         <div className="relative h-[185px] w-full bg-primary-50 sm:h-[195px] lg:h-[185px] 2xl:h-[175px]">
           <StoreImage store={store} />
         </div>
@@ -316,7 +310,7 @@ function GridStoreCard({
           </p>
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }
 

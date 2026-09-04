@@ -254,9 +254,9 @@ export default function StoreContent({
     hasDistanceData,
   };
 
-  if (isLoading || isFetching) {
+  if (isLoading && storeData.length === 0) {
     return (
-      <div className="mt-6 flex min-w-0 flex-col gap-6 xl:flex-row xl:items-start xl:gap-8 container mx-auto max-w-7xl px-4">
+      <div className="mt-6 flex min-w-0 flex-col gap-6 xl:flex-row xl:items-start xl:gap-8 container mx-auto max-w-7xl px-4 min-h-[850px] lg:min-h-[900px]">
         {/* Desktop Sidebar Skeleton */}
         <aside className="hidden shrink-0 self-start xl:block xl:w-[320px]">
           <div className="flex h-[600px] flex-col gap-5 rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
@@ -393,9 +393,11 @@ export default function StoreContent({
         ease: "easeOut",
       }}
       className="
-        mt-6
+        mt-2.5 sm:mt-3
         min-w-0
         container mx-auto max-w-7xl px-4
+        min-h-[850px] lg:min-h-[900px]
+        lg:pb-8
       "
     >
       <div
@@ -421,6 +423,7 @@ export default function StoreContent({
             xl:h-[calc(100dvh-7rem)]
             xl:max-h-[calc(100dvh-7rem)]
             xl:overflow-hidden
+            lg:pb-8
           "
         >
           <StoreFilters {...filterProps} />
@@ -431,6 +434,8 @@ export default function StoreContent({
           className="
             min-w-0
             flex-1
+            min-h-[850px]
+            lg:min-h-[900px]
           "
         >
           {/* Compact mobile/tablet filter action */}

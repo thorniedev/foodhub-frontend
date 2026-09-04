@@ -3,16 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  CircleUserRound,
   House,
   Info,
   LogIn,
   UtensilsCrossed,
   Store,
-  Users,
-  type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, startTransition } from "react";
 
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
 import ThemeToggle from "../theme-toggle";
@@ -112,24 +109,39 @@ export default function Navbar() {
   const activeIndex = foundActiveIndex >= 0 ? foundActiveIndex : 0;
 
   /* =======================================================
-     DESKTOP TAB CHANGE
+     DESKTOP TAB CHANGE - OPTIMIZED FOR SPEED
   ======================================================= */
 
-  const handleDesktopTabChange = (index: number) => {
+  const handleDesktopTabChange = useCallback((index: number) => {
     const selectedLink = NAV_LINKS[index];
 
     if (!selectedLink) {
       return;
     }
 
+    // ✅ Skip if already on this page (prevents unnecessary navigation)
     if (checkActiveRoute(pathname, selectedLink.href)) {
       return;
     }
 
-    router.push(selectedLink.href, {
-      scroll: true,
+    // ✅ Use startTransition for non-blocking navigation
+    // This makes the tab click feel instant
+    startTransition(() => {
+      router.push(selectedLink.href, {
+        scroll: true,
+      });
     });
-  };
+  }, [pathname, router]);
+
+  /* =======================================================
+     PREFETCH NAVIGATION ROUTES FOR INSTANT TRANSITIONS
+  ======================================================= */
+
+  useEffect(() => {
+    NAV_LINKS.forEach((link) => {
+      router.prefetch(link.href);
+    });
+  }, [router]);
 
   /* =======================================================
      SHOW NAVIGATION AFTER ROUTE CHANGE

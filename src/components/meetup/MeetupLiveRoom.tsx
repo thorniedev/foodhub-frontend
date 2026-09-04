@@ -105,9 +105,10 @@ export default function MeetupLiveRoom({
    * Polling stops once the room can no longer change — decided, cancelled, or
    * unreachable — so a dead link does not keep hitting the API every few
    * seconds for as long as the tab stays open.
+   * ✅ PERFORMANCE FIX: Reduced polling frequency from 6s/4s/8s to 15s/10s/20s
    */
   const [isRoomLive, setIsRoomLive] = useState(true);
-  const roomPollMs = isRoomLive ? 6000 : 0;
+  const roomPollMs = isRoomLive ? 15000 : 0; // Reduced from 6000ms to 15000ms
 
   /*
    * A room reached by share token resolves through the public endpoint; one
@@ -164,7 +165,7 @@ export default function MeetupLiveRoom({
 
   const { data: participantList } = useGetMeetupParticipantsQuery(meetupUuid, {
     skip: !meetupUuid,
-    pollingInterval: isRoomLive ? 8000 : 0,
+    pollingInterval: isRoomLive ? 20000 : 0, // Reduced from 8000ms to 20000ms
   });
 
   /* The group payload carries participants; the dedicated endpoint backs it up. */
@@ -190,12 +191,12 @@ export default function MeetupLiveRoom({
     refetch: refetchTally,
   } = useGetMeetupVoteTallyQuery(meetupUuid, {
     skip: !meetupUuid,
-    pollingInterval: isRoomLive ? 4000 : 0,
+    pollingInterval: isRoomLive ? 10000 : 0, // Reduced from 4000ms to 10000ms
   });
 
   const { data: votesResponse, refetch: refetchVotes } = useGetMeetupVotesQuery(
     meetupUuid,
-    { skip: !meetupUuid, pollingInterval: isRoomLive ? 4000 : 0 },
+    { skip: !meetupUuid, pollingInterval: isRoomLive ? 10000 : 0 }, // Reduced from 4000ms to 10000ms
   );
 
   /*

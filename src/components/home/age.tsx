@@ -19,21 +19,12 @@ interface AgeGroupConfig {
 }
 
 const STANDARD_AGE_GROUPS: AgeGroupConfig[] = [
-  // {
-  //   id: "infant",
-  //   code: "INFANT",
-  //   name: "ទារក",
-  //   range: "(0-1)",
-  //   label: "ទារក (0-1)",
-  //   fallbackImage: "/Image/food-picture/baby-food.jpg",
-  //   keywords: ["ទារក", "infant", "baby", "0-1"],
-  // },
   {
     id: "toddler",
     code: "TODDLER",
     name: "កុមារតូច",
-    range: "(1-2)",
-    label: "កុមារតូច (1-2)",
+    range: "(0-6)",
+    label: "គូនង៉ែត (0-6)",
     fallbackImage: "/Image/food-picture/food 31.jpg",
     keywords: ["កុមារតូច", "toddler", "1-2"],
   },
@@ -133,7 +124,8 @@ interface AgeCardDisplay {
   href: string;
 }
 
-export default function MealsByAgeSection() {
+// ✅ PERFORMANCE FIX: Memoize component to prevent re-renders
+const MealsByAgeSection = React.memo(function MealsByAgeSection() {
   const { data: menuItems = [], isLoading } = useGetMenuItemsQuery();
   const [randomSeed, setRandomSeed] = useState<number>(() => Date.now());
 
@@ -253,7 +245,7 @@ export default function MealsByAgeSection() {
                     unoptimized
                     onError={(e) => {
                       const target = e.currentTarget;
-                      if (target.src !== group.fallbackImage) {
+                      if (!target.src.endsWith(encodeURI(group.fallbackImage)) && !target.src.endsWith(group.fallbackImage)) {
                         target.src = group.fallbackImage;
                       }
                     }}
@@ -282,4 +274,7 @@ export default function MealsByAgeSection() {
       </div>
     </section>
   );
-}
+});
+
+// ✅ PERFORMANCE FIX: Export memoized component as default
+export default MealsByAgeSection;

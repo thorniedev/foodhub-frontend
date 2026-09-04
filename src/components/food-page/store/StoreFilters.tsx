@@ -452,7 +452,7 @@ export default function StoreFilters({
         stiffness: 320,
         damping: 34,
       }}
-      className={isDrawer ? "h-full w-full" : "h-full shrink-0"}
+      className={isDrawer ? "h-full w-full" : "h-full shrink-0 lg:pb-8"}
     >
       <div
         className="

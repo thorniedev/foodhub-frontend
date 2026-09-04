@@ -109,7 +109,7 @@ export default function Preloader({
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="overflow-hidden">
               <motion.h2
-                className="text-4xl​ py-20 font-bold tracking-[0.3em] text-accent-400 md:text-6xl"
+                className="text-4xl py-20 font-bold tracking-normal text-accent-400 md:text-6xl"
                 initial={{ y: "110%" }}
                 animate={{ y: 0 }}
                 exit={{

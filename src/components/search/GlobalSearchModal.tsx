@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Search, X, Store as StoreIcon, Utensils, Star, DollarSign, ArrowRight, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLazyPublicSearchQuery, useDiscoverySearchMutation } from "@/app/store/searchApi";
-import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useConditionalMenuItems } from "@/hooks/useSharedMenuItems";
 import { useGetStoresQuery } from "@/app/store/locationApi";
 import type { MenuItemHit, StoreHit } from "@/types/search";
 
@@ -80,9 +80,8 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  const { data: catalogMenuItems = [] } = useGetMenuItemsQuery(undefined, {
-    skip: !isOpen,
-  });
+  // ✅ PERFORMANCE FIX: Only fetch menu items when modal is open
+  const { data: catalogMenuItems = [] } = useConditionalMenuItems(isOpen);
   const { data: catalogStoresData } = useGetStoresQuery(undefined, {
     skip: !isOpen,
   });

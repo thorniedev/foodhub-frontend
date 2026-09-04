@@ -27,7 +27,14 @@ import FoodCard from "@/components/dynamic-card/FoodCard";
 import DiscoveryFilterSheet from "@/components/discovery/DiscoveryFilterSheet";
 import FoodNavTabs from "@/components/food-page/FoodNavTabs";
 
-import { useGetMenuItemsQuery } from "@/app/store/menuApi";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/app/store/store";
+import {
+  menuApi,
+  type FoodCatalogDetail,
+  useGetFoodCatalogListQuery,
+  useGetMenuItemsQuery,
+} from "@/app/store/menuApi";
 import {
   useDiscoverySearchMutation,
   useGetDiscoveryFiltersQuery,
@@ -58,6 +65,9 @@ import type {
   CatalogMenuItem,
 } from "@/types/catalog-menu-item";
 import type { MemberProfile } from "@/types/member-profile/member-profile";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
+import type { Coordinates } from "@/types/location";
 
 /* =========================================================
    TYPES
@@ -668,9 +678,14 @@ function applyCustomerSearchFilters(
   searchQuery: string,
   profile?: MemberProfile | null,
   discoveryOptions?: DiscoveryFilterOptionsResponse | null,
+  foodCatalogList?: FoodCatalogDetail[] | null,
+  userCoordinates?: Coordinates | null,
 ): CatalogMenuItem[] {
   const normalizedQuery = normalizeText(searchQuery);
   const lookupMap = buildCodeNameLookup(discoveryOptions);
+  const foodCatalogMap = new Map(
+    (foodCatalogList || []).map((f) => [f.uuid, f]),
+  );
 
   const filteredFoods = foods.filter((food) => {
     // 1. Search text
@@ -723,8 +738,15 @@ function applyCustomerSearchFilters(
 
     // 7. Dietary Types
     if (req.dietaryTypeUuids && req.dietaryTypeUuids.length > 0) {
-      const dietaryTypes = getDietaryTypes(food);
-      const matches = dietaryTypes.some((d) =>
+      const itemDiets = getDietaryTypes(food);
+      const master = food.food?.uuid ? foodCatalogMap.get(food.food.uuid) : null;
+      const masterDiets = (master?.dietaryTypes || []).map((d) => ({
+        code: d.code,
+        name: d.name,
+      }));
+
+      const allFoodDiets = [...itemDiets, ...masterDiets];
+      const matches = allFoodDiets.some((d) =>
         matchesItemWithLookup(req.dietaryTypeUuids, d.code, d.name, lookupMap),
       );
       if (!matches) return false;
@@ -811,18 +833,50 @@ function applyCustomerSearchFilters(
     // 9. Seasons
     if (req.seasonUuids && req.seasonUuids.length > 0) {
       const seasons = getSeasons(food);
-      const matches = seasons.some((s) =>
-        matchesItemWithLookup(req.seasonUuids, s.code, s.name, lookupMap),
-      );
+      const master = food.food?.uuid ? foodCatalogMap.get(food.food.uuid) : null;
+      const masterSeasons = (master?.seasons || []).map((s) => ({
+        code: s.code,
+        name: s.name,
+      }));
+      const allSeasons = [...seasons, ...masterSeasons];
+      const matches =
+        allSeasons.some((s) =>
+          matchesItemWithLookup(req.seasonUuids, s.code, s.name, lookupMap),
+        ) ||
+        req.seasonUuids.some((u) => {
+          const nu = normalizeText(u);
+          if (!nu) return false;
+          return (
+            normalizeText(food.name).includes(nu) ||
+            normalizeText(food.localName).includes(nu) ||
+            normalizeText(food.description).includes(nu)
+          );
+        });
       if (!matches) return false;
     }
 
     // 10. Events
     if (req.eventUuids && req.eventUuids.length > 0) {
       const events = getEvents(food);
-      const matches = events.some((e) =>
-        matchesItemWithLookup(req.eventUuids, e.code, e.name, lookupMap),
-      );
+      const master = food.food?.uuid ? foodCatalogMap.get(food.food.uuid) : null;
+      const masterEvents = (master?.events || []).map((e) => ({
+        code: e.code,
+        name: e.name,
+      }));
+      const allEvents = [...events, ...masterEvents];
+      const matches =
+        allEvents.some((e) =>
+          matchesItemWithLookup(req.eventUuids, e.code, e.name, lookupMap),
+        ) ||
+        req.eventUuids.some((u) => {
+          const nu = normalizeText(u);
+          if (!nu) return false;
+          return (
+            normalizeText(food.name).includes(nu) ||
+            normalizeText(food.localName).includes(nu) ||
+            normalizeText(food.description).includes(nu)
+          );
+        });
       if (!matches) return false;
     }
 
@@ -913,13 +967,34 @@ function applyCustomerSearchFilters(
     }
 
     // 17. Provinces
-    if (
-      req.provinces &&
-      req.provinces.length > 0 &&
-      (!food.origin?.provinceName ||
-        !req.provinces.includes(food.origin.provinceName))
-    ) {
-      return false;
+    if (req.provinces && req.provinces.length > 0) {
+      const searchProvinces = req.provinces.map((p) => normalizeText(p)).filter(Boolean);
+      const foodProvince = normalizeText(food.origin?.provinceName || "");
+      const foodProvinceLocal = normalizeText(food.origin?.provinceLocalName || "");
+      const foodProvinceCode = normalizeText(food.origin?.provinceCode || "");
+      const storeCity = normalizeText(food.store?.city || "");
+      const storeDistrict = normalizeText(food.store?.district || "");
+      const storeAddress = normalizeText(food.store?.addressLine || "");
+      const foodName = normalizeText(food.name || "");
+      const foodLocalName = normalizeText(food.localName || "");
+      const foodDesc = normalizeText(food.description || "");
+
+      const matches = searchProvinces.some((p) => {
+        if (!p) return false;
+        return (
+          foodProvince.includes(p) ||
+          p.includes(foodProvince) ||
+          (foodProvinceLocal && (foodProvinceLocal.includes(p) || p.includes(foodProvinceLocal))) ||
+          (foodProvinceCode && (foodProvinceCode.includes(p) || p.includes(foodProvinceCode))) ||
+          (storeCity && (storeCity.includes(p) || p.includes(storeCity))) ||
+          (storeDistrict && (storeDistrict.includes(p) || p.includes(storeDistrict))) ||
+          (storeAddress && storeAddress.includes(p)) ||
+          foodName.includes(p) ||
+          foodLocalName.includes(p) ||
+          foodDesc.includes(p)
+        );
+      });
+      if (!matches) return false;
     }
 
     // 18. Cities
@@ -938,7 +1013,42 @@ function applyCustomerSearchFilters(
     ? sortFoodsForProfile(filteredFoods, profile)
     : filteredFoods;
 
-  return [...profileSortedFoods].sort((first, second) => {
+  const getFoodDistanceKm = (food: CatalogMenuItem): number => {
+    if (
+      food.distanceKm !== null &&
+      food.distanceKm !== undefined &&
+      Number.isFinite(Number(food.distanceKm))
+    ) {
+      return Number(food.distanceKm);
+    }
+    if (
+      userCoordinates &&
+      isValidCoordinates(userCoordinates) &&
+      food.store?.latitude !== undefined &&
+      food.store?.latitude !== null &&
+      food.store?.longitude !== undefined &&
+      food.store?.longitude !== null
+    ) {
+      const storeCoords = {
+        latitude: Number(food.store.latitude),
+        longitude: Number(food.store.longitude),
+      };
+      if (isValidCoordinates(storeCoords)) {
+        return calculateDistanceKm(userCoordinates, storeCoords);
+      }
+    }
+    return Number.POSITIVE_INFINITY;
+  };
+
+  const enrichedFoods = profileSortedFoods.map((food) => {
+    const dist = getFoodDistanceKm(food);
+    return {
+      ...food,
+      distanceKm: Number.isFinite(dist) ? dist : (food.distanceKm ?? null),
+    };
+  });
+
+  return [...enrichedFoods].sort((first, second) => {
     switch (req.sort) {
       case "PRICE_ASC":
         return first.price - second.price;
@@ -946,8 +1056,29 @@ function applyCustomerSearchFilters(
       case "PRICE_DESC":
         return second.price - first.price;
 
-      case "DISTANCE_ASC":
-        return (first.distanceKm ?? 0) - (second.distanceKm ?? 0);
+      case "DISTANCE_ASC": {
+        const distA =
+          first.distanceKm !== null &&
+          first.distanceKm !== undefined &&
+          Number.isFinite(Number(first.distanceKm))
+            ? Number(first.distanceKm)
+            : Number.POSITIVE_INFINITY;
+        const distB =
+          second.distanceKm !== null &&
+          second.distanceKm !== undefined &&
+          Number.isFinite(Number(second.distanceKm))
+            ? second.distanceKm
+            : Number.POSITIVE_INFINITY;
+
+        if (distA !== distB) {
+          return distA - distB;
+        }
+
+        return (
+          Number(second.store?.averageRating ?? 0) -
+          Number(first.store?.averageRating ?? 0)
+        );
+      }
 
       case "NEWEST":
       default: {
@@ -1315,6 +1446,58 @@ function FilterSidebar({
   const { data: filterOptions } = useGetDiscoveryFiltersQuery();
   const { data: menuItems = [] } = useGetMenuItemsQuery();
   const { data: profileResponse } = useGetMemberProfilesQuery();
+  const { data: foodCatalogList = [] } = useGetFoodCatalogListQuery();
+
+  const dispatch = useDispatch<AppDispatch>();
+  const [detailedItemsMap, setDetailedItemsMap] = useState<
+    Map<string, CatalogMenuItem>
+  >(new Map());
+
+  // Fetch full item detail using getMenuItemByUuid endpoint for each menu item
+  useEffect(() => {
+    if (!menuItems || menuItems.length === 0) return;
+    let cancelled = false;
+
+    Promise.all(
+      menuItems.map((item) =>
+        dispatch(menuApi.endpoints.getMenuItemByUuid.initiate(item.uuid))
+          .unwrap()
+          .then((detail) => ({ uuid: item.uuid, detail }))
+          .catch(() => ({ uuid: item.uuid, detail: item })),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      const map = new Map<string, CatalogMenuItem>();
+      results.forEach((r) => {
+        if (r.detail) map.set(r.uuid, r.detail);
+      });
+      setDetailedItemsMap(map);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [menuItems, dispatch]);
+
+  const activeMenuItems = useMemo(() => {
+    if (detailedItemsMap.size === 0) return menuItems;
+    return menuItems.map((item) => {
+      const detail = detailedItemsMap.get(item.uuid);
+      if (!detail) return item;
+      return {
+        ...item,
+        ...detail,
+        food: {
+          ...(item.food ?? {}),
+          ...(detail.food ?? {}),
+        },
+        store: {
+          ...(item.store ?? {}),
+          ...(detail.store ?? {}),
+        },
+      };
+    });
+  }, [menuItems, detailedItemsMap]);
 
   const memberProfiles = Array.isArray(profileResponse)
     ? profileResponse
@@ -1444,14 +1627,14 @@ function FilterSidebar({
 
   const categories = useMemo(() => {
     const activeCategoryNamesOrCodes = new Set(
-      menuItems.flatMap((item) => {
+      activeMenuItems.flatMap((item) => {
         const cat = item.food?.category;
         return cat ? [normalizeText(cat.name), normalizeText(cat.code)] : [];
       }),
     );
 
     let list = (filterOptions?.categories || []).filter((cat) => {
-      if (activeCategoryNamesOrCodes.size === 0) return true;
+      if (activeCategoryNamesOrCodes.size === 0) return false;
       return (
         activeCategoryNamesOrCodes.has(normalizeText(cat.name)) ||
         activeCategoryNamesOrCodes.has(normalizeText(cat.code))
@@ -1468,11 +1651,11 @@ function FilterSidebar({
       list = list.filter((cat) => normalizeText(cat.name).includes(q));
     }
     return list;
-  }, [filterOptions?.categories, menuItems, categoryType, categoryQuery]);
+  }, [filterOptions?.categories, activeMenuItems, categoryType, categoryQuery]);
 
   const cuisines = useMemo(() => {
     const activeCuisineNamesOrCodes = new Set(
-      menuItems.flatMap((item) => {
+      activeMenuItems.flatMap((item) => {
         const c = item.food?.cuisine;
         return c ? [normalizeText(c.name), normalizeText(c.code)] : [];
       }),
@@ -1482,13 +1665,102 @@ function FilterSidebar({
       const name = normalizeText(c.name);
       const code = normalizeText(c.code);
       if (name.includes("ថៃ") || code.includes("thai")) return false;
-      if (activeCuisineNamesOrCodes.size === 0) return true;
+      if (activeCuisineNamesOrCodes.size === 0) return false;
       return (
         activeCuisineNamesOrCodes.has(name) ||
         activeCuisineNamesOrCodes.has(code)
       );
     });
-  }, [filterOptions?.cuisines, menuItems]);
+  }, [filterOptions?.cuisines, activeMenuItems]);
+
+  const dietaryTypes = useMemo(() => {
+    const foodCatalogMap = new Map(
+      (foodCatalogList || []).map((f) => [f.uuid, f]),
+    );
+    const lookupMap = buildCodeNameLookup(filterOptions);
+
+    // Map each food to its full dietary list (item + master catalog)
+    const foodsWithDiets = activeMenuItems.map((item) => {
+      const itemDiets = getDietaryTypes(item);
+      const master = item.food?.uuid ? foodCatalogMap.get(item.food.uuid) : null;
+      const masterDiets = (master?.dietaryTypes || []).map((md) => ({
+        code: md.code,
+        name: md.name,
+      }));
+      return [...itemDiets, ...masterDiets];
+    });
+
+    // Count how many foods match each discovery dietary type
+    const discoveryItemsWithCounts = (filterOptions?.dietaryTypes || [])
+      .map((d) => {
+        const count = foodsWithDiets.filter((diets) =>
+          diets.some((diet) =>
+            matchesItemWithLookup([d.uuid], diet.code, diet.name, lookupMap),
+          ),
+        ).length;
+        return {
+          uuid: d.uuid,
+          code: d.code,
+          name: d.name,
+          count,
+        };
+      })
+      // ONLY KEEP OPTIONS THAT ACTUALLY CONTAIN FOOD (count > 0)
+      .filter((d) => d.count > 0);
+
+    const seenKeys = new Set(
+      discoveryItemsWithCounts.flatMap((d) => [
+        normalizeText(d.uuid),
+        normalizeText(d.code),
+        normalizeText(d.name),
+      ]),
+    );
+
+    // Also include any active diets present on foods/catalog not in discovery
+    const extraFromFoods: typeof discoveryItemsWithCounts = [];
+    foodsWithDiets.flat().forEach((d) => {
+      if (!d) return;
+      const key = normalizeText(d.code || d.name);
+      const nameKey = normalizeText(d.name);
+      if (key && !seenKeys.has(key) && !seenKeys.has(nameKey)) {
+        seenKeys.add(key);
+        seenKeys.add(nameKey);
+        const count = foodsWithDiets.filter((diets) =>
+          diets.some(
+            (diet) =>
+              normalizeText(diet.code) === key ||
+              normalizeText(diet.name) === nameKey,
+          ),
+        ).length;
+        if (count > 0) {
+          extraFromFoods.push({
+            uuid: d.code || key,
+            code: d.code || key,
+            name: d.name,
+            count,
+          });
+        }
+      }
+    });
+
+    return [...discoveryItemsWithCounts, ...extraFromFoods].sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+    );
+  }, [filterOptions, activeMenuItems, foodCatalogList]);
+
+  const allergens = useMemo(() => {
+    const lookupMap = buildCodeNameLookup(filterOptions);
+    return (filterOptions?.allergens || []).filter((alg) => {
+      const matchingCount = activeMenuItems.filter((item) => {
+        const foodAllergens = getAllergens(item);
+        return foodAllergens.some((fa) =>
+          matchesItemWithLookup([alg.uuid], fa.code, fa.name, lookupMap),
+        );
+      }).length;
+      return matchingCount > 0;
+    });
+  }, [filterOptions, activeMenuItems]);
+
 
   return (
     <motion.aside
@@ -1777,36 +2049,36 @@ function FilterSidebar({
             )}
 
             {/* DIETARY TYPES */}
-            {filterOptions?.dietaryTypes &&
-              filterOptions.dietaryTypes.length > 0 && (
-                <FilterSection
-                  title="របបអាហារ"
-                  icon={<IoNutritionOutline />}
-                  isOpen={openSections.dietary}
-                  onToggle={() => toggleSection("dietary")}
-                >
-                  <CollapsibleList
-                    items={filterOptions.dietaryTypes}
-                    renderItem={(d) => (
-                      <PillOption
-                        key={d.uuid}
-                        label={d.name}
-                        checked={Boolean(
-                          customerSearchRequest.dietaryTypeUuids?.includes(
-                            d.uuid,
-                          ),
-                        )}
-                        onChange={() =>
-                          toggleArrayItem("dietaryTypeUuids", d.uuid)
-                        }
-                      />
-                    )}
-                  />
-                </FilterSection>
-              )}
+            {dietaryTypes.length > 0 && (
+              <FilterSection
+                title="របបអាហារ"
+                icon={<IoNutritionOutline />}
+                isOpen={openSections.dietary}
+                onToggle={() => toggleSection("dietary")}
+              >
+                <CollapsibleList
+                  items={dietaryTypes}
+                  renderItem={(d) => (
+                    <PillOption
+                      key={d.uuid}
+                      label={d.name}
+                      checked={Boolean(
+                        customerSearchRequest.dietaryTypeUuids?.includes(
+                          d.uuid,
+                        ) ||
+                        (d.code && customerSearchRequest.dietaryTypeUuids?.includes(d.code))
+                      )}
+                      onChange={() =>
+                        toggleArrayItem("dietaryTypeUuids", d.uuid)
+                      }
+                    />
+                  )}
+                />
+              </FilterSection>
+            )}
 
             {/* ALLERGEN EXCLUSIONS */}
-            {filterOptions?.allergens && filterOptions.allergens.length > 0 && (
+            {allergens.length > 0 && (
               <FilterSection
                 title="ជៀសវាងអាលែហ្ស៊ី"
                 icon={<IoNutritionOutline />}
@@ -1817,7 +2089,7 @@ function FilterSidebar({
                   មុខម្ហូបដែលមានធាតុផ្សំអាឡែស៊ីដែលបានជ្រើសរើសនឹងត្រូវដកចេញ។
                 </p>
                 <CollapsibleList
-                  items={filterOptions.allergens}
+                  items={allergens}
                   renderItem={(alg) => (
                     <PillOption
                       key={alg.uuid}
@@ -2552,10 +2824,33 @@ function LoadingState() {
 
 function FoodPageContent() {
   const searchParams = useSearchParams();
+  const { coordinates: userCoordinates } = useUserLocation();
   const rawAgeParam =
     searchParams.get("ageGroups") ||
     searchParams.get("ageGroup") ||
     searchParams.get("age") ||
+    "";
+  const rawProvinceParam =
+    searchParams.get("province") ||
+    searchParams.get("provinces") ||
+    searchParams.get("location") ||
+    searchParams.get("city") ||
+    "";
+  const rawSeasonParam =
+    searchParams.get("season") ||
+    searchParams.get("seasons") ||
+    "";
+  const rawEventParam =
+    searchParams.get("event") ||
+    searchParams.get("events") ||
+    "";
+  const rawCategoryParam =
+    searchParams.get("category") ||
+    searchParams.get("categories") ||
+    "";
+  const rawCuisineParam =
+    searchParams.get("cuisine") ||
+    searchParams.get("cuisines") ||
     "";
   const rawQueryParam =
     searchParams.get("query") ||
@@ -2597,12 +2892,31 @@ function FoodPageContent() {
   ] = useDiscoverySearchMutation();
 
   const { data: discoveryFilterOptions } = useGetDiscoveryFiltersQuery();
+  const { data: foodCatalogList = [] } = useGetFoodCatalogListQuery();
 
   // Synchronize URL age group search params with customerSearchRequest and filters
   useEffect(() => {
     if (!rawAgeParam) return;
     const decoded = decodeURIComponent(rawAgeParam).trim();
     if (!decoded) return;
+
+    // ✅ Handle special "ALL" parameter - include all available age groups
+    if (decoded === "ALL") {
+      if (discoveryFilterOptions?.ageGroups && discoveryFilterOptions.ageGroups.length > 0) {
+        const allAgeGroupUuids = discoveryFilterOptions.ageGroups.map(ag => ag.uuid);
+        const allAgeGroupCodes = discoveryFilterOptions.ageGroups.map(ag => ag.code || ag.name);
+        
+        setCustomerSearchRequest((prev) => ({
+          ...prev,
+          ageGroupUuids: allAgeGroupUuids,
+        }));
+        setFilters((prev) => ({
+          ...prev,
+          ageGroupCodes: allAgeGroupCodes,
+        }));
+        return;
+      }
+    }
 
     if (
       discoveryFilterOptions?.ageGroups &&
@@ -2642,6 +2956,169 @@ function FoodPageContent() {
     }));
   }, [rawAgeParam, discoveryFilterOptions?.ageGroups]);
 
+  // Synchronize URL province/location search params
+  useEffect(() => {
+    if (!rawProvinceParam) return;
+    const decoded = decodeURIComponent(rawProvinceParam).trim();
+    if (!decoded) return;
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.provinces?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        provinces: [decoded],
+      };
+    });
+  }, [rawProvinceParam]);
+
+  // Synchronize URL season search params
+  useEffect(() => {
+    if (!rawSeasonParam) return;
+    const decoded = decodeURIComponent(rawSeasonParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.seasons &&
+      discoveryFilterOptions.seasons.length > 0
+    ) {
+      const matched = discoveryFilterOptions.seasons.find(
+        (s) =>
+          normalizeText(s.name) === normalizeText(decoded) ||
+          normalizeText(s.code) === normalizeText(decoded) ||
+          normalizeText(s.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.seasonUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            seasonUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.seasonUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        seasonUuids: [decoded],
+      };
+    });
+  }, [rawSeasonParam, discoveryFilterOptions?.seasons]);
+
+  // Synchronize URL event search params
+  useEffect(() => {
+    if (!rawEventParam) return;
+    const decoded = decodeURIComponent(rawEventParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.events &&
+      discoveryFilterOptions.events.length > 0
+    ) {
+      const matched = discoveryFilterOptions.events.find(
+        (e) =>
+          normalizeText(e.name) === normalizeText(decoded) ||
+          normalizeText(e.code) === normalizeText(decoded) ||
+          normalizeText(e.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.eventUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            eventUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.eventUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        eventUuids: [decoded],
+      };
+    });
+  }, [rawEventParam, discoveryFilterOptions?.events]);
+
+  // Synchronize URL category search params
+  useEffect(() => {
+    if (!rawCategoryParam) return;
+    const decoded = decodeURIComponent(rawCategoryParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.categories &&
+      discoveryFilterOptions.categories.length > 0
+    ) {
+      const matched = discoveryFilterOptions.categories.find(
+        (c) =>
+          normalizeText(c.name) === normalizeText(decoded) ||
+          normalizeText(c.code) === normalizeText(decoded) ||
+          normalizeText(c.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.categoryUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            categoryUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.categoryUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        categoryUuids: [decoded],
+      };
+    });
+  }, [rawCategoryParam, discoveryFilterOptions?.categories]);
+
+  // Synchronize URL cuisine search params
+  useEffect(() => {
+    if (!rawCuisineParam) return;
+    const decoded = decodeURIComponent(rawCuisineParam).trim();
+    if (!decoded) return;
+
+    if (
+      discoveryFilterOptions?.cuisines &&
+      discoveryFilterOptions.cuisines.length > 0
+    ) {
+      const matched = discoveryFilterOptions.cuisines.find(
+        (c) =>
+          normalizeText(c.name) === normalizeText(decoded) ||
+          normalizeText(c.code) === normalizeText(decoded) ||
+          normalizeText(c.uuid) === normalizeText(decoded),
+      );
+      if (matched) {
+        setCustomerSearchRequest((prev) => {
+          if (prev.cuisineUuids?.includes(matched.uuid)) return prev;
+          return {
+            ...prev,
+            cuisineUuids: [matched.uuid],
+          };
+        });
+        return;
+      }
+    }
+
+    setCustomerSearchRequest((prev) => {
+      if (prev.cuisineUuids?.includes(decoded)) return prev;
+      return {
+        ...prev,
+        cuisineUuids: [decoded],
+      };
+    });
+  }, [rawCuisineParam, discoveryFilterOptions?.cuisines]);
+
   // Synchronize search query param if provided
   useEffect(() => {
     if (rawQueryParam && rawQueryParam !== searchInput) {
@@ -2657,11 +3134,17 @@ function FoodPageContent() {
       request: {
         ...customerSearchRequest,
         query: searchInput.trim() || undefined,
+        ...(userCoordinates && isValidCoordinates(userCoordinates)
+          ? {
+              latitude: userCoordinates.latitude,
+              longitude: userCoordinates.longitude,
+            }
+          : {}),
       },
     });
     // Reset page to 1 when filters or search change
     setCurrentPage(1);
-  }, [customerSearchRequest, searchInput, executeDiscoverySearch]);
+  }, [customerSearchRequest, searchInput, userCoordinates, executeDiscoverySearch]);
 
   const discoveryItems = useMemo<MenuItemDiscoveryResponse[]>(() => {
     if (!discoveryResult) return [];
@@ -2886,6 +3369,8 @@ function FoodPageContent() {
         searchInput,
         selectedProfile,
         discoveryFilterOptions,
+        foodCatalogList,
+        userCoordinates,
       ),
     [
       menuItems,
@@ -2893,6 +3378,8 @@ function FoodPageContent() {
       searchInput,
       selectedProfile,
       discoveryFilterOptions,
+      foodCatalogList,
+      userCoordinates,
     ],
   );
 
@@ -3062,13 +3549,14 @@ function FoodPageContent() {
     if (discoveryItems.length === 0) return filteredFoods;
     const safetyMap = new Map<
       string,
-      { status?: SafetyStatusType; reasons?: string[] }
+      { status?: SafetyStatusType; reasons?: string[]; distanceKm?: number }
     >();
     for (const d of discoveryItems) {
       if (d.menuItemUuid) {
         safetyMap.set(d.menuItemUuid, {
           status: d.safetyStatus,
           reasons: d.safetyReasonCodes,
+          distanceKm: d.distanceMeters ? d.distanceMeters / 1000 : undefined,
         });
       }
     }
@@ -3079,6 +3567,7 @@ function FoodPageContent() {
           ...item,
           safetyStatus: s.status ?? (item as any).safetyStatus,
           safetyReasonCodes: s.reasons ?? (item as any).safetyReasonCodes,
+          distanceKm: item.distanceKm ?? s.distanceKm ?? null,
         };
       }
       return item;
