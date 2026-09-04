@@ -701,7 +701,12 @@ export default function FoodCard({ food }: FoodCardProps) {
   ======================================================= */
 
   let travelTimeMin: number | null = null;
-  let computedDistanceKm: number | null = activeFood.distanceKm ?? null;
+  let computedDistanceKm: number | null =
+    activeFood.distanceKm !== undefined &&
+    activeFood.distanceKm !== null &&
+    Number.isFinite(Number(activeFood.distanceKm))
+      ? Number(activeFood.distanceKm)
+      : null;
 
   if (
     userCoordinates &&
@@ -719,10 +724,12 @@ export default function FoodCard({ food }: FoodCardProps) {
         userCoordinates,
         storeCoordinates,
       );
-
-      // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
-      travelTimeMin = Math.ceil(computedDistanceKm * 2 + 5);
     }
+  }
+
+  if (computedDistanceKm !== null && Number.isFinite(computedDistanceKm)) {
+    // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
+    travelTimeMin = Math.ceil(computedDistanceKm * 2 + 5);
   }
 
   const formattedDistance =
