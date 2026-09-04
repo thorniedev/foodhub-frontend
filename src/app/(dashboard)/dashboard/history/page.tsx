@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Suspense, useMemo } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Clock,
@@ -12,7 +11,7 @@ import {
 } from "lucide-react";
 import { useGetInteractionHistoryQuery } from "@/app/store/interactionApi";
 import { useGetMenuItemsQuery, useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
-import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
+import FoodCard from "@/components/dynamic-card/FoodCard";
 import type { InteractionEventResponse } from "@/types/interaction";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
@@ -49,9 +48,10 @@ function HistoryItemCard({
   allMenuItems: CatalogMenuItem[];
 }) {
   const menuItemUuid = event.menuItemUuid || event.foodUuid || "";
-  const { data: itemDetail } = useGetMenuItemByUuidQuery(menuItemUuid, {
-    skip: !menuItemUuid,
-  });
+  const { data: itemDetail, isLoading: isDetailLoading } =
+    useGetMenuItemByUuidQuery(menuItemUuid, {
+      skip: !menuItemUuid,
+    });
 
   const cachedItem = allMenuItems.find(
     (m) =>
@@ -61,27 +61,16 @@ function HistoryItemCard({
       m.localName === menuItemUuid,
   );
 
-  const title =
-    itemDetail?.localName ||
-    itemDetail?.name ||
-    cachedItem?.localName ||
-    cachedItem?.name ||
-    "មុខម្ហូប";
+  const foodItem = itemDetail || cachedItem;
 
-  const rawPrice = itemDetail?.price ?? cachedItem?.price;
-  const price = rawPrice != null ? `$${Number(rawPrice).toFixed(2)}` : null;
-
-  const storeName =
-    itemDetail?.store?.name || cachedItem?.store?.name || null;
-
-  const rawThumbnail =
-    itemDetail?.thumbnail || cachedItem?.thumbnail || "/Image/default-food.png";
-  const thumbnail = toFrontendApiAssetUrl(rawThumbnail, DEFAULT_FOOD_IMAGE);
+  if (foodItem) {
+    return <FoodCard food={foodItem} />;
+  }
 
   if (event.storeUuid && !event.menuItemUuid) {
     return (
       <Link
-        href={`/stores/${event.storeUuid}`}
+        href={`/store/${event.storeUuid}`}
         className="group block overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="flex items-center gap-4">
@@ -104,45 +93,13 @@ function HistoryItemCard({
     );
   }
 
-  return (
-    <Link
-      href={`/menu/${menuItemUuid}`}
-      className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
-    >
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-        <Image
-          src={thumbnail}
-          alt={title}
-          fill
-          unoptimized
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition duration-300 group-hover:scale-105"
-        />
+  if (isDetailLoading) {
+    return (
+      <div className="h-[380px] w-full animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800" />
+    );
+  }
 
-        <div className="absolute top-3 left-3 rounded-xl bg-black/60 px-3 py-1.5 text-base font-semibold text-white backdrop-blur-xs">
-          {formatRelativeTime(event.occurredAt)}
-        </div>
-      </div>
-
-      <div className="flex flex-1 flex-col justify-between p-5">
-        <h4 className="truncate text-lg font-bold text-slate-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400 sm:text-xl">
-          {title}
-        </h4>
-
-        <div className="mt-3 flex items-center justify-between gap-3 text-base">
-          <span className="truncate font-medium text-slate-500 dark:text-slate-400">
-            {storeName || "មុខម្ហូប"}
-          </span>
-
-          {price && (
-            <span className="shrink-0 text-lg font-extrabold text-emerald-700 dark:text-emerald-400">
-              {price}
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
+  return null;
 }
 
 function HistoryContent() {
