@@ -64,7 +64,7 @@ export default function FitFoodSection() {
             data-aos-delay={item.aosDelay}
             className="flex flex-col items-center min-md:-mt-40 min-lg:-mt-0 max-sm:mt-5 "
           >
-            <div className="relative w-60 h-60 lg:-mt-43 mb-6">
+            <div className="relative w-60 h-60 lg:-mt-43 mb-6 animate-[spin_15s_linear_infinite]">
               <Image
                 src={item.image}
                 alt={item.title}
@@ -73,7 +73,7 @@ export default function FitFoodSection() {
                 sizes="250px"
               />
             </div>
-            <h3 className="text-white font-bold text-xl mb-3">{item.title}</h3>
+            <h3 className="text-white font-bold text-secondary-400 text-xl mb-3">{item.title}</h3>
             <p className="text-gray-100 text-xl lg:max-w-[290px] px-4">{item.description}</p>
           </div>
         ))}
