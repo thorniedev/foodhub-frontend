@@ -1605,7 +1605,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               }
             />
 
-            <div className="mt-6 container mx-auto max-w-7xl grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-6 container mx-auto max-w-7xl grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4">
               {relatedFoods.map((relatedFood) => (
                 <RelatedFoodCard key={relatedFood.uuid} food={relatedFood} />
               ))}
