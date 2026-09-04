@@ -313,20 +313,28 @@ async function forwardRequest(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    console.log("[FOODHUB PROXY REQUEST]", {
-      method: request.method,
-      frontendUrl: request.url,
-      backendUrl: targetUrl.toString(),
-      path: backendPath,
-      hasAuthorization: requestHeaders.has("Authorization"),
-    });
+    const isStaticAsset =
+      backendPath.startsWith("media/") ||
+      backendPath.includes("/images/") ||
+      backendPath.startsWith("banners") ||
+      request.nextUrl.pathname.includes("/images/");
+
+    if (!isStaticAsset) {
+      console.log("[FOODHUB PROXY REQUEST]", {
+        method: request.method,
+        frontendUrl: request.url,
+        backendUrl: targetUrl.toString(),
+        path: backendPath,
+        hasAuthorization: requestHeaders.has("Authorization"),
+      });
+    }
 
     let backendResponse = await fetch(targetUrl, {
       method: request.method,
       headers: requestHeaders,
       body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
       cache: "no-store",
-      redirect: "manual",
+      redirect: isStaticAsset ? "follow" : "manual",
       signal: controller.signal,
     });
 
@@ -342,7 +350,7 @@ async function forwardRequest(
           headers: requestHeaders,
           body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
           cache: "no-store",
-          redirect: "manual",
+          redirect: isStaticAsset ? "follow" : "manual",
         });
       }
     }
@@ -362,12 +370,6 @@ async function forwardRequest(
       responseHeaders.set("Location", location);
     }
 
-    const isStaticAsset =
-      backendPath.startsWith("media/") ||
-      backendPath.includes("/images/") ||
-      backendPath.startsWith("banners") ||
-      Boolean(responseContentType?.startsWith("image/"));
-
     const cacheControl = backendResponse.headers.get("cache-control");
     if (cacheControl) {
       responseHeaders.set("Cache-Control", cacheControl);
@@ -378,13 +380,21 @@ async function forwardRequest(
       );
     }
 
-    console.log("[FOODHUB PROXY RESPONSE]", {
-      method: request.method,
-      backendUrl: targetUrl.toString(),
-      status: backendResponse.status,
-    });
+    if (!isStaticAsset) {
+      console.log("[FOODHUB PROXY RESPONSE]", {
+        method: request.method,
+        backendUrl: targetUrl.toString(),
+        status: backendResponse.status,
+      });
+    }
 
-    if (!backendResponse.ok) {
+    const isRedirect =
+      backendResponse.status === 301 ||
+      backendResponse.status === 302 ||
+      backendResponse.status === 307 ||
+      backendResponse.status === 308;
+
+    if (!backendResponse.ok && !isRedirect) {
       let errorText = "";
 
       if (responseBody) {

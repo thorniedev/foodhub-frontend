@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
 
 import {
   IoChevronBack,
@@ -129,53 +130,41 @@ function FeaturedStoreBanner({
   return (
     <Link
       href={`/store/${store.uuid}`}
-      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-[32px]"
+      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-[28px] sm:rounded-[32px] md:rounded-[36px]"
     >
-      <motion.article
-        key={store.uuid}
-        initial={{
-          opacity: 0,
-          x: 26,
-        }}
-        animate={{
-          opacity: 1,
-          x: 0,
-        }}
-        exit={{
-          opacity: 0,
-          x: -26,
-        }}
-        transition={{
-          duration: 0.34,
-          ease: "easeOut",
-        }}
+      <article
         className="
           group
           cursor-pointer
           overflow-hidden
-          rounded-[32px]
-          border border-gray-100/60
+          rounded-[28px] sm:rounded-[32px] md:rounded-[36px]
+          p-3 sm:p-3.5 md:p-4
+          border border-gray-100/80
           bg-white
-          shadow-[0_8px_30px_rgb(0,0,0,0.06)]
+          shadow-xs border-gray-200
           transition-all duration-300
           hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]
-          hover:-translate-y-1
+          hover:-translate-y-0.5
         "
       >
         <div
           className="
             grid grid-cols-1
-
+            gap-4 md:gap-6
             md:grid-cols-[0.9fr_1.1fr]
+            items-center
           "
         >
-          {/* Banner image */}
+          {/* Banner image: inner radius + padding = outer radius */}
           <div
             className="
               relative
               h-[205px]
-              bg-white
-
+              w-full
+              overflow-hidden
+              rounded-[16px] sm:rounded-[18px] md:rounded-[20px]
+              border border-gray-200
+              bg-primary-50
               sm:h-[230px]
               md:h-[270px]
             "
@@ -188,10 +177,9 @@ function FeaturedStoreBanner({
             className="
               flex min-w-0
               flex-col justify-center
-              p-5
-
-              sm:p-6
-              lg:p-7
+              py-2 px-1
+              sm:py-3 sm:px-2
+              md:py-4 md:px-3
             "
           >
             <p
@@ -222,7 +210,9 @@ function FeaturedStoreBanner({
             <div className="mt-3 flex items-start gap-2 text-gray-500">
               <IoLocationOutline className="mt-1 shrink-0 text-[19px] text-gray-400" />
 
-              <p className="line-clamp-2 text-[18px] leading-6">{addressLabel}</p>
+              <p className="line-clamp-2 text-[18px] leading-6">
+                {addressLabel}
+              </p>
             </div>
 
             <div
@@ -266,7 +256,7 @@ function FeaturedStoreBanner({
             </div>
           </div>
         </div>
-      </motion.article>
+      </article>
     </Link>
   );
 }
@@ -298,52 +288,55 @@ export default function StoreGrid({
     [stores, distanceByStoreUuid],
   );
 
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    duration: 30,
+  });
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setActiveIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
   useEffect(() => {
-    if (featuredStores.length <= 1 || isPaused) {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const goToPrevious = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const goToNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index);
+    },
+    [emblaApi],
+  );
+
+  useEffect(() => {
+    if (!emblaApi || featuredStores.length <= 1 || isPaused) {
       return;
     }
 
     const intervalId = window.setInterval(() => {
-      setActiveIndex((currentIndex) =>
-        currentIndex === featuredStores.length - 1 ? 0 : currentIndex + 1,
-      );
+      emblaApi.scrollNext();
     }, AUTO_PLAY_DELAY);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [featuredStores.length, isPaused]);
-
-  useEffect(() => {
-    if (featuredStores.length === 0) {
-      setActiveIndex(0);
-      return;
-    }
-
-    if (activeIndex > featuredStores.length - 1) {
-      setActiveIndex(0);
-    }
-  }, [activeIndex, featuredStores.length]);
-
-  const goToPrevious = () => {
-    if (featuredStores.length <= 1) {
-      return;
-    }
-
-    setActiveIndex((currentIndex) =>
-      currentIndex === 0 ? featuredStores.length - 1 : currentIndex - 1,
-    );
-  };
-
-  const goToNext = () => {
-    if (featuredStores.length <= 1) {
-      return;
-    }
-
-    setActiveIndex((currentIndex) =>
-      currentIndex === featuredStores.length - 1 ? 0 : currentIndex + 1,
-    );
-  };
+  }, [emblaApi, featuredStores.length, isPaused]);
 
   /* =========================================================
      PAGINATION
@@ -376,9 +369,24 @@ export default function StoreGrid({
       return [1, 2, 3, 4, "...", totalPages];
     }
     if (currentPage >= totalPages - 2) {
-      return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      return [
+        1,
+        "...",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
     }
-    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+    return [
+      1,
+      "...",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "...",
+      totalPages,
+    ];
   }, [currentPage, totalPages]);
 
   if (stores.length === 0) {
@@ -396,10 +404,11 @@ export default function StoreGrid({
           duration: 0.22,
         }}
         className="
-          rounded-[22px]
+          flex min-h-[850px] lg:min-h-[900px] flex-col items-center justify-center
+          rounded-[24px]
           border border-dashed border-gray-200
           bg-white
-          px-5 py-14
+          px-5 py-16
           text-center
         "
       >
@@ -435,7 +444,8 @@ export default function StoreGrid({
             text-gray-500
           "
         >
-          សូមសាកល្បងផ្លាស់ប្តូរតម្រងស្វែងរក ឬសម្អាតតម្រងទាំងអស់ដើម្បីមើលហាងទាំងអស់ឡើងវិញ។
+          សូមសាកល្បងផ្លាស់ប្តូរតម្រងស្វែងរក
+          ឬសម្អាតតម្រងទាំងអស់ដើម្បីមើលហាងទាំងអស់ឡើងវិញ។
         </p>
 
         <button
@@ -468,34 +478,34 @@ export default function StoreGrid({
       {/* Featured store banner */}
       {featuredStores.length > 0 && (
         <section
-          className="mb-8"
+          className="mb-4 sm:mb-5"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
           <div
             className="
-              mb-4
+              mb-2.5
               flex flex-wrap
               items-end justify-between
-              gap-3
+              gap-2
             "
           >
             <div className="min-w-0">
               <p
                 className="
-                  text-[18px]
+                  text-[17px]
                   font-semibold
                   text-secondary-500
                   flex items-center gap-1.5
                 "
               >
-                <IoNavigateOutline className="text-[18px]" />
+                <IoNavigateOutline className="text-[17px]" />
                 {hasUserDistance ? "ហាងនៅជិតអ្នកបំផុត" : "ជម្រើសសម្រាប់អ្នក"}
               </p>
 
               <p
                 className="
-                  mt-1
+                  mt-0.5
                   text-[22px]
                   font-bold
                   text-primary-900
@@ -521,7 +531,7 @@ export default function StoreGrid({
                   aria-label="Previous featured store"
                   onClick={goToPrevious}
                   className="
-                    flex h-10 w-10
+                    flex h-9 w-9
                     items-center justify-center
                     rounded-full
                     border border-gray-200
@@ -534,7 +544,7 @@ export default function StoreGrid({
                     active:scale-90
                   "
                 >
-                  <IoChevronBack className="text-[21px]" />
+                  <IoChevronBack className="text-[19px]" />
                 </button>
 
                 <button
@@ -542,7 +552,7 @@ export default function StoreGrid({
                   aria-label="Next featured store"
                   onClick={goToNext}
                   className="
-                    flex h-10 w-10
+                    flex h-9 w-9
                     items-center justify-center
                     rounded-full
                     bg-primary-800
@@ -553,7 +563,7 @@ export default function StoreGrid({
                     active:scale-90
                   "
                 >
-                  <IoChevronForward className="text-[21px]" />
+                  <IoChevronForward className="text-[19px]" />
                 </button>
               </div>
             )}
@@ -564,33 +574,36 @@ export default function StoreGrid({
               activeIndex >= 0 && activeIndex < featuredStores.length
                 ? activeIndex
                 : 0;
-            const currentFeaturedStore = featuredStores[safeActiveIndex] ?? null;
-
-            if (!currentFeaturedStore) return null;
 
             return (
               <>
-                <div className="relative overflow-hidden">
-                  <AnimatePresence mode="wait">
-                    <FeaturedStoreBanner
-                      key={currentFeaturedStore.uuid}
-                      store={currentFeaturedStore}
-                      distanceKm={
-                        currentFeaturedStore.uuid
-                          ? distanceByStoreUuid[currentFeaturedStore.uuid]
-                          : undefined
-                      }
-                    />
-                  </AnimatePresence>
+                <div
+                  ref={emblaRef}
+                  className="overflow-hidden rounded-[28px] sm:rounded-[32px] md:rounded-[36px]"
+                >
+                  <div className="flex touch-pan-y -ml-4 sm:-ml-5">
+                    {featuredStores.map((store) => (
+                      <div key={store.uuid} className="min-w-0 shrink-0 grow-0 basis-full pl-4 sm:pl-5">
+                        <FeaturedStoreBanner
+                          store={store}
+                          distanceKm={
+                            store.uuid
+                              ? distanceByStoreUuid[store.uuid]
+                              : undefined
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {featuredStores.length > 1 && (
                   <div
                     className="
-                      mt-3
+                      mt-2.5
                       flex items-center
                       justify-center
-                      gap-2
+                      gap-1.5
                     "
                   >
                     {featuredStores.map((store, index) => (
@@ -599,9 +612,9 @@ export default function StoreGrid({
                         type="button"
                         aria-label={`Go to featured store ${index + 1}`}
                         aria-current={
-                          safeActiveIndex === index ? "true" : undefined
+                          activeIndex === index ? "true" : undefined
                         }
-                        onClick={() => setActiveIndex(index)}
+                        onClick={() => scrollTo(index)}
                         className={`
                             h-2
                             rounded-full
@@ -609,7 +622,7 @@ export default function StoreGrid({
                             duration-300
 
                             ${
-                              safeActiveIndex === index
+                              activeIndex === index
                                 ? "w-7 bg-primary-800"
                                 : "w-2 bg-primary-200 hover:bg-primary-400"
                             }
@@ -628,16 +641,16 @@ export default function StoreGrid({
       <section ref={allStoresSectionRef}>
         <div
           className="
-            mb-5
+            mb-3 sm:mb-4
             flex flex-wrap
             items-end justify-between
-            gap-3
+            gap-2
           "
         >
           <div>
             <p
               className="
-                text-[18px]
+                text-[17px]
                 font-semibold
                 text-secondary-500
               "
@@ -647,7 +660,7 @@ export default function StoreGrid({
 
             <p
               className="
-                mt-1
+                mt-0.5
                 text-[22px]
                 font-bold
                 text-primary-900
@@ -680,6 +693,7 @@ export default function StoreGrid({
           className="
             grid grid-cols-1
             gap-5
+            w-full min-h-[850px] lg:min-h-[900px] content-start
 
             md:grid-cols-3
             2xl:grid-cols-3
@@ -687,17 +701,36 @@ export default function StoreGrid({
         >
           <AnimatePresence mode="popLayout">
             {paginatedStores.map((store) => (
-              <Link
+              <motion.div
+                layout
                 key={store.uuid}
-                href={`/store/${store.uuid}`}
-                className="block"
+                initial={{
+                  opacity: 0,
+                  scale: 0.96,
+                  y: 12,
+                }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.95,
+                }}
+                transition={{
+                  duration: 0.25,
+                }}
+                className="w-full"
               >
-                <StoreCard
-                  store={store}
-                  distanceKm={distanceByStoreUuid[store.uuid]}
-                  variant="grid"
-                />
-              </Link>
+                <Link href={`/store/${store.uuid}`} className="block h-full">
+                  <StoreCard
+                    store={store}
+                    distanceKm={distanceByStoreUuid[store.uuid]}
+                    variant="grid"
+                  />
+                </Link>
+              </motion.div>
             ))}
           </AnimatePresence>
         </motion.div>
@@ -706,7 +739,19 @@ export default function StoreGrid({
         {totalPages > 1 && (
           <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-6 sm:flex-row dark:border-slate-800">
             <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
-              បង្ហាញ <span className="font-semibold text-primary-800 dark:text-emerald-400">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="font-semibold text-primary-800 dark:text-emerald-400">{Math.min(currentPage * ITEMS_PER_PAGE, stores.length)}</span> នៃ <span className="font-semibold text-primary-800 dark:text-emerald-400">{stores.length}</span> ហាង
+              បង្ហាញ{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </span>{" "}
+              -{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {Math.min(currentPage * ITEMS_PER_PAGE, stores.length)}
+              </span>{" "}
+              នៃ{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {stores.length}
+              </span>{" "}
+              ហាង
             </p>
 
             <div className="flex items-center gap-1.5 sm:gap-2">

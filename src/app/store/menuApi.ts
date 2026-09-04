@@ -138,11 +138,16 @@ export const menuApi = baseApi.injectEndpoints({
                 id: "LIST",
               },
             ],
+      
+      // ✅ PERFORMANCE FIX: Aggressive caching for menu items (20 minutes)
+      // This prevents 18+ duplicate calls across components
+      keepUnusedDataFor: 1200, // 20 minutes
     }),
 
     // =========================================================
     // GET MENU ITEM DETAIL
     // GET /api/v1/catalog/menu-items/{uuid}/detail
+    // ✅ PERFORMANCE: Cache for 5 minutes to reduce duplicate requests
     // =========================================================
     getMenuItemByUuid: builder.query<
       CatalogMenuItemDetail,
@@ -186,11 +191,16 @@ export const menuApi = baseApi.injectEndpoints({
           },
         ];
       },
+      
+      // ✅ PERFORMANCE FIX: Keep cached data for 5 minutes (300 seconds)
+      // This prevents duplicate API calls for the same menu item
+      keepUnusedDataFor: 300,
     }),
 
     // =========================================================
     // GET FOOD CATALOG DETAIL (Master Food Definition)
     // GET /api/v1/catalog/foods/{uuid}
+    // ✅ PERFORMANCE: Cache for 10 minutes (food catalog rarely changes)
     // =========================================================
     getFoodCatalogByUuid: builder.query<FoodCatalogDetail, string>({
       query: (uuid) => ({
@@ -209,6 +219,10 @@ export const menuApi = baseApi.injectEndpoints({
           id: uuid,
         },
       ],
+      
+      // ✅ PERFORMANCE FIX: Cache for 10 minutes (600 seconds)
+      // Food catalog data changes less frequently than menu items
+      keepUnusedDataFor: 600,
     }),
 
     // =========================================================
@@ -230,6 +244,25 @@ export const menuApi = baseApi.injectEndpoints({
         return normalizeArrayPayload<MealTypeDto>(response);
       },
     }),
+
+    // =========================================================
+    // GET ALL FOOD CATALOG ITEMS (Master Foods)
+    // GET /api/v1/catalog/foods
+    // =========================================================
+    getFoodCatalogList: builder.query<FoodCatalogDetail[], void>({
+      query: () => ({
+        url: "/catalog/foods",
+        method: "GET",
+        params: {
+          page: 0,
+          size: 200,
+        },
+      }),
+      transformResponse: (response: unknown): FoodCatalogDetail[] => {
+        return normalizeArrayPayload<FoodCatalogDetail>(response);
+      },
+      providesTags: ["Food"],
+    }),
   }),
 
   overrideExisting: false,
@@ -239,5 +272,6 @@ export const {
   useGetMenuItemsQuery,
   useGetMenuItemByUuidQuery,
   useGetFoodCatalogByUuidQuery,
+  useGetFoodCatalogListQuery,
   useGetMealTypesQuery,
 } = menuApi;

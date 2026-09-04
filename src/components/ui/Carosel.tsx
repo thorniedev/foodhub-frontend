@@ -1058,14 +1058,14 @@ export default function Carousel({
     ----------------------------------------------------- */
 
     if (isLooping) {
-      setCanPrev(true);
-      setCanNext(true);
+      setCanPrev((prev) => (prev ? prev : true));
+      setCanNext((prev) => (prev ? prev : true));
     } else {
-      setCanPrev(element.scrollLeft > 4);
-
-      setCanNext(
-        element.scrollLeft < element.scrollWidth - element.clientWidth - 4,
-      );
+      const nextCanPrev = element.scrollLeft > 4;
+      const nextCanNext =
+        element.scrollLeft < element.scrollWidth - element.clientWidth - 4;
+      setCanPrev((prev) => (prev === nextCanPrev ? prev : nextCanPrev));
+      setCanNext((prev) => (prev === nextCanNext ? prev : nextCanNext));
     }
 
     /* -----------------------------------------------------
@@ -1092,9 +1092,9 @@ export default function Carousel({
        DOT INDEX
     ----------------------------------------------------- */
 
-    const dotIndex = isLooping ? ((closest % n) + n) % n : closest;
+    const dotIndex = isLooping && n > 0 ? ((closest % n) + n) % n : closest;
 
-    setActiveIndex(dotIndex);
+    setActiveIndex((prev) => (prev === dotIndex ? prev : dotIndex));
 
     /* -----------------------------------------------------
        NORMALIZE AFTER SCROLL SETTLES
@@ -1108,6 +1108,9 @@ export default function Carousel({
       normalizeLoop();
     }, 120);
   }, [isLooping, n, normalizeLoop]);
+
+  const updateArrowsRef = useRef(updateArrows);
+  updateArrowsRef.current = updateArrows;
 
   /* =======================================================
      INITIAL POSITION
@@ -1141,24 +1144,28 @@ export default function Carousel({
       }
     }
 
-    updateArrows();
+    const handleScrollOrResize = () => {
+      updateArrowsRef.current();
+    };
 
-    element.addEventListener("scroll", updateArrows, {
+    handleScrollOrResize();
+
+    element.addEventListener("scroll", handleScrollOrResize, {
       passive: true,
     });
 
-    window.addEventListener("resize", updateArrows);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
-      element.removeEventListener("scroll", updateArrows);
+      element.removeEventListener("scroll", handleScrollOrResize);
 
-      window.removeEventListener("resize", updateArrows);
+      window.removeEventListener("resize", handleScrollOrResize);
 
       if (settleTimeoutRef.current) {
         clearTimeout(settleTimeoutRef.current);
       }
     };
-  }, [updateArrows, isLooping, n]);
+  }, [isLooping, n]);
 
   /* =======================================================
      RESPONSIVE RESIZE REALIGNMENT

@@ -93,8 +93,10 @@ function getLocalFavoritesSnapshot() {
   return cachedEntries;
 }
 
-function getServerSnapshot() {
-  return [];
+const EMPTY_FAVORITES_SNAPSHOT: LocalFavoriteEntry[] = [];
+
+function getServerSnapshot(): LocalFavoriteEntry[] {
+  return EMPTY_FAVORITES_SNAPSHOT;
 }
 
 function subscribeToFavorites(callback: () => void) {

@@ -16,6 +16,7 @@ import {
 } from "framer-motion";
 import { FaShieldAlt, FaStore, FaArrowRight } from "react-icons/fa";
 
+import React from "react";
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
 import { sortFoodsForProfile } from "@/lib/recommendation/profileFoodPreferences";
@@ -164,9 +165,10 @@ function MealDishImage({
 
 /* =========================================================
    MAIN COMPONENT
+   ✅ PERFORMANCE FIX: Memoized to prevent unnecessary re-renders
 ========================================================= */
 
-export default function MealTimeJourneySection() {
+const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -917,4 +919,7 @@ export default function MealTimeJourneySection() {
       </motion.section>
     </div>
   );
-}
+});
+
+// ✅ PERFORMANCE FIX: Export memoized component as default
+export default MealTimeJourneySection;
