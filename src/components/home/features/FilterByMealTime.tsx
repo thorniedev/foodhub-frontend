@@ -12,7 +12,10 @@ import {
 import { TypingAnimation } from "@/components/ui/typing-animation";
 import FoodCard from "@/components/dynamic-card/FoodCard";
 
-import { useGetMenuItemsQuery, useGetMealTypesQuery } from "@/app/store/menuApi";
+import {
+  useGetMenuItemsQuery,
+  useGetMealTypesQuery,
+} from "@/app/store/menuApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import { useCreateRecommendationSessionMutation } from "@/app/store/recommendationApi";
 import { useEnrichedRecommendationItems } from "@/hooks/useEnrichedRecommendationItems";
@@ -339,11 +342,10 @@ export default function FilterByMealTime({
   const defaultProfile = useMemo(() => {
     const list = Array.isArray(profilesData)
       ? profilesData
-      : profilesData?.contents ?? [];
+      : (profilesData?.contents ?? []);
     return (
-      list.find(
-        (profile) => profile.isDefault && profile.isActive !== false,
-      ) ?? null
+      list.find((profile) => profile.isDefault && profile.isActive !== false) ??
+      null
     );
   }, [profilesData]);
 
@@ -396,7 +398,12 @@ export default function FilterByMealTime({
       ],
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPersonalized, defaultProfile?.uuid, activeMealTypeId, rootCategoryCode]);
+  }, [
+    isPersonalized,
+    defaultProfile?.uuid,
+    activeMealTypeId,
+    rootCategoryCode,
+  ]);
 
   const sessionItems = useMemo(() => session?.items ?? [], [session]);
 
@@ -520,18 +527,21 @@ export default function FilterByMealTime({
 
   // Show skeleton only while data is truly empty and loading
   const isLoading = isPersonalized
-    ? isSessionLoading && recommendedFoods.length === 0 && catalogMenuItems.length === 0
+    ? isSessionLoading &&
+      recommendedFoods.length === 0 &&
+      catalogMenuItems.length === 0
     : isCatalogLoading;
-  const isFetching = isPersonalized
-    ? isSessionLoading
-    : isCatalogFetching;
+  const isFetching = isPersonalized ? isSessionLoading : isCatalogFetching;
   const isError = isPersonalized ? false : isCatalogError;
 
   /* =========================================================
      PAGINATION
   ========================================================= */
 
-  const totalPages = Math.max(1, Math.ceil(filteredFoods.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredFoods.length / ITEMS_PER_PAGE),
+  );
 
   const paginatedFoods = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -542,7 +552,8 @@ export default function FilterByMealTime({
     if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
     setCurrentPage(newPage);
     if (sectionRef.current) {
-      const top = sectionRef.current.getBoundingClientRect().top + window.scrollY - 90;
+      const top =
+        sectionRef.current.getBoundingClientRect().top + window.scrollY - 90;
       window.scrollTo({ top, behavior: "smooth" });
     }
   };
@@ -555,9 +566,24 @@ export default function FilterByMealTime({
       return [1, 2, 3, 4, "...", totalPages];
     }
     if (currentPage >= totalPages - 2) {
-      return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      return [
+        1,
+        "...",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
     }
-    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+    return [
+      1,
+      "...",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "...",
+      totalPages,
+    ];
   }, [currentPage, totalPages]);
 
   /* =========================================================
@@ -580,7 +606,8 @@ export default function FilterByMealTime({
         md:text-5xl
         max-md:text-3xl leading-2 dark:text-primary-dark"
         >
-          ណែនាំចំណីអាហារ<br className="sm:hidden max-sm:block" />
+          ណែនាំចំណីអាហារ
+          <br className="sm:hidden max-sm:block" />
           <TypingAnimation
             words={["សម្រាប់អ្នក", "តាមពេលវេលា"]}
             blinkCursor
@@ -601,7 +628,8 @@ export default function FilterByMealTime({
 
         {isPersonalized && (
           <p className="mt-3 text-center text-[15px] font-medium text-primary-700 dark:text-emerald-400">
-            ✓ ណែនាំសម្រាប់ប្រវត្តិរូបលំនាំដើមរបស់អ្នក ដោយឆ្លងកាត់ការត្រួតពិនិត្យសុវត្ថិភាព
+            ✓ ណែនាំសម្រាប់ប្រវត្តិរូបលំនាំដើមរបស់អ្នក
+            ដោយឆ្លងកាត់ការត្រួតពិនិត្យសុវត្ថិភាព
           </p>
         )}
       </section>
@@ -613,70 +641,70 @@ export default function FilterByMealTime({
       <div className="sticky top-16 md:top-0 lg:top-16 z-30 w-full bg-white/90 backdrop-blur-md dark:bg-gray-950/90 pt-3 pb-1 transition-all duration-300">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:border-b sm:border-gray-200 sm:dark:border-slate-800">
-          <div className="scrollbar-hide flex w-full sm:w-auto gap-5 sm:gap-8 overflow-x-auto border-b border-gray-200 dark:border-slate-800 sm:border-none">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
+            <div className="scrollbar-hide flex w-full sm:w-auto gap-5 sm:gap-8 overflow-x-auto border-b border-gray-200 dark:border-slate-800 sm:border-none">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
 
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    isManualOverride.current = true;
-                    setActiveTab(tab.id);
-                  }}
-                  className={`relative cursor-pointer whitespace-nowrap pb-3 sm:pb-4 text-[17px] font-semibold transition-colors md:text-xl ${
-                    isActive
-                      ? "text-primary-700 dark:text-emerald-400"
-                      : "text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
-                  }`}
-                >
-                  {tab.label}
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      isManualOverride.current = true;
+                      setActiveTab(tab.id);
+                    }}
+                    className={`relative cursor-pointer whitespace-nowrap pb-3 sm:pb-4 text-[17px] font-semibold transition-colors md:text-xl ${
+                      isActive
+                        ? "text-primary-700 dark:text-emerald-400"
+                        : "text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    {tab.label}
 
-                  {isActive && (
-                    <motion.div
-                      layoutId="active-meal-tab-underline"
-                      className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700 dark:bg-emerald-500"
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 40,
-                      }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    {isActive && (
+                      <motion.div
+                        layoutId="active-meal-tab-underline"
+                        className="absolute -bottom-px left-0 right-0 h-[3px] rounded-full bg-primary-700 dark:bg-emerald-500"
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 40,
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* Food / Drink switch — recommendation and catalog both mix
+            {/* Food / Drink switch — recommendation and catalog both mix
               food and drink items, so this is a real hard filter, not a
               cosmetic one. */}
-          <div className="mt-3 sm:mt-0 mb-1 sm:mb-2 flex shrink-0 self-start sm:self-auto gap-1 rounded-full bg-gray-100 p-1 dark:bg-slate-800">
-            {rootCategoryTabs.map((tab) => {
-              const isActive = rootCategoryFilter === tab.id;
-              const Icon = tab.icon;
+            <div className="mt-3 sm:mt-0 mb-1 sm:mb-2 flex shrink-0 self-start sm:self-auto gap-1 rounded-full bg-gray-100 p-1 dark:bg-slate-800">
+              {rootCategoryTabs.map((tab) => {
+                const isActive = rootCategoryFilter === tab.id;
+                const Icon = tab.icon;
 
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setRootCategoryFilter(tab.id)}
-                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
-                    isActive
-                      ? "bg-white text-primary-800 shadow-sm dark:bg-slate-900 dark:text-emerald-400"
-                      : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  }`}
-                >
-                  <Icon className="text-base" />
-                  {tab.label}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setRootCategoryFilter(tab.id)}
+                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                      isActive
+                        ? "bg-white text-primary-800 shadow-sm dark:bg-slate-900 dark:text-emerald-400"
+                        : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    <Icon className="text-base" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
       {/* =====================================================
           FOOD GRID
@@ -733,23 +761,26 @@ export default function FilterByMealTime({
           {/* Result */}
 
           <AnimatePresence mode="popLayout">
-            {!isLoading && !isEnriching && !isError && filteredFoods.length === 0 && (
-              <motion.p
-                key="empty"
-                initial={{
-                  opacity: 0,
-                }}
-                animate={{
-                  opacity: 1,
-                }}
-                exit={{
-                  opacity: 0,
-                }}
-                className="col-span-full py-10 text-center text-gray-400 dark:text-slate-500"
-              >
-                រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
-              </motion.p>
-            )}
+            {!isLoading &&
+              !isEnriching &&
+              !isError &&
+              filteredFoods.length === 0 && (
+                <motion.p
+                  key="empty"
+                  initial={{
+                    opacity: 0,
+                  }}
+                  animate={{
+                    opacity: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                  }}
+                  className="col-span-full py-10 text-center text-gray-400 dark:text-slate-500"
+                >
+                  រកមិនឃើញលទ្ធផលដែលត្រូវនឹងតម្រង
+                </motion.p>
+              )}
 
             {!isLoading &&
               !isError &&
@@ -785,9 +816,21 @@ export default function FilterByMealTime({
         ===================================================== */}
 
         {!isLoading && !isError && totalPages > 1 && (
-          <div className="mt-6 flex flex-col items-center justify-between gap-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6">
+          <div className="mt-6 max-sm:mt-3 flex flex-col items-center justify-between gap-4 sm:flex-row border-t border-gray-100 dark:border-slate-800 pt-6 max-sm:pt-3 max-sm:mb-2">
             <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
-              បង្ហាញ <span className="font-semibold text-primary-800 dark:text-emerald-400">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="font-semibold text-primary-800 dark:text-emerald-400">{Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}</span> នៃ <span className="font-semibold text-primary-800 dark:text-emerald-400">{filteredFoods.length}</span> មុខម្ហូប
+              បង្ហាញ{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </span>{" "}
+              -{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {Math.min(currentPage * ITEMS_PER_PAGE, filteredFoods.length)}
+              </span>{" "}
+              នៃ{" "}
+              <span className="font-semibold text-primary-800 dark:text-emerald-400">
+                {filteredFoods.length}
+              </span>{" "}
+              មុខម្ហូប
             </p>
 
             <div className="flex items-center gap-1.5 sm:gap-2">

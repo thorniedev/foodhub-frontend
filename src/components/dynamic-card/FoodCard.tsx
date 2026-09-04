@@ -78,6 +78,19 @@ function getStoredFavoriteIds(): string[] {
 }
 
 /* =========================================================
+   HELPERS
+========================================================= */
+
+function formatTime(totalMinutes: number): string {
+  if (!totalMinutes) return "0 min";
+  if (totalMinutes < 60) return `${totalMinutes} min`;
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+}
+
+/* =========================================================
    COMPONENT
    ✅ PERFORMANCE FIX: React.memo to prevent unnecessary re-renders
 ========================================================= */
@@ -675,26 +688,26 @@ const FoodCard = React.memo(function FoodCard({
               TRAVEL TIME + DISTANCE
           ====================================== */}
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm">
             {travelTimeMin !== null ? (
-              <div className="flex items-center gap-2 text-primary-400">
+              <div className="flex items-center gap-1.5 text-primary-400">
                 <FaMotorcycle />
-                <span>{travelTimeMin} min</span>
+                <span className="whitespace-nowrap">{formatTime(travelTimeMin)}</span>
               </div>
             ) : activeFood.preparationTimeMinutes !== null &&
               activeFood.preparationTimeMinutes !== undefined ? (
-              <div className="flex items-center gap-2 text-primary-400">
+              <div className="flex items-center gap-1.5 text-primary-400">
                 <FaMotorcycle />
-                <span className="mt-1">
-                  {activeFood.preparationTimeMinutes} min
+                <span className="mt-1 whitespace-nowrap">
+                  {formatTime(activeFood.preparationTimeMinutes)}
                 </span>
               </div>
             ) : null}
 
             {formattedDistance && (
               <div className="flex items-center gap-1.5 text-primary-400">
-                <FaLocationArrow className="text-xs" />
-                <span>{formattedDistance}</span>
+                <FaLocationArrow className="text-[10px] sm:text-xs" />
+                <span className="whitespace-nowrap">{formattedDistance}</span>
               </div>
             )}
           </div>
