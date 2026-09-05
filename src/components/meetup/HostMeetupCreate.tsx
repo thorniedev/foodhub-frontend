@@ -404,7 +404,7 @@ export default function HostMeetupCreate() {
         <p className="mt-3 max-w-2xl text-sm leading-6 text-primary-50/90">
           បង្កើតបន្ទប់សម្រាប់មិត្តភក្តិ តំណអញ្ជើញភ្ញៀវ ឬបន្ទប់ចម្រុះ។
           ជ្រើសរើសតាមតំបន់ ឬចំណុច រួចឲ្យអ្នកគ្រប់គ្នាបោះឆ្នោត
-          លើម្ហូបដែលមានសុវត្ថិភាព។
+          លើហាងដែលមានសុវត្ថិភាព។
         </p>
       </section>
 
@@ -525,7 +525,7 @@ export default function HostMeetupCreate() {
                 </p>
                 <p className="mt-1 text-xs leading-5 text-slate-500">
                   {votingChoice === "APPROVAL"
-                    ? "អ្នកចូលរួមអាចជ្រើសរើសម្ហូបច្រើនមុខបាន។"
+                    ? "អ្នកចូលរួមអាចជ្រើសរើសហាងច្រើនបាន។"
                     : "អ្នកចូលរួមម្នាក់មួយសំឡេង ហើយអាចផ្លាស់ប្ដូរបាន។"}
                 </p>
               </div>

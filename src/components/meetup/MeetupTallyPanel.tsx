@@ -32,7 +32,7 @@ export default function MeetupTallyPanel({
           </h2>
           <p className="mt-1 text-xs font-semibold leading-5 text-slate-400">
             {isApprovalVoting
-              ? "បោះឆ្នោតបែបយល់ព្រម — អាចជ្រើសរើសម្ហូបច្រើនមុខ។"
+              ? "បោះឆ្នោតបែបយល់ព្រម — អាចជ្រើសរើសហាងច្រើន។"
               : "ម្នាក់មួយសំឡេង — បោះម្ដងទៀតនឹងផ្លាស់ប្ដូរសំឡេង។"}
           </p>
         </div>
@@ -72,7 +72,7 @@ export default function MeetupTallyPanel({
                     <span className="truncate">
                       {entry.foodName ||
                         entry.candidateName ||
-                        "ម្ហូបគ្មានឈ្មោះ"}
+                        "ហាងគ្មានឈ្មោះ"}
                     </span>
                   </p>
                   <span

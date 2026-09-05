@@ -93,7 +93,7 @@ export default function MeetupCandidateCard({
 
         {isSelected && (
           <div className="absolute inset-x-0 bottom-0 bg-primary-600/95 px-3 py-1.5 text-center text-xs font-black text-white backdrop-blur-sm">
-            អ្នកបានបោះឆ្នោតឲ្យម្ហូបនេះ
+            អ្នកបានបោះឆ្នោតឲ្យហាងនេះ
           </div>
         )}
       </div>
