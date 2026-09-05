@@ -22,11 +22,11 @@ const STANDARD_AGE_GROUPS: AgeGroupConfig[] = [
   {
     id: "toddler",
     code: "TODDLER",
-    name: "កុមារតូច",
+    name: "កូនង៉ែត",
     range: "(0-6)",
     label: "គូនង៉ែត (0-6)",
     fallbackImage: "/Image/food-picture/food 31.jpg",
-    keywords: ["កុមារតូច", "toddler", "1-2"],
+    keywords: ["កូនង៉ែត", "toddler", "1-2"],
   },
   {
     id: "children",
@@ -225,55 +225,64 @@ const MealsByAgeSection = React.memo(function MealsByAgeSection() {
                 </div>
               ))
             : ageCards.map((group, i) => (
-            <motion.div
-              key={group.id}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
-              whileHover={{ y: -6 }}
-              className={`group border border-gray-100/80 flex cursor-pointer flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6 ${
-                i === 4 ? "max-sm:col-span-2" : ""
-              }`}
-            >
-              <Link
-                href={group.href}
-                className="flex h-full w-full flex-col items-center justify-center"
-              >
-                {/* Dynamic Image in Circle */}
-                <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-primary-700 border-[2px]  bg-emerald-50/80 shadow-inner transition-transform duration-500 group-hover:scale-105 dark:border-emerald-900/50 dark:bg-slate-800 sm:h-28 sm:w-28 lg:h-32 lg:w-32">
-                  <Image
-                    src={group.image}
-                    alt={group.dishName || group.label}
-                    fill
-                    unoptimized
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      if (!target.src.endsWith(encodeURI(group.fallbackImage)) && !target.src.endsWith(group.fallbackImage)) {
-                        target.src = group.fallbackImage;
-                      }
-                    }}
-                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                  />
-                </div>
+                <motion.div
+                  key={group.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: i * 0.08,
+                    ease: "easeOut",
+                  }}
+                  whileHover={{ y: -6 }}
+                  className={`group border border-gray-100/80 flex cursor-pointer flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6 ${
+                    i === 4 ? "max-sm:col-span-2" : ""
+                  }`}
+                >
+                  <Link
+                    href={group.href}
+                    className="flex h-full w-full flex-col items-center justify-center"
+                  >
+                    {/* Dynamic Image in Circle */}
+                    <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-primary-700 border-[2px]  bg-emerald-50/80 shadow-inner transition-transform duration-500 group-hover:scale-105 dark:border-emerald-900/50 dark:bg-slate-800 sm:h-28 sm:w-28 lg:h-32 lg:w-32">
+                      <Image
+                        src={group.image}
+                        alt={group.dishName || group.label}
+                        fill
+                        unoptimized
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (
+                            !target.src.endsWith(
+                              encodeURI(group.fallbackImage),
+                            ) &&
+                            !target.src.endsWith(group.fallbackImage)
+                          ) {
+                            target.src = group.fallbackImage;
+                          }
+                        }}
+                        className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                      />
+                    </div>
 
-                {/* Age Group Label with neat hierarchy and no awkward wrapping */}
-                <div className="mt-4 flex w-full flex-col items-center justify-center text-center">
-                  <h3 className="text-sm font-bold text-primary-800 transition-colors group-hover:text-secondary-500 dark:text-primary-dark sm:text-base lg:text-[16px] leading-snug">
-                    {group.name}
-                  </h3>
-                  <span className="mt-0.5 inline-block text-xs font-semibold text-secondary-600 dark:text-amber-400 sm:text-sm whitespace-nowrap">
-                    {group.range}
-                  </span>
-                </div>
+                    {/* Age Group Label with neat hierarchy and no awkward wrapping */}
+                    <div className="mt-4 flex w-full flex-col items-center justify-center text-center">
+                      <h3 className="text-sm font-bold text-primary-800 transition-colors group-hover:text-secondary-500 dark:text-primary-dark sm:text-base lg:text-[16px] leading-snug">
+                        {group.name}
+                      </h3>
+                      <span className="mt-0.5 inline-block text-xs font-semibold text-secondary-600 dark:text-amber-400 sm:text-sm whitespace-nowrap">
+                        {group.range}
+                      </span>
+                    </div>
 
-                {/* Real Dishes Count */}
-                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
-                  ({isLoading ? "..." : group.dishCount} មុខម្ហូប)
-                </p>
-              </Link>
-            </motion.div>
-          ))}
+                    {/* Real Dishes Count */}
+                    <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
+                      ({isLoading ? "..." : group.dishCount} មុខម្ហូប)
+                    </p>
+                  </Link>
+                </motion.div>
+              ))}
         </div>
       </div>
     </section>

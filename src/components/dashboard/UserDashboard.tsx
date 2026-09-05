@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Crown,
   HeartPulse,
+  IdCard,
   Languages,
   LoaderCircle,
   Pencil,
@@ -546,14 +547,14 @@ export default function UserDashboard() {
 
         <SectionCard
           id="profile-about"
-          icon={<FaRegUser />}
+          icon={<IdCard className="h-6 w-6" />}
           title="អំពីខ្ញុំ"
           description="ព័ត៌មានមូលដ្ឋានរបស់ប្រវត្តិរូបនេះ"
           className="mt-4 lg:mt-5"
         >
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 lg:gap-3 xl:grid-cols-6">
+          <div className="mt-2 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <ProfileInfoRow
-              icon={<UserRound className="h-5 w-5" />}
+              icon={<UserRound className="h-6 w-6" />}
               label="ទំនាក់ទំនង"
               value={
                 relationshipLabels[profile.relationship as MemberRelationship] ??
@@ -562,7 +563,7 @@ export default function UserDashboard() {
               }
             />
             <ProfileInfoRow
-              icon={<FaRegUser className="text-[18px]" />}
+              icon={<FaRegUser className="text-[20px]" />}
               label="ភេទ"
               value={
                 genderLabels[profile.gender as MemberGender] ??
@@ -571,37 +572,10 @@ export default function UserDashboard() {
               }
             />
             <ProfileInfoRow
-              icon={<Cake className="h-5 w-5" />}
+              icon={<Cake className="h-6 w-6" />}
               label="ថ្ងៃខែឆ្នាំកំណើត"
               value={formatDate(profile.dateOfBirth)}
             />
-            <ProfileInfoRow
-              icon={<CalendarDays className="h-5 w-5" />}
-              label="ក្រុមអាយុ"
-              value={profile.ageGroup?.name ?? "មិនបានបញ្ជាក់"}
-            />
-            <ProfileInfoRow
-              icon={<Languages className="h-5 w-5" />}
-              label="ភាសា"
-              value={getLanguageLabel(profile.preferredLanguage)}
-            />
-
-            <div className="flex min-h-[88px] items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-3 lg:min-h-[104px] lg:px-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary-700 shadow-sm lg:h-11 lg:w-11">
-                <CalendarDays className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-500 lg:text-lg">
-                  សមាជិក FoodHub
-                </p>
-                <p className="mt-0.5 text-base font-bold text-slate-800 lg:text-xl">
-                  {memberSinceDays} ថ្ងៃ
-                </p>
-                <p className="mt-0.5 truncate text-xs text-slate-400 lg:text-lg">
-                  កែប្រែ {formatDate(profile.updatedAt)}
-                </p>
-              </div>
-            </div>
           </div>
         </SectionCard>
 
@@ -1159,13 +1133,13 @@ function ProfileInfoRow({
   value: string;
 }) {
   return (
-    <div className="flex min-h-[82px] items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 px-3 py-3 transition hover:border-primary-100 hover:bg-primary-50/40 lg:min-h-[104px] lg:px-4 lg:py-4">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm lg:h-11 lg:w-11">
+    <div className="flex items-center gap-4">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 shadow-sm">
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-xs font-medium text-slate-400 lg:text-lg">{label}</p>
-        <p className="mt-0.5 break-words text-sm font-semibold text-slate-700 sm:text-base lg:text-lg">
+        <p className="text-sm font-medium text-slate-500 lg:text-base">{label}</p>
+        <p className="mt-0.5 break-words text-base font-semibold text-slate-900 lg:text-lg">
           {value}
         </p>
       </div>

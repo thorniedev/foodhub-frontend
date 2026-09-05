@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function DashboardFriendsPage() {
   return (
-    <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
       <Suspense
         fallback={
           <div className="mx-auto flex h-64 max-w-5xl items-center justify-center">

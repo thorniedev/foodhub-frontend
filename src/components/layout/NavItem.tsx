@@ -1,8 +1,12 @@
-import { GrAppsRounded } from "react-icons/gr";
-import { FaHistory } from "react-icons/fa";
-import { LuUsersRound } from "react-icons/lu";
-import { FaRegHeart } from "react-icons/fa";
-import { FaRegBell } from "react-icons/fa6";
+import {
+  LuLayoutDashboard,
+  LuUsers,
+  LuCalendarClock,
+  LuHistory,
+  LuHeart,
+  LuBell,
+} from "react-icons/lu";
+import { TbUsersGroup } from "react-icons/tb";
 
 export interface NavItem {
   href: string;
@@ -12,32 +16,32 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { href: "/dashboard", label: "ផ្ទាំងព័ត៌មាន", icon: <GrAppsRounded /> },
+  { href: "/dashboard", label: "ផ្ទាំងព័ត៌មាន", icon: <LuLayoutDashboard /> },
   {
     href: "/dashboard/family-profile",
     label: "គណនីសមាជិកគ្រួសារ",
-    icon: <LuUsersRound />,
+    icon: <TbUsersGroup />,
   },
   {
     href: "/dashboard/friends",
     label: "មិត្តភក្តិ",
-    icon: <LuUsersRound />,
+    icon: <LuUsers />,
   },
   {
     href: "/dashboard/meetup",
     label: "ប្រវត្តិនៃការណាត់ញ៉ាំ",
-    icon: <FaHistory />,
+    icon: <LuCalendarClock />,
   },
   {
     href: "/dashboard/history",
     label: "ប្រវត្តិដែលបានមើលអាហារ",
-    icon: <FaHistory />,
+    icon: <LuHistory />,
   },
-  { href: "/dashboard/favorites", label: "ចំណូលចិត្ត", icon: <FaRegHeart /> },
+  { href: "/dashboard/favorites", label: "ចំណូលចិត្ត", icon: <LuHeart /> },
   {
     href: "/dashboard/notifications",
     label: "ការជូនដំណឹង",
-    icon: <FaRegBell />,
+    icon: <LuBell />,
   },
 ];
 
