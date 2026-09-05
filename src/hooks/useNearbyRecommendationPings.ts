@@ -150,11 +150,15 @@ export function useNearbyRecommendationPings() {
           : null;
 
       try {
+        // No radiusMeters here: the backend resolves the match radius from
+        // the profile's own ProfilePreference.defaultSearchRadiusKm, not from
+        // whatever a client sends. This used to hardcode 200 on every ping,
+        // which meant a user's own configured search radius had no effect on
+        // this trigger at all.
         const result = await sendProximityPing({
           latitude: nextCoordinates.latitude,
           longitude: nextCoordinates.longitude,
           speed,
-          radiusMeters: 200,
         }).unwrap();
 
         setLastPingAt(new Date(now).toISOString());

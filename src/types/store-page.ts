@@ -14,6 +14,13 @@ export type StoreSortBy =
   | "rating"
   | "reviews";
 
+export interface StoreSocialLink {
+  uuid?: string | null;
+  platform: string;
+  url: string;
+  displayOrder?: number | null;
+}
+
 export interface StoreOpeningHour {
   storeUuid: string;
   scheduleType: string;
@@ -101,7 +108,7 @@ export interface FoodStoreDetail {
   operatingStatus: StoreOperatingStatus;
   accountStatus: string | null;
   isOpenNow: boolean;
-  socialLinks: unknown[];
+  socialLinks: StoreSocialLink[];
   openingHours: StoreOpeningHour[];
   createdAt: string;
   updatedAt: string;

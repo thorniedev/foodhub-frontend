@@ -115,7 +115,6 @@ export default function MealTimeRecommandSection({
     isError,
     error,
   } = useGetMenuItemsQuery();
-  console.log("==> api data", foods);
   /**
    * Automatically select meal time.
    *

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { motion } from "framer-motion";
 
@@ -20,6 +21,7 @@ import { MdDeliveryDining } from "react-icons/md";
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useTrackInteraction } from "@/hooks/useTrackInteraction";
+import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
 
 /* =========================================================
@@ -96,8 +98,10 @@ export default function FooodCard({
 }: FoodCardProps) {
   const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
   const { track } = useTrackInteraction();
+  const router = useRouter();
 
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const effectiveThumbnail =
     food.thumbnail ||
@@ -140,6 +144,11 @@ export default function FooodCard({
   ======================================================= */
 
   const toggleFavorite = async () => {
+    if (!activeProfileUuid) {
+      setShowAuthModal(true);
+      return;
+    }
+
     const currentIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: food.uuid,
@@ -150,11 +159,6 @@ export default function FooodCard({
 
     if (isCurrentlyFavorite) {
       // Unfavorite
-      const nextIds = currentIds.filter((id) => id !== food.uuid);
-      try {
-        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
-      } catch {}
-
       setIsFavorite(false);
 
       if (serverBookmark) {
@@ -173,11 +177,6 @@ export default function FooodCard({
       });
     } else {
       // Favorite
-      const nextIds = [...currentIds.filter((id) => id !== food.uuid), food.uuid];
-      try {
-        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextIds));
-      } catch {}
-
       setIsFavorite(true);
 
       if (activeProfileUuid) {
@@ -242,9 +241,14 @@ export default function FooodCard({
   ======================================================= */
 
   return (
-    <motion.article
-      layout
-      initial={{
+    <>
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
+      <motion.article
+        layout
+        initial={{
         opacity: 0,
         y: 12,
       }}
@@ -517,5 +521,6 @@ export default function FooodCard({
         </div>
       </div>
     </motion.article>
+    </>
   );
 }

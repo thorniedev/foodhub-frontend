@@ -12,7 +12,7 @@ import {
   IoRestaurantOutline,
 } from "react-icons/io5";
 
-import FooodCard from "@/components/dynamic-card/FooodCard";
+import FoodCard from "@/components/dynamic-card/FoodCard";
 
 // IMPORTANT:
 // Changed from "@/types/manu" to "@/types/manu1"
@@ -619,7 +619,7 @@ export default function SingleRecommendation({
         ${selected ? "ring-2 ring-primary-700 ring-offset-2 shadow-md dark:ring-emerald-500" : ""}
       `}
                 >
-                  <FooodCard
+                  <FoodCard
                     food={food as unknown as import("@/types/catalog-menu-item").CatalogMenuItem}
                     isMapSelected={selected}
                     onViewMap={handleViewDestination}

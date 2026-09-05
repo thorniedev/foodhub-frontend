@@ -14,9 +14,16 @@ export function isValidCoordinates(
     return false;
   }
 
+  // (0, 0) / Null Island is not a valid store/user location and produces wildly wrong distances
+  if (
+    !Number.isFinite(coordinates.latitude) ||
+    !Number.isFinite(coordinates.longitude) ||
+    (coordinates.latitude === 0 && coordinates.longitude === 0)
+  ) {
+    return false;
+  }
+
   return (
-    Number.isFinite(coordinates.latitude) &&
-    Number.isFinite(coordinates.longitude) &&
     coordinates.latitude >= -90 &&
     coordinates.latitude <= 90 &&
     coordinates.longitude >= -180 &&

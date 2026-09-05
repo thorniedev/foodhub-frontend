@@ -16,7 +16,7 @@ export default function NotificationBellLink({
   className,
 }: NotificationBellLinkProps) {
   const { data: unreadCount = 0 } = useGetUnreadCountQuery(undefined, {
-    pollingInterval: 60_000,
+    pollingInterval: 300_000, // ✅ PERFORMANCE FIX: Reduced from 60s to 5min
     skipPollingIfUnfocused: true,
   });
 

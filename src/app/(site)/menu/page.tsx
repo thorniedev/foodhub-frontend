@@ -65,6 +65,9 @@ import type {
   CatalogMenuItem,
 } from "@/types/catalog-menu-item";
 import type { MemberProfile } from "@/types/member-profile/member-profile";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import { calculateDistanceKm, isValidCoordinates } from "@/lib/location/geo";
+import type { Coordinates } from "@/types/location";
 
 /* =========================================================
    TYPES
@@ -676,6 +679,7 @@ function applyCustomerSearchFilters(
   profile?: MemberProfile | null,
   discoveryOptions?: DiscoveryFilterOptionsResponse | null,
   foodCatalogList?: FoodCatalogDetail[] | null,
+  userCoordinates?: Coordinates | null,
 ): CatalogMenuItem[] {
   const normalizedQuery = normalizeText(searchQuery);
   const lookupMap = buildCodeNameLookup(discoveryOptions);
@@ -1009,7 +1013,42 @@ function applyCustomerSearchFilters(
     ? sortFoodsForProfile(filteredFoods, profile)
     : filteredFoods;
 
-  return [...profileSortedFoods].sort((first, second) => {
+  const getFoodDistanceKm = (food: CatalogMenuItem): number => {
+    if (
+      food.distanceKm !== null &&
+      food.distanceKm !== undefined &&
+      Number.isFinite(Number(food.distanceKm))
+    ) {
+      return Number(food.distanceKm);
+    }
+    if (
+      userCoordinates &&
+      isValidCoordinates(userCoordinates) &&
+      food.store?.latitude !== undefined &&
+      food.store?.latitude !== null &&
+      food.store?.longitude !== undefined &&
+      food.store?.longitude !== null
+    ) {
+      const storeCoords = {
+        latitude: Number(food.store.latitude),
+        longitude: Number(food.store.longitude),
+      };
+      if (isValidCoordinates(storeCoords)) {
+        return calculateDistanceKm(userCoordinates, storeCoords);
+      }
+    }
+    return Number.POSITIVE_INFINITY;
+  };
+
+  const enrichedFoods = profileSortedFoods.map((food) => {
+    const dist = getFoodDistanceKm(food);
+    return {
+      ...food,
+      distanceKm: Number.isFinite(dist) ? dist : (food.distanceKm ?? null),
+    };
+  });
+
+  return [...enrichedFoods].sort((first, second) => {
     switch (req.sort) {
       case "PRICE_ASC":
         return first.price - second.price;
@@ -1017,8 +1056,29 @@ function applyCustomerSearchFilters(
       case "PRICE_DESC":
         return second.price - first.price;
 
-      case "DISTANCE_ASC":
-        return (first.distanceKm ?? 0) - (second.distanceKm ?? 0);
+      case "DISTANCE_ASC": {
+        const distA =
+          first.distanceKm !== null &&
+          first.distanceKm !== undefined &&
+          Number.isFinite(Number(first.distanceKm))
+            ? Number(first.distanceKm)
+            : Number.POSITIVE_INFINITY;
+        const distB =
+          second.distanceKm !== null &&
+          second.distanceKm !== undefined &&
+          Number.isFinite(Number(second.distanceKm))
+            ? second.distanceKm
+            : Number.POSITIVE_INFINITY;
+
+        if (distA !== distB) {
+          return distA - distB;
+        }
+
+        return (
+          Number(second.store?.averageRating ?? 0) -
+          Number(first.store?.averageRating ?? 0)
+        );
+      }
 
       case "NEWEST":
       default: {
@@ -2764,6 +2824,7 @@ function LoadingState() {
 
 function FoodPageContent() {
   const searchParams = useSearchParams();
+  const { coordinates: userCoordinates } = useUserLocation();
   const rawAgeParam =
     searchParams.get("ageGroups") ||
     searchParams.get("ageGroup") ||
@@ -2838,6 +2899,24 @@ function FoodPageContent() {
     if (!rawAgeParam) return;
     const decoded = decodeURIComponent(rawAgeParam).trim();
     if (!decoded) return;
+
+    // ✅ Handle special "ALL" parameter - include all available age groups
+    if (decoded === "ALL") {
+      if (discoveryFilterOptions?.ageGroups && discoveryFilterOptions.ageGroups.length > 0) {
+        const allAgeGroupUuids = discoveryFilterOptions.ageGroups.map(ag => ag.uuid);
+        const allAgeGroupCodes = discoveryFilterOptions.ageGroups.map(ag => ag.code || ag.name);
+        
+        setCustomerSearchRequest((prev) => ({
+          ...prev,
+          ageGroupUuids: allAgeGroupUuids,
+        }));
+        setFilters((prev) => ({
+          ...prev,
+          ageGroupCodes: allAgeGroupCodes,
+        }));
+        return;
+      }
+    }
 
     if (
       discoveryFilterOptions?.ageGroups &&
@@ -3055,11 +3134,17 @@ function FoodPageContent() {
       request: {
         ...customerSearchRequest,
         query: searchInput.trim() || undefined,
+        ...(userCoordinates && isValidCoordinates(userCoordinates)
+          ? {
+              latitude: userCoordinates.latitude,
+              longitude: userCoordinates.longitude,
+            }
+          : {}),
       },
     });
     // Reset page to 1 when filters or search change
     setCurrentPage(1);
-  }, [customerSearchRequest, searchInput, executeDiscoverySearch]);
+  }, [customerSearchRequest, searchInput, userCoordinates, executeDiscoverySearch]);
 
   const discoveryItems = useMemo<MenuItemDiscoveryResponse[]>(() => {
     if (!discoveryResult) return [];
@@ -3285,6 +3370,7 @@ function FoodPageContent() {
         selectedProfile,
         discoveryFilterOptions,
         foodCatalogList,
+        userCoordinates,
       ),
     [
       menuItems,
@@ -3293,6 +3379,7 @@ function FoodPageContent() {
       selectedProfile,
       discoveryFilterOptions,
       foodCatalogList,
+      userCoordinates,
     ],
   );
 
@@ -3462,13 +3549,14 @@ function FoodPageContent() {
     if (discoveryItems.length === 0) return filteredFoods;
     const safetyMap = new Map<
       string,
-      { status?: SafetyStatusType; reasons?: string[] }
+      { status?: SafetyStatusType; reasons?: string[]; distanceKm?: number }
     >();
     for (const d of discoveryItems) {
       if (d.menuItemUuid) {
         safetyMap.set(d.menuItemUuid, {
           status: d.safetyStatus,
           reasons: d.safetyReasonCodes,
+          distanceKm: d.distanceMeters ? d.distanceMeters / 1000 : undefined,
         });
       }
     }
@@ -3479,6 +3567,7 @@ function FoodPageContent() {
           ...item,
           safetyStatus: s.status ?? (item as any).safetyStatus,
           safetyReasonCodes: s.reasons ?? (item as any).safetyReasonCodes,
+          distanceKm: item.distanceKm ?? s.distanceKm ?? null,
         };
       }
       return item;
@@ -3667,8 +3756,8 @@ function FoodPageContent() {
 
           {/* ALL FOODS */}
 
-          <section className="mt-3">
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <section className="">
+            <div className="mb-6  flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h1 className="mt-1 text-[26px] font-bold text-primary-900 dark:text-[#22a447]">
                   ស្វែងរកជម្រើសដែលអ្នកចូលចិត្ត

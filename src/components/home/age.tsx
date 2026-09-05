@@ -19,21 +19,12 @@ interface AgeGroupConfig {
 }
 
 const STANDARD_AGE_GROUPS: AgeGroupConfig[] = [
-  // {
-  //   id: "infant",
-  //   code: "INFANT",
-  //   name: "ទារក",
-  //   range: "(0-1)",
-  //   label: "ទារក (0-1)",
-  //   fallbackImage: "/Image/food-picture/baby-food.jpg",
-  //   keywords: ["ទារក", "infant", "baby", "0-1"],
-  // },
   {
     id: "toddler",
     code: "TODDLER",
     name: "កុមារតូច",
-    range: "(1-2)",
-    label: "កុមារតូច (1-2)",
+    range: "(0-6)",
+    label: "គូនង៉ែត (0-6)",
     fallbackImage: "/Image/food-picture/food 31.jpg",
     keywords: ["កុមារតូច", "toddler", "1-2"],
   },
@@ -133,7 +124,8 @@ interface AgeCardDisplay {
   href: string;
 }
 
-export default function MealsByAgeSection() {
+// ✅ PERFORMANCE FIX: Memoize component to prevent re-renders
+const MealsByAgeSection = React.memo(function MealsByAgeSection() {
   const { data: menuItems = [], isLoading } = useGetMenuItemsQuery();
   const [randomSeed, setRandomSeed] = useState<number>(() => Date.now());
 
@@ -200,13 +192,13 @@ export default function MealsByAgeSection() {
   }, [menuItems, randomSeed]);
 
   return (
-    <section className="relative w-full py-12 sm:py-16">
+    <section className="relative w-full lg:py-0 py-12 sm:py-16 max-sm:py-4">
       <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <section className="container mx-auto flex max-w-7xl flex-col items-center justify-center max-md:gap-6 md:gap-12.5">
           <p className="py-2 text-center text-2xl font-semibold text-primary-800 dark:text-primary-dark max-md:text-2xl md:text-4xl lg:text-6xl">
             ចំណីអាហារ
-            <span className="text-secondary-500">ទៅតាមវ័យ</span>
+            <span className="text-secondary-500">ស្របតាមវ័យ</span>
           </p>
 
           <p className="text-center text-[16px] font-light text-gray-700 dark:text-gray-100 md:text-[20px] lg:text-[24px]">
@@ -223,7 +215,9 @@ export default function MealsByAgeSection() {
             ? Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={`skeleton-age-${i}`}
-                  className="group border border-gray-100/80 flex flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6 animate-pulse"
+                  className={`group border border-gray-100/80 flex flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6 animate-pulse ${
+                    i === 4 ? "max-sm:col-span-2" : ""
+                  }`}
                 >
                   <div className="h-24 w-24 rounded-full bg-gray-200 dark:bg-gray-700 sm:h-28 sm:w-28 lg:h-32 lg:w-32" />
                   <div className="mt-4 h-5 w-24 rounded bg-gray-200 dark:bg-gray-700 sm:mt-6 sm:h-6 sm:w-28" />
@@ -238,11 +232,13 @@ export default function MealsByAgeSection() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
               whileHover={{ y: -6 }}
-              className="group border border-gray-100/80 flex cursor-pointer flex-col items-center justify-between rounded-[2rem]  bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+              className={`group border border-gray-100/80 flex cursor-pointer flex-col items-center justify-between rounded-[2rem] bg-white p-4.5 text-center shadow-sm transition-all duration-300 hover:border-primary-600/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-6 ${
+                i === 4 ? "max-sm:col-span-2" : ""
+              }`}
             >
               <Link
                 href={group.href}
-                className="flex h-full w-full flex-col items-center"
+                className="flex h-full w-full flex-col items-center justify-center"
               >
                 {/* Dynamic Image in Circle */}
                 <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-primary-700 border-[2px]  bg-emerald-50/80 shadow-inner transition-transform duration-500 group-hover:scale-105 dark:border-emerald-900/50 dark:bg-slate-800 sm:h-28 sm:w-28 lg:h-32 lg:w-32">
@@ -253,7 +249,7 @@ export default function MealsByAgeSection() {
                     unoptimized
                     onError={(e) => {
                       const target = e.currentTarget;
-                      if (target.src !== group.fallbackImage) {
+                      if (!target.src.endsWith(encodeURI(group.fallbackImage)) && !target.src.endsWith(group.fallbackImage)) {
                         target.src = group.fallbackImage;
                       }
                     }}
@@ -282,4 +278,7 @@ export default function MealsByAgeSection() {
       </div>
     </section>
   );
-}
+});
+
+// ✅ PERFORMANCE FIX: Export memoized component as default
+export default MealsByAgeSection;

@@ -33,13 +33,6 @@ export default function NotificationCard({
           : "border-slate-100 " + style.border
       }`}
     >
-      {notification.isUnread && (
-        <span
-          className="absolute right-4 top-4 h-2 w-2 rounded-full bg-emerald-500"
-          aria-hidden
-        />
-      )}
-
       {notification.actor ? (
         <span
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${notification.actor.color ?? "bg-slate-400"}`}
@@ -55,47 +48,62 @@ export default function NotificationCard({
       )}
 
       <div className="min-w-0 flex-1 space-y-3">
-        <button
-          type="button"
-          onClick={() => onOpen(notification)}
-          disabled={isOpening}
-          className="block w-full rounded-xl text-left outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-wait"
-        >
-          <div className="flex flex-wrap items-center gap-2 pr-6">
-            <p className="text-xl font-semibold text-slate-900">
-              {notification.title}
-            </p>
-            {notification.isUrgent && (
-              <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-base font-medium text-rose-600">
-                <AlertTriangle className="h-3 w-3" />
-                បន្ទាន់
-              </span>
-            )}
-          </div>
-
-          <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-            {notification.message}
-          </p>
-        </button>
-
-        {notification.imageUrl && (
-          <div className="relative h-40 w-full overflow-hidden rounded-xl bg-slate-100">
-            <img
-              src={toFrontendApiAssetUrl(
-                notification.imageUrl,
-                DEFAULT_FOOD_IMAGE,
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          <button
+            type="button"
+            onClick={() => onOpen(notification)}
+            disabled={isOpening}
+            className="block min-w-0 flex-1 rounded-xl text-left outline-none transition focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-wait"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xl font-semibold text-slate-900">
+                {notification.title}
+              </p>
+              {notification.isUnread && (
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 ring-2 ring-emerald-100"
+                  aria-hidden
+                />
               )}
-              alt=""
-              className="h-full w-full object-cover"
-              onError={(event) => {
-                const currentSrc = event.currentTarget.src;
-                if (!currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
-                  event.currentTarget.src = DEFAULT_FOOD_IMAGE;
-                }
-              }}
-            />
-          </div>
-        )}
+              {notification.isUrgent && (
+                <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-base font-medium text-rose-600">
+                  <AlertTriangle className="h-3 w-3" />
+                  បន្ទាន់
+                </span>
+              )}
+            </div>
+
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+              {notification.message}
+            </p>
+          </button>
+
+          {notification.imageUrl && (
+            <button
+              type="button"
+              onClick={() => onOpen(notification)}
+              disabled={isOpening}
+              className="group relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-sm ring-1 ring-slate-900/5 transition duration-200 hover:scale-105 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              title={notification.title}
+              aria-label={notification.title}
+            >
+              <img
+                src={toFrontendApiAssetUrl(
+                  notification.imageUrl,
+                  DEFAULT_FOOD_IMAGE,
+                )}
+                alt={notification.title}
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
+                onError={(event) => {
+                  const currentSrc = event.currentTarget.src;
+                  if (!currentSrc.includes(DEFAULT_FOOD_IMAGE)) {
+                    event.currentTarget.src = DEFAULT_FOOD_IMAGE;
+                  }
+                }}
+              />
+            </button>
+          )}
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <div className="flex flex-wrap items-center gap-2">

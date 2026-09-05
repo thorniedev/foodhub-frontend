@@ -27,9 +27,9 @@ import {
 
 const INDICATOR_SPRING = {
   type: "spring" as const,
-  stiffness: 420,
-  damping: 32,
-  mass: 0.75,
+  stiffness: 380,
+  damping: 30,
+  mass: 0.5,
 };
 
 const LABEL_TRANSITION = {
@@ -178,34 +178,39 @@ function FluidTabsList({
     });
   }, [activeIndex]);
 
+  const rafId = useRef<number | null>(null);
+
+  const scheduleUpdate = useCallback(() => {
+    if (rafId.current !== null) {
+      cancelAnimationFrame(rafId.current);
+    }
+    rafId.current = requestAnimationFrame(() => {
+      updateIndicator();
+    });
+  }, [updateIndicator]);
+
   useLayoutEffect(() => {
-    updateIndicator();
+    scheduleUpdate();
 
     const list = listRef.current;
-
     if (!list) return;
 
     const resizeObserver = new ResizeObserver(() => {
-      updateIndicator();
+      scheduleUpdate();
     });
 
     resizeObserver.observe(list);
 
-    const tabButtons = list.querySelectorAll<HTMLElement>(
-      "[data-fluid-tab-index]",
-    );
-
-    tabButtons.forEach((button) => {
-      resizeObserver.observe(button);
-    });
-
-    window.addEventListener("resize", updateIndicator);
+    window.addEventListener("resize", scheduleUpdate, { passive: true });
 
     return () => {
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current);
+      }
       resizeObserver.disconnect();
-      window.removeEventListener("resize", updateIndicator);
+      window.removeEventListener("resize", scheduleUpdate);
     };
-  }, [count, updateIndicator]);
+  }, [count, scheduleUpdate]);
 
   return (
     <nav

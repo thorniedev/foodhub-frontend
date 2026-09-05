@@ -1,8 +1,10 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 
 import { motion } from "motion/react";
 import Link from "next/link";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 export const CircularBadge = () => (
   <div className="relative w-28 h-28 md:w-36 md:h-36 text-white bg-primary-400 rounded-full flex items-center justify-center shadow-xl rotate-12 hover:scale-105 transition-transform cursor-pointer border-[3px] border-black/5">
     <div className="absolute  inset-1 animate-[spin_10s_linear_infinite_reverse]">
@@ -16,12 +18,15 @@ export const CircularBadge = () => (
           d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0"
           fill="none"
         />
-        <text
-          className="text-[11px] font-black tracking-[0.11em] uppercase"
-          fill="white"
-        >
-          <textPath className="text-white" href="#circlePath" startOffset="0%">
-            •ស្វែងរកអាហារជាមួយទីតាំងហាងដែលនៅជិតអ្នក
+        <text className="text-[11px] font-black uppercase" fill="white">
+          <textPath
+            className="text-white"
+            href="#circlePath"
+            startOffset="0%"
+            textLength="220"
+            lengthAdjust="spacing"
+          >
+            ---------------------
           </textPath>
         </text>
       </svg>
@@ -42,6 +47,9 @@ export const CircularBadge = () => (
   </div>
 );
 export default function LocationSection() {
+  const { data: menuItems, isLoading } = useGetMenuItemsQuery({ size: 10000 });
+  const totalFoods = menuItems?.length || 0;
+
   return (
     <section className="container px-4 md:pb-30 max-md:pb-60 flex  max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center lg:pt-6 mx-auto max-w-7xl">
       <div className="flex  relative  flex-col md:gap-8 lg:gap-12.5 gap-6">
@@ -108,12 +116,14 @@ export default function LocationSection() {
               />
             </div>
             <div className="text-center text-primary-500 mt-2">
-              <p className="font-bold text-sm md:text-lg  ">
-                1.ម្ហូបគ្រប់ប្រភេទ
-              </p>
-              <p className="text-[10px] md:text-base  /80 mt-1">
-                23 422 មុខសម្រាប់ជ្រើសរើស
-              </p>
+              <p className="font-bold text-sm md:text-lg  ">ចំណីអាហារ</p>
+              {isLoading ? (
+                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded mt-1"></div>
+              ) : (
+                <p className="text-[10px] md:text-base  /80 mt-1">
+                  <span className="text-secondary-500 font-black">{totalFoods}</span> មុខសម្រាប់ជ្រើសរើស
+                </p>
+              )}
             </div>
           </div>
         </motion.div>

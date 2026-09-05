@@ -25,7 +25,8 @@ import {
 
 import type { FoodHubNotification } from "@/types/notifications";
 
-const POLL_INTERVAL_MS = 60_000;
+// ✅ PERFORMANCE FIX: Reduced polling from 60s to 5min for notifications
+const POLL_INTERVAL_MS = 300_000; // 5 minutes instead of 1 minute
 const IN_APP_CHANNEL = "IN_APP";
 
 /**

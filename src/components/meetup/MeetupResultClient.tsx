@@ -26,9 +26,10 @@ export default function MeetupResultClient({
    * The result endpoint answers 400 "not ready yet" until the host completes
    * voting, so this page polls the meetup until it turns DECIDED and then
    * stops — a decided result never changes again.
+   * ✅ PERFORMANCE FIX: Increased polling interval from 5s to 10s
    */
   const [isWaitingForResult, setIsWaitingForResult] = useState(true);
-  const resultPollMs = isWaitingForResult ? 5000 : 0;
+  const resultPollMs = isWaitingForResult ? 10000 : 0; // Increased from 5000ms to 10000ms
 
   const {
     data: result,

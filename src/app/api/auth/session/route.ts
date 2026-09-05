@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  AUTH_COOKIES,
+  refreshKeycloakTokens,
+  setAuthCookies,
+  type KeycloakTokenResponse,
+} from "@/lib/auth/keycloak";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -76,12 +83,56 @@ function getPrimaryRole(roles: string[]): string | null {
   return roles[0] ?? null;
 }
 
+function isExpired(claims: KeycloakClaims | null): boolean {
+  return Boolean(claims?.exp && claims.exp * 1000 <= Date.now());
+}
+
+function loggedOut(expired = false) {
+  return NextResponse.json(
+    {
+      authenticated: false,
+      ...(expired ? { expired: true } : {}),
+      user: null,
+    },
+    {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  );
+}
+
 export async function GET(request: NextRequest) {
-  const idToken = request.cookies.get("foodhub_id_token")?.value;
+  let idToken = request.cookies.get(AUTH_COOKIES.idToken)?.value;
+  let accessToken = request.cookies.get(AUTH_COOKIES.accessToken)?.value;
+  const refreshToken = request.cookies.get(AUTH_COOKIES.refreshToken)?.value;
 
-  const accessToken = request.cookies.get("foodhub_access_token")?.value;
+  let token = idToken ?? accessToken;
+  let claims = token ? decodeJwt(token) : null;
 
-  const token = idToken ?? accessToken;
+  /*
+   * An access token lives about five minutes, and its cookie is set to expire
+   * with it, so for almost all of a session's life this endpoint is asked about
+   * a token that is missing or past its exp. Reporting "logged out" at that
+   * point ends the session after minutes no matter how long Keycloak is
+   * configured to keep it alive -- the refresh token sitting in the next cookie
+   * is what defines the real session length.
+   *
+   * Refreshing here mirrors what the API proxy already does on a 401, so both
+   * paths keep a session alive for as long as Keycloak allows.
+   */
+  let refreshedTokens: KeycloakTokenResponse | null = null;
+  if (refreshToken && (!claims || isExpired(claims))) {
+    refreshedTokens = await refreshKeycloakTokens(refreshToken);
+
+    if (refreshedTokens?.access_token) {
+      accessToken = refreshedTokens.access_token;
+      idToken = refreshedTokens.id_token ?? idToken;
+      token = idToken ?? accessToken;
+      claims = decodeJwt(token);
+    }
+  }
 
   /*
    * IMPORTANT:
@@ -89,60 +140,17 @@ export async function GET(request: NextRequest) {
    *
    * Return 200, not 401.
    */
-  if (!token) {
-    return NextResponse.json(
-      {
-        authenticated: false,
-        user: null,
-      },
-      {
-        status: 200,
-
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      },
-    );
+  if (!token || !claims) {
+    return loggedOut();
   }
 
-  const claims = decodeJwt(token);
+  // Still expired after a refresh attempt means the refresh token is gone too,
+  // so the user genuinely has to sign in again.
+  if (isExpired(claims)) {
+    return loggedOut(true);
+  }
+
   const accessClaims = accessToken ? decodeJwt(accessToken) : claims;
-
-  if (!claims) {
-    return NextResponse.json(
-      {
-        authenticated: false,
-        user: null,
-      },
-      {
-        status: 200,
-
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      },
-    );
-  }
-
-  /*
-   * Expired session
-   */
-  if (claims.exp && claims.exp * 1000 <= Date.now()) {
-    return NextResponse.json(
-      {
-        authenticated: false,
-        expired: true,
-        user: null,
-      },
-      {
-        status: 200,
-
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      },
-    );
-  }
 
   /*
    * Logged-in Keycloak user
@@ -177,7 +185,7 @@ export async function GET(request: NextRequest) {
     avatarUrl: null,
   };
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       authenticated: true,
       user,
@@ -190,4 +198,14 @@ export async function GET(request: NextRequest) {
       },
     },
   );
+
+  // Persist a rotated token set, otherwise the next call refreshes again -- and
+  // with refresh token rotation enabled the token just used would already be
+  // spent. The cookie lifetimes come from Keycloak's own expires_in /
+  // refresh_expires_in, so session length stays a Keycloak setting.
+  if (refreshedTokens) {
+    setAuthCookies(response, refreshedTokens);
+  }
+
+  return response;
 }

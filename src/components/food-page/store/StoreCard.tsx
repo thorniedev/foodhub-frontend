@@ -13,6 +13,8 @@ import {
 } from "react-icons/io5";
 import { FaStar, FaStore } from "react-icons/fa";
 
+import { BookmarkButton } from "@/components/common/BookmarkButton";
+
 import type { FoodStore } from "@/types/store-page";
 
 import {
@@ -129,40 +131,12 @@ export function StoreImage({ store }: { store: FoodStore }) {
       src={imageUrl}
       alt={`${displayName} store logo`}
       fill
+      unoptimized
       sizes="(max-width: 640px) 100px, 140px"
       draggable={false}
       onError={() => setImageFailed(true)}
       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
     />
-  );
-}
-
-
-function FavoriteButton({ storeName }: { storeName: string }) {
-  const [favorite, setFavorite] = useState(false);
-
-  return (
-    <button
-      type="button"
-      aria-label={
-        favorite
-          ? `Remove ${storeName} from favorites`
-          : `Add ${storeName} to favorites`
-      }
-      aria-pressed={favorite}
-      onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setFavorite((current) => !current);
-      }}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-800 text-white shadow-md transition hover:bg-primary-700 active:scale-90"
-    >
-      {favorite ? (
-        <IoHeart className="text-[21px]" />
-      ) : (
-        <IoHeartOutline className="text-[21px]" />
-      )}
-    </button>
   );
 }
 
@@ -181,6 +155,9 @@ function FeaturedStoreCard({
     >
       <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[16px] border border-gray-200 bg-primary-50">
         <StoreImage store={store} />
+        <div className="absolute right-1 top-1 z-10 scale-90">
+          <BookmarkButton storeUuid={store.uuid} />
+        </div>
       </div>
 
       <div className="min-w-0 flex-1">
@@ -241,9 +218,9 @@ function GridStoreCard({
         <div className="relative h-[185px] w-full bg-primary-50 sm:h-[195px] lg:h-[185px] 2xl:h-[175px]">
           <StoreImage store={store} />
         </div>
-        {/* <div className="absolute line-clamp-1 right-2 top-2">
-          <FavoriteButton storeName={displayName} />
-        </div> */}
+        <div className="absolute right-2 top-2 z-10">
+          <BookmarkButton storeUuid={store.uuid} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm" />
+        </div>
       </div>
 
       <div className="min-w-0 px-1 pb-1 pt-4">

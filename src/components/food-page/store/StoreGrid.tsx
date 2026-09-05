@@ -583,7 +583,10 @@ export default function StoreGrid({
                 >
                   <div className="flex touch-pan-y -ml-4 sm:-ml-5">
                     {featuredStores.map((store) => (
-                      <div key={store.uuid} className="min-w-0 shrink-0 grow-0 basis-full pl-4 sm:pl-5">
+                      <div
+                        key={store.uuid}
+                        className="min-w-0 shrink-0 grow-0 basis-full pl-4 sm:pl-5"
+                      >
                         <FeaturedStoreBanner
                           store={store}
                           distanceKm={
@@ -648,7 +651,7 @@ export default function StoreGrid({
           "
         >
           <div>
-            <p
+            {/* <p
               className="
                 text-[17px]
                 font-semibold
@@ -656,7 +659,7 @@ export default function StoreGrid({
               "
             >
               ហាងអាហារទាំងអស់
-            </p>
+            </p> */}
 
             <p
               className="
@@ -684,7 +687,7 @@ export default function StoreGrid({
               shadow-sm
             "
           >
-            {stores.length} ហាង
+            ហាងអាហារទាំងអស់ <span className="text-orange-400"> {stores.length}</span> ហាង
           </span>
         </div>
 

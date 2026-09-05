@@ -6,6 +6,7 @@ import type {
   StoreListResponse,
   StoreOpeningHour,
   StoreOperatingStatus,
+  StoreSocialLink,
 } from "@/types/store-page";
 
 type UnknownRecord = Record<string, unknown>;
@@ -159,6 +160,143 @@ function normalizeOpeningHours(value: unknown): StoreOpeningHour[] {
   });
 }
 
+function inferPlatformFromUrl(url: string): string {
+  const lower = url.toLowerCase();
+  if (
+    lower.includes("facebook.com") ||
+    lower.includes("fb.me") ||
+    lower.includes("fb.com")
+  ) {
+    return "FACEBOOK";
+  }
+  if (
+    lower.includes("t.me") ||
+    lower.includes("telegram.me") ||
+    lower.includes("telegram.org")
+  ) {
+    return "TELEGRAM";
+  }
+  if (lower.includes("instagram.com") || lower.includes("instagr.am")) {
+    return "INSTAGRAM";
+  }
+  if (lower.includes("tiktok.com")) {
+    return "TIKTOK";
+  }
+  if (lower.includes("youtube.com") || lower.includes("youtu.be")) {
+    return "YOUTUBE";
+  }
+  if (lower.includes("foodpanda")) {
+    return "FOODPANDA";
+  }
+  if (lower.includes("grab.com")) {
+    return "GRAB";
+  }
+  if (lower.includes("wa.me") || lower.includes("whatsapp.com")) {
+    return "WHATSAPP";
+  }
+  if (lower.includes("line.me")) {
+    return "LINE";
+  }
+  if (lower.includes("twitter.com") || lower.includes("x.com")) {
+    return "X";
+  }
+  return "WEBSITE";
+}
+
+function ensureAbsoluteUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) {
+    return "";
+  }
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+}
+
+function normalizeSocialLinks(
+  value: unknown,
+  record?: UnknownRecord,
+): StoreSocialLink[] {
+  const results: StoreSocialLink[] = [];
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      if (!item) return;
+
+      if (typeof item === "string") {
+        const trimmed = item.trim();
+        if (!trimmed) return;
+        const platform = inferPlatformFromUrl(trimmed);
+        results.push({
+          uuid: `social-${index}`,
+          platform,
+          url: ensureAbsoluteUrl(trimmed),
+          displayOrder: index + 1,
+        });
+        return;
+      }
+
+      if (isRecord(item)) {
+        const rawUrl = asString(
+          item.profileUrl ??
+            item.url ??
+            item.link ??
+            item.profile_url ??
+            item.href,
+        );
+        if (!rawUrl) return;
+
+        const rawPlatform = asString(item.platform ?? item.name ?? item.type);
+        const platform = rawPlatform
+          ? rawPlatform.trim().toUpperCase()
+          : inferPlatformFromUrl(rawUrl);
+
+        results.push({
+          uuid: asNullableString(item.uuid) ?? `social-${index}`,
+          platform,
+          url: ensureAbsoluteUrl(rawUrl),
+          displayOrder: asNullableNumber(item.displayOrder) ?? index + 1,
+        });
+      }
+    });
+  }
+
+  // Also check top-level fields on the store record if present
+  if (record) {
+    const checkField = (field: string, platformName: string) => {
+      const val = asString(record[field]);
+      if (
+        val &&
+        !results.some(
+          (r) =>
+            r.platform === platformName || r.url === ensureAbsoluteUrl(val),
+        )
+      ) {
+        results.push({
+          uuid: `field-${field}`,
+          platform: platformName,
+          url: ensureAbsoluteUrl(val),
+          displayOrder: results.length + 1,
+        });
+      }
+    };
+
+    checkField("facebook", "FACEBOOK");
+    checkField("facebookUrl", "FACEBOOK");
+    checkField("telegram", "TELEGRAM");
+    checkField("telegramUrl", "TELEGRAM");
+    checkField("instagram", "INSTAGRAM");
+    checkField("instagramUrl", "INSTAGRAM");
+    checkField("tiktok", "TIKTOK");
+    checkField("tiktokUrl", "TIKTOK");
+    checkField("website", "WEBSITE");
+    checkField("websiteUrl", "WEBSITE");
+  }
+
+  return results.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+}
+
 function normalizeStoreDetail(value: unknown): FoodStoreDetail | null {
   const unwrapped = unwrapPayload(value);
 
@@ -209,9 +347,14 @@ function normalizeStoreDetail(value: unknown): FoodStoreDetail | null {
     operatingStatus: normalizeOperatingStatus(unwrapped.operatingStatus),
     accountStatus: asNullableString(unwrapped.accountStatus),
     isOpenNow: asBoolean(unwrapped.isOpenNow),
-    socialLinks: Array.isArray(unwrapped.socialLinks)
-      ? unwrapped.socialLinks
-      : [],
+    socialLinks: normalizeSocialLinks(
+      unwrapped.socialLinks ??
+        unwrapped.socials ??
+        unwrapped.social_links ??
+        unwrapped.socialMedia ??
+        unwrapped.socialMedias,
+      unwrapped,
+    ),
     openingHours: normalizeOpeningHours(unwrapped.openingHours),
     createdAt: asString(unwrapped.createdAt),
     updatedAt: asString(unwrapped.updatedAt),

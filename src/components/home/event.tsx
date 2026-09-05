@@ -95,11 +95,11 @@ function SeasonalCard({
         className={`w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 ${imgClassName}`}
       />
 
-      {/* Gradient Overlay on Hover */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      {/* Gradient Overlay on Hover (Always visible on mobile) */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 max-sm:opacity-100 transition-opacity duration-500 group-hover:opacity-100" />
 
-      {/* Title Caption */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 translate-y-4 p-4 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+      {/* Title Caption (Always visible on mobile) */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 translate-y-4 max-sm:translate-y-0 p-4 opacity-0 max-sm:opacity-100 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
         <p className={`font-bold text-white ${titleSize}`}>{item.title}</p>
       </div>
     </Link>

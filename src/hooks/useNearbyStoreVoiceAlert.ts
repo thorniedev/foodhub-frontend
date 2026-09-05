@@ -269,7 +269,14 @@ export function useNearbyStoreVoiceAlert({
 }: UseNearbyStoreVoiceAlertOptions) {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
-  const [voiceSupported, setVoiceSupported] = useState(true);
+  const [voiceSupported, setVoiceSupported] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const supportsDeviceSpeech =
+      "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+    const supportsCloudAudio =
+      typeof Audio !== "undefined" && typeof fetch !== "undefined";
+    return supportsDeviceSpeech || supportsCloudAudio;
+  });
 
   const [khmerVoiceAvailable, setKhmerVoiceAvailable] = useState(false);
 
@@ -292,15 +299,7 @@ export function useNearbyStoreVoiceAlert({
       "speechSynthesis" in window &&
       "SpeechSynthesisUtterance" in window;
 
-    const supportsCloudAudio =
-      typeof window !== "undefined" &&
-      typeof Audio !== "undefined" &&
-      typeof fetch !== "undefined";
-
-    setVoiceSupported(supportsDeviceSpeech || supportsCloudAudio);
-
     if (!supportsDeviceSpeech) {
-      setKhmerVoiceAvailable(false);
       return;
     }
 

@@ -5,7 +5,13 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { AlertCircleIcon, GoogleIcon } from "@/components/auth/icons";
-import { safeReturnTo } from "@/lib/auth/keycloak";
+
+function safeReturnTo(value: string | null | undefined, fallback = "/"): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+  return value;
+}
 
 function formatErrorMessage(error: string | null, description: string | null): string {
   if (!error) return "";

@@ -271,8 +271,6 @@ export default function RootLayout({
 
         <PWARegister />
 
-        <Preloader />
-
         <Providers>{children}</Providers>
       </body>
     </html>

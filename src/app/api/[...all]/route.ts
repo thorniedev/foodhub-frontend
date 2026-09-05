@@ -40,6 +40,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   notifications: new Set(["GET", "POST", "PATCH", "DELETE"]),
   "notification-preferences": new Set(["GET", "PUT"]),
   "notification-types": new Set(["GET"]),
+  "meal-reminder-settings": new Set(["GET", "PUT"]),
   admin: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 };
 
@@ -61,6 +62,7 @@ const nestedRoutePrefixes = new Set([
   "notifications",
   "notification-preferences",
   "notification-types",
+  "meal-reminder-settings",
   "admin",
 ]);
 
@@ -311,20 +313,28 @@ async function forwardRequest(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    console.log("[FOODHUB PROXY REQUEST]", {
-      method: request.method,
-      frontendUrl: request.url,
-      backendUrl: targetUrl.toString(),
-      path: backendPath,
-      hasAuthorization: requestHeaders.has("Authorization"),
-    });
+    const isStaticAsset =
+      backendPath.startsWith("media/") ||
+      backendPath.includes("/images/") ||
+      backendPath.startsWith("banners") ||
+      request.nextUrl.pathname.includes("/images/");
+
+    if (!isStaticAsset) {
+      console.log("[FOODHUB PROXY REQUEST]", {
+        method: request.method,
+        frontendUrl: request.url,
+        backendUrl: targetUrl.toString(),
+        path: backendPath,
+        hasAuthorization: requestHeaders.has("Authorization"),
+      });
+    }
 
     let backendResponse = await fetch(targetUrl, {
       method: request.method,
       headers: requestHeaders,
       body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
       cache: "no-store",
-      redirect: "manual",
+      redirect: isStaticAsset ? "follow" : "manual",
       signal: controller.signal,
     });
 
@@ -340,7 +350,7 @@ async function forwardRequest(
           headers: requestHeaders,
           body: requestBody && requestBody.byteLength > 0 ? requestBody : undefined,
           cache: "no-store",
-          redirect: "manual",
+          redirect: isStaticAsset ? "follow" : "manual",
         });
       }
     }
@@ -363,15 +373,28 @@ async function forwardRequest(
     const cacheControl = backendResponse.headers.get("cache-control");
     if (cacheControl) {
       responseHeaders.set("Cache-Control", cacheControl);
+    } else if (isStaticAsset && backendResponse.ok) {
+      responseHeaders.set(
+        "Cache-Control",
+        "public, max-age=31536000, immutable",
+      );
     }
 
-    console.log("[FOODHUB PROXY RESPONSE]", {
-      method: request.method,
-      backendUrl: targetUrl.toString(),
-      status: backendResponse.status,
-    });
+    if (!isStaticAsset) {
+      console.log("[FOODHUB PROXY RESPONSE]", {
+        method: request.method,
+        backendUrl: targetUrl.toString(),
+        status: backendResponse.status,
+      });
+    }
 
-    if (!backendResponse.ok) {
+    const isRedirect =
+      backendResponse.status === 301 ||
+      backendResponse.status === 302 ||
+      backendResponse.status === 307 ||
+      backendResponse.status === 308;
+
+    if (!backendResponse.ok && !isRedirect) {
       let errorText = "";
 
       if (responseBody) {
@@ -460,6 +483,39 @@ async function forwardRequest(
               status: 200,
             },
           );
+          if (refreshedTokens) {
+            setAuthCookies(nextResponse, refreshedTokens);
+          }
+          return nextResponse;
+        }
+      }
+
+      // RESILIENT RECOVERY: If updating notification preferences hit 409 unique constraint race, retry once
+      if (
+        backendResponse.status === 409 &&
+        backendPath.startsWith("notification-preferences/") &&
+        request.method === "PUT"
+      ) {
+        console.warn(
+          "[FOODHUB PROXY RECOVERY] 409 Conflict on notification preference. Retrying after short delay...",
+        );
+        await new Promise((res) => setTimeout(res, 200));
+        const retryRes = await fetch(targetUrl, {
+          method: "PUT",
+          headers: requestHeaders,
+          body:
+            requestBody && requestBody.byteLength > 0
+              ? requestBody
+              : undefined,
+          cache: "no-store",
+        });
+
+        if (retryRes.ok) {
+          const retryBody = await retryRes.arrayBuffer();
+          const nextResponse = new NextResponse(retryBody, {
+            status: retryRes.status,
+            headers: retryRes.headers,
+          });
           if (refreshedTokens) {
             setAuthCookies(nextResponse, refreshedTokens);
           }

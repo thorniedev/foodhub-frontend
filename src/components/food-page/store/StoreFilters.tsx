@@ -452,7 +452,7 @@ export default function StoreFilters({
         stiffness: 320,
         damping: 34,
       }}
-      className={isDrawer ? "h-full w-full" : "h-full shrink-0 lg:pb-8"}
+      className={isDrawer ? "h-full w-full" : "h-full shrink-0"}
     >
       <div
         className="
@@ -505,7 +505,7 @@ export default function StoreFilters({
                   }}
                   className="min-w-0"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="fle x items-center gap-2">
                     <p className="text-[23px] font-bold leading-tight text-primary-900">
                       តម្រង
                     </p>
@@ -702,8 +702,6 @@ export default function StoreFilters({
               [&::-webkit-scrollbar-thumb:hover]:bg-gray-400
             "
           >
-
-
             {/* -------------------------------------------------------------- */}
             {/* Distance / Near Me                                             */}
             {/* -------------------------------------------------------------- */}
@@ -771,8 +769,6 @@ export default function StoreFilters({
                 />
               </FilterSection>
             )}
-
-
 
             {/* -------------------------------------------------------------- */}
             {/* Province                                                       */}

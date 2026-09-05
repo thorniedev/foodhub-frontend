@@ -87,7 +87,9 @@ export default function StoreContent({
     if (effectiveMenuItems.length === 0) {
       return rawStores;
     }
-    return rawStores.filter((store) => validStoreUuidsWithItems.has(store.uuid));
+    return rawStores.filter((store) =>
+      validStoreUuidsWithItems.has(store.uuid),
+    );
   }, [stores, effectiveMenuItems, validStoreUuidsWithItems]);
 
   const cityOptions = useMemo(
@@ -210,7 +212,13 @@ export default function StoreContent({
       filters,
       distanceByStoreUuid,
     );
-  }, [storeData, deferredSearchQuery, filters, searchResults, distanceByStoreUuid]);
+  }, [
+    storeData,
+    deferredSearchQuery,
+    filters,
+    searchResults,
+    distanceByStoreUuid,
+  ]);
 
   const activeFilterCount = countActiveStoreFilters(filters);
 
@@ -264,7 +272,7 @@ export default function StoreContent({
             <div className="mt-4 h-4 w-3/4 animate-pulse rounded-md bg-slate-100" />
             <div className="h-4 w-2/3 animate-pulse rounded-md bg-slate-100" />
             <div className="h-4 w-5/6 animate-pulse rounded-md bg-slate-100" />
-            
+
             <div className="mt-8 h-6 w-1/2 animate-pulse rounded-md bg-slate-200" />
             <div className="mt-4 h-4 w-full animate-pulse rounded-md bg-slate-100" />
             <div className="h-4 w-3/4 animate-pulse rounded-md bg-slate-100" />
@@ -288,7 +296,7 @@ export default function StoreContent({
               >
                 {/* Image Skeleton */}
                 <div className="h-[180px] w-full animate-pulse bg-slate-100" />
-                
+
                 {/* Content Skeleton */}
                 <div className="flex flex-1 flex-col justify-between p-5">
                   <div className="space-y-3">
@@ -298,7 +306,7 @@ export default function StoreContent({
                       <div className="h-4 w-1/4 animate-pulse rounded-md bg-slate-100" />
                     </div>
                   </div>
-                  
+
                   {/* Bottom Row */}
                   <div className="mt-4 flex items-center justify-between">
                     <div className="h-4 w-1/4 animate-pulse rounded-md bg-slate-200" />
@@ -418,12 +426,11 @@ export default function StoreContent({
             self-start
 
             xl:sticky
-            xl:top-24
+            xl:top-[160px]
             xl:block
-            xl:h-[calc(100dvh-7rem)]
-            xl:max-h-[calc(100dvh-7rem)]
+            xl:h-[calc(100dvh-170px)]
+            xl:max-h-[calc(100dvh-170px)]
             xl:overflow-hidden
-            lg:pb-8
           "
         >
           <StoreFilters {...filterProps} />

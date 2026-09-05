@@ -13,7 +13,7 @@ const menuItems: MenuItem[] = [
     id: "power-bowl",
     image: "/Image/food01.png",
     title: "អាហារពេញនិយម",
-    description: "ស្វែងរកមុខម្ហូបជាច្រើនប្រភេទទៅតាមចំណូលចិត្តរបស់អ្នក។",
+    description: "ស្វែងរកមុខម្ហូបជាច្រើនប្រភេទទៅ​​​តាមចំណូលចិត្តរបស់អ្នក។",
     aosDelay: 200,
   },
   {
@@ -38,7 +38,7 @@ export default function FitFoodSection() {
   return (
     <section
       id="menu"
-      className=" py-15 min-md:px-4   lg:px-2 max-w-7xl mx-auto text-center"
+      className=" py-15 max-sm:py-4  min-md:px-4   lg:px-2 max-w-7xl mx-auto text-center"
     >
       <section className="  flex flex-col items-center justify-center md:gap-12.5  max-md:gap-6 sm:gap- container  max-7-xl mx-auto   relative z-20   w-full">
         <p className="lg:text-6xl  py-2 md:text-4xl max-md:text-2xl text-center dark:text-[#22a447] font-semibold text-primary-800 dark:text-primary-dark">
@@ -64,7 +64,7 @@ export default function FitFoodSection() {
             data-aos-delay={item.aosDelay}
             className="flex flex-col items-center min-md:-mt-40 min-lg:-mt-0 max-sm:mt-5 "
           >
-            <div className="relative w-60 h-60 lg:-mt-43 mb-6">
+            <div className="relative w-60 h-60 lg:-mt-43 mb-6 animate-[spin_15s_linear_infinite]">
               <Image
                 src={item.image}
                 alt={item.title}
@@ -73,8 +73,8 @@ export default function FitFoodSection() {
                 sizes="250px"
               />
             </div>
-            <h3 className="text-white font-bold text-xl mb-3">{item.title}</h3>
-            <p className="text-gray-100 text-xl px-4">{item.description}</p>
+            <h3 className="text-white font-bold text-secondary-400 text-xl mb-3">{item.title}</h3>
+            <p className="text-gray-100 text-xl lg:max-w-[290px] px-4">{item.description}</p>
           </div>
         ))}
       </div>
