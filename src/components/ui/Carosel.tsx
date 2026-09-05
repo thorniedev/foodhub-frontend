@@ -1412,6 +1412,10 @@ export default function Carousel({
   ======================================================= */
 
   const onPointerDown = (event: React.PointerEvent) => {
+    if (event.pointerType === "touch") {
+      pauseAutoPlay();
+      return;
+    }
     const element = trackRef.current;
 
     if (!element) {
@@ -1452,6 +1456,9 @@ export default function Carousel({
   ======================================================= */
 
   const onPointerMove = (event: React.PointerEvent) => {
+    if (event.pointerType === "touch") {
+      return;
+    }
     const state = dragState.current;
 
     if (!state.dragging || !trackRef.current) {
@@ -1496,6 +1503,9 @@ export default function Carousel({
   ======================================================= */
 
   const endDrag = (event: React.PointerEvent) => {
+    if (event.pointerType === "touch") {
+      return;
+    }
     const element = trackRef.current;
 
     const state = dragState.current;
@@ -1753,8 +1763,6 @@ export default function Carousel({
               : null),
 
             scrollPaddingLeft: 0,
-
-            touchAction: "pan-y",
 
             overscrollBehaviorX: "contain",
           }}

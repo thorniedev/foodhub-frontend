@@ -16,7 +16,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { useGetMenuItemsQuery, useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import {
+  useGetMenuItemsQuery,
+  useGetMenuItemByUuidQuery,
+} from "@/app/store/menuApi";
 import { useGetStoresQuery } from "@/app/store/locationApi";
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import type { BookmarkResponse } from "@/types/interaction";
@@ -69,8 +72,7 @@ function DishBookmarkCard({
   const rawPrice = itemDetail?.price ?? cachedItem?.price;
   const price = rawPrice != null ? `$${Number(rawPrice).toFixed(2)}` : null;
 
-  const storeName =
-    itemDetail?.store?.name || cachedItem?.store?.name || null;
+  const storeName = itemDetail?.store?.name || cachedItem?.store?.name || null;
 
   const rawThumbnail =
     itemDetail?.thumbnail || cachedItem?.thumbnail || "/Image/default-food.png";
@@ -96,7 +98,8 @@ function DishBookmarkCard({
               <Utensils className="h-3.5 w-3.5" /> មុខម្ហូប
             </span>
             <span className="flex items-center gap-1 text-base text-slate-400">
-              <Calendar className="h-3.5 w-3.5" /> {formatDate(bookmark.createdAt)}
+              <Calendar className="h-3.5 w-3.5" />{" "}
+              {formatDate(bookmark.createdAt)}
             </span>
           </div>
 
@@ -183,7 +186,8 @@ function StoreBookmarkCard({
               <Store className="h-3.5 w-3.5" /> ហាង
             </span>
             <span className="flex items-center gap-1 text-base text-slate-400">
-              <Calendar className="h-3.5 w-3.5" /> {formatDate(bookmark.createdAt)}
+              <Calendar className="h-3.5 w-3.5" />{" "}
+              {formatDate(bookmark.createdAt)}
             </span>
           </div>
 
@@ -193,10 +197,14 @@ function StoreBookmarkCard({
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-base text-slate-500 dark:text-slate-400">
             {(store?.addressLine || store?.city) && (
-              <span className="truncate">📍 {store?.addressLine || store?.city}</span>
+              <span className="truncate">
+                📍 {store?.addressLine || store?.city}
+              </span>
             )}
             {store?.averageRating != null && (
-              <span className="font-bold text-amber-600">⭐ {store.averageRating}</span>
+              <span className="font-bold text-amber-600">
+                ⭐ {store.averageRating}
+              </span>
             )}
           </div>
         </div>
@@ -229,21 +237,23 @@ function StoreBookmarkCard({
 function FavoritesContent() {
   const { bookmarks, loading, activeProfile, removeBookmark } = useBookmarks();
 
-  const [filterTab, setFilterTab] = useState<"all" | "dishes" | "stores">("all");
+  const [filterTab, setFilterTab] = useState<"all" | "dishes" | "stores">(
+    "all",
+  );
   const { data: allMenuItems = [] } = useGetMenuItemsQuery();
   const { data: allStores = [] } = useGetStoresQuery();
 
   const dishes = useMemo(
     () => bookmarks.filter((b) => Boolean(b.menuItemUuid || b.foodUuid)),
-    [bookmarks]
+    [bookmarks],
   );
 
   const stores = useMemo(
     () =>
-      bookmarks.filter(
-        (b) => Boolean(b.storeUuid && !b.menuItemUuid && !b.foodUuid)
+      bookmarks.filter((b) =>
+        Boolean(b.storeUuid && !b.menuItemUuid && !b.foodUuid),
       ),
-    [bookmarks]
+    [bookmarks],
   );
 
   const displayedBookmarks = useMemo(() => {
@@ -285,7 +295,9 @@ function FavoritesContent() {
         {activeProfile && (
           <div className="inline-flex items-center gap-2 self-start rounded-2xl border border-emerald-200/70 bg-emerald-50/80 px-3.5 py-2 text-sm font-semibold text-emerald-800 dark:border-emerald-800/40 dark:bg-emerald-950/60 dark:text-emerald-300 sm:self-auto sm:px-4 sm:py-2.5 sm:text-base">
             <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>ប្រវត្តិរូប៖ <strong>{activeProfile.profileName}</strong></span>
+            <span>
+              ប្រវត្តិរូប៖ <strong>{activeProfile.profileName}</strong>
+            </span>
           </div>
         )}
       </div>
@@ -345,7 +357,9 @@ function FavoritesContent() {
       {loading && bookmarks.length === 0 ? (
         <div className="flex h-56 flex-col items-center justify-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-          <p className="text-base text-slate-400 sm:text-lg">កំពុងទាញយកចំណូលចិត្ត...</p>
+          <p className="text-base text-slate-400 sm:text-lg">
+            កំពុងទាញយកចំណូលចិត្ត...
+          </p>
         </div>
       ) : displayedBookmarks.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-8 py-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-16">
@@ -356,8 +370,8 @@ function FavoritesContent() {
             {filterTab === "all"
               ? "មិនទាន់មានចំណូលចិត្ត"
               : filterTab === "dishes"
-              ? "មិនទាន់មានមុខម្ហូបចំណូលចិត្ត"
-              : "មិនទាន់មានហាងចំណូលចិត្ត"}
+                ? "មិនទាន់មានមុខម្ហូបចំណូលចិត្ត"
+                : "មិនទាន់មានហាងចំណូលចិត្ត"}
           </h3>
           <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400 sm:mt-2 sm:text-base">
             ចុចរូបបេះដូងលើមុខម្ហូប ឬហាង ដើម្បីរក្សាទុកនៅទីនេះ។
@@ -389,7 +403,7 @@ function FavoritesContent() {
                 onRemove={handleRemove}
                 allMenuItems={allMenuItems}
               />
-            )
+            ),
           )}
         </div>
       )}

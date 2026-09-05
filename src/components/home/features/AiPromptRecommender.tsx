@@ -1,6 +1,13 @@
 "use client";
 
-import { Compass, Sparkles, Send, Loader2, ShieldCheck, Image as ImageIcon } from "lucide-react";
+import {
+  Compass,
+  Sparkles,
+  Send,
+  Loader2,
+  ShieldCheck,
+  Image as ImageIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
@@ -14,7 +21,8 @@ const MAX_PROMPT = 200;
 function getErrorMessage(err: unknown): string {
   if (err && typeof err === "object") {
     const e = err as { status?: number; data?: unknown };
-    if (e.status === 401) return "សូមចូលគណនី ដើម្បីទទួលការណែនាំ AI (please sign in).";
+    if (e.status === 401)
+      return "សូមចូលគណនី ដើម្បីទទួលការណែនាំ AI (please sign in).";
     if (e.data && typeof e.data === "object" && "message" in e.data) {
       const m = (e.data as { message?: unknown }).message;
       if (typeof m === "string" && m.trim()) return m;
@@ -23,7 +31,10 @@ function getErrorMessage(err: unknown): string {
   return "មានបញ្ហា សូមព្យាយាមម្តងទៀត (something went wrong).";
 }
 
-function formatPrice(amount: number | null, currency: string | null): string | null {
+function formatPrice(
+  amount: number | null,
+  currency: string | null,
+): string | null {
   if (amount == null) return null;
   try {
     return new Intl.NumberFormat(undefined, {
@@ -44,7 +55,9 @@ function matchClasses(match: number | null): string {
 }
 
 /** Hover tooltip text summarizing the per-strategy score breakdown. */
-function breakdownTitle(breakdown: Record<string, number | undefined> | null): string | undefined {
+function breakdownTitle(
+  breakdown: Record<string, number | undefined> | null,
+): string | undefined {
   if (!breakdown) return undefined;
   const labels: Record<string, string> = {
     AI_JUDGMENT: "AI",
@@ -55,7 +68,9 @@ function breakdownTitle(breakdown: Record<string, number | undefined> | null): s
   };
   const parts = Object.entries(breakdown)
     .filter(([, value]) => value != null)
-    .map(([key, value]) => `${labels[key] ?? key} ${Math.round(value! * 100)}%`);
+    .map(
+      ([key, value]) => `${labels[key] ?? key} ${Math.round(value! * 100)}%`,
+    );
   return parts.length ? parts.join(" · ") : undefined;
 }
 
@@ -128,7 +143,9 @@ export default function AiPromptRecommender({
       )}
 
       {error != null && (
-        <p className="mt-2 text-[13px] text-red-600">{getErrorMessage(error)}</p>
+        <p className="mt-2 text-[13px] text-red-600">
+          {getErrorMessage(error)}
+        </p>
       )}
 
       {items.length === 0 && !isLoading && error == null && (
@@ -154,11 +171,16 @@ export default function AiPromptRecommender({
           {items.map((item) => {
             const price = formatPrice(item.price, item.currencyCode);
             const finalScore = item.recommendation?.finalScore;
-            const match = finalScore != null ? Math.round(finalScore * 100) : null;
+            const match =
+              finalScore != null ? Math.round(finalScore * 100) : null;
             const effectiveThumbnail =
               item.thumbnail ||
-              (item.gallery && item.gallery.length > 0 ? item.gallery[0] : null) ||
-              (item.uuid ? `/api/v1/catalog/menu-items/${item.uuid}/images/1` : null);
+              (item.gallery && item.gallery.length > 0
+                ? item.gallery[0]
+                : null) ||
+              (item.uuid
+                ? `/api/v1/catalog/menu-items/${item.uuid}/images/1`
+                : null);
             const thumbnailUrl = toFrontendApiAssetUrl(effectiveThumbnail);
 
             return (
@@ -215,7 +237,9 @@ export default function AiPromptRecommender({
                   {price && <p className="font-bold text-gray-900">{price}</p>}
                   {match != null && (
                     <span
-                      title={breakdownTitle(item.recommendation?.scoreBreakdown ?? null)}
+                      title={breakdownTitle(
+                        item.recommendation?.scoreBreakdown ?? null,
+                      )}
                       className={`mt-1 inline-block cursor-default rounded-full px-2 py-0.5 text-[12px] font-semibold ${matchClasses(
                         match,
                       )}`}
