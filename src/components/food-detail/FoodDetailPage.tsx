@@ -1453,8 +1453,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
 
             {ageGroups.length > 0 ? (
               <div className="mt-5 flex flex-wrap gap-2">
-                {ageGroups.map((ageGroup) => (
-                  <InfoPill key={ageGroup.code}>{ageGroup.name}</InfoPill>
+                {ageGroups.map((ageGroup, index) => (
+                  <InfoPill key={ageGroup.code || index}>{ageGroup.name}</InfoPill>
                 ))}
               </div>
             ) : (
