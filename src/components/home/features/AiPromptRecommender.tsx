@@ -188,14 +188,14 @@ export default function AiPromptRecommender({
                 key={item.uuid}
                 className="flex items-stretch gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:shadow-md"
               >
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[10px] bg-gray-100">
+                <div className="relative h-16 w-16 shrink-0  rounded-[10px] bg-gray-100">
                   {thumbnailUrl ? (
                     <Image
                       src={thumbnailUrl}
                       alt={item.name}
                       fill
                       sizes="64px"
-                      className="object-cover"
+                      className="object-cover rounded-lg"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-gray-300">
@@ -203,7 +203,7 @@ export default function AiPromptRecommender({
                     </div>
                   )}
                   {item.rankPosition != null && (
-                    <div className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-primary-800 text-[11px] font-bold text-white shadow-sm">
+                    <div className="absolute  -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-primary-800 text-[11px] font-bold text-white shadow-sm">
                       {item.rankPosition}
                     </div>
                   )}
