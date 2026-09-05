@@ -9,6 +9,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
 import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
@@ -184,10 +185,11 @@ export default function AiPromptRecommender({
             const thumbnailUrl = toFrontendApiAssetUrl(effectiveThumbnail);
 
             return (
-              <li
-                key={item.uuid}
-                className="flex items-stretch gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:shadow-md"
-              >
+              <li key={item.uuid}>
+                <Link
+                  href={`/menu/${item.uuid}`}
+                  className="flex items-stretch gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:shadow-md"
+                >
                 <div className="relative h-16 w-16 shrink-0  rounded-[10px] bg-gray-100">
                   {thumbnailUrl ? (
                     <Image
@@ -248,6 +250,7 @@ export default function AiPromptRecommender({
                     </span>
                   )}
                 </div>
+                </Link>
               </li>
             );
           })}
