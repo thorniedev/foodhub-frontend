@@ -25,8 +25,8 @@ const MEETUP_ERROR_RULES: ReadonlyArray<{
       "តំបន់របស់អ្នកមិនទាន់ត្រូវបានបញ្ជាក់ទេ។ សូមបំពេញតំបន់ ក្រុង និងខេត្តរបស់អ្នក។",
   },
   {
-    match: /already voted for this food/i,
-    message: "អ្នកបានបោះឆ្នោតឲ្យម្ហូបនេះរួចហើយ។",
+    match: /already voted for this food|already voted for this store|already voted for this candidate/i,
+    message: "អ្នកបានបោះឆ្នោតឲ្យហាងនេះរួចហើយ។",
   },
   {
     match: /nickname is already taken/i,
@@ -76,8 +76,8 @@ const MEETUP_ERROR_RULES: ReadonlyArray<{
     message: "លទ្ធផលមិនទាន់រួចរាល់។ សូមរង់ចាំម្ចាស់ផ្ទះបញ្ចប់ការបោះឆ្នោត។",
   },
   {
-    match: /food not found/i,
-    message: "ម្ហូបនេះលែងមានក្នុងបញ្ជីហើយ។ សូមផ្ទុកបញ្ជីម្ហូបឡើងវិញ។",
+    match: /food not found|store not found|candidate not found/i,
+    message: "ហាងនេះលែងមានក្នុងបញ្ជីហើយ។ សូមផ្ទុកបញ្ជីហាងឡើងវិញ។",
   },
   {
     match: /meetup not found/i,
@@ -95,7 +95,7 @@ const MEETUP_ERROR_RULES: ReadonlyArray<{
     /* The recommendation session hit a database constraint (HTTP 409). */
     match: /conflicts with existing data|data_integrity_violation/i,
     message:
-      "FoodHub មិនអាចបង្កើតបញ្ជីម្ហូបបានទេ ដោយសារទិន្នន័យជាន់គ្នា។ សូមចុច ផ្ទុកឡើងវិញ។",
+      "FoodHub មិនអាចបង្កើតបញ្ជីហាងបានទេ ដោយសារទិន្នន័យជាន់គ្នា។ សូមចុច ផ្ទុកឡើងវិញ។",
   },
   {
     /* A room profile the viewer neither owns nor is friends with. */
@@ -155,7 +155,9 @@ export function isConflictError(error: unknown): boolean {
 
 /** True when the failure is a duplicate-vote conflict, which is recoverable. */
 export function isAlreadyVotedError(error: unknown): boolean {
-  return /already voted for this food/i.test(getApiErrorMessage(error, ""));
+  return /already voted for this food|already voted for this store|already voted for this candidate/i.test(
+    getApiErrorMessage(error, ""),
+  );
 }
 
 /** True when the result endpoint is answering "not decided yet" rather than failing. */

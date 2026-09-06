@@ -11,6 +11,7 @@ import {
   LogOut,
   RefreshCw,
   ShieldAlert,
+  Store,
   Trophy,
   Utensils,
 } from "lucide-react";
@@ -33,6 +34,11 @@ import {
   useRetractMeetupVoteMutation,
   useSubmitMeetupVoteMutation,
 } from "@/app/store/groupRecommendationApi";
+import {
+  useGetNearbyStoresQuery,
+  useGetStoresQuery,
+} from "@/app/store/locationApi";
+import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { useGetMemberProfilesQuery } from "@/app/store/memberProfileApi";
 import {
   useCreateRecommendationSessionMutation,
@@ -62,11 +68,19 @@ import {
 } from "@/lib/meetup/meetup-session";
 import type { RecommendationSession } from "@/types/recommendation";
 import type { MeetupWinningCardResponse } from "@/types/meetup-api";
+import type { CatalogMenuItem } from "@/types/catalog-menu-item";
+import type { LocationStore } from "@/types/location-store";
+import type { MenuItem } from "@/types/manu";
+import type { GroupLocationMember, GroupRecommendedStore } from "@/types/group-location";
+import { calculateGroupMidpoint } from "@/lib/location/group-geo";
+import { buildGroupRecommendedStores } from "@/lib/location/group-recommendation";
 import GuestJoinSafetySheet from "./GuestJoinSafetySheet";
 import MeetupCandidateCard from "./MeetupCandidateCard";
+import MeetupStoreCandidateCard from "./MeetupStoreCandidateCard";
 import MeetupParticipantsPanel, {
   toDisplayName,
 } from "./MeetupParticipantsPanel";
+import MeetupMidpointMap from "./MeetupMidpointMap";
 import MeetupRoomHeader from "./MeetupRoomHeader";
 import MeetupTallyPanel from "./MeetupTallyPanel";
 import MeetupWinnerCelebration from "./MeetupWinnerCelebration";
@@ -89,6 +103,93 @@ function CandidateSkeleton() {
       </div>
     </div>
   );
+}
+
+function toLocationMenuItem(item: CatalogMenuItem): MenuItem {
+  const category = item.food?.category ?? { code: "", name: "" };
+  const cuisine = item.food?.cuisine ?? { code: "", name: "" };
+  const ageGroups = Array.isArray(item.food?.ageGroups) ? item.food.ageGroups : [];
+  const mealTypes = Array.isArray(item.food?.mealTypes) ? item.food.mealTypes : [];
+  const dietaryTypes = Array.isArray(item.food?.dietaryTypes) ? item.food.dietaryTypes : [];
+  const ingredients = Array.isArray(item.ingredients)
+    ? item.ingredients.filter(
+        (value: unknown): value is string => typeof value === "string" && value.trim().length > 0,
+      )
+    : [];
+
+  const converted = {
+    uuid: item.uuid,
+    legacyId: Number(item.legacyId ?? 0),
+    name: item.name,
+    localName: item.localName ?? item.name,
+    description: item.description ?? "",
+    localDescription: item.localDescription ?? item.description ?? "",
+    thumbnail: item.thumbnail ?? "",
+    gallery: Array.isArray(item.gallery) ? item.gallery : [],
+    price: Number(item.price ?? 0),
+    currencyCode: item.currencyCode,
+    preparationTimeMinutes: item.preparationTimeMinutes ?? 0,
+    availabilityStatus: item.availabilityStatus,
+    isFeatured: Boolean(item.isFeatured),
+    source: item.source,
+    store: {
+      uuid: item.store?.uuid ?? "",
+      name: item.store?.name ?? "",
+      localName: item.store?.localName ?? item.store?.name ?? "",
+      logoUrl: item.store?.logoUrl ?? "",
+      coverImageUrl: item.store?.coverImageUrl ?? "",
+      addressLine: item.store?.addressLine ?? "",
+      district: item.store?.district ?? "",
+      city: item.store?.city ?? "",
+      latitude: Number(item.store?.latitude) || 0,
+      longitude: Number(item.store?.longitude) || 0,
+      operatingStatus: item.store?.operatingStatus ?? "CLOSED",
+      averageRating: Number(item.store?.averageRating) || 0,
+      totalReviews: Number(item.store?.totalReviews) || 0,
+    },
+    food: {
+      uuid: item.food?.uuid ?? item.uuid,
+      canonicalName: item.food?.canonicalName ?? item.name,
+      category,
+      cuisine,
+      spiceLevel: Number(item.food?.spiceLevel ?? 0),
+      ageGroups,
+    },
+    mealTypes,
+    dietaryTypes,
+    allergenDeclarations: Array.isArray(item.allergenDeclarations) ? item.allergenDeclarations : [],
+    ingredients,
+    beveragePairings: [],
+    nutrition: {
+      calories: Number(item.nutrition?.calories ?? 0),
+      protein: Number(item.nutrition?.proteinGrams ?? 0),
+      carbohydrate: Number(item.nutrition?.carbsGrams ?? 0),
+      fat: Number(item.nutrition?.fatGrams ?? 0),
+      fiber: 0,
+      sodium: 0,
+    },
+    distanceKm: item.distanceKm ? Number(item.distanceKm) : 0,
+    deliveryFee: 0,
+    recommendation: {
+      isRecommended: true,
+      rankPosition: 0,
+      finalScore: Number(item.recommendation?.finalScore ?? 80),
+      safetyStatus: "SAFE",
+      candidateSource: item.source,
+      reasonCodes: item.recommendation?.reasonCodes ?? [],
+      reasonText: item.recommendation?.reasonText ?? "",
+      isExploration: false,
+      scoreBreakdown: {
+        mealMatch: 80,
+        cuisineMatch: 80,
+        budgetMatch: 80,
+        distanceMatch: 80,
+        popularity: 80,
+      },
+    },
+  };
+
+  return converted as unknown as MenuItem;
 }
 
 export default function MeetupLiveRoom({
@@ -419,7 +520,7 @@ export default function MeetupLiveRoom({
   const effectiveRecommendationError =
     recommendationError ||
     (hasNoUsableProfile
-      ? "មិនមានប្រវត្តិរូប FoodHub សកម្មសម្រាប់បង្កើតបញ្ជីម្ហូបទេ។ សូមចូលគណនី ឬឲ្យសមាជិកដែលមានគណនីបើកបន្ទប់នេះ។"
+      ? "មិនមានប្រវត្តិរូប FoodHub សកម្មសម្រាប់បង្កើតបញ្ជីហាងទេ។ សូមចូលគណនី ឬឲ្យសមាជិកដែលមានគណនីបើកបន្ទប់នេះ។"
       : null);
 
   /*
@@ -445,6 +546,68 @@ export default function MeetupLiveRoom({
     ],
   );
 
+  const groupLocationMembers = useMemo<GroupLocationMember[]>(() => {
+    return participants.map((participant, index) => {
+      const hasCoords =
+        participant.locationLat != null &&
+        participant.locationLng != null &&
+        Number.isFinite(participant.locationLat) &&
+        Number.isFinite(participant.locationLng);
+
+      return {
+        uuid: participant.uuid ?? participant.nickname ?? `member-${index}`,
+        name: toDisplayName(participant.nickname ?? null, "សមាជិក"),
+        coordinates: hasCoords
+          ? {
+              latitude: Number(participant.locationLat),
+              longitude: Number(participant.locationLng),
+            }
+          : null,
+        locationStatus: hasCoords ? "ready" : "waiting",
+        requiredDietaryCodes: participant.dietaryTypes ?? [],
+        blockedAllergenCodes: participant.allergies ?? [],
+        hasVoted: votedParticipantUuids.has(participant.uuid ?? ""),
+        profileId: participant.profileId,
+        backendParticipantUuid: participant.uuid ?? null,
+      };
+    });
+  }, [participants, votedParticipantUuids]);
+
+  const calculatedMidpointResult = useMemo(() => {
+    const calculated = calculateGroupMidpoint(groupLocationMembers);
+    if (calculated) {
+      return { coordinates: calculated, isCalculated: true };
+    }
+
+    if (group?.meetingPointLat != null && group?.meetingPointLng != null) {
+      return {
+        coordinates: {
+          latitude: group.meetingPointLat,
+          longitude: group.meetingPointLng,
+        },
+        isCalculated: false,
+      };
+    }
+
+    if (group?.targetLat != null && group?.targetLng != null) {
+      return {
+        coordinates: {
+          latitude: group.targetLat,
+          longitude: group.targetLng,
+        },
+        isCalculated: false,
+      };
+    }
+
+    return null;
+  }, [
+    groupLocationMembers,
+    group?.meetingPointLat,
+    group?.meetingPointLng,
+    group?.targetLat,
+    group?.targetLng,
+  ]);
+
   const groupContext = useMemo(
     () => ({
       audienceMode: group?.audienceMode,
@@ -452,12 +615,158 @@ export default function MeetupLiveRoom({
       targetAreaName: group?.targetAreaName,
       targetCity: group?.targetCity,
       targetProvince: group?.targetProvince,
-      targetLat: group?.targetLat,
-      targetLng: group?.targetLng,
+      targetLat: calculatedMidpointResult?.coordinates.latitude ?? group?.targetLat,
+      targetLng: calculatedMidpointResult?.coordinates.longitude ?? group?.targetLng,
       searchRadiusKm: group?.searchRadiusKm ?? 5,
     }),
-    [group],
+    [group, calculatedMidpointResult],
   );
+
+  // ─── STORES RECOMMENDATION AROUND MIDPOINT ───────────
+  const midpointCoords = calculatedMidpointResult?.coordinates ?? null;
+
+  const {
+    data: nearbyStores = [],
+    isLoading: isLoadingNearby,
+    refetch: refetchNearby,
+  } = useGetNearbyStoresQuery(
+    {
+      latitude: midpointCoords?.latitude ?? 11.5564,
+      longitude: midpointCoords?.longitude ?? 104.9282,
+    },
+    { skip: !midpointCoords },
+  );
+
+  const {
+    data: allStores = [],
+    isLoading: isLoadingAllStores,
+    refetch: refetchAllStores,
+  } = useGetStoresQuery(undefined, {
+    skip: Boolean(midpointCoords && nearbyStores.length > 0),
+  });
+
+  const { data: rawMenuItems = [] } = useGetMenuItemsQuery();
+
+  const adaptedMenuItems = useMemo<MenuItem[]>(() => {
+    return Array.isArray(rawMenuItems) ? rawMenuItems.map(toLocationMenuItem) : [];
+  }, [rawMenuItems]);
+
+  const sourceStores = nearbyStores.length > 0 ? nearbyStores : allStores;
+  const isLoadingStores =
+    (!midpointCoords && isLoadingGroup) ||
+    (Boolean(midpointCoords) && isLoadingNearby && nearbyStores.length === 0);
+
+  const rawLocationStores = useMemo(() => {
+    return sourceStores.map((s) => ({
+      uuid: s.uuid,
+      storeName: s.storeName,
+      name: s.storeName,
+      localName: s.storeName,
+      description: ("description" in s && typeof s.description === "string" ? s.description : ""),
+      addressLine: s.addressLine ?? "",
+      district: ("district" in s && typeof s.district === "string" ? s.district : (s.city ?? "")),
+      commune: "",
+      city: s.city ?? "",
+      province: s.province ?? "",
+      countryCode: "KHM",
+      postalCode: "",
+      latitude: Number(s.latitude) || 0,
+      longitude: Number(s.longitude) || 0,
+      logoUrl: ("logoUrl" in s && typeof s.logoUrl === "string" ? s.logoUrl : null),
+      coverImageUrl: ("coverImageUrl" in s && typeof s.coverImageUrl === "string" ? s.coverImageUrl : null),
+      logoMediaUuid: ("logoMediaUuid" in s && typeof s.logoMediaUuid === "string" ? s.logoMediaUuid : null),
+      coverMediaUuid: ("coverMediaUuid" in s && typeof s.coverMediaUuid === "string" ? s.coverMediaUuid : null),
+      averageRating: Number(s.averageRating) || 0,
+      totalReviews: Number(s.totalReviews) || 0,
+      operatingStatus: (s.operatingStatus as "OPEN" | "CLOSED" | "TEMPORARILY_CLOSED") ?? "OPEN",
+      isOpenNow: s.isOpenNow ?? true,
+      priceLevel: ("priceLevel" in s && s.priceLevel ? s.priceLevel : "$$"),
+      deliveryAvailable: ("deliveryAvailable" in s ? Boolean(s.deliveryAvailable) : true),
+      pickupAvailable: ("pickupAvailable" in s ? Boolean(s.pickupAvailable) : true),
+      contactPhone: "",
+      phoneNumber: "",
+      email: "",
+      menuCategories: [],
+      gallery: [],
+      dietaryOptions: [],
+      averagePreparationTimeMinutes: 20,
+      distanceKm: s.distanceMeters ? s.distanceMeters / 1000 : null,
+      distanceMeters: s.distanceMeters ?? null,
+      featuredFoods: [],
+    } as unknown as LocationStore));
+  }, [sourceStores]);
+
+  const recommendedStores = useMemo<GroupRecommendedStore[]>(() => {
+    if (!midpointCoords) {
+      return [];
+    }
+
+    const built = buildGroupRecommendedStores({
+      sourceStores: rawLocationStores,
+      menuItems: adaptedMenuItems,
+      midpoint: midpointCoords,
+      members: groupLocationMembers,
+    });
+
+    if (built.length > 0) {
+      return built;
+    }
+
+    // Fallback: If no direct distance match or empty, map raw stores
+    return rawLocationStores.map((s) => ({
+      uuid: s.uuid,
+      name: s.storeName,
+      localName: s.storeName,
+      description: s.description ?? "",
+      addressLine: s.addressLine ?? "",
+      district: s.district ?? "",
+      commune: "",
+      city: s.city ?? "",
+      province: s.province ?? "",
+      phoneNumber: "",
+      email: "",
+      latitude: s.latitude,
+      longitude: s.longitude,
+      logoUrl: s.logoUrl,
+      coverImageUrl: s.coverImageUrl,
+      logoMediaUuid: s.logoMediaUuid,
+      coverMediaUuid: s.coverMediaUuid,
+      averageRating: s.averageRating ?? 0,
+      totalReviews: s.totalReviews ?? 0,
+      operatingStatus: s.operatingStatus ?? "OPEN",
+      isOpenNow: s.isOpenNow ?? true,
+      priceLevel: s.priceLevel ?? null,
+      deliveryAvailable: s.deliveryAvailable ?? true,
+      pickupAvailable: s.pickupAvailable ?? true,
+      distanceKm: 0,
+      averageMemberDistanceKm: 0,
+      maximumMemberDistanceKm: 0,
+      menuItems: adaptedMenuItems.filter((m) => m.store?.uuid === s.uuid),
+      menuCount: adaptedMenuItems.filter((m) => m.store?.uuid === s.uuid).length,
+      matchingMenuCount: 0,
+      safeForAllMembers: true,
+      hasMealsForEveryone: true,
+      recommendationScore: 85,
+      voteCount: 0,
+    } as unknown as GroupRecommendedStore));
+  }, [rawLocationStores, adaptedMenuItems, midpointCoords, groupLocationMembers]);
+
+  const enrichedTally = useMemo(() => {
+    return (tally?.tally ?? []).map((entry) => {
+      const candidateId = entry.foodUuid || entry.candidateUuid;
+      const matched = recommendedStores.find((s) => s.uuid === candidateId);
+      const storeName = matched ? (matched.localName || matched.name) : null;
+      return {
+        ...entry,
+        candidateName: storeName || entry.foodName || entry.candidateName || "ហាងអាហារ",
+      };
+    });
+  }, [tally?.tally, recommendedStores]);
+
+  const leadingStoreUuid = useMemo(() => {
+    const leader = (enrichedTally ?? []).find((entry) => entry.isWinner);
+    return leader?.foodUuid || leader?.candidateUuid || tally?.winnerUuid || null;
+  }, [enrichedTally, tally?.winnerUuid]);
 
   useEffect(() => {
     if (!meetupUuid || !group) {
@@ -571,7 +880,7 @@ export default function MeetupLiveRoom({
         setRecommendationError(
           getMeetupErrorMessage(
             lastError,
-            "FoodHub មិនអាចផ្ទុកបញ្ជីម្ហូបសម្រាប់ការណាត់ជួបនេះបានទេ។ សូមចុច ផ្ទុកឡើងវិញ។",
+            "FoodHub មិនអាចផ្ទុកបញ្ជីហាងសម្រាប់ការណាត់ជួបនេះបានទេ។ សូមចុច ផ្ទុកឡើងវិញ។",
           ),
         );
       }
@@ -653,33 +962,33 @@ export default function MeetupLiveRoom({
   const emptySlateReason = useMemo(() => {
     if (shareToken) {
       /* The shared slate returns items only, so the cause stays general. */
-      return "គ្មានម្ហូបណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ក្នុងបន្ទប់នេះទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬបន្ថែមម្ហូបក្នុងបញ្ជី។";
+      return "គ្មានហាងណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ក្នុងបន្ទប់នេះទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬបន្ថែមហាងក្នុងបញ្ជី។";
     }
 
     if (!recommendationSession) {
-      return "មិនទាន់មានម្ហូបសម្រាប់បន្ទប់នេះទេ។ សូមចុច ផ្ទុកឡើងវិញ។";
+      return "មិនទាន់មានហាងសម្រាប់បន្ទប់នេះទេ។ សូមចុច ផ្ទុកឡើងវិញ។";
     }
 
     const candidateCount = recommendationSession.candidateCount ?? 0;
     const eligibleCount = recommendationSession.eligibleCount ?? 0;
 
     if (candidateCount === 0) {
-      return "រកមិនឃើញម្ហូបក្នុងបញ្ជីសម្រាប់តំបន់ និងរង្វង់ស្វែងរកនេះទេ។ សូមពង្រីករង្វង់ស្វែងរក ឬប្ដូរទីតាំង។";
+      return "រកមិនឃើញហាងក្នុងបញ្ជីសម្រាប់តំបន់ និងរង្វង់ស្វែងរកនេះទេ។ សូមពង្រីករង្វង់ស្វែងរក ឬប្ដូរទីតាំង។";
     }
 
     if (eligibleCount === 0) {
-      return `រកឃើញម្ហូប ${candidateCount} មុខ ប៉ុន្តែគ្មានមុខណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬដកសមាជិកដែលមានលក្ខខណ្ឌតឹងរ៉ឹងបំផុត។`;
+      return `រកឃើញហាង ${candidateCount} កន្លែង ប៉ុន្តែគ្មានហាងណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬដកសមាជិកដែលមានលក្ខខណ្ឌតឹងរ៉ឹងបំផុត។`;
     }
 
-    return "ម្ហូបដែលឆ្លងកាត់សុវត្ថិភាព មិនមានព័ត៌មានម្ហូបគោលដើម្បីបោះឆ្នោតបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងបញ្ជីម្ហូប។";
+    return "ហាងដែលឆ្លងកាត់សុវត្ថិភាព មិនមានព័ត៌មានគោលដើម្បីបោះឆ្នោតបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។";
   }, [recommendationSession, shareToken]);
 
   const getVoteCount = useCallback(
-    (candidate: MeetupCandidate) =>
+    (candidateId: string) =>
       (tally?.tally ?? []).find(
         (entry) =>
-          entry.foodUuid === candidate.foodUuid ||
-          entry.candidateUuid === candidate.foodUuid,
+          entry.foodUuid === candidateId ||
+          entry.candidateUuid === candidateId,
       )?.voteCount ?? 0,
     [tally?.tally],
   );
@@ -705,20 +1014,20 @@ export default function MeetupLiveRoom({
     }
   };
 
-  const handleVote = async (candidate: MeetupCandidate) => {
+  const handleVoteStore = async (store: GroupRecommendedStore) => {
     if (!meetupUuid || !activeSession) {
       setActionError("សូមចូលរួមការណាត់ជួបមុននឹងបោះឆ្នោត។");
       return;
     }
 
     setActionError(null);
-    setVotingFoodUuid(candidate.foodUuid);
+    setVotingFoodUuid(store.uuid);
 
-    const existingVoteUuid = myVoteUuidByFoodUuid.get(candidate.foodUuid);
+    const existingVoteUuid = myVoteUuidByFoodUuid.get(store.uuid);
 
     try {
       if (existingVoteUuid) {
-        /* Tapping a dish already backed by this participant retracts it. */
+        /* Tapping a store already backed by this participant retracts it. */
         await retractVote({ voteUuid: existingVoteUuid, meetupUuid }).unwrap();
       } else {
         if (!isApprovalVoting) {
@@ -742,8 +1051,7 @@ export default function MeetupLiveRoom({
         await submitVote({
           meetupUuid,
           participantUuid: activeSession.participantUuid,
-          /* The vote endpoint resolves canonical foods only. */
-          foodUuid: candidate.foodUuid,
+          foodUuid: store.uuid,
         }).unwrap();
       }
 
@@ -824,13 +1132,14 @@ export default function MeetupLiveRoom({
   };
 
   const handleRefreshRecommendations = () => {
-    setRecommendationError(null);
-
+    setActionError(null);
     if (shareToken) {
       void refetchSharedCandidates();
-      return;
     }
-
+    void refetchNearby();
+    void refetchAllStores();
+    void refetchVotes();
+    void refetchTally();
     recommendationKeyRef.current = "";
     setRecommendationSession(null);
     setRecommendationRefreshKey((current) => current + 1);
@@ -935,6 +1244,16 @@ export default function MeetupLiveRoom({
           onShowQr={() => setShowQrModal(true)}
         />
 
+        {calculatedMidpointResult?.coordinates && (
+          <MeetupMidpointMap
+            midpoint={calculatedMidpointResult.coordinates}
+            members={groupLocationMembers}
+            stores={recommendedStores}
+            radiusKm={group?.searchRadiusKm ?? 5}
+            isCalculatedFromMembers={calculatedMidpointResult.isCalculated}
+          />
+        )}
+
         {winningCard ? (
           <MeetupWinnerCelebration
             winningCard={winningCard}
@@ -981,104 +1300,60 @@ export default function MeetupLiveRoom({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg! font-black text-slate-900 dark:text-white">
-                  <Utensils className="h-5 w-5 shrink-0 text-primary-600" />
-                  ជ្រើសរើសម្ហូប
+                  <Store className="h-5 w-5 shrink-0 text-primary-600 dark:text-primary-400" />
+                  ជ្រើសរើសហាងអាហារ
                 </h2>
                 <p className="mt-1 text-sm leading-5 text-slate-500">
-                  បញ្ជីតែមួយសម្រាប់អ្នកគ្រប់គ្នាក្នុងបន្ទប់នេះ។
+                  បញ្ជីហាងអាហារនៅចំណុចកណ្ដាលសម្រាប់សមាជិកបោះឆ្នោតទៅញ៉ាំជុំគ្នា។
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleRefreshRecommendations}
-                disabled={isSlateLoading}
+                disabled={isLoadingStores}
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <RefreshCw
-                  className={`h-4 w-4 ${isSlateLoading ? "animate-spin" : ""}`}
+                  className={`h-4 w-4 ${isLoadingStores ? "animate-spin" : ""}`}
                 />
                 ផ្ទុកឡើងវិញ
               </button>
             </div>
 
-            {slate.hiddenForAllergies > 0 && (
-              <p className="flex items-start gap-2 rounded-2xl border border-accent-200 bg-accent-50 px-4 py-3 text-sm font-semibold leading-6 text-accent-800 dark:border-accent-900 dark:bg-accent-950/30 dark:text-accent-200">
-                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                បានលាក់ម្ហូប {slate.hiddenForAllergies} មុខ
-                ព្រោះមានធាតុផ្សំដែលអ្នកបានរាយថាមានអាឡែស៊ី។
-              </p>
-            )}
-
-            {isSlateLoading ? (
+            {isLoadingStores ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <CandidateSkeleton />
                 <CandidateSkeleton />
                 <CandidateSkeleton />
               </div>
-            ) : effectiveRecommendationError ? (
-              <div className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-rose-100 bg-rose-50 p-6 text-center dark:border-rose-900/40 dark:bg-rose-950/20">
-                <ChefHat className="h-9 w-9 text-rose-400" />
-                <p className="max-w-md text-sm font-semibold leading-6 text-rose-700 dark:text-rose-300">
-                  {effectiveRecommendationError}
+            ) : recommendedStores.length === 0 ? (
+              <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
+                <Store className="h-9 w-9 text-slate-300 dark:text-slate-600" />
+                <p className="max-w-md text-sm leading-6 text-slate-500">
+                  មិនទាន់រកឃើញហាងអាហារក្នុងកាំស្វែងរកនេះទេ។ សូមពង្រីករង្វង់ស្វែងរក ឬបន្ថែមទីតាំងសមាជិក។
                 </p>
                 <button
                   type="button"
                   onClick={handleRefreshRecommendations}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-50 dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-900"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-primary-600 px-5 text-sm font-black text-white shadow-sm transition hover:bg-primary-700"
                 >
                   <RefreshCw className="h-4 w-4 shrink-0" />
-                  ព្យាយាមម្តងទៀត
+                  ស្វែងរកម្តងទៀត
                 </button>
-              </div>
-            ) : slate.candidates.length === 0 ? (
-              <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
-                <ChefHat className="h-9 w-9 text-slate-300 dark:text-slate-600" />
-                <p className="max-w-md text-sm leading-6 text-slate-500">
-                  {emptySlateReason}
-                </p>
-                {/*
-                  * The session reports how far the funnel got. Showing it turns
-                  * a dead end into something the host can act on.
-                  */}
-                {recommendationSession && (
-                  <p className="text-xs font-semibold text-slate-400">
-                    ម្ហូបដែលរកឃើញ {recommendationSession.candidateCount ?? 0} ·
-                    ឆ្លងកាត់សុវត្ថិភាព {recommendationSession.eligibleCount ?? 0}
-                  </p>
-                )}
-
-                {blockingMembers.length > 0 && (
-                  <div className="w-full max-w-sm space-y-1.5 rounded-2xl bg-slate-50 p-3 text-left dark:bg-slate-950/60">
-                    <p className="text-xs font-black text-slate-600 dark:text-slate-300">
-                      ច្បាប់សុវត្ថិភាពដែលបានហាមឃាត់
-                    </p>
-                    {blockingMembers.map((member) => (
-                      <p
-                        key={member.profileId}
-                        className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500"
-                      >
-                        <span className="truncate capitalize">{member.name}</span>
-                        <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 font-black text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
-                          {member.blockedCount}
-                        </span>
-                      </p>
-                    ))}
-                  </div>
-                )}
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {slate.candidates.map((candidate) => (
-                  <MeetupCandidateCard
-                    key={candidate.foodUuid}
-                    candidate={candidate}
-                    voteCount={getVoteCount(candidate)}
+                {recommendedStores.map((store) => (
+                  <MeetupStoreCandidateCard
+                    key={store.uuid}
+                    store={store}
+                    voteCount={getVoteCount(store.uuid)}
                     totalVotes={totalVotes}
-                    isSelected={myVoteUuidByFoodUuid.has(candidate.foodUuid)}
-                    isLeading={candidate.foodUuid === leadingFoodUuid}
-                    isBusy={votingFoodUuid === candidate.foodUuid}
+                    isSelected={myVoteUuidByFoodUuid.has(store.uuid)}
+                    isLeading={store.uuid === leadingStoreUuid}
+                    isBusy={votingFoodUuid === store.uuid}
                     isLocked={isVotingClosed || votingFoodUuid !== null}
-                    onVote={handleVote}
+                    onVote={handleVoteStore}
                   />
                 ))}
               </div>
@@ -1087,7 +1362,7 @@ export default function MeetupLiveRoom({
 
           <aside className="space-y-4">
             <MeetupTallyPanel
-              tally={tally?.tally ?? []}
+              tally={enrichedTally}
               totalVotes={totalVotes}
               isFetching={isFetchingTally}
               isApprovalVoting={isApprovalVoting}
@@ -1109,7 +1384,7 @@ export default function MeetupLiveRoom({
                   បញ្ចប់ការបោះឆ្នោត
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  ម្ហូបដែលមានសំឡេងច្រើនជាងគេនឹងក្លាយជាលទ្ធផលចុងក្រោយ។
+                  ហាងដែលមានសំឡេងច្រើនជាងគេនឹងក្លាយជាលទ្ធផលចុងក្រោយ។
                 </p>
                 <button
                   type="button"

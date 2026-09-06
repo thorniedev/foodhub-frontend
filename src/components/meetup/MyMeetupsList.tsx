@@ -18,7 +18,7 @@ import type { MeetupGroupResponse, MeetupGroupStatus } from "@/types/meetup-api"
 
 const STATUS_LABEL: Record<string, string> = {
   COLLECTING: "កំពុងប្រមូលអ្នកចូលរួម",
-  RECOMMENDING: "កំពុងណែនាំម្ហូប",
+  RECOMMENDING: "កំពុងណែនាំហាង",
   VOTING: "កំពុងបោះឆ្នោត",
   DECIDED: "សម្រេចរួច",
   CANCELLED: "បានលុបចោល",

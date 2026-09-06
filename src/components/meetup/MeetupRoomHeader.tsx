@@ -19,25 +19,41 @@ const STATUS_META: Record<
 > = {
   COLLECTING: {
     label: "កំពុងប្រមូលអ្នកចូលរួម",
-    tone: "bg-white/15 text-white",
+    tone: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
     live: true,
   },
   RECOMMENDING: {
-    label: "កំពុងណែនាំម្ហូប",
-    tone: "bg-white/15 text-white",
+    label: "កំពុងណែនាំហាង",
+    tone: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
     live: true,
   },
-  VOTING: { label: "កំពុងបោះឆ្នោត", tone: "bg-accent-300 text-primary-950", live: true },
-  DECIDED: { label: "សម្រេចរួច", tone: "bg-accent-300 text-primary-950", live: false },
-  CANCELLED: { label: "បានលុបចោល", tone: "bg-rose-500 text-white", live: false },
-  EXPIRED: { label: "ផុតកំណត់", tone: "bg-slate-500 text-white", live: false },
+  VOTING: {
+    label: "កំពុងបោះឆ្នោត",
+    tone: "bg-accent-100 text-primary-950 border border-accent-300 dark:bg-accent-950/40 dark:text-accent-300 dark:border-accent-800",
+    live: true,
+  },
+  DECIDED: {
+    label: "សម្រេចរួច",
+    tone: "bg-primary-50 text-primary-800 border border-primary-200 dark:bg-primary-950/40 dark:text-primary-300 dark:border-primary-800",
+    live: false,
+  },
+  CANCELLED: {
+    label: "បានលុបចោល",
+    tone: "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",
+    live: false,
+  },
+  EXPIRED: {
+    label: "ផុតកំណត់",
+    tone: "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+    live: false,
+  },
 };
 
 function statusMeta(status: MeetupGroupStatus | null) {
   return (
     (status ? STATUS_META[status] : undefined) ?? {
       label: "ការណាត់ជួប",
-      tone: "bg-white/15 text-white",
+      tone: "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300",
       live: false,
     }
   );
@@ -76,7 +92,7 @@ export default function MeetupRoomHeader({
           .join(", ") || "តាមតំបន់";
 
   return (
-    <section className="overflow-hidden rounded-3xl bg-linear-to-br from-primary-800 via-primary-900 to-primary-950 text-white shadow-xl">
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="p-6 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
@@ -94,22 +110,22 @@ export default function MeetupRoomHeader({
               {meta.label}
             </span>
 
-            <h1 className="mt-4 text-2xl! font-black leading-tight tracking-tight sm:text-3xl! lg:text-4xl!">
+            <h1 className="mt-4 text-2xl! font-black leading-tight tracking-tight text-slate-900 sm:text-3xl! lg:text-4xl! dark:text-white">
               {group.title || "ការណាត់ញ៉ាំអាហារ FoodHub"}
             </h1>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-primary-100">
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-600 dark:text-slate-400">
               <span className="inline-flex items-center gap-1.5">
-                <Users className="h-4 w-4 shrink-0" />
-                {participantCount} នាក់ចូលរួម
+                <Users className="h-4 w-4 shrink-0 text-primary-600 dark:text-primary-400" />
+                <span className="text-slate-800 dark:text-slate-200">{participantCount}</span> នាក់ចូលរួម
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 shrink-0" />
+                <MapPin className="h-4 w-4 shrink-0 text-primary-600 dark:text-primary-400" />
                 <span className="truncate">{place}</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Radio className="h-4 w-4 shrink-0" />
-                {totalVotes} សំឡេង
+                <Radio className="h-4 w-4 shrink-0 text-primary-600 dark:text-primary-400" />
+                <span className="text-slate-800 dark:text-slate-200">{totalVotes}</span> សំឡេង
               </span>
             </div>
           </div>
@@ -119,18 +135,18 @@ export default function MeetupRoomHeader({
               <button
                 type="button"
                 onClick={onShowQr}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20 active:scale-95"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
-                <QrCode className="h-4 w-4" />
+                <QrCode className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                 QR កូដ
               </button>
               <button
                 type="button"
                 onClick={onCopyInvite}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-primary-950 transition hover:bg-slate-100 active:scale-95"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700 active:scale-95"
               >
                 {copiedInvite ? (
-                  <Check className="h-4 w-4 text-primary-600" />
+                  <Check className="h-4 w-4" />
                 ) : (
                   <Share2 className="h-4 w-4" />
                 )}
@@ -139,7 +155,7 @@ export default function MeetupRoomHeader({
               <button
                 type="button"
                 onClick={onCopyResult}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-accent-300 px-4 text-sm font-bold text-primary-950 transition hover:bg-accent-200 active:scale-95"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-accent-300 px-4 text-sm font-bold text-primary-950 shadow-sm transition hover:bg-accent-200 active:scale-95"
               >
                 {copiedResult ? (
                   <Check className="h-4 w-4" />
