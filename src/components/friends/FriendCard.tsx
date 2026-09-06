@@ -227,10 +227,10 @@ export default function FriendCard({
   return (
     <>
       <div
-        className={`group relative flex items-center justify-between gap-2.5 rounded-2xl border p-3 sm:gap-3.5 sm:p-4 transition-all duration-200 ${
+        className={`group relative flex items-center justify-between gap-3 rounded-[28px] border p-4 sm:gap-4 sm:p-5 transition-all duration-300 ${
           isSelected
-            ? "border-emerald-500 bg-emerald-50/40 shadow-sm dark:border-emerald-500/60 dark:bg-emerald-950/20"
-            : "border-slate-100 bg-white shadow-xs hover:border-slate-300 hover:shadow-md dark:border-slate-800/80 dark:bg-slate-900/90 dark:hover:border-slate-700"
+            ? "border-primary-500 bg-primary-50/40 shadow-[0_8px_28px_rgba(19,108,52,0.12)] ring-4 ring-primary-500/[0.035] dark:border-primary-500/60 dark:bg-primary-950/20"
+            : "border-slate-200/80 bg-white shadow-sm hover:-translate-y-1 hover:border-primary-800/20 hover:shadow-[0_18px_50px_rgba(15,23,42,0.09)] dark:border-slate-800/80 dark:bg-slate-900/90 dark:hover:border-slate-700"
         }`}
       >
         {/* Left Row: Checkbox + Star + Avatar + Details */}
@@ -281,7 +281,7 @@ export default function FriendCard({
             avatarMediaUuid={friend.avatarMediaUuid}
             avatarUrl={friend.avatarUrl}
             profileUuid={friend.defaultProfileUuid}
-            size={44}
+            size={56}
           />
 
           {/* Friend Names & Profile Info */}

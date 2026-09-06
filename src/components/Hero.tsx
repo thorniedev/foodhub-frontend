@@ -639,7 +639,7 @@ function ExperienceSection({ reduceMotion }: { reduceMotion: boolean }) {
   return (
     <section className="relative isolate min-h-[900px] overflow-hidden bg-primary-800 pb-24 pt-28 text-white md:min-h-[760px] md:pb-28 md:pt-36 lg:min-h-[820px] lg:pt-44">
       <Image
-        src="/Image/background.png"
+        src="/Image/greenb-bg.png"
         alt=""
         fill
         sizes="100vw"
@@ -668,8 +668,9 @@ function ExperienceSection({ reduceMotion }: { reduceMotion: boolean }) {
           transition={{ duration: 0.7, delay: 0.08 }}
           className="mt-6 max-w-4xl text-balance text-center text-base font-light leading-8 text-accent-50 sm:text-lg md:text-xl lg:text-2xl"
         >
-          ស្វែងរកម្ហូបអាហារ និងហាងអាហារដែលសមនឹងអ្នក តាមរយៈប្រព័ន្ធណែនាំម្ហូបអាហារឆ្លាតវៃ
-          ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី របបអាហារ ជំនឿសាសនា និងទីតាំងរបស់អ្នក
+          ស្វែងរកម្ហូបអាហារ និងហាងអាហារដែលសមនឹងអ្នក
+          តាមរយៈប្រព័ន្ធណែនាំម្ហូបអាហារឆ្លាតវៃ ដែលគិតគូរពីចំណូលចិត្ត អាឡែស៊ី
+          របបអាហារ ជំនឿសាសនា និងទីតាំងរបស់អ្នក
         </motion.p>
 
         <div className="relative mt-12 grid w-full grid-cols-1 gap-6 md:mt-16 md:grid-cols-3 md:gap-8">

@@ -322,7 +322,7 @@ export default function FriendsTabs() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 pb-24">
+    <div className="w-full space-y-6 pb-24">
       <Suspense fallback={null}>
         <FriendUrlParamsHandler
           onToken={handleUrlToken}
@@ -330,50 +330,52 @@ export default function FriendsTabs() {
         />
       </Suspense>
 
-      {/* Header Area */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-              title="ត្រឡប់ក្រោយ"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <h1 className="text-[20px] font-black tracking-tight text-primary-800 dark:text-white sm:text-3xl">
-              មិត្តភក្តិរបស់អ្នក
-            </h1>
+      {/* Header and Tabs Card Container */}
+      <div className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/70 bg-white shadow-sm p-5 sm:p-7">
+        {/* Header Area */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                title="ត្រឡប់ក្រោយ"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </Link>
+              <h1 className="text-[28px] font-bold tracking-tight text-primary-800 dark:text-white sm:text-[32px]">
+                មិត្តភក្តិរបស់អ្នក
+              </h1>
+            </div>
+            <p className="mt-2 text-lg leading-8 text-slate-500 dark:text-slate-400 pl-[60px]">
+              {friends.length} នាក់ • អាចណាត់ញ៉ាំអាហារជាក្រុមបាន
+            </p>
           </div>
-          <p className="text-[17px] font-medium text-slate-500 dark:text-slate-400 pl-12">
-            {friends.length} available • អាចណាត់ញ៉ាំអាហារជាក្រុមបាន
-          </p>
+
+          {/* QR Actions Header */}
+          <div className="flex items-center gap-3 mt-4 sm:mt-0">
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(true)}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-lg font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <QrCode className="h-5 w-5 text-primary-800 dark:text-primary-400" />
+              <span>QR របស់ខ្ញុំ</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsScannerOpen(true)}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-lg font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-900 hover:shadow-md active:scale-95"
+            >
+              <Scan className="h-5 w-5" />
+              <span>ស្កេន QR</span>
+            </button>
+          </div>
         </div>
 
-        {/* QR Actions Header */}
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setIsQrModalOpen(true)}
-            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <QrCode className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[17px]">QR របស់ខ្ញុំ</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsScannerOpen(true)}
-            className="flex items-center gap-2 rounded-2xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
-          >
-            <Scan className="h-6 w-6" />
-            <span className="text-[17px]">ស្កេន QR</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Tabs Navigation (Mobile responsive with smooth scroll) */}
-      <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar dark:border-slate-800">
+        {/* Main Tabs Navigation (Mobile responsive with smooth scroll) */}
+        <div className="mt-6 flex border-b border-slate-200 overflow-x-auto no-scrollbar dark:border-slate-800">
         <button
           type="button"
           onClick={() => setActiveTab("friends")}
@@ -422,28 +424,29 @@ export default function FriendsTabs() {
         </button>
       </div>
 
-      {/* Pill Search Input */}
-      {activeTab === "friends" && (
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="ស្វែងរកមិត្តភក្តិតាមឈ្មោះ..."
-            value={filterFriendTerm}
-            onChange={(e) => setFilterFriendTerm(e.target.value)}
-            className="w-full rounded-full border border-slate-200/90 bg-white py-3.5 pl-12 pr-10 text-base font-medium text-slate-900 shadow-xs placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 sm:text-lg"
-          />
-          {filterFriendTerm && (
-            <button
-              type="button"
-              onClick={() => setFilterFriendTerm("")}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      )}
+        {/* Pill Search Input */}
+        {activeTab === "friends" && (
+          <div className="relative mt-6">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="ស្វែងរកមិត្តភក្តិតាមឈ្មោះ..."
+              value={filterFriendTerm}
+              onChange={(e) => setFilterFriendTerm(e.target.value)}
+              className="w-full rounded-full border border-slate-200/90 bg-slate-50/50 py-3.5 pl-12 pr-10 text-base font-medium text-slate-900 shadow-xs placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 sm:text-lg"
+            />
+            {filterFriendTerm && (
+              <button
+                type="button"
+                onClick={() => setFilterFriendTerm("")}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Tab Content: Friends List */}
       {activeTab === "friends" && (

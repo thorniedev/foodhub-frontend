@@ -36,7 +36,7 @@ export default function MarqueeSection() {
           100% { transform: translateX(-50%); }
         }
         .animate-marquee {
-          animation: marquee 30s linear infinite;
+          animation: marquee 15s linear infinite;
         }
       `}</style>
     </div>
@@ -67,7 +67,7 @@ export function MarqueeSectionOrange() {
           100% { transform: translateX(-50%); }
         }
         .animate-marquee-orange {
-          animation: marquee-orange 28s linear infinite;
+          animation: marquee-orange 15s linear infinite;
         }
       `}</style>
     </div>

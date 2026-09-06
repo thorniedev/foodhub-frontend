@@ -469,7 +469,7 @@ export default function Hero() {
               rotate: 0,
             }}
             transition={enter(REVEAL.decorate)}
-            className="absolute md:left-6 top-3 lg:left-10 lg:top-25 z-10 w-20 max-sm:hidden"
+            className="absolute md:left-6 top-3 lg:left-10 lg:top-15 z-10 w-20 max-sm:hidden"
           >
             <motion.div
               {...(reduceMotion
@@ -1137,7 +1137,7 @@ max-sm:hidden
             width={1550}
             height={0}
             src={
-              showSecondSection ? "/Image/background.png" : TRANSPARENT_PIXEL
+              showSecondSection ? "/Image/greenBg.png" : TRANSPARENT_PIXEL
             }
             loading="lazy"
             fetchPriority="low"

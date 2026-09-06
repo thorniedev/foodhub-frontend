@@ -1,7 +1,15 @@
 "use client";
 
-import { Compass, Sparkles, Send, Loader2, ShieldCheck, Image as ImageIcon } from "lucide-react";
+import {
+  Compass,
+  Sparkles,
+  Send,
+  Loader2,
+  ShieldCheck,
+  Image as ImageIcon,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 
 import { ProfileMultiSelect } from "@/components/profile/ProfileMultiSelect";
@@ -14,7 +22,8 @@ const MAX_PROMPT = 200;
 function getErrorMessage(err: unknown): string {
   if (err && typeof err === "object") {
     const e = err as { status?: number; data?: unknown };
-    if (e.status === 401) return "សូមចូលគណនី ដើម្បីទទួលការណែនាំ AI (please sign in).";
+    if (e.status === 401)
+      return "សូមចូលគណនី ដើម្បីទទួលការណែនាំ AI (please sign in).";
     if (e.data && typeof e.data === "object" && "message" in e.data) {
       const m = (e.data as { message?: unknown }).message;
       if (typeof m === "string" && m.trim()) return m;
@@ -23,7 +32,10 @@ function getErrorMessage(err: unknown): string {
   return "មានបញ្ហា សូមព្យាយាមម្តងទៀត (something went wrong).";
 }
 
-function formatPrice(amount: number | null, currency: string | null): string | null {
+function formatPrice(
+  amount: number | null,
+  currency: string | null,
+): string | null {
   if (amount == null) return null;
   try {
     return new Intl.NumberFormat(undefined, {
@@ -44,7 +56,9 @@ function matchClasses(match: number | null): string {
 }
 
 /** Hover tooltip text summarizing the per-strategy score breakdown. */
-function breakdownTitle(breakdown: Record<string, number | undefined> | null): string | undefined {
+function breakdownTitle(
+  breakdown: Record<string, number | undefined> | null,
+): string | undefined {
   if (!breakdown) return undefined;
   const labels: Record<string, string> = {
     AI_JUDGMENT: "AI",
@@ -55,7 +69,9 @@ function breakdownTitle(breakdown: Record<string, number | undefined> | null): s
   };
   const parts = Object.entries(breakdown)
     .filter(([, value]) => value != null)
-    .map(([key, value]) => `${labels[key] ?? key} ${Math.round(value! * 100)}%`);
+    .map(
+      ([key, value]) => `${labels[key] ?? key} ${Math.round(value! * 100)}%`,
+    );
   return parts.length ? parts.join(" · ") : undefined;
 }
 
@@ -128,7 +144,9 @@ export default function AiPromptRecommender({
       )}
 
       {error != null && (
-        <p className="mt-2 text-[13px] text-red-600">{getErrorMessage(error)}</p>
+        <p className="mt-2 text-[13px] text-red-600">
+          {getErrorMessage(error)}
+        </p>
       )}
 
       {items.length === 0 && !isLoading && error == null && (
@@ -154,26 +172,32 @@ export default function AiPromptRecommender({
           {items.map((item) => {
             const price = formatPrice(item.price, item.currencyCode);
             const finalScore = item.recommendation?.finalScore;
-            const match = finalScore != null ? Math.round(finalScore * 100) : null;
+            const match =
+              finalScore != null ? Math.round(finalScore * 100) : null;
             const effectiveThumbnail =
               item.thumbnail ||
-              (item.gallery && item.gallery.length > 0 ? item.gallery[0] : null) ||
-              (item.uuid ? `/api/v1/catalog/menu-items/${item.uuid}/images/1` : null);
+              (item.gallery && item.gallery.length > 0
+                ? item.gallery[0]
+                : null) ||
+              (item.uuid
+                ? `/api/v1/catalog/menu-items/${item.uuid}/images/1`
+                : null);
             const thumbnailUrl = toFrontendApiAssetUrl(effectiveThumbnail);
 
             return (
-              <li
-                key={item.uuid}
-                className="flex items-stretch gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:shadow-md"
-              >
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[10px] bg-gray-100">
+              <li key={item.uuid}>
+                <Link
+                  href={`/menu/${item.uuid}`}
+                  className="flex items-stretch gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:shadow-md"
+                >
+                <div className="relative h-16 w-16 shrink-0  rounded-[10px] bg-gray-100">
                   {thumbnailUrl ? (
                     <Image
                       src={thumbnailUrl}
                       alt={item.name}
                       fill
                       sizes="64px"
-                      className="object-cover"
+                      className="object-cover rounded-lg"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-gray-300">
@@ -181,7 +205,7 @@ export default function AiPromptRecommender({
                     </div>
                   )}
                   {item.rankPosition != null && (
-                    <div className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-primary-800 text-[11px] font-bold text-white shadow-sm">
+                    <div className="absolute  -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-primary-800 text-[11px] font-bold text-white shadow-sm">
                       {item.rankPosition}
                     </div>
                   )}
@@ -215,7 +239,9 @@ export default function AiPromptRecommender({
                   {price && <p className="font-bold text-gray-900">{price}</p>}
                   {match != null && (
                     <span
-                      title={breakdownTitle(item.recommendation?.scoreBreakdown ?? null)}
+                      title={breakdownTitle(
+                        item.recommendation?.scoreBreakdown ?? null,
+                      )}
                       className={`mt-1 inline-block cursor-default rounded-full px-2 py-0.5 text-[12px] font-semibold ${matchClasses(
                         match,
                       )}`}
@@ -224,6 +250,7 @@ export default function AiPromptRecommender({
                     </span>
                   )}
                 </div>
+                </Link>
               </li>
             );
           })}

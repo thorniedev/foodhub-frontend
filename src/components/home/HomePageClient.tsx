@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Hero from "@/components/home/Hero";
 import FilterSomeCategory from "./features/FilterSomeCategory";
+import { Skiper30 } from "../ui/skiper-ui/skiper30";
 
 const MealTimeJourneySection = dynamic(
   () => import("@/components/MealTimeJourneySection"),
@@ -37,8 +38,11 @@ export default function HomePageClient() {
           ម្ហូបអាហារ Mhoubahar (FoodHub) - ប្រព័ន្ធស្វែងរក
           និងណែនាំមុខម្ហូបឆ្លាតវៃនៅកម្ពុជា
         </h1>
-        <MealTimeJourneySection />
+
         <Hero />
+        <div className="lg:py-4">
+          <MealTimeJourneySection />
+        </div>
         <PopularSection />
         <FilterByMealTime />
         <FilterSomeCategory />
@@ -47,6 +51,9 @@ export default function HomePageClient() {
         <EventSection />
         <LocationSection />
         <MealsByAgeSection />
+        <div className="lg:py-8 py-3">
+          <Skiper30 />
+        </div>
         <FitFoodSection />
       </section>
     </div>

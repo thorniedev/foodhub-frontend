@@ -10,7 +10,12 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { HiOutlineLightBulb, HiSparkles } from "react-icons/hi2";
 
-import { IoAlertCircleOutline, IoClose, IoRefresh, IoSparkles } from "react-icons/io5";
+import {
+  IoAlertCircleOutline,
+  IoClose,
+  IoRefresh,
+  IoSparkles,
+} from "react-icons/io5";
 
 import { MdSwipe } from "react-icons/md";
 import { RiRobot2Line } from "react-icons/ri";
@@ -86,11 +91,14 @@ export default function Model() {
   // deck always showed the full catalog regardless of what was typed here).
   const { data: profilesData, isLoading: isLoadingProfiles } =
     useGetMemberProfilesQuery();
-  const [createSession, { data: session, isLoading: isSessionLoading, error: sessionError }] =
-    useCreateRecommendationSessionMutation();
+  const [
+    createSession,
+    { data: session, isLoading: isSessionLoading, error: sessionError },
+  ] = useCreateRecommendationSessionMutation();
 
   const [prompt, setPrompt] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>("ALL");
+  const [categoryFilter, setCategoryFilter] =
+    useState<CategoryFilterType>("ALL");
   const hasAutoTriggeredRef = useRef(false);
   // Synchronous in-flight lock for createSession. See runRecommendation.
   const sessionInFlightRef = useRef(false);
@@ -98,7 +106,7 @@ export default function Model() {
   const activeProfiles = useMemo(() => {
     const list = Array.isArray(profilesData)
       ? profilesData
-      : profilesData?.contents ?? [];
+      : (profilesData?.contents ?? []);
     return list.filter((p) => p.isActive !== false);
   }, [profilesData]);
 
@@ -210,7 +218,12 @@ export default function Model() {
   // so the swipe deck starts personalized without requiring the user to type
   // anything first.
   useEffect(() => {
-    if (!isOpen || hasAutoTriggeredRef.current || !canRecommend || targetProfiles.length === 0)
+    if (
+      !isOpen ||
+      hasAutoTriggeredRef.current ||
+      !canRecommend ||
+      targetProfiles.length === 0
+    )
       return;
     hasAutoTriggeredRef.current = true;
     runRecommendation();
@@ -342,7 +355,8 @@ export default function Model() {
           </p>
 
           <p className="max-w-[350px] text-[16px] leading-7 text-gray-500">
-            ការណែនាំម្ហូបទាមទារឱ្យអ្នកចូលគណនី ដើម្បីត្រួតពិនិត្យសុវត្ថិភាពទៅតាមអាឡែហ្ស៊ី
+            ការណែនាំម្ហូបទាមទារឱ្យអ្នកចូលគណនី
+            ដើម្បីត្រួតពិនិត្យសុវត្ថិភាពទៅតាមអាឡែហ្ស៊ី
             និងលក្ខខណ្ឌសុខភាពរបស់អ្នក។
           </p>
 
@@ -438,8 +452,8 @@ export default function Model() {
               {categoryFilter === "DRINK"
                 ? "រកមិនឃើញភេសជ្ជៈដែលត្រូវគ្នាទេ"
                 : categoryFilter === "FOOD"
-                ? "រកមិនឃើញមុខម្ហូបដែលត្រូវគ្នាទេ"
-                : "រកមិនឃើញម្ហូបដែលត្រូវគ្នាទេ"}
+                  ? "រកមិនឃើញមុខម្ហូបដែលត្រូវគ្នាទេ"
+                  : "រកមិនឃើញម្ហូបដែលត្រូវគ្នាទេ"}
             </p>
 
             <p className="max-w-[350px] text-[16px] leading-7 text-gray-500">
@@ -483,7 +497,10 @@ export default function Model() {
 
   return (
     <>
-      <div ref={constraintsRef} className="fixed inset-0 z-[100] pointer-events-none" />
+      <div
+        ref={constraintsRef}
+        className="fixed inset-0 z-[100] pointer-events-none"
+      />
       <motion.button
         type="button"
         // aria-label="Open FoodHub AI assistant"
@@ -862,7 +879,9 @@ export default function Model() {
                 >
                   <div className="border-b border-gray-200 bg-white px-3 pt-3 sm:px-4">
                     <div className="mb-3 flex items-center justify-between pl-1 pr-1">
-                      <h2 className="text-[17px] font-bold text-gray-900">ការណែនាំពី AI</h2>
+                      <h2 className="text-[17px] font-bold text-gray-900">
+                        ការណែនាំពី AI
+                      </h2>
                       <div className="flex items-center gap-2">
                         <ProfileMultiSelect
                           profiles={activeProfiles}
@@ -892,25 +911,27 @@ export default function Model() {
                             whileTap={{
                               scale: 0.97,
                             }}
-                            className={`relative flex min-w-[150px] shrink-0 snap-start items-center gap-3 rounded-t-[18px] px-3 pb-4 pt-3 text-left transition md:min-w-0 ${isActive
-                              ? "bg-primary-50 text-primary-800 dark:text-primary-dark"
-                              : "text-gray-500 hover:bg-gray-50 hover:text-primary-700"
-                              }`}
+                            className={`relative flex min-w-[150px] shrink-0 snap-start items-center gap-3 rounded-t-[18px] px-3 pb-4 pt-3 text-left transition md:min-w-0 ${
+                              isActive
+                                ? "bg-primary-50 text-primary-800 dark:text-primary-dark"
+                                : "text-gray-500 hover:bg-gray-50 hover:text-primary-700"
+                            }`}
                           >
                             <motion.span
                               animate={
                                 isActive
                                   ? {
-                                    scale: [1, 1.08, 1],
-                                  }
+                                      scale: [1, 1.08, 1],
+                                    }
                                   : {
-                                    scale: 1,
-                                  }
+                                      scale: 1,
+                                    }
                               }
-                              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${isActive
-                                ? "bg-primary-800 text-white shadow-md"
-                                : "bg-gray-100 text-gray-500"
-                                }`}
+                              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${
+                                isActive
+                                  ? "bg-primary-800 text-white shadow-md"
+                                  : "bg-gray-100 text-gray-500"
+                              }`}
                             >
                               {tab.icon}
                             </motion.span>
@@ -957,7 +978,7 @@ export default function Model() {
                             : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                         }`}
                       >
-                        <span>✨ ទាំងអស់</span>
+                        <span> ទាំងអស់</span>
                         {categoryCounts.ALL > 0 && (
                           <span className="text-[11px] opacity-80">
                             ({categoryCounts.ALL})
@@ -974,7 +995,7 @@ export default function Model() {
                             : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                         }`}
                       >
-                        <span>🍲 ម្ហូប</span>
+                        <span> ម្ហូប</span>
                         {categoryCounts.FOOD > 0 && (
                           <span className="text-[11px] opacity-80">
                             ({categoryCounts.FOOD})
@@ -991,7 +1012,7 @@ export default function Model() {
                             : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                         }`}
                       >
-                        <span>🥤 ភេសជ្ជៈ</span>
+                        <span> ភេសជ្ជៈ</span>
                         {categoryCounts.DRINK > 0 && (
                           <span className="text-[11px] opacity-80">
                             ({categoryCounts.DRINK})

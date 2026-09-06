@@ -879,7 +879,7 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
 
   return (
     <main className="min-h-screen  pb-14">
-      <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
+      <div className="mx-auto w-full max-w-[1500px]  px-4 py-6 sm:px-6 lg:py-2">
         {/* Back */}
 
         {/* Back Link */}
