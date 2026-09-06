@@ -258,10 +258,10 @@ export default function Navbar() {
           dark:bg-gray-950/90
 
           md:border-b-0
-          md:bg-white/5
+          md:bg-white/90
           md:shadow-2xs
           md:backdrop-blur-[4px]
-          md:dark:bg-gray-950/1
+          md:dark:bg-gray-950/90
 
           ${showScrollNavigation ? "md:translate-y-0" : "md:-translate-y-full lg:translate-y-0"}
         `}
