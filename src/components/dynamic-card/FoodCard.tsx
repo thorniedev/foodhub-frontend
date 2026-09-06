@@ -890,7 +890,7 @@ const FoodCard = React.memo(function FoodCard({
               items-center
               justify-center
               gap-2
-              rounded-xl
+              rounded-[24px]
               px-4
               text-[16px]
               font-semibold
