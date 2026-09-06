@@ -171,8 +171,8 @@ const FoodCard = React.memo(function FoodCard({
   ======================================================= */
 
   const displayName =
-    activeFood.localName?.trim() ||
     activeFood.name?.trim() ||
+    activeFood.localName?.trim() ||
     foodCatalog?.localName?.trim() ||
     "Unnamed food";
 

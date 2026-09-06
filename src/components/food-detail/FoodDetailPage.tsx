@@ -80,12 +80,15 @@ import FoodCard from "../dynamic-card/FoodCard";
 
 const TEXT_BODY = "text-base lg:text-lg";
 const TEXT_LABEL = "text-base lg:text-lg text-gray-500 dark:text-gray-400";
-const TEXT_VALUE = "text-lg lg:text-xl font-semibold text-primary-900 dark:text-white";
-const TEXT_TITLE = "text-xl lg:text-2xl font-semibold text-primary-900 dark:text-white";
+const TEXT_VALUE =
+  "text-lg lg:text-xl font-semibold text-primary-900 dark:text-white";
+const TEXT_TITLE =
+  "text-xl lg:text-2xl font-semibold text-primary-900 dark:text-white";
 const TEXT_EYEBROW =
   "text-base lg:text-lg font-semibold uppercase tracking-wide text-secondary-500";
 
-const CARD = "rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6";
+const CARD =
+  "rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6";
 const TILE = "rounded-2xl bg-primary-50 dark:bg-primary-950 p-4";
 const SECTION = "mt-6";
 
@@ -288,7 +291,9 @@ function StatusPill({
   return (
     <span
       className={`inline-flex items-center rounded-full px-4 py-2 font-semibold ${TEXT_BODY} ${
-        isOn ? "bg-primary-100 text-primary-800 dark:text-primary-300" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+        isOn
+          ? "bg-primary-100 text-primary-800 dark:text-primary-300"
+          : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
       }`}
     >
       {isOn ? onLabel : offLabel}
@@ -338,7 +343,11 @@ function ScoreBar({ label, value }: ScoreBarProps) {
 
   return (
     <div className="grid gap-2 sm:grid-cols-[160px_1fr_56px] sm:items-center">
-      <p className={`font-medium text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>{label}</p>
+      <p
+        className={`font-medium text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
+      >
+        {label}
+      </p>
 
       <div className="h-2 overflow-hidden rounded-full bg-primary-50 dark:bg-primary-950">
         <motion.div
@@ -478,7 +487,10 @@ function LoadingPage() {
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="rounded-2xl bg-primary-50 dark:bg-primary-950 p-4">
+                <div
+                  key={i}
+                  className="rounded-2xl bg-primary-50 dark:bg-primary-950 p-4"
+                >
                   <div className="h-4 w-16 animate-pulse rounded bg-primary-100" />
                   <div className="mt-3 h-6 w-20 animate-pulse rounded bg-primary-200/50" />
                 </div>
@@ -496,7 +508,10 @@ function LoadingPage() {
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-10 w-24 animate-pulse rounded-full bg-gray-100 dark:bg-gray-800" />
+                <div
+                  key={i}
+                  className="h-10 w-24 animate-pulse rounded-full bg-gray-100 dark:bg-gray-800"
+                />
               ))}
             </div>
             <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
@@ -515,7 +530,10 @@ function LoadingPage() {
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-10 w-28 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950" />
+                <div
+                  key={i}
+                  className="h-10 w-28 animate-pulse rounded-full bg-primary-50 dark:bg-primary-950"
+                />
               ))}
             </div>
             <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
@@ -544,7 +562,10 @@ function LoadingPage() {
                 <div className="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-800/60 dark:bg-gray-800/60" />
                 <div className="mt-3 space-y-3">
                   {[...Array(2)].map((_, j) => (
-                    <div key={j} className="h-24 animate-pulse rounded-2xl bg-primary-50 dark:bg-primary-950" />
+                    <div
+                      key={j}
+                      className="h-24 animate-pulse rounded-2xl bg-primary-50 dark:bg-primary-950"
+                    />
                   ))}
                 </div>
               </div>
@@ -793,8 +814,8 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   }
 
   const displayName =
-    food.localName?.trim() ||
     food.name?.trim() ||
+    food.localName?.trim() ||
     foodCatalog?.localName?.trim() ||
     "Unnamed food";
 
@@ -1069,11 +1090,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                   {displayName}
                 </p>
 
-                {englishOrCanonicalName && (
+                {/* {englishOrCanonicalName && (
                   <p className={`mt-2 ${TEXT_LABEL}`}>
                     {englishOrCanonicalName}
                   </p>
-                )}
+                )} */}
               </div>
 
               <p className="shrink-0 text-3xl font-bold text-primary-800 dark:text-primary-300 lg:text-4xl">
@@ -1096,17 +1117,19 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             {/* Description */}
             {(food.localDescription || food.description) && (
               <div className="mt-5 space-y-3">
-                {food.localDescription && (
-                  <p className={`leading-8 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>
+                {/* {food.localDescription && (
+                  <p
+                    className={`leading-8 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
+                  >
                     {food.localDescription}
                   </p>
-                )}
+                )} */}
 
-                {/* {food.description && (
+                {food.description && (
                   <p className={`leading-8 text-gray-500 dark:text-gray-400 ${TEXT_BODY}`}>
                     {food.description}
                   </p>
-                )} */}
+                )}
               </div>
             )}
 
@@ -1208,7 +1231,7 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                     } catch (err) {
                       console.warn("[FOOD DETAIL BOOKMARK ERROR]", err);
                     }
-                    
+
                     track({
                       eventType: "BOOKMARK",
                       menuItemUuid: uuid,
@@ -1340,7 +1363,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             {recommendation ? (
               <>
                 {recommendation.reasonText && (
-                  <p className={`mt-5 leading-8 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>
+                  <p
+                    className={`mt-5 leading-8 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
+                  >
                     {recommendation.reasonText}
                   </p>
                 )}
@@ -1364,7 +1389,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
               </>
             ) : (
               <div className={`mt-5 ${TILE}`}>
-                <p className={`leading-7 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}>
+                <p
+                  className={`leading-7 text-gray-600 dark:text-gray-300 ${TEXT_BODY}`}
+                >
                   មិនទាន់មានទិន្នន័យណែនាំសម្រាប់មុខម្ហូបនេះទេ។ សូមចូលគណនី
                   ឬកំណត់ចំណូលចិត្តរបស់អ្នក ដើម្បីទទួលការណែនាំ។
                 </p>
@@ -1454,7 +1481,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
             {ageGroups.length > 0 ? (
               <div className="mt-5 flex flex-wrap gap-2">
                 {ageGroups.map((ageGroup, index) => (
-                  <InfoPill key={ageGroup.code || index}>{ageGroup.name}</InfoPill>
+                  <InfoPill key={ageGroup.code || index}>
+                    {ageGroup.name}
+                  </InfoPill>
                 ))}
               </div>
             ) : (

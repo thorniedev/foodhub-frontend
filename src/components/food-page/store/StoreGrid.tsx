@@ -137,8 +137,8 @@ function FeaturedStoreBanner({
           group
           cursor-pointer
           overflow-hidden
-          rounded-[28px] sm:rounded-[32px] md:rounded-[36px]
-          p-3 sm:p-3.5 md:p-4
+          rounded-[24px] sm:rounded-[32px] md:rounded-[36px]
+          p-2.5 sm:p-3.5 md:p-4
           border border-gray-100/80 dark:border-slate-800
           bg-white dark:bg-slate-900
           shadow-xs
@@ -151,7 +151,7 @@ function FeaturedStoreBanner({
         <div
           className="
             grid grid-cols-1
-            gap-4 md:gap-6
+            gap-3 sm:gap-4 md:gap-6
             md:grid-cols-[0.9fr_1.1fr]
             items-center
           "
@@ -160,10 +160,10 @@ function FeaturedStoreBanner({
           <div
             className="
               relative
-              h-[205px]
+              h-[160px]
               w-full
               overflow-hidden
-              rounded-[16px] sm:rounded-[18px] md:rounded-[20px]
+              rounded-[14px] sm:rounded-[18px] md:rounded-[20px]
               border border-gray-200 dark:border-slate-700
               bg-primary-50 dark:bg-slate-800
               sm:h-[230px]
@@ -178,14 +178,14 @@ function FeaturedStoreBanner({
             className="
               flex min-w-0
               flex-col justify-center
-              py-2 px-1
+              py-1 px-1
               sm:py-3 sm:px-2
               md:py-4 md:px-3
             "
           >
             <p
               className="
-                text-[18px]
+                text-[15px] sm:text-[18px]
                 font-semibold
                 text-secondary-500
               "
@@ -195,8 +195,8 @@ function FeaturedStoreBanner({
 
             <h2
               className="
-                mt-1 truncate
-                text-[24px]
+                mt-0.5 sm:mt-1 truncate
+                text-[20px]
                 font-bold
                 text-primary-900 dark:text-white
                 transition-colors
@@ -208,42 +208,42 @@ function FeaturedStoreBanner({
               {displayName}
             </h2>
 
-            <div className="mt-3 flex items-start gap-2 text-gray-500 dark:text-slate-400">
-              <IoLocationOutline className="mt-1 shrink-0 text-[19px] text-gray-400 dark:text-slate-500" />
+            <div className="mt-1.5 sm:mt-3 flex items-start gap-1.5 sm:gap-2 text-gray-500 dark:text-slate-400">
+              <IoLocationOutline className="mt-0.5 sm:mt-1 shrink-0 text-[16px] sm:text-[19px] text-gray-400 dark:text-slate-500" />
 
-              <p className="line-clamp-2 text-[18px] leading-6">
+              <p className="line-clamp-2 text-[14px] sm:text-[18px] leading-5 sm:leading-6">
                 {addressLabel}
               </p>
             </div>
 
             <div
               className="
-                mt-4 flex
+                mt-2.5 sm:mt-4 flex
                 flex-wrap items-center
-                gap-x-5 gap-y-2
-                text-[18px]
+                gap-x-4 sm:gap-x-5 gap-y-1.5 sm:gap-y-2
+                text-[14px] sm:text-[18px]
               "
             >
               <span className="inline-flex items-center gap-1.5 font-medium text-gray-600 dark:text-slate-300">
-                <IoTimeOutline className="text-[20px] text-gray-400 dark:text-slate-500" />
+                <IoTimeOutline className="text-[17px] sm:text-[20px] text-gray-400 dark:text-slate-500" />
                 {statusLabel}
               </span>
 
               <span className="inline-flex items-center gap-1.5 font-medium text-primary-700 dark:text-emerald-400">
-                <IoNavigateOutline className="text-[20px]" />
+                <IoNavigateOutline className="text-[17px] sm:text-[20px]" />
                 {distanceLabel}
               </span>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-3 sm:mt-5">
               <span
                 className="
-                  inline-flex min-h-11
+                  inline-flex min-h-9 sm:min-h-11
                   items-center justify-center
                   rounded-full
                   bg-primary-800 dark:bg-emerald-600
-                  px-5
-                  text-[18px]
+                  px-4 sm:px-5
+                  text-[15px] sm:text-[18px]
                   font-semibold
                   text-white
                   shadow-sm
