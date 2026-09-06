@@ -437,6 +437,8 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
         <motion.div
           className="pointer-events-none absolute z-[9] h-[150vh] w-[150vh] mix-blend-screen"
           style={{
+            willChange: "left, top, opacity",
+            transform: "translateZ(0)",
             left: sunX,
             top: sunY,
             x: "-50%",
@@ -453,15 +455,16 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
         />
 
         {/* sun */}
-        <div className="pointer-events-none absolute inset-0 z-10">
+        <div className="pointer-events-none absolute inset-0 z-10" style={{ transform: "translateZ(0)" }}>
           <motion.div
             className="absolute"
-            style={{ left: sunX, top: sunY, x: "-50%", y: "-50%" }}
+            style={{ willChange: "left, top", left: sunX, top: sunY, x: "-50%", y: "-50%" }}
           >
             {/* wide atmospheric scatter */}
             <motion.div
               className="absolute left-1/2 top-1/2 h-[70vh] w-[70vh] -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
               style={{
+                willChange: "opacity",
                 backgroundImage: reduce ? "none" : wideGlow,
                 filter: "blur(30px)",
                 opacity: 0.7,
@@ -479,6 +482,7 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
             <motion.div
               className="h-20 w-20 rounded-full md:h-28 md:w-28"
               style={{
+                willChange: "transform",
                 backgroundImage: reduce ? "none" : discGradient,
                 backgroundColor: reduce ? "#facc15" : undefined,
                 boxShadow: reduce
@@ -495,6 +499,7 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
           <motion.span
             className="absolute h-16 w-16 rounded-full mix-blend-screen"
             style={{
+              willChange: "left, top, opacity",
               left: ghostLeft,
               top: ghostTop,
               x: "-50%",
@@ -508,6 +513,7 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
           <motion.span
             className="absolute h-8 w-8 rounded-full mix-blend-screen"
             style={{
+              willChange: "left, top, opacity",
               left: ghostLeftB,
               top: ghostTopB,
               x: "-50%",
@@ -721,17 +727,14 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
           </div>
         </div>
 
-        {/* grain */}
-        <svg className="pointer-events-none absolute inset-0 z-[16] h-full w-full opacity-[0.12] mix-blend-overlay">
-          <filter id="mealGrain">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.85"
-              numOctaves="3"
-            />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#mealGrain)" />
-        </svg>
+        {/* grain - optimized from svg filter to base64 image for performance */}
+        <div
+          className="pointer-events-none absolute inset-0 z-[16] h-full w-full opacity-[0.15] mix-blend-overlay"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "repeat",
+          }}
+        />
 
         {/* stage */}
         <div className="relative z-20 flex h-full items-center justify-center px-4">

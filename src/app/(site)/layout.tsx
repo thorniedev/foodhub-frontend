@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import NotificationAlertPopup from "@/components/notifications/NotificationAlertPopup";
+import NotificationPermissionModal from "@/components/notifications/NotificationPermissionModal";
 import { DrawCircleText } from "@/components/ui/DrawCircleText";
 import "leaflet/dist/leaflet.css";
 
@@ -42,6 +43,7 @@ export default function SiteLayout({
       <MobileBottomNav />
       <Model />
       <NotificationAlertPopup />
+      <NotificationPermissionModal />
     </div>
   );
 }

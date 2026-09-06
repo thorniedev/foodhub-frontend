@@ -522,6 +522,7 @@ const FoodCard = React.memo(function FoodCard({
       ========================================== */}
 
       <Link
+        data-aos="fade-right"
         href={`/menu/${itemUuid}`}
         className="
           flex
@@ -692,7 +693,9 @@ const FoodCard = React.memo(function FoodCard({
             {travelTimeMin !== null ? (
               <div className="flex items-center gap-1.5 text-primary-400">
                 <FaMotorcycle />
-                <span className="whitespace-nowrap">{formatTime(travelTimeMin)}</span>
+                <span className="whitespace-nowrap">
+                  {formatTime(travelTimeMin)}
+                </span>
               </div>
             ) : activeFood.preparationTimeMinutes !== null &&
               activeFood.preparationTimeMinutes !== undefined ? (

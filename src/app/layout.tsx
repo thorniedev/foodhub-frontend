@@ -11,6 +11,7 @@ import PWARegister from "@/components/providers/PWARegister";
 import JsonLd from "@/components/common/JsonLd";
 
 import { generateWebSiteJsonLd } from "@/lib/seo";
+import { GoogleIcon } from "@/components/auth/icons";
 
 /* =========================================================
    GOOGLE SANS
@@ -153,7 +154,10 @@ export const metadata: Metadata = {
   },
 
   authors: [
-    { name: "Mhoubahar FoodHub Team", url: "https://www.mhoubahar.store/about" },
+    {
+      name: "Mhoubahar FoodHub Team",
+      url: "https://www.mhoubahar.store/about",
+    },
   ],
 
   creator: "Mhoubahar FoodHub",
@@ -241,16 +245,18 @@ export const metadata: Metadata = {
     "msapplication-config": "/browserconfig.xml",
     "geo.region": "KH",
     "geo.placename": "Phnom Penh, Cambodia",
-    "language": "Khmer, English",
+    language: "Khmer, English",
     "revisit-after": "7 days",
-    "rating": "general",
-    "copyright": "© 2025 Mhoubahar FoodHub. All rights reserved.",
+    rating: "general",
+    copyright: "© 2025 Mhoubahar FoodHub. All rights reserved.",
   },
 };
 
 /* =========================================================
    ROOT LAYOUT
 ========================================================= */
+
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 export default function RootLayout({
   children,
@@ -273,6 +279,7 @@ export default function RootLayout({
 
         <Providers>{children}</Providers>
       </body>
+      <GoogleAnalytics gaId="G-Y4SCK2S3P5" />
     </html>
   );
 }

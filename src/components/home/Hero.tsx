@@ -1137,7 +1137,7 @@ max-sm:hidden
             width={1550}
             height={0}
             src={
-              showSecondSection ? "/Image/background.png" : TRANSPARENT_PIXEL
+              showSecondSection ? "/Image/greenBg.png" : TRANSPARENT_PIXEL
             }
             loading="lazy"
             fetchPriority="low"
