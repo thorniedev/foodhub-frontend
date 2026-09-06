@@ -289,6 +289,10 @@ export function buildRecommendedStores({
 
       coverImageUrl: normalizeImagePath(store.coverImageUrl),
 
+      logoMediaUuid: store.logoMediaUuid ?? null,
+
+      coverMediaUuid: store.coverMediaUuid ?? null,
+
       priceLevel: store.priceLevel ?? null,
 
       averageRating,

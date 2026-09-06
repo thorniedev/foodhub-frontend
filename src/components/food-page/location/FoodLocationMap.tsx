@@ -1174,6 +1174,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
+import { resolveStoreMediaUrl } from "@/components/food-page/store/store-page-utils";
 
 import {
   Circle,
@@ -1558,8 +1560,12 @@ function createDirectionsUrl(position: SafeLatLng): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
 }
 
-function createStoreMarker(selected: boolean): DivIcon {
+function createStoreMarker(selected: boolean, imageUrl: string | null): DivIcon {
   const selectedClass = selected ? " foodhub-store-pin--selected" : "";
+
+  const iconContent = imageUrl
+    ? `<img src="${escapeHtml(imageUrl)}" alt="Store Logo" class="h-full w-full object-cover rounded-full" />`
+    : `<svg viewBox="0 0 24 24" aria-hidden="true" class="foodhub-store-pin__icon"><path fill="currentColor" d="M8.1 13.34 6.91 12.15c-1.13-1.13-1.75-2.64-1.75-4.24V2h1.5v5.91c0 .39.05.78.14 1.15h.86V2h1.5v7.06h.86c.09-.37.14-.76.14-1.15V2h1.5v5.91c0 1.6-.62 3.11-1.75 4.24L8.72 13.34V22H8.1v-8.66Zm8.24-1.03V22h-1.5v-8.31c-1.55-.62-2.68-2.42-2.68-4.55 0-2.67 1.77-4.84 3.94-4.84s3.94 2.17 3.94 4.84c0 2.13-1.13 3.93-2.7 4.55v-1.38Z"/></svg>`;
 
   return divIcon({
     className: "foodhub-leaflet-div-icon",
@@ -1568,17 +1574,8 @@ function createStoreMarker(selected: boolean): DivIcon {
       <div class="foodhub-store-pin${selectedClass}">
         <span class="foodhub-store-pin__pulse"></span>
 
-        <span class="foodhub-store-pin__body">
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            class="foodhub-store-pin__icon"
-          >
-            <path
-              fill="currentColor"
-              d="M8.1 13.34 6.91 12.15c-1.13-1.13-1.75-2.64-1.75-4.24V2h1.5v5.91c0 .39.05.78.14 1.15h.86V2h1.5v7.06h.86c.09-.37.14-.76.14-1.15V2h1.5v5.91c0 1.6-.62 3.11-1.75 4.24L8.72 13.34V22H8.1v-8.66Zm8.24-1.03V22h-1.5v-8.31c-1.55-.62-2.68-2.42-2.68-4.55 0-2.67 1.77-4.84 3.94-4.84s3.94 2.17 3.94 4.84c0 2.13-1.13 3.93-2.7 4.55v-1.38Z"
-            />
-          </svg>
+        <span class="foodhub-store-pin__body overflow-hidden">
+          ${iconContent}
         </span>
 
         <span class="foodhub-store-pin__tip"></span>
@@ -1934,6 +1931,7 @@ export default function FoodLocationMap({
   onSelectStore,
 }: FoodLocationMapProps) {
   const [mapStyle, setMapStyle] = useState<MapStyle>("voyager");
+  const [resolvedStoreLogos, setResolvedStoreLogos] = useState<Record<string, string>>({});
 
   const userPosition = useMemo(
     () => getSafeLatLng(userLocation),
@@ -1995,12 +1993,68 @@ export default function FoodLocationMap({
 
     const firstStorePosition = validStoreEntries[0]?.position;
 
-    if (firstStorePosition) {
-      return firstStorePosition;
+    if (userPosition) {
+      return userPosition;
     }
 
     return DEFAULT_MAP_CENTER;
-  }, [meetingPointPosition, mode, userPosition, validStoreEntries]);
+  }, [mode, meetingPointPosition, userPosition]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function resolveImages() {
+      const newResolved: Record<string, string> = {};
+
+      const promises = validStoreEntries.map(async ({ store }) => {
+        if (resolvedStoreLogos[store.uuid]) return;
+
+        if (store.logoMediaUuid) {
+          const resolved = await resolveStoreMediaUrl(store.logoMediaUuid);
+          if (resolved) {
+            newResolved[store.uuid] = resolved;
+            return;
+          }
+        }
+
+        if (store.logoUrl) {
+          newResolved[store.uuid] = toFrontendApiAssetUrl(store.logoUrl);
+          return;
+        }
+
+        if (store.coverMediaUuid) {
+          const resolved = await resolveStoreMediaUrl(store.coverMediaUuid);
+          if (resolved) {
+            newResolved[store.uuid] = resolved;
+            return;
+          }
+        }
+
+        if (store.coverImageUrl) {
+          newResolved[store.uuid] = toFrontendApiAssetUrl(store.coverImageUrl);
+          return;
+        }
+
+        const firstMenuImage = store.menuItems?.[0]?.thumbnail;
+        if (firstMenuImage) {
+          newResolved[store.uuid] = toFrontendApiAssetUrl(firstMenuImage);
+          return;
+        }
+      });
+
+      await Promise.all(promises);
+
+      if (!cancelled && Object.keys(newResolved).length > 0) {
+        setResolvedStoreLogos((prev) => ({ ...prev, ...newResolved }));
+      }
+    }
+
+    void resolveImages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [validStoreEntries]);
 
   const safeMapCenter = isSafeLatLng(mapCenter)
     ? mapCenter
@@ -2195,11 +2249,13 @@ export default function FoodLocationMap({
 
           const directionsUrl = createDirectionsUrl(position);
 
+          const storeLogoUrl = resolvedStoreLogos[store.uuid] || null;
+
           return (
             <Marker
               key={store.uuid}
               position={position}
-              icon={createStoreMarker(selected)}
+              icon={createStoreMarker(selected, storeLogoUrl)}
               zIndexOffset={selected ? 1_100 : 500}
               riseOnHover
               eventHandlers={{
@@ -2215,9 +2271,17 @@ export default function FoodLocationMap({
               >
                 <div className="w-[250px] max-w-[calc(100vw-78px)] p-1 sm:w-[278px]">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
-                      <IoRestaurantOutline className="text-[24px]" />
-                    </span>
+                    {storeLogoUrl ? (
+                      <img
+                        src={storeLogoUrl}
+                        alt={displayName}
+                        className="h-12 w-12 shrink-0 rounded-2xl object-cover bg-white border border-slate-100"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
+                        <IoRestaurantOutline className="text-[24px]" />
+                      </span>
+                    )}
 
                     <div className="min-w-0 flex-1">
                       <p
