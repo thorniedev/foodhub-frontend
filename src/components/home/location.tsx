@@ -69,7 +69,7 @@ export default function LocationSection() {
           ទីតាំងនៅជិតនេះ
         </Link>
         <motion.div
-          className="absolute md:right-30 md:-bottom-22 lg:-right-45 max-md:rotate-90 max-md:-bottom-10 max-md:self-end  lg:top-35 max-sm:w-30 "
+          className="absolute lg:w-[160px] md:right-30 md:-bottom-22 lg:-right-45 max-md:rotate-90 max-md:-bottom-10 max-md:self-end  lg:top-35 max-sm:w-30 "
           animate={{
             y: [0, -10, 0],
             rotate: [5, -5, 5],
@@ -121,7 +121,10 @@ export default function LocationSection() {
                 <div className="h-4 w-24 bg-gray-200 animate-pulse rounded mt-1"></div>
               ) : (
                 <p className="text-[10px] md:text-base  /80 mt-1">
-                  <span className="text-secondary-500 font-black">{totalFoods}</span> មុខសម្រាប់ជ្រើសរើស
+                  <span className="text-secondary-500 font-black">
+                    {totalFoods}
+                  </span>{" "}
+                  មុខសម្រាប់ជ្រើសរើស
                 </p>
               )}
             </div>

@@ -72,7 +72,7 @@ export default function ProvineImageRevealSection() {
 
   return (
     <div ref={ref} style={{ height: `${(REGIONS.length + 0.6) * 100}vh` }}>
-      <section className="sticky  top-0 h-screen overflow-hidden bg-primary-950">
+      <section className="sticky  top-0 h-screen overflow-hidden bg-slate-50 dark:bg-primary-950 transition-colors duration-500">
         {/* warm glow anchored to the card side */}
         {/* <div
           className="pointer-events-none absolute inset-0 z-0"
@@ -85,38 +85,38 @@ export default function ProvineImageRevealSection() {
         {/* ghost wordmark */}
         <motion.span
           aria-hidden
-          className="pointer-events-none absolute top-1/2 z-0 -translate-y-1/2 whitespace-nowrap text-[20vw] font-black leading-none tracking-tighter text-primary-800/30"
+          className="pointer-events-none absolute top-1/2 z-0 -translate-y-1/2 whitespace-nowrap text-[20vw] font-black leading-none tracking-tighter text-primary-800/20 dark:text-primary-800/30 transition-colors duration-500"
           style={{ x: reduce ? "0%" : drift }}
         >
           {REGIONS.map((r) => r.en).join(" · ")}
         </motion.span>
 
         {/* top bar */}
-        <div className="absolute  inset-x-0 top-0 z-30 flex items-end justify-between border-b border-primary-800/60 px-6 py-6 md:px-12">
+        {/* <div className="absolute  inset-x-0 top-0 z-30 flex items-end justify-between border-b border-primary-200 dark:border-primary-800/60 px-6 py-6 md:px-12 transition-colors duration-500">
           <div>
-            {/* <span className="text-lg font-medium tracking-[0.18em] text-accent-400">
+            <span className="text-lg font-medium tracking-[0.18em] text-accent-400">
               យកតាមខ្លួន
             </span>
             <h2 className="mt-2 max-w-lg text-2xl font-bold leading-snug text-white md:text-4xl">
               រសជាតិដែលធ្វើដំណើរជាមួយអ្នក
-            </h2> */}
+            </h2>
           </div>
-          <span className="hidden font-mono text-lg tabular-nums text-primary-200/50 md:block">
-            <span className="text-accent-400">
+          <span className="hidden font-mono text-lg tabular-nums text-primary-500 dark:text-primary-200/50 md:block transition-colors duration-500">
+            <span className="text-accent-600 dark:text-accent-400">
               {String(active + 1).padStart(2, "0")}
             </span>
             {" / "}
             {String(REGIONS.length).padStart(2, "0")}
           </span>
-        </div>
+        </div> */}
 
         {/* stage */}
         <div className="relative container mx-auto max-w-7xl z-20 grid h-full grid-cols-12 place-content-center items-center gap-6 px-6 pt-32 lg:pt-0 md:px-12">
           {/* index rail */}
           <div className="col-span-4 hidden lg:block">
-            <div className="relative border-l-2 border-primary-800/70 pl-8">
+            <div className="relative border-l-2 border-primary-200 dark:border-primary-800/70 pl-8 transition-colors duration-500">
               <motion.span
-                className="absolute -left-[2px] top-0 h-[20%] w-[2px] bg-accent-400"
+                className="absolute -left-[2px] top-0 h-[20%] w-[2px] bg-secondary-500 dark:bg-accent-400 transition-colors duration-500"
                 style={{ y: reduce ? "0%" : railY }}
               />
               <ul className="space-y-6">
@@ -124,7 +124,9 @@ export default function ProvineImageRevealSection() {
                   <li key={r.en} className="flex items-baseline gap-5">
                     <span
                       className={`font-mono text-lg transition-colors duration-500 ${
-                        i === active ? "text-accent-400" : "text-primary-200/30"
+                        i === active
+                          ? "text-secondary-500 dark:text-accent-400"
+                          : "text-primary-400 dark:text-primary-200/30"
                       }`}
                     >
                       {String(i + 1).padStart(2, "0")}
@@ -132,8 +134,8 @@ export default function ProvineImageRevealSection() {
                     <span
                       className={`origin-left text-2xl font-semibold transition-all duration-500 ${
                         i === active
-                          ? "translate-x-1 text-white"
-                          : "text-primary-200/35"
+                          ? "translate-x-1 text-secondary-500 dark:text-white"
+                          : "text-primary-600/50 dark:text-primary-200/35"
                       }`}
                     >
                       {r.name}
@@ -150,7 +152,7 @@ export default function ProvineImageRevealSection() {
               {/* <div className="absolute -left-4 top-4 h-full w-full rotate-[-5deg] rounded-[26px] border-2 border-primary-800/70" />
               <div className="absolute -right-3 top-2 h-full w-full rotate-[4deg] rounded-[26px] bg-primary-900/60" /> */}
 
-              <div className="relative aspect-[4/5] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-800 md:max-w-[340px]">
+              <div className="relative aspect-[4/5] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-200 dark:ring-primary-800 md:max-w-[340px] transition-colors duration-500">
                 {REGIONS.map((r, i) => (
                   <RegionCard
                     key={r.en}
@@ -169,7 +171,7 @@ export default function ProvineImageRevealSection() {
         </div>
 
         {/* bottom rail */}
-        <div className="absolute inset-x-0 bottom-0 z-30 overflow-hidden border-t border-primary-800/60 bg-primary-950/80 py-4">
+        <div className="absolute inset-x-0 bottom-0 z-30 overflow-hidden border-t border-primary-200 dark:border-primary-800/60 bg-slate-50/90 dark:bg-primary-950/90 backdrop-blur-sm py-4 transition-colors duration-500">
           <motion.div
             className="flex whitespace-nowrap"
             style={{ x: reduce ? "0%" : drift }}
@@ -177,9 +179,10 @@ export default function ProvineImageRevealSection() {
             {[...REGIONS, ...REGIONS].map((r, i) => (
               <span
                 key={i}
-                className="mx-8 text-lg font-medium tracking-[0.16em] text-primary-200/45"
+                className="mx-8 text-lg font-medium tracking-[0.16em] text-primary-600 dark:text-primary-200/45 transition-colors duration-500"
               >
-                {r.en} <span className="text-accent-400">✦</span>
+                {r.en}{" "}
+                <span className="text-accent-500 dark:text-accent-400">✦</span>
               </span>
             ))}
           </motion.div>
@@ -320,7 +323,7 @@ function RegionCard({
           alt={region.name}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-950/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t   dark:from-primary-950/80 via-transparent to-transparent transition-colors duration-500" />
       </div>
     );
   }
@@ -338,7 +341,7 @@ function RegionCard({
           progress={progress}
         />
       ))}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary-950/80 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t   dark:from-primary-950/80 via-transparent to-transparent transition-colors duration-500" />
     </div>
   );
 }
