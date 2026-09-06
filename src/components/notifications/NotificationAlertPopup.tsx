@@ -13,6 +13,7 @@ import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from "@/app/store/notificationApi";
+import { useGetCurrentUserQuery } from "@/app/store/auth/currentUserApi";
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import {
   Dialog,
@@ -63,12 +64,25 @@ export default function NotificationAlertPopup() {
   const seenUuidsRef = useRef<Set<string>>(new Set());
   const [openUuid, setOpenUuid] = useState<string | null>(null);
 
+  // This component is mounted on the whole public site, so it also runs for
+  // visitors who never signed in. Without this gate it polled the authenticated
+  // notification feed every 5 minutes for them, producing a permanent 401 loop
+  // for someone who has no account to be notified about in the first place.
+  const { data: session } = useGetCurrentUserQuery();
+  const isSignedIn = Boolean(session);
+
   const { data } = useGetNotificationsQuery(
     { isRead: false, size: 10 },
-    { pollingInterval: POLL_INTERVAL_MS, skipPollingIfUnfocused: true },
+    {
+      skip: !isSignedIn,
+      pollingInterval: POLL_INTERVAL_MS,
+      skipPollingIfUnfocused: true,
+    },
   );
 
-  const { data: preferences } = useGetNotificationPreferencesQuery();
+  const { data: preferences } = useGetNotificationPreferencesQuery(undefined, {
+    skip: !isSignedIn,
+  });
 
   const [markNotificationRead] = useMarkNotificationReadMutation();
   const [dismissNotification] = useDismissNotificationMutation();
@@ -91,6 +105,13 @@ export default function NotificationAlertPopup() {
       return;
     }
 
+    // Not just a fetch guard. `skip` stops the request, but the RTK cache can
+    // still hold the previous session's feed for a moment after sign-out, and
+    // popping that at a logged-out browser is the exact thing this must not do.
+    if (!isSignedIn) {
+      return;
+    }
+
     const candidate = data?.data.find(
       (notification) =>
         notification.typeCode != null &&
@@ -103,7 +124,7 @@ export default function NotificationAlertPopup() {
     if (candidate) {
       setOpenUuid(candidate.uuid);
     }
-  }, [data, disabledTypeCodes, openUuid]);
+  }, [data, disabledTypeCodes, isSignedIn, openUuid]);
 
   const activeNotification = data?.data.find(
     (notification) => notification.uuid === openUuid,

@@ -7,12 +7,14 @@ const {
   dismissMock,
   getNotificationsQueryMock,
   getNotificationPreferencesQueryMock,
+  getCurrentUserQueryMock,
 } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   markReadMock: vi.fn(),
   dismissMock: vi.fn(),
   getNotificationsQueryMock: vi.fn(),
   getNotificationPreferencesQueryMock: vi.fn(),
+  getCurrentUserQueryMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -24,6 +26,10 @@ vi.mock("@/app/store/notificationApi", () => ({
   useGetNotificationPreferencesQuery: getNotificationPreferencesQueryMock,
   useMarkNotificationReadMutation: () => [markReadMock, {}],
   useDismissNotificationMutation: () => [dismissMock, {}],
+}));
+
+vi.mock("@/app/store/auth/currentUserApi", () => ({
+  useGetCurrentUserQuery: getCurrentUserQueryMock,
 }));
 
 import NotificationAlertPopup from "./NotificationAlertPopup";
@@ -70,13 +76,37 @@ describe("NotificationAlertPopup", () => {
     dismissMock.mockReset();
     getNotificationsQueryMock.mockReset();
     getNotificationPreferencesQueryMock.mockReset();
+    getCurrentUserQueryMock.mockReset();
     getNotificationsQueryMock.mockReturnValue({ data: { data: [] } });
     getNotificationPreferencesQueryMock.mockReturnValue({ data: [] });
+    getCurrentUserQueryMock.mockReturnValue({ data: { sub: "kc-user-1" } });
   });
 
   it("renders nothing when there is no unread alert-worthy notification", () => {
     render(<NotificationAlertPopup />);
     expect(screen.queryByText(/Breakfast time/)).not.toBeInTheDocument();
+  });
+
+  it("never alerts, or even polls, a visitor who is not signed in", () => {
+    // This component is mounted across the whole public site, so it renders
+    // for people who have no account at all.
+    getCurrentUserQueryMock.mockReturnValue({ data: null });
+    getNotificationsQueryMock.mockReturnValue({ data: { data: [mealPick] } });
+
+    render(<NotificationAlertPopup />);
+
+    expect(
+      screen.queryByText("Breakfast time: Bai Sach Chrouk"),
+    ).not.toBeInTheDocument();
+
+    expect(getNotificationsQueryMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ skip: true }),
+    );
+    expect(getNotificationPreferencesQueryMock).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ skip: true }),
+    );
   });
 
   it("pops the alert for a meal reminder that carries an item pick", () => {

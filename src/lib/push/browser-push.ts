@@ -43,6 +43,39 @@ export async function getFoodHubServiceWorkerRegistration(): Promise<ServiceWork
   return navigator.serviceWorker.ready;
 }
 
+/**
+ * Ends this browser's Web Push subscription, then sends the user to logout.
+ *
+ * <p>Signing out only cleared cookies, so the push subscription registered on
+ * the device stayed live: a logged-out browser -- including a shared or public
+ * one -- kept receiving meal reminders and nearby-store alerts for the account
+ * that had used it. Unsubscribing invalidates the push endpoint, and the
+ * backend marks the stored subscription INVALID the next time it gets a 410
+ * from the push service, so no separate cleanup call is needed.
+ *
+ * Navigation happens even if unsubscribing fails: refusing to log someone out
+ * because their browser would not release a push subscription is the worse
+ * outcome of the two.
+ */
+export async function logoutAndUnsubscribePush(
+  logoutUrl = "/api/auth/logout",
+): Promise<void> {
+  try {
+    if (isPushNotificationSupported()) {
+      const registration = await navigator.serviceWorker.getRegistration("/");
+      const subscription = await registration?.pushManager.getSubscription();
+
+      if (subscription) {
+        await subscription.unsubscribe();
+      }
+    }
+  } catch {
+    // Falls through to the logout navigation below.
+  }
+
+  window.location.assign(logoutUrl);
+}
+
 export function detectBrowserName(userAgent = navigator.userAgent): string {
   if (/Edg\//.test(userAgent)) {
     return "Microsoft Edge";
