@@ -68,7 +68,7 @@ export default function ProvineImageRevealSection() {
   });
 
   const drift = useTransform(progress, [0, 1], ["6%", "-46%"]);
-  const railY = useTransform(progress, [0, 1], ["0%", "400%"]);
+  const railX = useTransform(progress, [0, 1], ["0%", "400%"]);
 
   return (
     <div ref={ref} style={{ height: `${(REGIONS.length + 0.6) * 100}vh` }}>
@@ -111,19 +111,19 @@ export default function ProvineImageRevealSection() {
         </div> */}
 
         {/* stage */}
-        <div className="relative container mx-auto max-w-7xl z-20 grid h-full grid-cols-12 place-content-center items-center gap-6 px-6 pt-32 lg:pt-0 md:px-12">
+        <div className="relative container mx-auto max-w-7xl z-20 flex flex-col justify-center h-full gap-8 px-6 pt-32 lg:pt-0 md:px-12">
           {/* index rail */}
-          <div className="col-span-4 hidden lg:block">
-            <div className="relative border-l-2 border-primary-200 dark:border-primary-800/70 pl-8 transition-colors duration-500">
+          <div className="w-full max-w-3xl mx-auto hidden lg:block px-4">
+            <div className="relative border-t-2 border-primary-200 dark:border-primary-800/70 pt-6 transition-colors duration-500">
               <motion.span
-                className="absolute -left-[2px] top-0 h-[20%] w-[2px] bg-secondary-500 dark:bg-accent-400 transition-colors duration-500"
-                style={{ y: reduce ? "0%" : railY }}
+                className="absolute -top-[2px] left-0 h-[2px] w-[20%] bg-secondary-500 dark:bg-accent-400 transition-colors duration-500"
+                style={{ x: reduce ? "0%" : railX }}
               />
-              <ul className="space-y-6">
+              <ul className="flex justify-between w-full">
                 {REGIONS.map((r, i) => (
-                  <li key={r.en} className="flex items-baseline gap-5">
+                  <li key={r.en} className="flex flex-col items-center gap-1.5 flex-1 text-center">
                     <span
-                      className={`font-mono text-lg transition-colors duration-500 ${
+                      className={`font-mono text-sm transition-colors duration-500 ${
                         i === active
                           ? "text-secondary-500 dark:text-accent-400"
                           : "text-primary-400 dark:text-primary-200/30"
@@ -132,9 +132,9 @@ export default function ProvineImageRevealSection() {
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span
-                      className={`origin-left text-2xl font-semibold transition-all duration-500 ${
+                      className={`origin-top text-lg lg:text-xl font-semibold transition-all duration-500 ${
                         i === active
-                          ? "translate-x-1 text-secondary-500 dark:text-white"
+                          ? "translate-y-1 text-secondary-500 dark:text-white"
                           : "text-primary-600/50 dark:text-primary-200/35"
                       }`}
                     >
@@ -147,12 +147,9 @@ export default function ProvineImageRevealSection() {
           </div>
 
           {/* card cluster */}
-          <div className="col-span-12 flex justify-center lg:col-span-8 lg:justify-start lg:pl-8">
+          <div className="w-full flex justify-center">
             <div className="relative">
-              {/* <div className="absolute -left-4 top-4 h-full w-full rotate-[-5deg] rounded-[26px] border-2 border-primary-800/70" />
-              <div className="absolute -right-3 top-2 h-full w-full rotate-[4deg] rounded-[26px] bg-primary-900/60" /> */}
-
-              <div className="relative aspect-[16/9] lg:-ml-30 lg:max-w-[550px] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-200 dark:ring-primary-800 md:max-w-[340px] transition-colors duration-500">
+              <div className="relative aspect-[16/9] lg:max-w-[550px] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-200 dark:ring-primary-800 md:max-w-[340px] transition-colors duration-500">
                 {REGIONS.map((r, i) => (
                   <RegionCard
                     key={r.en}
@@ -164,8 +161,6 @@ export default function ProvineImageRevealSection() {
                   />
                 ))}
               </div>
-
-              {/* name breaking over the edge */}
             </div>
           </div>
         </div>
