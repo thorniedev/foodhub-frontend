@@ -685,8 +685,8 @@ export default function StoreGrid({
         <motion.div
           layout
           className="
-            grid grid-cols-1
-            gap-5
+            grid grid-cols-2
+            gap-3 sm:gap-4 lg:gap-5
             w-full min-h-[850px] lg:min-h-[900px] content-start
 
             md:grid-cols-3

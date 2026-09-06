@@ -212,59 +212,61 @@ function GridStoreCard({
 
   return (
     <article
-      className="group h-full overflow-hidden rounded-[28px] sm:rounded-[32px] border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-slate-900/50 sm:p-3.5"
+      className="group h-full flex flex-col overflow-hidden rounded-[20px] sm:rounded-[32px] border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 sm:p-3.5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-slate-900/50"
     >
-      <div className="relative overflow-hidden rounded-[16px] sm:rounded-[18px] border border-gray-200 dark:border-slate-700">
-        <div className="relative h-[185px] w-full bg-primary-50 dark:bg-slate-800 sm:h-[195px] lg:h-[185px] 2xl:h-[175px]">
+      <div className="relative overflow-hidden rounded-[14px] sm:rounded-[18px] border border-gray-200 dark:border-slate-700 shrink-0">
+        <div className="relative h-[130px] w-full bg-primary-50 dark:bg-slate-800 sm:h-[195px] lg:h-[185px] 2xl:h-[175px]">
           <StoreImage store={store} />
         </div>
-        <div className="absolute right-2 top-2 z-10">
+        <div className="absolute right-1.5 top-1.5 sm:right-2 sm:top-2 z-10 scale-[0.8] sm:scale-100 origin-top-right">
           <BookmarkButton storeUuid={store.uuid} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm" />
         </div>
       </div>
 
-      <div className="min-w-0 px-1 pb-1 pt-4">
+      <div className="min-w-0 px-0.5 sm:px-1 pb-0.5 sm:pb-1 pt-2 sm:pt-4 flex flex-col flex-1">
         {/* Store name with icon */}
-        <div className="flex min-w-0 items-center gap-2">
-          <FaStore className="shrink-0 text-[18px] text-secondary-400" />
-          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[20px] font-bold leading-7 text-primary-900 dark:text-white">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+          <FaStore className="shrink-0 text-[14px] sm:text-[18px] text-secondary-400" />
+          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[15px] sm:text-[20px] font-bold leading-normal sm:leading-7 text-primary-900 dark:text-white">
             {displayName}
           </p>
         </div>
 
         {/* Address */}
-        <div className="mt-3 flex min-w-0 items-center gap-2 text-gray-500 dark:text-slate-400">
-          <IoLocationOutline className="shrink-0 text-[19px] text-primary-500 dark:text-emerald-400" />
-          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[18px]">
+        <div className="mt-1.5 sm:mt-3 flex min-w-0 items-center gap-1.5 sm:gap-2 text-gray-500 dark:text-slate-400">
+          <IoLocationOutline className="shrink-0 text-[15px] sm:text-[19px] text-primary-500 dark:text-emerald-400" />
+          <p className="min-w-0 flex-1 truncate whitespace-nowrap text-[13px] sm:text-[18px]">
             {addressLabel}
           </p>
         </div>
 
         {/* Rating, distance, reviews */}
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[18px]">
+        <div className="mt-1.5 sm:mt-3 flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 text-[13px] sm:text-[18px]">
           {ratingLabel && (
-            <span className="inline-flex items-center gap-1.5 text-accent-400">
-              <FaStar className="text-[16px]" />
+            <span className="inline-flex items-center gap-1 sm:gap-1.5 text-accent-400">
+              <FaStar className="text-[12px] sm:text-[16px]" />
               <span>{ratingLabel}</span>
             </span>
           )}
 
-          <span className="inline-flex items-center gap-1.5 text-primary-600 dark:text-emerald-400">
-            <IoNavigateOutline className="text-[18px]" />
+          <span className="inline-flex items-center gap-1 sm:gap-1.5 text-primary-600 dark:text-emerald-400">
+            <IoNavigateOutline className="text-[14px] sm:text-[18px]" />
             <span>{distanceLabel}</span>
           </span>
 
           {reviewCountLabel && (
-            <span className="truncate text-[18px] text-gray-500 dark:text-slate-400">
+            <span className="truncate text-[13px] sm:text-[18px] text-gray-500 dark:text-slate-400">
               {reviewCountLabel}
             </span>
           )}
         </div>
 
+        <div className="flex-1" />
+
         {/* Status */}
-        <div className="mt-3 flex min-w-0 items-center gap-2 border-t border-gray-100 dark:border-slate-800 pt-3">
+        <div className="mt-2 sm:mt-3 flex min-w-0 items-center gap-1.5 sm:gap-2 border-t border-gray-100 dark:border-slate-800 pt-2 sm:pt-3">
           <IoTimeOutline
-            className={`shrink-0 text-[19px] ${
+            className={`shrink-0 text-[15px] sm:text-[19px] ${
               isOpen
                 ? "text-emerald-600 dark:text-emerald-400"
                 : isClosed
@@ -274,7 +276,7 @@ function GridStoreCard({
           />
 
           <p
-            className={`truncate whitespace-nowrap text-[18px] ${
+            className={`truncate whitespace-nowrap text-[13px] sm:text-[18px] ${
               isOpen
                 ? "text-emerald-600 dark:text-emerald-400"
                 : isClosed
