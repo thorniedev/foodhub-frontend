@@ -901,7 +901,7 @@ export default function LocationContent({
                     className="overflow-hidden space-y-4"
                   >
                     {/* Profile Selection */}
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  {/* <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[16px] font-bold text-primary-900 dark:text-white">
                         គណនីដែលកំពុងប្រើ
@@ -920,7 +920,7 @@ export default function LocationContent({
                       emptyLabel="ជ្រើសរើសគណនីគ្រួសារ"
                       triggerClassName="flex min-h-11 items-center gap-2 rounded-full border border-gray-200/80 bg-white py-1 pl-2 pr-4 text-[15px] font-bold text-gray-700 transition hover:bg-gray-50 hover:border-gray-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                     />
-                  </div>
+                  </div> */}
 
                   {/* Search Radius for "For Me" mode */}
                   <div className="space-y-2 pt-2">
