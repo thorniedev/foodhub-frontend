@@ -538,27 +538,27 @@ export default function SingleRecommendation({
           ))}
         </div>
       ) : nearbyFoods.length === 0 ? (
-        <section className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-12 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+        <section className="rounded-[24px] border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-12 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/50 text-primary-700 dark:text-emerald-400">
             <IoRestaurantOutline className="text-[30px]" />
           </div>
 
           <p
             role="heading"
             aria-level={2}
-            className="mt-4 text-[21px] font-semibold text-primary-900"
+            className="mt-4 text-[21px] font-semibold text-primary-900 dark:text-white"
           >
             មិនមានមុខម្ហូបនៅក្បែរទីតាំងនេះទេ
           </p>
 
-          <p className="mx-auto mt-2 max-w-md text-[17px] leading-8 text-gray-500">
+          <p className="mx-auto mt-2 max-w-md text-[17px] leading-8 text-gray-500 dark:text-slate-400">
             សូមពង្រីកចម្ងាយស្វែងរក ឬកែតម្រងមុខម្ហូបរបស់អ្នក។
           </p>
 
           <button
             type="button"
             onClick={onOpenFilters}
-            className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary-800 px-6 text-[17px] font-semibold text-white transition hover:bg-primary-700"
+            className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary-800 hover:bg-primary-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 px-6 text-[17px] font-semibold text-white transition"
           >
             <IoFilterOutline className="text-[21px]" />
             កែតម្រងមុខម្ហូប

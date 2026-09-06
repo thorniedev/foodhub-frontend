@@ -104,9 +104,9 @@ function DeleteProfileDialog({
         }
       }}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-[30px] border border-white/70 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
-        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5 sm:px-7">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+      <div className="w-full max-w-lg overflow-hidden rounded-[30px] border border-white/70 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800 sm:px-7">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400">
             <Trash2 className="h-6 w-6" />
           </div>
 
@@ -114,7 +114,7 @@ function DeleteProfileDialog({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
             aria-label="បិទ"
           >
             <X className="h-5 w-5" />
@@ -122,18 +122,18 @@ function DeleteProfileDialog({
         </div>
 
         <div className="px-6 py-6 sm:px-7">
-          <h3 className="text-[26px] font-bold text-primary-800">លុបគណនី?</h3>
+          <h3 className="text-[26px] font-bold text-primary-800 dark:text-white">លុបគណនី?</h3>
 
-          <p className="mt-3 text-lg leading-8 text-slate-500">
+          <p className="mt-3 text-lg leading-8 text-slate-500 dark:text-slate-400">
             តើអ្នកពិតជាចង់លុបគណនី{" "}
-            <span className="font-semibold text-slate-800">
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
               {profile.profileName}
             </span>{" "}
             មែនទេ?
           </p>
 
-          <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3.5">
-            <p className="text-lg leading-7 text-red-600">
+          <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3.5 dark:border-red-900/60 dark:bg-red-950/40">
+            <p className="text-lg leading-7 text-red-600 dark:text-red-300">
               សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយបានទេ។
             </p>
           </div>
@@ -143,7 +143,7 @@ function DeleteProfileDialog({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="min-h-12 rounded-full border border-slate-200 bg-white px-6 py-3 text-lg font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-12 rounded-full border border-slate-200 bg-white px-6 py-3 text-lg font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               បោះបង់
             </button>
@@ -215,10 +215,10 @@ function ProfileCard({
 
   return (
     <article
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(15,23,42,0.09)] ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(15,23,42,0.09)] dark:bg-slate-900 ${
         isDefault
-          ? "border-2 border-primary-800/45 shadow-[0_12px_36px_rgba(19,108,52,0.12)] ring-4 ring-primary-800/[0.035]"
-          : "border border-slate-200/80 shadow-sm hover:border-primary-800/20"
+          ? "border-2 border-primary-800/45 shadow-[0_12px_36px_rgba(19,108,52,0.12)] ring-4 ring-primary-800/[0.035] dark:border-emerald-600/50"
+          : "border border-slate-200/80 shadow-sm hover:border-primary-800/20 dark:border-slate-800 dark:hover:border-slate-700"
       }`}
     >
       {/* =====================================================
@@ -234,8 +234,8 @@ function ProfileCard({
         <div
           className={`relative flex min-h-[126px] items-center gap-4 rounded-2xl border p-4 transition-colors ${
             isDefault
-              ? "border-primary-800 bg-primary-800"
-              : "border-slate-100 bg-slate-50/70"
+              ? "border-primary-800 bg-primary-800 dark:border-emerald-800 dark:bg-emerald-900/90"
+              : "border-slate-100 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-800/70"
           }`}
         >
           {/* Avatar wrapper.
@@ -245,7 +245,7 @@ function ProfileCard({
               className={`relative h-full w-full overflow-hidden rounded-full ${
                 isDefault
                   ? "bg-white/15 ring-[4px] ring-white/25"
-                  : "bg-primary-800/10 ring-1 ring-primary-800/10"
+                  : "bg-primary-800/10 ring-1 ring-primary-800/10 dark:bg-emerald-950/60 dark:ring-emerald-700/30"
               }`}
             >
               {avatarAccessUrlData?.url ? (
@@ -259,7 +259,7 @@ function ProfileCard({
               ) : (
                 <span
                   className={`flex h-full w-full items-center justify-center text-[28px] font-bold ${
-                    isDefault ? "text-white" : "text-primary-800"
+                    isDefault ? "text-white" : "text-primary-800 dark:text-emerald-400"
                   }`}
                 >
                   {firstLetter}
@@ -272,7 +272,7 @@ function ProfileCard({
                 title="សកម្ម"
                 aria-label="គណនីសកម្ម"
                 className={`absolute bottom-0 right-0 z-20 h-[18px] w-[18px] rounded-full border-[3px] bg-emerald-500 shadow-sm ${
-                  isDefault ? "border-primary-800" : "border-white"
+                  isDefault ? "border-primary-800 dark:border-emerald-900" : "border-white dark:border-slate-900"
                 }`}
               />
             )}
@@ -283,7 +283,7 @@ function ProfileCard({
             <div className="flex min-w-0 items-center gap-2">
               <p
                 className={`truncate text-[22px] font-bold lg:text-[24px] ${
-                  isDefault ? "text-white" : "text-primary-800"
+                  isDefault ? "text-white" : "text-primary-800 dark:text-white"
                 }`}
               >
                 {fullMember.profileName}
@@ -298,7 +298,7 @@ function ProfileCard({
 
             <p
               className={`mt-1.5 truncate text-base font-medium lg:text-lg ${
-                isDefault ? "text-white/85" : "text-slate-500"
+                isDefault ? "text-white/85" : "text-slate-500 dark:text-slate-400"
               }`}
             >
               {relationshipLabels[fullMember.relationship] ??
@@ -308,7 +308,7 @@ function ProfileCard({
             {fullMember.ageGroup?.name && (
               <p
                 className={`mt-1 truncate text-base lg:text-lg ${
-                  isDefault ? "text-white/65" : "text-slate-400"
+                  isDefault ? "text-white/65" : "text-slate-400 dark:text-slate-500"
                 }`}
               >
                 {fullMember.ageGroup.name}
@@ -320,7 +320,7 @@ function ProfileCard({
               Positioned inside the identity panel so it never
               changes the card height or overlaps bottom controls. */}
           {isDefault && (
-            <span className="absolute left-0 -bottom-3 inline-flex items-center gap-1.5 rounded-full bg-accent-400 px-3 py-0.5 text-sm font-bold text-primary-800  lg:text-base">
+            <span className="absolute left-0 -bottom-3 inline-flex items-center gap-1.5 rounded-full bg-accent-400 px-3 py-0.5 text-sm font-bold text-primary-800 lg:text-base">
               <Crown className="h-3.5 w-3.5" />
               គណនីគោល
             </span>
@@ -334,38 +334,38 @@ function ProfileCard({
       <div className="flex flex-1 flex-col p-5 pt-4 sm:p-6 sm:pt-5">
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2.5">
-          <div className="rounded-2xl border border-red-100 bg-red-50/75 px-3 py-3 text-center">
-            <ShieldAlert className="mx-auto h-5 w-5 text-red-500" />
+          <div className="rounded-2xl border border-red-100 bg-red-50/75 px-3 py-3 text-center dark:border-red-950 dark:bg-red-950/40">
+            <ShieldAlert className="mx-auto h-5 w-5 text-red-500 dark:text-red-400" />
 
-            <p className="mt-1.5 text-base font-bold text-slate-800 lg:text-lg">
+            <p className="mt-1.5 text-base font-bold text-slate-800 dark:text-slate-200 lg:text-lg">
               {allergyCount}
             </p>
 
-            <p className="mt-0.5 truncate text-sm text-slate-500 lg:text-lg">
+            <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400 lg:text-lg">
               អាឡែហ្ស៊ី
             </p>
           </div>
 
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/75 px-3 py-3 text-center">
-            <Salad className="mx-auto h-5 w-5 text-emerald-600" />
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/75 px-3 py-3 text-center dark:border-emerald-950 dark:bg-emerald-950/40">
+            <Salad className="mx-auto h-5 w-5 text-emerald-600 dark:text-emerald-400" />
 
-            <p className="mt-1.5 text-base font-bold text-slate-800 lg:text-lg">
+            <p className="mt-1.5 text-base font-bold text-slate-800 dark:text-slate-200 lg:text-lg">
               {dietaryCount}
             </p>
 
-            <p className="mt-0.5 truncate text-sm text-slate-500 lg:text-lg">
+            <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400 lg:text-lg">
               របបអាហារ
             </p>
           </div>
 
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/75 px-3 py-3 text-center">
-            <HeartPulse className="mx-auto h-5 w-5 text-blue-600" />
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/75 px-3 py-3 text-center dark:border-blue-950 dark:bg-blue-950/40">
+            <HeartPulse className="mx-auto h-5 w-5 text-blue-600 dark:text-blue-400" />
 
-            <p className="mt-1.5 text-base font-bold text-slate-800 lg:text-lg">
+            <p className="mt-1.5 text-base font-bold text-slate-800 dark:text-slate-200 lg:text-lg">
               {medicalCount}
             </p>
 
-            <p className="mt-0.5 truncate text-sm text-slate-500 lg:text-lg">
+            <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400 lg:text-lg">
               សុខភាព
             </p>
           </div>
@@ -385,8 +385,8 @@ function ProfileCard({
           }
           className={`mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-base font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 lg:text-lg ${
             isIncludedInRecommendations
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-slate-200 bg-white text-slate-400 hover:border-slate-300"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+              : "border-slate-200 bg-white text-slate-400 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-500 dark:hover:border-slate-700"
           }`}
         >
           <span className="flex min-w-0 items-center gap-2">
@@ -397,7 +397,7 @@ function ProfileCard({
 
           <span
             className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
-              isIncludedInRecommendations ? "bg-emerald-500" : "bg-slate-300"
+              isIncludedInRecommendations ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
             }`}
           >
             <span
@@ -413,12 +413,12 @@ function ProfileCard({
         {/* Actions stay aligned at the bottom on every card */}
         <div
           className={`mt-auto flex items-center gap-2.5 border-t pt-5 ${
-            isDefault ? "border-primary-800/10" : "border-slate-100"
+            isDefault ? "border-primary-800/10 dark:border-slate-800" : "border-slate-100 dark:border-slate-800"
           }`}
         >
           <Link
             href={`/dashboard/family-profile/${fullMember.uuid}`}
-            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary-800 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-900 active:scale-[0.98] lg:text-lg"
+            className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary-800 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-primary-900 active:scale-[0.98] dark:bg-emerald-600 dark:hover:bg-emerald-700 lg:text-lg"
           >
             <Eye className="h-5 w-5" />
             មើលព័ត៌មាន
@@ -428,7 +428,7 @@ function ProfileCard({
             href={`/dashboard/family-profile/${fullMember.uuid}?mode=edit`}
             title="កែប្រែ"
             aria-label="កែប្រែ"
-            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-primary-800/20 hover:bg-primary-800/5 hover:text-primary-800"
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-primary-800/20 hover:bg-primary-800/5 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400"
           >
             <Pencil className="h-5 w-5" />
           </Link>
@@ -441,7 +441,7 @@ function ProfileCard({
               fullMember.isDefault ? "មិនអាចលុបគណនីលំនាំដើមបានទេ" : "លុបគណនី"
             }
             aria-label="លុបគណនី"
-            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300 disabled:opacity-60"
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300 disabled:opacity-60 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-500 dark:hover:border-red-900/60 dark:hover:bg-red-950/40 dark:hover:text-red-400 dark:disabled:bg-slate-800/40 dark:disabled:text-slate-600"
           >
             <Trash2 className="h-5 w-5" />
           </button>
@@ -460,21 +460,21 @@ function AddProfileCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[360px] w-full flex-col items-center justify-center rounded-[28px] border-2 border-dashed border-slate-200 bg-white p-7 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary-800/40 hover:bg-primary-800/[0.025] hover:shadow-[0_18px_50px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-800/10"
+      className="group flex min-h-[360px] w-full flex-col items-center justify-center rounded-[28px] border-2 border-dashed border-slate-200 bg-white p-7 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary-800/40 hover:bg-primary-800/[0.025] hover:shadow-[0_18px_50px_rgba(15,23,42,0.07)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary-800/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-500/40 dark:hover:bg-slate-800/60"
     >
-      <span className="flex h-18 w-18 items-center justify-center rounded-[22px] bg-primary-800/10 text-primary-800 transition-all duration-300 group-hover:scale-105 group-hover:bg-primary-800 group-hover:text-white">
+      <span className="flex h-18 w-18 items-center justify-center rounded-[22px] bg-primary-800/10 text-primary-800 transition-all duration-300 group-hover:scale-105 group-hover:bg-primary-800 group-hover:text-white dark:bg-emerald-950/60 dark:text-emerald-400 dark:group-hover:bg-emerald-600 dark:group-hover:text-white">
         <Plus className="h-8 w-8" />
       </span>
 
-      <h3 className="mt-6 text-[22px] font-bold text-primary-800">
+      <h3 className="mt-6 text-[22px] font-bold text-primary-800 dark:text-white">
         បន្ថែមគណនីថ្មី
       </h3>
 
-      <p className="mt-3 max-w-[280px] text-lg leading-8 text-slate-500">
+      <p className="mt-3 max-w-[280px] text-lg leading-8 text-slate-500 dark:text-slate-400">
         បង្កើតគណនីសម្រាប់សមាជិកគ្រួសារ និងកំណត់ចំណូលចិត្តអាហារ។
       </p>
 
-      <span className="mt-6 inline-flex items-center gap-2 text-lg font-semibold text-primary-800">
+      <span className="mt-6 inline-flex items-center gap-2 text-lg font-semibold text-primary-800 dark:text-emerald-400">
         ចាប់ផ្ដើម
         <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
       </span>
@@ -563,23 +563,23 @@ export default function FamilyProfiles() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
         {/* Header Skeleton */}
-        <div className="mb-6 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm sm:p-7 animate-pulse">
+        <div className="mb-6 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7 animate-pulse">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4 w-full">
-              <div className="h-14 w-14 shrink-0 rounded-2xl bg-slate-200" />
+              <div className="h-14 w-14 shrink-0 rounded-2xl bg-slate-200 dark:bg-slate-800" />
               <div className="space-y-3 w-full max-w-xl">
-                <div className="h-8 w-48 rounded-lg bg-slate-200 sm:w-64" />
-                <div className="h-4 w-full rounded bg-slate-100" />
-                <div className="h-4 w-3/4 rounded bg-slate-100" />
+                <div className="h-8 w-48 rounded-lg bg-slate-200 dark:bg-slate-800 sm:w-64" />
+                <div className="h-4 w-full rounded bg-slate-100 dark:bg-slate-700" />
+                <div className="h-4 w-3/4 rounded bg-slate-100 dark:bg-slate-700" />
               </div>
             </div>
-            <div className="h-12 w-full shrink-0 rounded-full bg-slate-200 lg:w-40" />
+            <div className="h-12 w-full shrink-0 rounded-full bg-slate-200 dark:bg-slate-800 lg:w-40" />
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
-            <div className="h-12 w-12 rounded-2xl bg-slate-200" />
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-5">
+            <div className="h-12 w-12 rounded-2xl bg-slate-200 dark:bg-slate-800" />
             <div className="space-y-2">
-              <div className="h-4 w-20 rounded bg-slate-100" />
-              <div className="h-5 w-24 rounded bg-slate-200" />
+              <div className="h-4 w-20 rounded bg-slate-100 dark:bg-slate-700" />
+              <div className="h-5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
             </div>
           </div>
         </div>
@@ -587,20 +587,20 @@ export default function FamilyProfiles() {
         {/* Profile Cards Skeleton */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {[0, 1, 2].map((idx) => (
-            <div key={idx} className="h-[260px] rounded-[28px] border border-slate-200/80 bg-white shadow-sm animate-pulse flex flex-col p-3">
-              <div className="flex min-h-[126px] items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
-                <div className="h-[76px] w-[76px] shrink-0 rounded-full bg-slate-200" />
+            <div key={idx} className="h-[260px] rounded-[28px] border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-pulse flex flex-col p-3">
+              <div className="flex min-h-[126px] items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-800/70 p-4">
+                <div className="h-[76px] w-[76px] shrink-0 rounded-full bg-slate-200 dark:bg-slate-800" />
                 <div className="space-y-3 w-full">
-                  <div className="h-6 w-3/4 rounded bg-slate-200" />
-                  <div className="h-4 w-1/2 rounded bg-slate-100" />
+                  <div className="h-6 w-3/4 rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-4 w-1/2 rounded bg-slate-100 dark:bg-slate-700" />
                 </div>
               </div>
               <div className="mt-4 px-2 space-y-4">
                 <div className="flex justify-between">
-                  <div className="h-5 w-1/3 rounded bg-slate-200" />
-                  <div className="h-5 w-1/4 rounded bg-slate-100" />
+                  <div className="h-5 w-1/3 rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-5 w-1/4 rounded bg-slate-100 dark:bg-slate-700" />
                 </div>
-                <div className="h-11 w-full rounded-full bg-slate-100 mt-2" />
+                <div className="h-11 w-full rounded-full bg-slate-100 dark:bg-slate-800 mt-2" />
               </div>
             </div>
           ))}
@@ -612,16 +612,16 @@ export default function FamilyProfiles() {
   if (isError) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="rounded-[28px] border border-red-200 bg-red-50 p-8 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-red-600 shadow-sm">
+        <div className="rounded-[28px] border border-red-200 bg-red-50 p-8 text-center dark:border-red-900/60 dark:bg-red-950/40">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-red-600 shadow-sm dark:bg-slate-900 dark:text-red-400">
             <RefreshCw className="h-7 w-7" />
           </div>
 
-          <p className="mt-5 text-[22px] font-bold text-red-700">
+          <p className="mt-5 text-[22px] font-bold text-red-700 dark:text-red-300">
             មិនអាចទាញយកគណនីគ្រួសារបានទេ។
           </p>
 
-          <p className="mx-auto mt-2 max-w-md text-lg leading-8 text-red-600/80">
+          <p className="mx-auto mt-2 max-w-md text-lg leading-8 text-red-600/80 dark:text-red-400/80">
             សូមព្យាយាមទាញយកទិន្នន័យម្តងទៀត។
           </p>
 
@@ -641,19 +641,19 @@ export default function FamilyProfiles() {
   return (
     <>
       <section className="mx-auto w-full max-w-7xl p-4 ">
-        <div className="mb-6 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm sm:p-7">
+        <div className="mb-6 rounded-[30px] border border-slate-200/70 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800 dark:bg-emerald-950/60 dark:text-emerald-400">
                 <UsersRound className="h-7 w-7" />
               </div>
 
               <div>
-                <p className="text-[28px] font-bold tracking-tight text-primary-800 sm:text-[32px]">
+                <p className="text-[28px] font-bold tracking-tight text-primary-800 dark:text-white sm:text-[32px]">
                   គណនីសមាជិកគ្រួសារ
                 </p>
 
-                <p className="mt-2 max-w-2xl text-lg leading-8 text-slate-500">
+                <p className="mt-2 max-w-2xl text-lg leading-8 text-slate-500 dark:text-slate-400">
                   គ្រប់គ្រងព័ត៌មានសមាជិក ចំណូលចិត្តអាហារ អាឡែហ្ស៊ី
                   និងព័ត៌មានសុខភាពរបស់ពួកគេ។
                 </p>
@@ -663,28 +663,28 @@ export default function FamilyProfiles() {
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-lg font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-900 hover:shadow-md lg:w-auto"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-lg font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-900 hover:shadow-md dark:bg-emerald-600 dark:hover:bg-emerald-700 lg:w-auto"
             >
               <Plus className="h-5 w-5" />
               បន្ថែមគណនី
             </button>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-primary-800">
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-primary-800 dark:bg-slate-800 dark:text-emerald-400">
               <UserRound className="h-6 w-6" />
             </div>
 
             <div>
-              <p className="text-lg text-slate-500">គណនីសរុប</p>
+              <p className="text-lg text-slate-500 dark:text-slate-400">គណនីសរុប</p>
 
-              <p className="text-lg font-bold text-primary-800">
+              <p className="text-lg font-bold text-primary-800 dark:text-white">
                 {data?.totalElements ?? members.length} គណនី
               </p>
             </div>
 
             {isFetching && (
-              <div className="ml-auto inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-lg font-medium text-slate-500">
+              <div className="ml-auto inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-lg font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                 <RefreshCw className="h-4 w-4 animate-spin" />
                 កំពុងធ្វើបច្ចុប្បន្នភាព...
               </div>
@@ -693,13 +693,13 @@ export default function FamilyProfiles() {
         </div>
 
         {deleteError && (
-          <div className="mb-6 flex items-start justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
-            <p className="text-lg leading-8 text-red-700">{deleteError}</p>
+          <div className="mb-6 flex items-start justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 dark:border-red-900/60 dark:bg-red-950/40">
+            <p className="text-lg leading-8 text-red-700 dark:text-red-300">{deleteError}</p>
 
             <button
               type="button"
               onClick={() => setDeleteError(null)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-red-400 transition hover:bg-red-100 hover:text-red-700"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-red-400 transition hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/60 dark:hover:text-red-200"
               aria-label="បិទសារ"
             >
               <X className="h-5 w-5" />
@@ -708,16 +708,16 @@ export default function FamilyProfiles() {
         )}
 
         {members.length === 0 ? (
-          <div className="rounded-[30px] border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[24px] bg-primary-800/10 text-primary-800">
+          <div className="rounded-[30px] border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center dark:border-slate-800 dark:bg-slate-900">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[24px] bg-primary-800/10 text-primary-800 dark:bg-emerald-950/60 dark:text-emerald-400">
               <UsersRound className="h-9 w-9" />
             </div>
 
-            <h2 className="mt-6 text-[26px] font-bold text-primary-800">
+            <h2 className="mt-6 text-[26px] font-bold text-primary-800 dark:text-white">
               មិនទាន់មានគណនីគ្រួសារ
             </h2>
 
-            <p className="mx-auto mt-3 max-w-lg text-lg leading-8 text-slate-500">
+            <p className="mx-auto mt-3 max-w-lg text-lg leading-8 text-slate-500 dark:text-slate-400">
               បន្ថែមសមាជិកដំបូងរបស់អ្នក
               ដើម្បីទទួលបានការណែនាំអាហារដែលសមស្របតាមមនុស្សម្នាក់ៗ។
             </p>
@@ -725,7 +725,7 @@ export default function FamilyProfiles() {
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-lg font-semibold text-white shadow-sm transition hover:bg-primary-900"
+              className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-primary-800 px-6 py-3 text-lg font-semibold text-white shadow-sm transition hover:bg-primary-900 dark:bg-emerald-600 dark:hover:bg-emerald-700"
             >
               <Plus className="h-5 w-5" />
               បន្ថែមគណនីដំបូង

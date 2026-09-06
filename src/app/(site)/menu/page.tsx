@@ -228,6 +228,126 @@ function normalizeText(value: unknown): string {
     .replace(/\s+/g, " ");
 }
 
+const PROVINCE_ALIASES: Record<string, string[]> = {
+  "ភ្នំពេញ": ["phnom penh", "phnompenh", "pp"],
+  "phnom penh": ["ភ្នំពេញ", "phnompenh", "pp"],
+  "សៀមរាប": ["siem reap", "siemreap"],
+  "siem reap": ["សៀមរាប", "siemreap"],
+  "បាត់ដំបង": ["battambang"],
+  "battambang": ["បាត់ដំបង"],
+  "កំពត": ["kampot"],
+  "kampot": ["កំពត"],
+  "ព្រះសីហនុ": ["sihanoukville", "preah sihanouk", "kompong som", "ក្រុងព្រះសីហនុ"],
+  "ក្រុងព្រះសីហនុ": ["sihanoukville", "preah sihanouk", "kompong som", "ព្រះសីហនុ"],
+  "sihanoukville": ["ព្រះសីហនុ", "ក្រុងព្រះសីហនុ", "preah sihanouk"],
+  "preah sihanouk": ["ព្រះសីហនុ", "ក្រុងព្រះសីហនុ", "sihanoukville"],
+  "កណ្តាល": ["kandal"],
+  "kandal": ["កណ្តាល"],
+  "កំពង់ចាម": ["kampong cham"],
+  "kampong cham": ["កំពង់ចាម"],
+  "កំពង់ឆ្នាំង": ["kampong chhnang"],
+  "kampong chhnang": ["កំពង់ឆ្នាំង"],
+  "កំពង់ស្ពឺ": ["kampong speu"],
+  "kampong speu": ["កំពង់ស្ពឺ"],
+  "កំពង់ធំ": ["kampong thom"],
+  "kampong thom": ["កំពង់ធំ"],
+  "កែប": ["kep"],
+  "kep": ["កែប"],
+  "កោះកុង": ["koh kong"],
+  "koh kong": ["កោះកុង"],
+  "ក្រចេះ": ["kratie"],
+  "kratie": ["ក្រចេះ"],
+  "មណ្ឌលគិរី": ["mondulkiri"],
+  "mondulkiri": ["មណ្ឌលគិរី"],
+  "ឧត្តរមានជ័យ": ["oddar meanchey"],
+  "oddar meanchey": ["ឧត្តរមានជ័យ"],
+  "ប៉ៃលិន": ["pailin"],
+  "pailin": ["ប៉ៃលិន"],
+  "ព្រះវិហារ": ["preah vihear"],
+  "preah vihear": ["ព្រះវិហារ"],
+  "ព្រៃវែង": ["prey veng"],
+  "prey veng": ["ព្រៃវែង"],
+  "ពោធិ៍សាត់": ["pursat"],
+  "pursat": ["ពោធិ៍សាត់"],
+  "រតនគិរី": ["ratanakiri"],
+  "ratanakiri": ["រតនគិរី"],
+  "ស្ទឹងត្រែង": ["steung treng", "stung treng"],
+  "stung treng": ["ស្ទឹងត្រែង", "steung treng"],
+  "ស្វាយរៀង": ["svay rieng"],
+  "svay rieng": ["ស្វាយរៀង"],
+  "តាកែវ": ["takeo"],
+  "takeo": ["តាកែវ"],
+  "ត្បូងឃ្មុំ": ["tboung khmum", "tbong khmum"],
+  "tboung khmum": ["ត្បូងឃ្មុំ", "tbong khmum"],
+};
+
+function getProvinceSearchTokens(provinceName: string): string[] {
+  const norm = normalizeText(provinceName);
+  if (!norm) return [];
+  const aliases = PROVINCE_ALIASES[norm] || PROVINCE_ALIASES[provinceName] || [];
+  return Array.from(new Set([norm, ...aliases.map((a) => normalizeText(a))]));
+}
+
+const PROVINCE_DISPLAY_NAMES: Record<string, string> = {
+  "phnom penh": "ភ្នំពេញ (Phnom Penh)",
+  "ភ្នំពេញ": "ភ្នំពេញ (Phnom Penh)",
+  "siem reap": "សៀមរាប (Siem Reap)",
+  "សៀមរាប": "សៀមរាប (Siem Reap)",
+  "battambang": "បាត់ដំបង (Battambang)",
+  "បាត់ដំបង": "បាត់ដំបង (Battambang)",
+  "kampot": "កំពត (Kampot)",
+  "កំពត": "កំពត (Kampot)",
+  "kep": "កែប (Kep)",
+  "កែប": "កែប (Kep)",
+  "preah vihear": "ព្រះវិហារ (Preah Vihear)",
+  "ព្រះវិហារ": "ព្រះវិហារ (Preah Vihear)",
+  "prey veng": "ព្រៃវែង (Prey Veng)",
+  "ព្រៃវែង": "ព្រៃវែង (Prey Veng)",
+  "takeo": "តាកែវ (Takeo)",
+  "តាកែវ": "តាកែវ (Takeo)",
+  "sihanoukville": "ព្រះសីហនុ (Sihanoukville)",
+  "preah sihanouk": "ព្រះសីហនុ (Sihanoukville)",
+  "ព្រះសីហនុ": "ព្រះសីហនុ (Sihanoukville)",
+  "ក្រុងព្រះសីហនុ": "ព្រះសីហនុ (Sihanoukville)",
+  "kandal": "កណ្តាល (Kandal)",
+  "កណ្តាល": "កណ្តាល (Kandal)",
+  "kampong cham": "កំពង់ចាម (Kampong Cham)",
+  "កំពង់ចាម": "កំពង់ចាម (Kampong Cham)",
+  "kampong chhnang": "កំពង់ឆ្នាំង (Kampong Chhnang)",
+  "កំពង់ឆ្នាំង": "កំពង់ឆ្នាំង (Kampong Chhnang)",
+  "kampong speu": "កំពង់ស្ពឺ (Kampong Speu)",
+  "កំពង់ស្ពឺ": "កំពង់ស្ពឺ (Kampong Speu)",
+  "kampong thom": "កំពង់ធំ (Kampong Thom)",
+  "កំពង់ធំ": "កំពង់ធំ (Kampong Thom)",
+  "koh kong": "កោះកុង (Koh Kong)",
+  "កោះកុង": "កោះកុង (Koh Kong)",
+  "kratie": "ក្រចេះ (Kratie)",
+  "ក្រចេះ": "ក្រចេះ (Kratie)",
+  "mondulkiri": "មណ្ឌលគិរី (Mondulkiri)",
+  "មណ្ឌលគិរី": "មណ្ឌលគិរី (Mondulkiri)",
+  "oddar meanchey": "ឧត្តរមានជ័យ (Oddar Meanchey)",
+  "ឧត្តរមានជ័យ": "ឧត្តរមានជ័យ (Oddar Meanchey)",
+  "pailin": "ប៉ៃលិន (Pailin)",
+  "ប៉ៃលិន": "ប៉ៃលិន (Pailin)",
+  "pursat": "ពោធិ៍សាត់ (Pursat)",
+  "ពោធិ៍សាត់": "ពោធិ៍សាត់ (Pursat)",
+  "ratanakiri": "រតនគិរី (Ratanakiri)",
+  "រតនគិរី": "រតនគិរី (Ratanakiri)",
+  "steung treng": "ស្ទឹងត្រែង (Steung Treng)",
+  "stung treng": "ស្ទឹងត្រែង (Steung Treng)",
+  "ស្ទឹងត្រែង": "ស្ទឹងត្រែង (Steung Treng)",
+  "svay rieng": "ស្វាយរៀង (Svay Rieng)",
+  "ស្វាយរៀង": "ស្វាយរៀង (Svay Rieng)",
+  "tboung khmum": "ត្បូងឃ្មុំ (Tboung Khmum)",
+  "tbong khmum": "ត្បូងឃ្មុំ (Tboung Khmum)",
+  "ត្បូងឃ្មុំ": "ត្បូងឃ្មុំ (Tboung Khmum)",
+};
+
+function formatProvinceLabel(prov: string): string {
+  const norm = normalizeText(prov);
+  return PROVINCE_DISPLAY_NAMES[norm] || PROVINCE_DISPLAY_NAMES[prov] || prov;
+}
+
 function toggleInList(list: string[], value: string): string[] {
   return list.includes(value)
     ? list.filter((item) => item !== value)
@@ -968,7 +1088,9 @@ function applyCustomerSearchFilters(
 
     // 17. Provinces
     if (req.provinces && req.provinces.length > 0) {
-      const searchProvinces = req.provinces.map((p) => normalizeText(p)).filter(Boolean);
+      const searchProvinces = req.provinces
+        .flatMap((p) => getProvinceSearchTokens(p))
+        .filter(Boolean);
       const foodProvince = normalizeText(food.origin?.provinceName || "");
       const foodProvinceLocal = normalizeText(food.origin?.provinceLocalName || "");
       const foodProvinceCode = normalizeText(food.origin?.provinceCode || "");
@@ -1526,18 +1648,29 @@ function FilterSidebar({
     province: false,
   });
 
-  // Auto-expand age group section if ageGroup filter is active
+  // Auto-expand active filter sections if filter params are set
   useEffect(() => {
-    if (
-      customerSearchRequest.ageGroupUuids &&
-      customerSearchRequest.ageGroupUuids.length > 0
-    ) {
-      setOpenSections((previous) => ({
-        ...previous,
-        ageGroup: true,
-      }));
-    }
-  }, [customerSearchRequest.ageGroupUuids]);
+    setOpenSections((previous) => ({
+      ...previous,
+      ...(customerSearchRequest.ageGroupUuids?.length ? { ageGroup: true } : {}),
+      ...(customerSearchRequest.provinces?.length ? { province: true } : {}),
+      ...(customerSearchRequest.seasonUuids?.length ? { season: true } : {}),
+      ...(customerSearchRequest.eventUuids?.length ? { event: true } : {}),
+      ...(customerSearchRequest.cuisineUuids?.length ? { cuisine: true } : {}),
+      ...(customerSearchRequest.dietaryTypeUuids?.length ? { dietary: true } : {}),
+      ...(customerSearchRequest.excludeAllergenUuids?.length ? { allergens: true } : {}),
+      ...(customerSearchRequest.weatherConditionUuids?.length ? { weather: true } : {}),
+    }));
+  }, [
+    customerSearchRequest.ageGroupUuids,
+    customerSearchRequest.provinces,
+    customerSearchRequest.seasonUuids,
+    customerSearchRequest.eventUuids,
+    customerSearchRequest.cuisineUuids,
+    customerSearchRequest.dietaryTypeUuids,
+    customerSearchRequest.excludeAllergenUuids,
+    customerSearchRequest.weatherConditionUuids,
+  ]);
 
   const isCollapsed = mobile ? false : collapsed;
 
@@ -1600,6 +1733,42 @@ function FilterSidebar({
     return rawList;
   }, [filterOptions?.ageGroups]);
 
+  const distinctProvincesCount = useMemo(() => {
+    if (
+      !customerSearchRequest.provinces ||
+      customerSearchRequest.provinces.length === 0
+    ) {
+      return 0;
+    }
+    const seen = new Set<string>();
+    customerSearchRequest.provinces.forEach((p) => {
+      const label = formatProvinceLabel(p);
+      seen.add(normalizeText(label));
+    });
+    return seen.size;
+  }, [customerSearchRequest.provinces]);
+
+  const uniqueProvinces = useMemo(() => {
+    const rawList = filterOptions?.provinces || [];
+    const seenCanonical = new Set<string>();
+    const result: { rawValue: string; label: string; tokens: string[] }[] = [];
+
+    for (const prov of rawList) {
+      if (!prov || !prov.trim()) continue;
+      const label = formatProvinceLabel(prov);
+      const normLabel = normalizeText(label);
+      if (!seenCanonical.has(normLabel)) {
+        seenCanonical.add(normLabel);
+        result.push({
+          rawValue: prov,
+          label,
+          tokens: getProvinceSearchTokens(prov),
+        });
+      }
+    }
+    return result;
+  }, [filterOptions?.provinces]);
+
   const activeFilterCount =
     (customerSearchRequest.categoryUuids?.length || 0) +
     (customerSearchRequest.cuisineUuids?.length || 0) +
@@ -1611,7 +1780,7 @@ function FilterSidebar({
     (customerSearchRequest.dietaryTypeUuids?.length || 0) +
     (customerSearchRequest.excludeAllergenUuids?.length || 0) +
     (customerSearchRequest.storePriceLevels?.length || 0) +
-    (customerSearchRequest.provinces?.length || 0) +
+    distinctProvincesCount +
     (customerSearchRequest.featuredOnly ? 1 : 0) +
     (customerSearchRequest.openNow ? 1 : 0) +
     (customerSearchRequest.minimumPrice !== undefined ||
@@ -2465,7 +2634,7 @@ function FilterSidebar({
             </div>
 
             {/* PROVINCES */}
-            {filterOptions?.provinces && filterOptions.provinces.length > 0 && (
+            {uniqueProvinces.length > 0 && (
               <FilterSection
                 title="ខេត្ត/រាជធានី"
                 icon={<MdOutlineCategory />}
@@ -2474,17 +2643,45 @@ function FilterSidebar({
               >
                 <CollapsibleList
                   showSearch={true}
-                  items={filterOptions.provinces}
-                  renderItem={(prov) => (
-                    <PillOption
-                      key={prov}
-                      label={prov}
-                      checked={Boolean(
-                        customerSearchRequest.provinces?.includes(prov),
-                      )}
-                      onChange={() => toggleArrayItem("provinces", prov)}
-                    />
-                  )}
+                  items={uniqueProvinces}
+                  renderItem={(item) => {
+                    const isChecked = Boolean(
+                      customerSearchRequest.provinces?.some((p) => {
+                        const selectedTokens = getProvinceSearchTokens(p);
+                        return item.tokens.some((pt) =>
+                          selectedTokens.includes(pt),
+                        );
+                      }),
+                    );
+
+                    return (
+                      <PillOption
+                        key={item.label}
+                        label={item.label}
+                        checked={isChecked}
+                        onChange={() => {
+                          const currentProvinces =
+                            customerSearchRequest.provinces || [];
+                          let updated: string[];
+                          if (isChecked) {
+                            updated = currentProvinces.filter((p) => {
+                              const selectedTokens = getProvinceSearchTokens(p);
+                              return !item.tokens.some((pt) =>
+                                selectedTokens.includes(pt),
+                              );
+                            });
+                          } else {
+                            updated = [...currentProvinces, item.rawValue];
+                          }
+                          onSearchRequestChange({
+                            ...customerSearchRequest,
+                            provinces:
+                              updated.length > 0 ? updated : undefined,
+                          });
+                        }}
+                      />
+                    );
+                  }}
                 />
               </FilterSection>
             )}
@@ -2679,17 +2876,17 @@ function FoodGrid({ foods, isLoading }: FoodGridProps) {
           opacity: 1,
           y: 0,
         }}
-        className="flex min-h-[850px] lg:min-h-[900px] flex-col items-center justify-center rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-16 text-center"
+        className="flex min-h-[850px] lg:min-h-[900px] flex-col items-center justify-center rounded-[24px] border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-16 text-center"
       >
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50">
-          <IoSearchOutline className="text-[30px] text-primary-700" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/50">
+          <IoSearchOutline className="text-[30px] text-primary-700 dark:text-emerald-400" />
         </div>
 
-        <h3 className="mt-4 text-[20px] font-semibold text-primary-900">
+        <h3 className="mt-4 text-[20px] font-semibold text-primary-900 dark:text-white">
           រកមិនឃើញមុខម្ហូប
         </h3>
 
-        <p className="mx-auto mt-2 max-w-md text-[16px] leading-7 text-gray-500">
+        <p className="mx-auto mt-2 max-w-md text-[16px] leading-7 text-gray-500 dark:text-slate-400">
           សូមសាកល្បងផ្លាស់ប្តូរពាក្យស្វែងរក ឬសម្អាតតម្រងមួយចំនួន។
         </p>
       </motion.div>
@@ -2962,14 +3159,29 @@ function FoodPageContent() {
     const decoded = decodeURIComponent(rawProvinceParam).trim();
     if (!decoded) return;
 
+    const provTokens = getProvinceSearchTokens(decoded);
+    let matchedProv = decoded;
+    if (
+      discoveryFilterOptions?.provinces &&
+      discoveryFilterOptions.provinces.length > 0
+    ) {
+      const found = discoveryFilterOptions.provinces.find((p) => {
+        const pTokens = getProvinceSearchTokens(p);
+        return provTokens.some((t) => pTokens.includes(t));
+      });
+      if (found) {
+        matchedProv = found;
+      }
+    }
+
     setCustomerSearchRequest((prev) => {
-      if (prev.provinces?.includes(decoded)) return prev;
+      if (prev.provinces?.includes(matchedProv)) return prev;
       return {
         ...prev,
-        provinces: [decoded],
+        provinces: [matchedProv],
       };
     });
-  }, [rawProvinceParam]);
+  }, [rawProvinceParam, discoveryFilterOptions?.provinces]);
 
   // Synchronize URL season search params
   useEffect(() => {

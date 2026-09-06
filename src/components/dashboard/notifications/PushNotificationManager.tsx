@@ -83,15 +83,15 @@ function SubscriptionRow({
   onRevoke: (uuid: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <Smartphone className="h-4 w-4 shrink-0 text-[#136C34]" />
-          <p className="truncate text-sm font-semibold text-slate-800">
+          <Smartphone className="h-4 w-4 shrink-0 text-[#136C34] dark:text-emerald-400" />
+          <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
             {subscription.deviceLabel || "FoodHub device"}
           </p>
         </div>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {subscription.browserName || "Browser"} ·{" "}
           {subscription.status || "ACTIVE"} · Last used{" "}
           {formatNotificationTime(subscription.lastUsedAt, "en-KH")}
@@ -102,7 +102,7 @@ function SubscriptionRow({
         type="button"
         onClick={() => onRevoke(subscription.uuid)}
         disabled={isRevoking}
-        className="inline-flex items-center justify-center gap-2 rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center justify-center gap-2 rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-900/40 dark:bg-slate-900 dark:text-rose-400 dark:hover:bg-rose-950/40"
       >
         {isRevoking ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -126,17 +126,17 @@ function NearbyRecommendationsSettings() {
   }, [nearby.lastPingAt]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-[#136C34]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-[#136C34] dark:bg-emerald-950/60 dark:text-emerald-400">
             <MapPin className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-lg font-semibold text-slate-900">
+            <p className="text-lg font-semibold text-slate-900 dark:text-white">
               Nearby store recommendations
             </p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Status: {nearby.enabled ? "Enabled" : "Disabled"} ·{" "}
               {nearby.status}
             </p>
@@ -148,7 +148,7 @@ function NearbyRecommendationsSettings() {
           onClick={nearby.enabled ? nearby.disable : nearby.enable}
           className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
             nearby.enabled
-              ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               : "bg-[#136C34] text-white hover:bg-[#0f5428]"
           }`}
         >
@@ -158,17 +158,17 @@ function NearbyRecommendationsSettings() {
       </div>
 
       <div className="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-        <div className="rounded-xl bg-slate-50 p-3">
-          <p className="text-xs font-medium uppercase text-slate-400">
+        <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+          <p className="text-xs font-medium uppercase text-slate-400 dark:text-slate-400">
             Last proximity ping
           </p>
-          <p className="mt-1 font-medium text-slate-700">{lastPingLabel}</p>
+          <p className="mt-1 font-medium text-slate-700 dark:text-slate-200">{lastPingLabel}</p>
         </div>
-        <div className="rounded-xl bg-slate-50 p-3">
-          <p className="text-xs font-medium uppercase text-slate-400">
+        <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+          <p className="text-xs font-medium uppercase text-slate-400 dark:text-slate-400">
             Latest result
           </p>
-          <p className="mt-1 font-medium text-slate-700">
+          <p className="mt-1 font-medium text-slate-700 dark:text-slate-200">
             {nearby.isPinging
               ? "Checking nearby stores..."
               : nearby.lastResult?.triggered
@@ -179,7 +179,7 @@ function NearbyRecommendationsSettings() {
       </div>
 
       {nearby.error && (
-        <p className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <p className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
           {nearby.error}
         </p>
       )}
@@ -330,6 +330,7 @@ export default function PushNotificationManager() {
     try {
       await deletePushSubscription(uuid).unwrap();
       setMessage("Push subscription revoked.");
+      await refetchSubscriptions();
       await refreshBrowserPushState();
     } catch (error) {
       setActionError(
@@ -345,8 +346,8 @@ export default function PushNotificationManager() {
 
   if (supportStatus === "loading") {
     return (
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center gap-3 text-slate-600">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
           <Loader2 className="h-5 w-5 animate-spin" />
           Checking push notification support...
         </div>
@@ -357,16 +358,16 @@ export default function PushNotificationManager() {
   if (supportStatus === "unsupported") {
     return (
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
               <BellOff className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-lg font-semibold text-slate-900">
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">
                 Push Notifications
               </p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 This browser does not support FoodHub push notifications.
               </p>
             </div>
@@ -379,14 +380,14 @@ export default function PushNotificationManager() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#E36914]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#E36914] dark:bg-orange-950/60 dark:text-orange-400">
               <Bell className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-lg font-semibold text-slate-900">
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">
                 Push Notifications
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -400,14 +401,14 @@ export default function PushNotificationManager() {
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
                     isBrowserSubscribed
-                      ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
-                      : "bg-slate-100 text-slate-700 ring-slate-200"
+                      ? "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-900"
+                      : "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
                   }`}
                 >
                   Browser: {isBrowserSubscribed ? "Subscribed" : "Not subscribed"}
                 </span>
                 {!isOnline && (
-                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-100">
+                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-900">
                     Offline
                   </span>
                 )}
@@ -434,7 +435,7 @@ export default function PushNotificationManager() {
               <button
                 type="button"
                 onClick={disableThisBrowser}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 <BellOff className="h-4 w-4" />
                 Disable this browser
@@ -444,27 +445,27 @@ export default function PushNotificationManager() {
         </div>
 
         {permission === "denied" && (
-          <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
             Browser permission is denied. Enable notifications from your browser
             or device settings, then return to FoodHub.
           </p>
         )}
 
         {message && (
-          <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="mt-4 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
             {message}
           </p>
         )}
 
         {actionError && (
-          <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
             {actionError}
           </p>
         )}
 
         <div className="mt-5">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-slate-700">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               Registered subscriptions
             </p>
             {isFetchingSubscriptions && (
@@ -473,11 +474,11 @@ export default function PushNotificationManager() {
           </div>
 
           {isLoadingSubscriptions ? (
-            <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+            <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
               Loading subscriptions...
             </div>
           ) : hasSubscriptionError ? (
-            <div className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">
+            <div className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
               FoodHub could not load registered subscriptions.
             </div>
           ) : subscriptions.length > 0 ? (
@@ -492,7 +493,7 @@ export default function PushNotificationManager() {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+            <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
               No push subscriptions are registered for this account.
             </div>
           )}

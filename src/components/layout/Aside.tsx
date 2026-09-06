@@ -50,7 +50,7 @@ export default function Aside() {
           /*
            * Shared
            */
-          "flex w-[280px] shrink-0 flex-col border-r border-slate-200 bg-white",
+          "flex w-[280px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
           "transition-transform duration-300 ease-in-out",
 
           /*
@@ -69,7 +69,7 @@ export default function Aside() {
         {/* =====================================================
             LOGO AREA
         ====================================================== */}
-        <div className="relative flex h-[64px] shrink-0 items-center border-b border-slate-100 px-5">
+        <div className="relative flex h-[64px] shrink-0 items-center border-b border-slate-100 px-5 dark:border-slate-800">
           <Link
             href="/"
             onClick={close}
@@ -82,7 +82,7 @@ export default function Aside() {
               width={145}
               height={52}
               priority
-              className="h-auto  max-sm:p-2 p-3 max-sm:-ml-4 w-[135px] object-contain"
+              className="h-auto max-sm:p-2 p-3 max-sm:-ml-4 w-[135px] object-contain"
             />
           </Link>
 
@@ -91,7 +91,7 @@ export default function Aside() {
             type="button"
             aria-label="បិទម៉ឺនុយ"
             onClick={close}
-            className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 lg:hidden"
+            className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 lg:hidden"
           >
             <X className="h-5 w-5" />
           </button>
@@ -133,15 +133,15 @@ export default function Aside() {
                     "transition-colors duration-200",
 
                     active
-                      ? "bg-primary-700 text-white"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                      ? "bg-primary-700 text-white dark:bg-emerald-700"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white",
                   )}
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <span
                       className={cn(
                         "flex h-6 w-6 shrink-0 items-center justify-center text-xl",
-                        active ? "text-white" : "text-slate-500",
+                        active ? "text-white" : "text-slate-500 dark:text-slate-400",
                       )}
                     >
                       {item.icon}
@@ -156,7 +156,7 @@ export default function Aside() {
                         "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
                         active
                           ? "bg-white/20 text-white"
-                          : "bg-emerald-100 text-primary-700",
+                          : "bg-emerald-100 text-primary-700 dark:bg-emerald-950 dark:text-emerald-300",
                       )}
                     >
                       {dynamicBadge > 99 ? "99+" : dynamicBadge}
@@ -170,7 +170,7 @@ export default function Aside() {
           {/* ===================================================
               BOTTOM ACTIONS
           ==================================================== */}
-          <div className="mt-6 shrink-0 border-t border-slate-100 pt-3">
+          <div className="mt-6 shrink-0 border-t border-slate-100 pt-3 dark:border-slate-800">
             {/* Settings */}
             <Link
               href="/dashboard/settings"
@@ -178,8 +178,8 @@ export default function Aside() {
               className={cn(
                 "flex min-h-[48px] w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium transition-colors",
                 pathname.startsWith("/dashboard/settings")
-                  ? "bg-primary-700 text-white"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                  ? "bg-primary-700 text-white dark:bg-emerald-700"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white",
               )}
             >
               <span className="flex h-6 w-6 items-center justify-center">

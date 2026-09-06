@@ -30,6 +30,14 @@ export default function SeasonSection() {
       return locationBanners.map((banner, idx) => {
         const fallback =
           slides[idx % slides.length]?.image || "/Image/carousel/food1.jpeg";
+        const locationTarget =
+          banner.location && banner.location.trim() !== "" && banner.location !== "កម្ពុជា"
+            ? banner.location
+            : banner.title;
+        const link = locationTarget
+          ? `/menu?province=${encodeURIComponent(locationTarget)}`
+          : "/menu";
+
         return {
           id: banner.id || `location-banner-${idx}`,
           image: resolveBannerImageUrl(banner, fallback),
@@ -39,6 +47,7 @@ export default function SeasonSection() {
             banner.description ||
             "ស្វែងយល់ពីរសជាតិពេញនិយមប្រចាំតំបន់ដែលអ្នកមិនគួររំលង",
           origin: banner.location || "កម្ពុជា",
+          link,
         };
       });
     }

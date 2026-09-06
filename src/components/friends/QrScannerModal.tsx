@@ -154,8 +154,8 @@ export default function QrScannerModal({
 
           // Native BarcodeDetector API (supported in Chromium/Android/Chrome)
           if ("BarcodeDetector" in window) {
-            // @ts-expect-error Native BarcodeDetector API
-            const barcodeDetector = new window.BarcodeDetector({
+            const BarcodeDetectorClass = (window as unknown as { BarcodeDetector: new (options?: { formats: string[] }) => { detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>> } }).BarcodeDetector;
+            const barcodeDetector = new BarcodeDetectorClass({
               formats: ["qr_code"],
             });
 
@@ -221,8 +221,8 @@ export default function QrScannerModal({
     if ("BarcodeDetector" in window) {
       try {
         const imageBitmap = await createImageBitmap(file);
-        // @ts-expect-error Native BarcodeDetector API
-        const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+        const BarcodeDetectorClass = (window as unknown as { BarcodeDetector: new (options?: { formats: string[] }) => { detect: (source: ImageBitmap) => Promise<Array<{ rawValue: string }>> } }).BarcodeDetector;
+        const detector = new BarcodeDetectorClass({ formats: ["qr_code"] });
         const barcodes = await detector.detect(imageBitmap);
         if (barcodes.length > 0 && barcodes[0].rawValue) {
           handleProcessToken(barcodes[0].rawValue, { preferQrToken: true });

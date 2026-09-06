@@ -843,14 +843,14 @@ export default function LocationPickerModal({
 
               damping: 30,
             }}
-            className="relative z-10 flex h-[94dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-t-[30px] bg-white shadow-2xl sm:h-[90dvh] sm:rounded-[30px]"
+            className="relative z-10 flex h-[94dvh] w-full max-w-[1120px] flex-col overflow-hidden rounded-t-[30px] bg-white dark:bg-slate-900 shadow-2xl sm:h-[90dvh] sm:rounded-[30px]"
           >
             {/* HEADER */}
 
-            <header className="shrink-0 border-b border-slate-100 bg-white px-4 py-4 sm:px-6">
+            <header className="shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-start gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 dark:bg-emerald-950/50 text-primary-700 dark:text-emerald-400">
                     <IoLocationOutline className="text-[24px]" />
                   </span>
 
@@ -858,12 +858,12 @@ export default function LocationPickerModal({
                     <p
                       role="heading"
                       aria-level={2}
-                      className="text-[22px] font-bold text-primary-900 sm:text-[25px]"
+                      className="text-[22px] font-bold text-primary-900 dark:text-white sm:text-[25px]"
                     >
                       ជ្រើសទីតាំងលើផែនទី
                     </p>
 
-                    <p className="mt-1 text-[17px] leading-7 text-slate-500">
+                    <p className="mt-1 text-[17px] leading-7 text-slate-500 dark:text-slate-400">
                       ស្វែងរកទីក្រុង ហាង អាសយដ្ឋាន
                       និងទីតាំងតូចៗនៅក្នុងប្រទេសកម្ពុជា ជាភាសាខ្មែរ ឬអង់គ្លេស។
                     </p>
@@ -874,7 +874,7 @@ export default function LocationPickerModal({
                   type="button"
                   onClick={onClose}
                   aria-label="Close"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   <IoCloseOutline className="text-[25px]" />
                 </button>
@@ -882,14 +882,14 @@ export default function LocationPickerModal({
             </header>
 
             {/* TABS HEADER */}
-            <div className="flex border-b border-slate-100 bg-slate-50/70 px-4 sm:px-6">
+            <div className="flex border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 px-4 sm:px-6">
               <button
                 type="button"
                 onClick={() => setActiveTab("map")}
                 className={`flex items-center gap-2 border-b-2 px-4 py-3 text-[16px] font-bold transition ${
                   activeTab === "map"
-                    ? "border-primary-700 text-primary-900"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-primary-700 dark:border-emerald-500 text-primary-900 dark:text-white"
+                    : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
               >
                 <IoMapOutline className="text-[20px]" />
@@ -901,14 +901,14 @@ export default function LocationPickerModal({
                 onClick={() => setActiveTab("saved")}
                 className={`flex items-center gap-2 border-b-2 px-4 py-3 text-[16px] font-bold transition ${
                   activeTab === "saved"
-                    ? "border-primary-700 text-primary-900"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-primary-700 dark:border-emerald-500 text-primary-900 dark:text-white"
+                    : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
               >
                 <IoBookmarkOutline className="text-[20px]" />
                 <span>ទីតាំងបានរក្សាទុក <span className="hidden sm:inline">(Saved Places)</span></span>
                 {savedLocations.length > 0 && (
-                  <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[12px] font-bold text-primary-800">
+                  <span className="rounded-full bg-primary-100 dark:bg-emerald-950/60 px-2 py-0.5 text-[12px] font-bold text-primary-800 dark:text-emerald-300">
                     {savedLocations.length}
                   </span>
                 )}
@@ -916,7 +916,7 @@ export default function LocationPickerModal({
             </div>
 
             {activeTab === "saved" ? (
-              <div className="min-h-0 flex-1 bg-slate-50/40">
+              <div className="min-h-0 flex-1 bg-slate-50/40 dark:bg-slate-950/40">
                 <SavedLocationsManager
                   currentCoordinates={draftLocation}
                   currentAddress={
@@ -949,9 +949,9 @@ export default function LocationPickerModal({
                   <div className="absolute left-3 right-3 top-3 z-[650] sm:left-4 sm:right-auto sm:w-[540px]">
                     <form
                       onSubmit={handleSearchSubmit}
-                      className="flex min-h-13 items-center gap-2 rounded-2xl border border-white/90 bg-white/[0.97] p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.22)] backdrop-blur-md"
+                      className="flex min-h-13 items-center gap-2 rounded-2xl border border-white/90 dark:border-slate-700 bg-white/[0.97] dark:bg-slate-900/95 p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.22)] backdrop-blur-md"
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-500">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center text-slate-500 dark:text-slate-400">
                         <IoSearchOutline className="text-[22px]" />
                       </span>
 
@@ -965,14 +965,14 @@ export default function LocationPickerModal({
                         autoComplete="off"
                         placeholder="ស្វែងរកនៅកម្ពុជា / Search in Cambodia..."
                         aria-label="Search location"
-                        className="min-w-0 flex-1 bg-transparent px-1 text-[16px] text-slate-800 outline-none placeholder:text-slate-400"
+                        className="min-w-0 flex-1 bg-transparent px-1 text-[16px] text-slate-800 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                       {searchQuery && (
                         <button
                           type="button"
                           onClick={handleClearSearch}
                           aria-label="Clear location search"
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
                         >
                           <IoCloseOutline className="text-[20px]" />
                         </button>
@@ -981,7 +981,7 @@ export default function LocationPickerModal({
                       <button
                         type="submit"
                         disabled={searching}
-                        className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl bg-primary-800 px-4 text-[15px] font-bold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl bg-primary-800 dark:bg-emerald-600 px-4 text-[15px] font-bold text-white transition hover:bg-primary-700 dark:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         ស្វែងរក
                       </button>
@@ -997,7 +997,9 @@ export default function LocationPickerModal({
                           rounded-2xl
                           border
                           border-slate-200
+                          dark:border-slate-700
                           bg-white/[0.98]
+                          dark:bg-slate-900/[0.98]
                           p-2
                           shadow-[0_16px_40px_rgba(15,23,42,0.24)]
                           backdrop-blur-md
@@ -1008,7 +1010,7 @@ export default function LocationPickerModal({
                         {searching && (
                           <div className="flex items-center gap-3 px-4 py-3">
                             <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-primary-100 border-t-primary-700" />
-                            <p className="text-[15px] text-slate-500">
+                            <p className="text-[15px] text-slate-500 dark:text-slate-400">
                               កំពុងស្វែងរកទីតាំង...
                             </p>
                           </div>
@@ -1029,21 +1031,21 @@ export default function LocationPickerModal({
                                 key={`${result.id}-${result.latitude}-${result.longitude}-${index}`}
                                 type="button"
                                 onClick={() => handleSelectResult(result)}
-                                className="group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
+                                className="group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-primary-50 dark:hover:bg-slate-800 focus:bg-primary-50 dark:focus:bg-slate-800 focus:outline-none"
                               >
-                                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700 transition group-hover:bg-white">
+                                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/50 text-primary-700 dark:text-emerald-400 transition group-hover:bg-white dark:group-hover:bg-slate-700">
                                   <IoLocationOutline className="text-[20px]" />
                                 </span>
 
                                 <span className="min-w-0 flex-1">
-                                  <span className="block truncate text-[15px] font-bold leading-6 text-slate-900">
+                                  <span className="block truncate text-[15px] font-bold leading-6 text-slate-900 dark:text-white">
                                     {result.name}
                                   </span>
-                                  <span className="mt-0.5 line-clamp-1 block text-[13px] leading-5 text-slate-500">
+                                  <span className="mt-0.5 line-clamp-1 block text-[13px] leading-5 text-slate-500 dark:text-slate-400">
                                     {result.address}
                                   </span>
                                   {area && (
-                                    <span className="mt-0.5 block truncate text-[13px] font-semibold text-primary-700">
+                                    <span className="mt-0.5 block truncate text-[13px] font-semibold text-primary-700 dark:text-emerald-400">
                                       {area}
                                     </span>
                                   )}
@@ -1056,7 +1058,7 @@ export default function LocationPickerModal({
                           searchResults.length === 0 &&
                           searchError && (
                             <div className="px-4 py-3">
-                              <p className="text-[15px] leading-6 text-slate-500">
+                              <p className="text-[15px] leading-6 text-slate-500 dark:text-slate-400">
                                 {searchError}
                               </p>
                             </div>
@@ -1066,9 +1068,9 @@ export default function LocationPickerModal({
 
                     {/* SAVED LOCATIONS QUICK BAR */}
                     {savedLocations.length > 0 && !showSearchDropdown && (
-                      <div className="mt-2 flex items-center gap-2 overflow-x-auto rounded-2xl border border-white/90 bg-white/[0.97] p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <span className="flex shrink-0 items-center gap-1 px-1 text-[13px] font-bold text-primary-800">
-                          <IoBookmark className="text-[15px] text-primary-700" />
+                      <div className="mt-2 flex items-center gap-2 overflow-x-auto rounded-2xl border border-white/90 dark:border-slate-700 bg-white/[0.97] dark:bg-slate-900/95 p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <span className="flex shrink-0 items-center gap-1 px-1 text-[13px] font-bold text-primary-800 dark:text-emerald-400">
+                          <IoBookmark className="text-[15px] text-primary-700 dark:text-emerald-400" />
                           ទីតាំងរក្សាទុក:
                         </span>
                         {savedLocations.map((loc) => {
@@ -1079,14 +1081,14 @@ export default function LocationPickerModal({
                               key={loc.uuid}
                               type="button"
                               onClick={() => handleSelectSavedLocation(loc)}
-                              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1 text-[13px] font-semibold text-slate-700 shadow-sm transition hover:border-primary-400 hover:bg-primary-50 hover:text-primary-800"
+                              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1 text-[13px] font-semibold text-slate-700 dark:text-slate-200 shadow-sm transition hover:border-primary-400 dark:hover:border-emerald-500 hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-800 dark:hover:text-emerald-400"
                             >
                               {isHome ? (
-                                <IoHomeOutline className="text-[14px] text-primary-700" />
+                                <IoHomeOutline className="text-[14px] text-primary-700 dark:text-emerald-400" />
                               ) : isWork ? (
-                                <IoBriefcaseOutline className="text-[14px] text-primary-700" />
+                                <IoBriefcaseOutline className="text-[14px] text-primary-700 dark:text-emerald-400" />
                               ) : (
-                                <IoBookmarkOutline className="text-[14px] text-primary-700" />
+                                <IoBookmarkOutline className="text-[14px] text-primary-700 dark:text-emerald-400" />
                               )}
                               <span>{loc.label}</span>
                             </button>
@@ -1101,15 +1103,15 @@ export default function LocationPickerModal({
                     <button
                       type="button"
                       onClick={handleUseCurrentLocation}
-                      className="absolute bottom-[200px] left-3 z-[500] sm:bottom-[170px] sm:left-4 inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/80 bg-white/[0.97] px-3.5 text-[15px] font-bold text-primary-800 shadow-lg backdrop-blur-md transition hover:bg-primary-50 active:scale-95"
+                      className="absolute bottom-[200px] left-3 z-[500] sm:bottom-[170px] sm:left-4 inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/80 dark:border-slate-700 bg-white/[0.97] dark:bg-slate-900/95 px-3.5 text-[15px] font-bold text-primary-800 dark:text-emerald-400 shadow-lg backdrop-blur-md transition hover:bg-primary-50 dark:hover:bg-slate-800 active:scale-95"
                     >
-                      <IoLocateOutline className="text-[20px] text-primary-700" />
+                      <IoLocateOutline className="text-[20px] text-primary-700 dark:text-emerald-400" />
                       ទីតាំងបច្ចុប្បន្ន
                     </button>
                   )}
 
                   {/* FLOATING BOTTOM CONFIRMATION CARD (ALWAYS 100% VISIBLE) */}
-                  <div className="absolute bottom-3 left-3 right-3 z-[600] sm:bottom-4 sm:left-4 sm:right-4 max-h-[45vh] overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/[0.98] p-3.5 sm:p-4 shadow-[0_16px_48px_rgba(15,23,42,0.22)] backdrop-blur-md">
+                  <div className="absolute bottom-3 left-3 right-3 z-[600] sm:bottom-4 sm:left-4 sm:right-4 max-h-[45vh] overflow-y-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/[0.98] dark:bg-slate-900/[0.98] p-3.5 sm:p-4 shadow-[0_16px_48px_rgba(15,23,42,0.22)] backdrop-blur-md">
                     {/* TOAST MESSAGE */}
                     <AnimatePresence>
                       {toastMessage && (
@@ -1117,7 +1119,7 @@ export default function LocationPickerModal({
                           initial={{ opacity: 0, y: -6 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -6 }}
-                          className="mb-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-[14px] font-bold text-emerald-800"
+                          className="mb-3 flex items-center gap-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 px-3.5 py-2 text-[14px] font-bold text-emerald-800 dark:text-emerald-300"
                         >
                           <span>{toastMessage}</span>
                         </motion.div>
@@ -1132,17 +1134,17 @@ export default function LocationPickerModal({
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
                           onSubmit={handleDirectSave}
-                          className="mb-3.5 overflow-hidden rounded-xl border border-amber-200 bg-amber-50/70 p-3"
+                          className="mb-3.5 overflow-hidden rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/40 p-3"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="flex items-center gap-1 text-[14px] font-bold text-amber-900">
-                              <IoBookmark className="text-[16px] text-amber-600" />
+                            <span className="flex items-center gap-1 text-[14px] font-bold text-amber-900 dark:text-amber-300">
+                              <IoBookmark className="text-[16px] text-amber-600 dark:text-amber-400" />
                               រក្សាទុកទីតាំងទៅក្នុងបញ្ជី (Save to My Places)
                             </span>
                             <button
                               type="button"
                               onClick={() => setSaveModalOpen(false)}
-                              className="text-[18px] text-slate-400 hover:text-slate-700"
+                              className="text-[18px] text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                             >
                               ✕
                             </button>
@@ -1155,7 +1157,7 @@ export default function LocationPickerModal({
                               value={saveLocationName}
                               onChange={(e) => setSaveLocationName(e.target.value)}
                               placeholder="បញ្ចូលឈ្មោះទីតាំង (ឧ. ផ្ទះ, ការិយាល័យ, កន្លែងញ៉ាំបាយ...)"
-                              className="min-h-10 flex-1 rounded-xl border border-amber-300 bg-white px-3 text-[14px] font-semibold text-slate-800 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                              className="min-h-10 flex-1 rounded-xl border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 px-3 text-[14px] font-semibold text-slate-800 dark:text-slate-100 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100 dark:focus:ring-amber-900/40"
                             />
                             <button
                               type="submit"
@@ -1174,12 +1176,12 @@ export default function LocationPickerModal({
                       {/* LOCATION DETAILS */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start gap-2.5">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-50 dark:bg-emerald-950/50 text-primary-700 dark:text-emerald-400">
                             <IoLocationOutline className="text-[20px]" />
                           </span>
 
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[16px] font-bold text-slate-900">
+                            <p className="truncate text-[16px] font-bold text-slate-900 dark:text-white">
                               {resolvingPlace
                                 ? "កំពុងរកព័ត៌មានអាសយដ្ឋាន..."
                                 : selectedPlace?.name ||
@@ -1188,12 +1190,12 @@ export default function LocationPickerModal({
                             </p>
 
                             {(selectedPlace?.address || draftLabel) && (
-                              <p className="mt-0.5 line-clamp-1 text-[13px] text-slate-600">
+                              <p className="mt-0.5 line-clamp-1 text-[13px] text-slate-600 dark:text-slate-300">
                                 {selectedPlace?.address || draftLabel}
                               </p>
                             )}
 
-                            <p className="mt-0.5 text-[12px] font-semibold text-slate-400">
+                            <p className="mt-0.5 text-[12px] font-semibold text-slate-400 dark:text-slate-500">
                               {draftLocation.latitude.toFixed(6)},{" "}
                               {draftLocation.longitude.toFixed(6)}
                             </p>
@@ -1206,16 +1208,16 @@ export default function LocationPickerModal({
                         <button
                           type="button"
                           onClick={handleOpenSaveDialog}
-                          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-4 text-[14px] font-bold text-amber-900 shadow-sm transition hover:bg-amber-100 active:scale-95"
+                          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/50 px-4 text-[14px] font-bold text-amber-900 dark:text-amber-300 shadow-sm transition hover:bg-amber-100 dark:hover:bg-amber-900/50 active:scale-95"
                         >
-                          <IoBookmarkOutline className="text-[18px] text-amber-700" />
+                          <IoBookmarkOutline className="text-[18px] text-amber-700 dark:text-amber-400" />
                           <span>រក្សាទុកទីតាំង<span className="hidden sm:inline"> (Save Location)</span></span>
                         </button>
 
                         <button
                           type="button"
                           onClick={onClose}
-                          className="min-h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-[14px] font-bold text-slate-700 transition hover:bg-slate-50"
+                          className="min-h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 text-[14px] font-bold text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-700"
                         >
                           បោះបង់
                         </button>
@@ -1223,7 +1225,7 @@ export default function LocationPickerModal({
                         <button
                           type="button"
                           onClick={() => void handleConfirm()}
-                          className="flex min-h-11 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl bg-primary-800 px-5 text-[14px] font-bold text-white shadow-md transition hover:bg-primary-700 active:scale-98"
+                          className="flex min-h-11 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl bg-primary-800 dark:bg-emerald-600 px-5 text-[14px] font-bold text-white shadow-md transition hover:bg-primary-700 dark:hover:bg-emerald-500 active:scale-98"
                         >
                           <IoCheckmarkOutline className="text-[20px]" />
                           <span>បញ្ជាក់ទីតាំង <span className="hidden sm:inline">(Choose Place)</span></span>

@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function DashboardPage() {
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <UserDashboard />
     </main>
   );

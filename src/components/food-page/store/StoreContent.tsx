@@ -267,16 +267,16 @@ export default function StoreContent({
       <div className="mt-6 flex min-w-0 flex-col gap-6 xl:flex-row xl:items-start xl:gap-8 container mx-auto max-w-7xl px-4 min-h-[850px] lg:min-h-[900px]">
         {/* Desktop Sidebar Skeleton */}
         <aside className="hidden shrink-0 self-start xl:block xl:w-[320px]">
-          <div className="flex h-[600px] flex-col gap-5 rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="h-6 w-1/2 animate-pulse rounded-md bg-slate-200" />
-            <div className="mt-4 h-4 w-3/4 animate-pulse rounded-md bg-slate-100" />
-            <div className="h-4 w-2/3 animate-pulse rounded-md bg-slate-100" />
-            <div className="h-4 w-5/6 animate-pulse rounded-md bg-slate-100" />
+          <div className="flex h-[600px] flex-col gap-5 rounded-[28px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <div className="h-6 w-1/2 animate-pulse rounded-md bg-slate-200 dark:bg-slate-700" />
+            <div className="mt-4 h-4 w-3/4 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
+            <div className="h-4 w-2/3 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
+            <div className="h-4 w-5/6 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
 
-            <div className="mt-8 h-6 w-1/2 animate-pulse rounded-md bg-slate-200" />
-            <div className="mt-4 h-4 w-full animate-pulse rounded-md bg-slate-100" />
-            <div className="h-4 w-3/4 animate-pulse rounded-md bg-slate-100" />
-            <div className="h-4 w-2/3 animate-pulse rounded-md bg-slate-100" />
+            <div className="mt-8 h-6 w-1/2 animate-pulse rounded-md bg-slate-200 dark:bg-slate-700" />
+            <div className="mt-4 h-4 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
+            <div className="h-4 w-3/4 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
+            <div className="h-4 w-2/3 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
           </div>
         </aside>
 
@@ -284,33 +284,33 @@ export default function StoreContent({
         <main className="min-w-0 flex-1">
           {/* Mobile Filter Button Skeleton */}
           <div className="mb-4 flex items-center justify-between xl:hidden">
-            <div className="h-6 w-24 animate-pulse rounded-md bg-slate-200" />
-            <div className="h-11 w-28 animate-pulse rounded-full bg-slate-200" />
+            <div className="h-6 w-24 animate-pulse rounded-md bg-slate-200 dark:bg-slate-700" />
+            <div className="h-11 w-28 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700" />
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 pb-10">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="flex h-[320px] flex-col overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-sm"
+                className="flex h-[320px] flex-col overflow-hidden rounded-[24px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm"
               >
                 {/* Image Skeleton */}
-                <div className="h-[180px] w-full animate-pulse bg-slate-100" />
+                <div className="h-[180px] w-full animate-pulse bg-slate-100 dark:bg-slate-800" />
 
                 {/* Content Skeleton */}
                 <div className="flex flex-1 flex-col justify-between p-5">
                   <div className="space-y-3">
-                    <div className="h-5 w-3/4 animate-pulse rounded-md bg-slate-200" />
+                    <div className="h-5 w-3/4 animate-pulse rounded-md bg-slate-200 dark:bg-slate-700" />
                     <div className="flex gap-2">
-                      <div className="h-4 w-1/3 animate-pulse rounded-md bg-slate-100" />
-                      <div className="h-4 w-1/4 animate-pulse rounded-md bg-slate-100" />
+                      <div className="h-4 w-1/3 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
+                      <div className="h-4 w-1/4 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
                     </div>
                   </div>
 
                   {/* Bottom Row */}
                   <div className="mt-4 flex items-center justify-between">
-                    <div className="h-4 w-1/4 animate-pulse rounded-md bg-slate-200" />
-                    <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100" />
+                    <div className="h-4 w-1/4 animate-pulse rounded-md bg-slate-200 dark:bg-slate-700" />
+                    <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100 dark:bg-slate-800" />
                   </div>
                 </div>
               </div>
@@ -327,8 +327,8 @@ export default function StoreContent({
         className="
           mt-6
           rounded-[22px]
-          border border-red-100
-          bg-white
+          border border-red-100 dark:border-red-900/40
+          bg-white dark:bg-slate-900
           px-5 py-12
           text-center
           shadow-sm
@@ -338,7 +338,7 @@ export default function StoreContent({
           className="
             text-[21px]
             font-semibold
-            text-primary-900
+            text-primary-900 dark:text-white
           "
         >
           មិនអាចទាញយកទិន្នន័យហាងបានទេ
@@ -348,12 +348,13 @@ export default function StoreContent({
           className="
             mx-auto mt-2
             max-w-lg
-            text-[18px]
-            leading-7
-            text-gray-500
+            text-[17px]
+            leading-8
+            text-slate-500 dark:text-slate-400
           "
         >
-          សូមពិនិត្យថា FoodHub backend កំពុងដំណើរការ ហើយព្យាយាមម្តងទៀត។
+          មានបញ្ហាក្នុងការទាញយកទិន្នន័យពីម៉ាស៊ីនបម្រើ។
+          សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។
         </p>
 
         <button
@@ -361,20 +362,21 @@ export default function StoreContent({
           onClick={() => void refetch()}
           className="
             mt-5
-            inline-flex min-h-12
-            items-center justify-center
-            gap-2
+            inline-flex
+            min-h-12
+            items-center
+            justify-center
             rounded-full
-            bg-primary-800
+            bg-primary-800 dark:bg-emerald-600
             px-6
-            text-[18px]
-            font-semibold
+            text-[17px]
+            font-bold
             text-white
+            shadow-sm
             transition
-            hover:bg-primary-700
+            hover:bg-primary-700 dark:hover:bg-emerald-500
           "
         >
-          <IoRefreshOutline className="text-[20px]" />
           ព្យាយាមម្តងទៀត
         </button>
       </div>

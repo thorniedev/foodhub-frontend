@@ -183,10 +183,10 @@ export function getPlatformVisualConfig(
         icon: FaTiktok,
         brandColor: "#010101",
         pillBadgeClass:
-          "border-slate-300 bg-slate-100 text-slate-800 hover:bg-black hover:text-white hover:border-black",
-        cardIconBgClass: "bg-black/10 text-slate-900",
-        cardIconColorClass: "text-slate-900",
-        cardHoverBorderClass: "hover:border-black/40 hover:bg-black/5",
+          "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-black hover:text-white hover:border-black",
+        cardIconBgClass: "bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white",
+        cardIconColorClass: "text-slate-900 dark:text-white",
+        cardHoverBorderClass: "hover:border-black/40 hover:bg-black/5 dark:hover:bg-white/5",
         visitText: "ចូលមើល TikTok",
       };
 
@@ -267,10 +267,10 @@ export function getPlatformVisualConfig(
         icon: FaXTwitter,
         brandColor: "#000000",
         pillBadgeClass:
-          "border-slate-300 bg-slate-100 text-slate-800 hover:bg-black hover:text-white hover:border-black",
-        cardIconBgClass: "bg-black/10 text-slate-900",
-        cardIconColorClass: "text-slate-900",
-        cardHoverBorderClass: "hover:border-black/40 hover:bg-black/5",
+          "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-black hover:text-white hover:border-black",
+        cardIconBgClass: "bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white",
+        cardIconColorClass: "text-slate-900 dark:text-white",
+        cardHoverBorderClass: "hover:border-black/40 hover:bg-black/5 dark:hover:bg-white/5",
         visitText: "ចូលមើល X",
       };
 
@@ -282,10 +282,10 @@ export function getPlatformVisualConfig(
         icon: FaGlobe,
         brandColor: "#059669",
         pillBadgeClass:
-          "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600",
-        cardIconBgClass: "bg-emerald-50 text-emerald-700",
-        cardIconColorClass: "text-emerald-700",
-        cardHoverBorderClass: "hover:border-emerald-300 hover:bg-emerald-50/50",
+          "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-600",
+        cardIconBgClass: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
+        cardIconColorClass: "text-emerald-700 dark:text-emerald-400",
+        cardHoverBorderClass: "hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20",
         visitText: "ទស្សនាគេហទំព័រ",
       };
   }
@@ -430,23 +430,23 @@ export function StoreSocialMediaCard({
 
   return (
     <section
-      className={`rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6 ${className}`}
+      className={`rounded-3xl border border-gray-100/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-black/5 dark:ring-white/5 sm:p-6 ${className}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/50 text-primary-700 dark:text-emerald-400">
             <IoShareSocialOutline className="text-[23px]" />
           </span>
 
           <div>
-            <p className="text-[20px] font-bold text-primary-900">បណ្ដាញសង្គម</p>
-            <p className="text-[15px] text-gray-400">ភ្ជាប់ទំនាក់ទំនងជាមួយហាង</p>
+            <p className="text-[20px] font-bold text-primary-900 dark:text-white">បណ្ដាញសង្គម</p>
+            <p className="text-[15px] text-gray-400 dark:text-slate-400">ភ្ជាប់ទំនាក់ទំនងជាមួយហាង</p>
           </div>
         </div>
 
         {validLinks.length > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-800 ring-1 ring-primary-200">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 dark:bg-emerald-950/50 px-3 py-1 text-xs font-bold text-primary-800 dark:text-emerald-300 ring-1 ring-primary-200 dark:ring-emerald-800/60">
             <IoCheckmarkCircleOutline className="text-sm" />
             {validLinks.length} បណ្ដាញ
           </span>
@@ -468,7 +468,7 @@ export function StoreSocialMediaCard({
                 href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group flex items-center justify-between gap-3.5 rounded-2xl border border-gray-100 bg-slate-50/70 p-3.5 transition-all duration-200 hover:shadow-md hover:bg-white ${config.cardHoverBorderClass}`}
+                className={`group flex items-center justify-between gap-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-3.5 transition-all duration-200 hover:shadow-md hover:bg-white dark:hover:bg-slate-800 ${config.cardHoverBorderClass}`}
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div
@@ -478,16 +478,16 @@ export function StoreSocialMediaCard({
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-bold text-slate-900 group-hover:text-primary-800 transition-colors">
+                    <p className="truncate text-base font-bold text-slate-900 dark:text-white group-hover:text-primary-800 dark:group-hover:text-emerald-400 transition-colors">
                       {config.name}
                     </p>
-                    <p className="truncate text-xs text-slate-500 font-medium">
+                    <p className="truncate text-xs text-slate-500 dark:text-slate-400 font-medium">
                       {displayHandle}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200/80 transition-all group-hover:bg-primary-50 group-hover:text-primary-700 group-hover:ring-primary-200 shadow-2xs">
+                <div className="flex items-center gap-1 shrink-0 rounded-lg bg-white dark:bg-slate-700 px-2.5 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-200 ring-1 ring-slate-200/80 dark:ring-slate-600 transition-all group-hover:bg-primary-50 dark:group-hover:bg-emerald-950/50 group-hover:text-primary-700 dark:group-hover:text-emerald-300 group-hover:ring-primary-200 dark:group-hover:ring-emerald-800 shadow-2xs">
                   <span>ចូលមើល</span>
                   <IoOpenOutline className="text-sm" />
                 </div>
@@ -501,7 +501,7 @@ export function StoreSocialMediaCard({
               href={telegramPhoneUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center justify-between gap-3.5 rounded-2xl border border-gray-100 bg-slate-50/70 p-3.5 transition-all duration-200 hover:shadow-md hover:bg-white hover:border-[#229ED9]/40 hover:bg-[#229ED9]/5"
+              className="group flex items-center justify-between gap-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-3.5 transition-all duration-200 hover:shadow-md hover:bg-white dark:hover:bg-slate-800 hover:border-[#229ED9]/40 hover:bg-[#229ED9]/5"
             >
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#229ED9]/10 text-[#229ED9] shadow-xs transition-transform duration-200 group-hover:scale-105">
@@ -509,16 +509,16 @@ export function StoreSocialMediaCard({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-base font-bold text-slate-900 group-hover:text-primary-800 transition-colors">
+                  <p className="truncate text-base font-bold text-slate-900 dark:text-white group-hover:text-primary-800 dark:group-hover:text-emerald-400 transition-colors">
                     Telegram
                   </p>
-                  <p className="truncate text-xs text-slate-500 font-medium">
+                  <p className="truncate text-xs text-slate-500 dark:text-slate-400 font-medium">
                     {cleanPhone}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200/80 transition-all group-hover:bg-primary-50 group-hover:text-primary-700 group-hover:ring-primary-200 shadow-2xs">
+              <div className="flex items-center gap-1 shrink-0 rounded-lg bg-white dark:bg-slate-700 px-2.5 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-200 ring-1 ring-slate-200/80 dark:ring-slate-600 transition-all group-hover:bg-primary-50 dark:group-hover:bg-emerald-950/50 group-hover:text-primary-700 dark:group-hover:text-emerald-300 group-hover:ring-primary-200 dark:group-hover:ring-emerald-800 shadow-2xs">
                 <span>ផ្ញើសារ</span>
                 <IoOpenOutline className="text-sm" />
               </div>
@@ -527,29 +527,29 @@ export function StoreSocialMediaCard({
         </div>
       ) : (
         /* Empty State with Contact Options */
-        <div className="mt-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 p-5 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+        <div className="mt-5 rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 bg-gray-50/60 dark:bg-slate-800/40 p-5 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500">
             <IoShareSocialOutline className="text-2xl" />
           </div>
 
-          <p className="mt-3 text-sm font-semibold text-slate-700">
+          <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
             មិនទាន់មានតំណភ្ជាប់បណ្ដាញសង្គមផ្លូវការនៅឡើយទេ
           </p>
-          <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-400 leading-relaxed">
             លោកអ្នកអាចទាក់ទងមកហាងដោយផ្ទាល់តាមរយៈព័ត៌មានខាងក្រោម
           </p>
 
           <div className="mt-4 flex flex-col gap-2">
             {cleanPhone && (
-              <div className="flex items-center justify-between rounded-xl bg-white p-2.5 text-xs ring-1 ring-gray-200/70 shadow-2xs">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <IoCallOutline className="text-sm text-primary-600" />
+              <div className="flex items-center justify-between rounded-xl bg-white dark:bg-slate-800 p-2.5 text-xs ring-1 ring-gray-200/70 dark:ring-slate-700 shadow-2xs">
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <IoCallOutline className="text-sm text-primary-600 dark:text-emerald-400" />
                   <span className="font-semibold">{cleanPhone}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <a
                     href={`tel:${cleanPhone}`}
-                    className="rounded-md bg-primary-50 px-2 py-1 font-semibold text-primary-700 hover:bg-primary-100 transition-colors"
+                    className="rounded-md bg-primary-50 dark:bg-emerald-950/50 px-2 py-1 font-semibold text-primary-700 dark:text-emerald-300 hover:bg-primary-100 dark:hover:bg-emerald-900/60 transition-colors"
                   >
                     ហៅទូរស័ព្ទ
                   </a>
@@ -569,14 +569,14 @@ export function StoreSocialMediaCard({
             )}
 
             {store.email && (
-              <div className="flex items-center justify-between rounded-xl bg-white p-2.5 text-xs ring-1 ring-gray-200/70 shadow-2xs">
-                <div className="flex items-center gap-2 text-slate-600 truncate mr-2">
-                  <IoMailOutline className="text-sm text-primary-600 shrink-0" />
+              <div className="flex items-center justify-between rounded-xl bg-white dark:bg-slate-800 p-2.5 text-xs ring-1 ring-gray-200/70 dark:ring-slate-700 shadow-2xs">
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 truncate mr-2">
+                  <IoMailOutline className="text-sm text-primary-600 dark:text-emerald-400 shrink-0" />
                   <span className="font-medium truncate">{store.email}</span>
                 </div>
                 <a
                   href={`mailto:${store.email}`}
-                  className="rounded-md bg-primary-50 px-2 py-1 font-semibold text-primary-700 hover:bg-primary-100 transition-colors shrink-0"
+                  className="rounded-md bg-primary-50 dark:bg-emerald-950/50 px-2 py-1 font-semibold text-primary-700 dark:text-emerald-300 hover:bg-primary-100 dark:hover:bg-emerald-900/60 transition-colors shrink-0"
                 >
                   ផ្ញើអ៊ីមែល
                 </a>

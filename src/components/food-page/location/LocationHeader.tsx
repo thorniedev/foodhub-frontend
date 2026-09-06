@@ -104,11 +104,11 @@ export default function LocationHeader({
         duration: 0.3,
         ease: "easeOut",
       }}
-      className="overflow-hidden rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm sm:p-5 lg:p-6"
+      className="overflow-hidden rounded-[24px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm sm:p-5 lg:p-6"
     >
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-primary-700">
+          <div className="flex items-center gap-2 text-primary-700 dark:text-emerald-400">
             <IoLocationOutline className="shrink-0 text-[24px]" />
 
             <p className="text-lg font-bold">ទីតាំង</p>
@@ -117,7 +117,7 @@ export default function LocationHeader({
           <p
             role="heading"
             aria-level={1}
-            className="mt-2 text-2xl sm:text-3xl font-bold leading-tight text-primary-900"
+            className="mt-2 text-2xl sm:text-3xl font-bold leading-tight text-primary-900 dark:text-white"
           >
             {mode === "me"
               ? "ម្ហូបនៅជិតអ្នក"
@@ -126,7 +126,7 @@ export default function LocationHeader({
                 : "ការណាត់ញ៉ាំអាហារជាក្រុម"}
           </p>
 
-          <p className="mt-2 max-w-2xl text-lg leading-relaxed text-gray-500">
+          <p className="mt-2 max-w-2xl text-lg leading-relaxed text-gray-500 dark:text-slate-400">
             {mode === "me"
               ? "ជ្រើសរើសគណនីគ្រួសារ រួចមើលម្ហូបដែលត្រូវនឹងអ្នកនៅជុំវិញទីតាំងបច្ចុប្បន្ន"
               : mode === "single"
@@ -146,7 +146,7 @@ export default function LocationHeader({
             <button
               type="button"
               onClick={onOpenFilters}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-lg font-bold text-primary-800 dark:text-primary-dark transition hover:border-primary-300 hover:bg-primary-50 active:scale-[0.98] dark:text-emerald-400 xl:hidden shrink-0"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 text-lg font-bold text-primary-800 dark:text-emerald-400 transition hover:border-primary-300 dark:hover:border-emerald-500 hover:bg-primary-50 dark:hover:bg-slate-700 active:scale-[0.98] xl:hidden shrink-0"
             >
               <IoOptionsOutline className="text-[24px]" />
               តម្រង
@@ -179,7 +179,7 @@ export default function LocationHeader({
         {locationStatus === "loading" && (
           <InfoChip
             icon={
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-200 border-t-primary-700" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-200 dark:border-emerald-800 border-t-primary-700 dark:border-t-emerald-400" />
             }
             label="កំពុងស្វែងរកទីតាំង"
             variant="gray"
@@ -187,7 +187,7 @@ export default function LocationHeader({
         )}
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2 rounded-[20px] border border-gray-100 bg-gray-50/80 p-2 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mt-6 flex flex-wrap gap-2 rounded-[20px] border border-gray-100 dark:border-slate-800 bg-gray-50/80 dark:bg-slate-950/60 p-2">
         <motion.button
           type="button"
           whileTap={{ scale: 0.98 }}
@@ -241,15 +241,15 @@ export default function LocationHeader({
         >
           <div role="alert" className="flex items-start gap-3 px-4 py-3.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center">
-              <IoAlertCircleOutline className="text-[24px] text-orange-600" />
+              <IoAlertCircleOutline className="text-[24px] text-orange-600 dark:text-orange-400" />
             </div>
 
             <div className="min-w-0">
-              <p className="text-lg font-bold leading-relaxed text-orange-700">
+              <p className="text-lg font-bold leading-relaxed text-orange-700 dark:text-orange-300">
                 មិនអាចប្រើទីតាំងបច្ចុប្បន្នបាន
               </p>
 
-              <p className="mt-1 text-lg leading-relaxed text-orange-600">
+              <p className="mt-1 text-lg leading-relaxed text-orange-600 dark:text-orange-400">
                 {locationError ||
                   "អ្នកអាចស្វែងរក ឬជ្រើសទីតាំងដោយផ្ទាល់លើផែនទី។"}
               </p>
@@ -281,8 +281,8 @@ function InfoChip({ icon, label, variant }: InfoChipProps) {
     <div
       className={`flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 ${
         variant === "green"
-          ? "border-primary-100 bg-primary-50 text-primary-800 dark:text-primary-dark"
-          : "border-gray-200 bg-gray-50 text-gray-600"
+          ? "border-primary-100 dark:border-emerald-800/60 bg-primary-50 dark:bg-emerald-950/40 text-primary-800 dark:text-emerald-400"
+          : "border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300"
       }`}
     >
       <span className="shrink-0">{icon}</span>

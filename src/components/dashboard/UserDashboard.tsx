@@ -362,32 +362,32 @@ export default function UserDashboard() {
       <>
         <div className="mx-auto container max-w-7xl">
           {/* Empty-profile CTA — flat, no gradient */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-12">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary-50 text-primary-800 ring-1 ring-primary-100">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-12">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary-50 text-primary-800 ring-1 ring-primary-100 dark:bg-emerald-950/60 dark:text-emerald-400 dark:ring-emerald-800/40">
               <UserRound className="h-10 w-10" />
             </div>
 
             <div className="mt-5">
-              <p className="text-[28px] font-bold text-slate-900 sm:text-[36px]">
+              <p className="text-[28px] font-bold text-slate-900 dark:text-white sm:text-[36px]">
                 សូមស្វាគមន៍មកកាន់ FoodHub!
               </p>
-              <p className="mx-auto mt-3 max-w-md text-[17px] leading-7 text-slate-500 lg:text-lg">
+              <p className="mx-auto mt-3 max-w-md text-[17px] leading-7 text-slate-500 dark:text-slate-400 lg:text-lg">
                 ចាប់ផ្តើមដោយបង្កើតប្រវត្តិរូបរបស់អ្នក។ FoodHub នឹងប្រើព័ត៌មាននេះ
                 ដើម្បីណែនាំអាហារដែលស័ក្តិសមសម្រាប់អ្នក។
               </p>
             </div>
 
-            <div className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[15px] text-slate-600 lg:text-lg">
+            <div className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[15px] text-slate-600 dark:text-slate-300 lg:text-lg">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary-700" />
+                <span className="h-2 w-2 rounded-full bg-primary-700 dark:bg-emerald-500" />
                 ការណែនាំអាហារផ្ទាល់ខ្លួន
               </div>
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary-700" />
+                <span className="h-2 w-2 rounded-full bg-primary-700 dark:bg-emerald-500" />
                 ការគ្រប់គ្រងស្ថានភាពអាឡែស៊ី
               </div>
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary-700" />
+                <span className="h-2 w-2 rounded-full bg-primary-700 dark:bg-emerald-500" />
                 ប្រវត្តិរូបគ្រួសារ
               </div>
             </div>
@@ -395,7 +395,7 @@ export default function UserDashboard() {
             <button
               type="button"
               onClick={() => openCreateModal(true)}
-              className="mt-6 inline-flex items-center gap-3 rounded-full bg-primary-800 px-7 py-3.5 text-[17px] font-semibold text-white shadow-sm transition lg:text-lg hover:bg-primary-900 active:scale-[0.98]"
+              className="mt-6 inline-flex items-center gap-3 rounded-full bg-primary-800 px-7 py-3.5 text-[17px] font-semibold text-white shadow-sm transition hover:bg-primary-900 active:scale-[0.98] dark:bg-emerald-600 dark:hover:bg-emerald-700 lg:text-lg"
             >
               <Plus className="h-5 w-5" />
               បង្កើតប្រវត្តិរូបរបស់ខ្ញុំ
@@ -423,13 +423,13 @@ export default function UserDashboard() {
             ].map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm"
+                className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
               >
                 <div className="mb-3 text-[32px]">{feature.icon}</div>
-                <p className="text-[17px] font-bold text-slate-800 lg:text-xl">
+                <p className="text-[17px] font-bold text-slate-800 dark:text-white lg:text-xl">
                   {feature.title}
                 </p>
-                <p className="mt-1 text-[15px] leading-6 text-slate-500 lg:text-lg">
+                <p className="mt-1 text-[15px] leading-6 text-slate-500 dark:text-slate-400 lg:text-lg">
                   {feature.desc}
                 </p>
               </div>
@@ -478,7 +478,7 @@ export default function UserDashboard() {
         {/* Profile header                                                     */}
         {/* ------------------------------------------------------------------ */}
 
-        <section className="rounded-3xl border border-slate-200/80 bg-white px-4 pb-0 pt-5 shadow-xs sm:px-6 sm:pt-6 lg:px-7 lg:pt-7">
+        <section className="rounded-3xl border border-slate-200/80 bg-white px-4 pb-0 pt-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:pt-6 lg:px-7 lg:pt-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:gap-6">
             <div className="flex min-w-0 items-center gap-4 sm:gap-5 lg:gap-6">
               <AvatarUpload
@@ -490,23 +490,23 @@ export default function UserDashboard() {
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 lg:gap-3">
-                  <p className="truncate text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+                  <p className="truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl">
                     {profile.profileName}
                   </p>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-secondary-200 bg-secondary-50 px-2.5 py-1 text-sm font-semibold text-secondary-600 lg:px-3 lg:py-1.5 lg:text-lg">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-secondary-200 bg-secondary-50 px-2.5 py-1 text-sm font-semibold text-secondary-600 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-400 lg:px-3 lg:py-1.5 lg:text-lg">
                     <Crown className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                     លំនាំដើម
                   </span>
                 </div>
 
-                <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-slate-500 lg:mt-2 lg:text-lg">
+                <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-slate-500 dark:text-slate-400 lg:mt-2 lg:text-lg">
                   <span>
                     {relationshipLabels[profile.relationship as MemberRelationship] ??
                       profile.relationship ??
                       "មិនបានបញ្ជាក់"}
                   </span>
-                  <span className="h-1 w-1 rounded-full bg-slate-300" />
+                  <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                   {/* <span>{getLanguageLabel(profile.preferredLanguage)}</span> */}
                 </p>
               </div>
@@ -514,14 +514,14 @@ export default function UserDashboard() {
 
             <Link
               href={`/dashboard/family-profile/${profile.uuid}?mode=edit`}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-base font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 active:scale-[0.98] sm:w-auto lg:min-h-12 lg:px-6 lg:text-lg"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-base font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 active:scale-[0.98] dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400 sm:w-auto lg:min-h-12 lg:px-6 lg:text-lg"
             >
               <Pencil className="h-4 w-4 lg:h-5 lg:w-5" />
               កែប្រែប្រវត្តិរូប
             </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-100 py-3.5 lg:mt-7 lg:py-4">
+          <div className="mt-6 grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-100 py-3.5 dark:divide-slate-800 dark:border-slate-800 lg:mt-7 lg:py-4">
             <SocialStat value={age} label="អាយុ" suffix="ឆ្នាំ" />
             <SocialStat value={preferenceCount} label="ការកំណត់" />
             <SocialStat value={familyProfileCount} label="ប្រវត្តិរូប" />
@@ -616,8 +616,8 @@ export default function UserDashboard() {
               <EmptyValue text="មិនមានព័ត៌មានសុខភាព។" />
             )}
 
-            <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-base leading-7 text-emerald-800 lg:mt-5 lg:p-5 lg:text-lg lg:leading-8">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-emerald-600 shadow-sm lg:h-10 lg:w-10">
+            <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-base leading-7 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300 lg:mt-5 lg:p-5 lg:text-lg lg:leading-8">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-emerald-600 shadow-sm dark:bg-slate-900 dark:text-emerald-400 lg:h-10 lg:w-10">
                 <Sparkles className="h-4 w-4 lg:h-5 lg:w-5" />
               </span>
               <p>
@@ -751,19 +751,19 @@ export default function UserDashboard() {
 
         <section
           id="profile-family"
-          className="mt-4 scroll-mt-24 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.05)] sm:p-6 lg:mt-5 lg:p-7"
+          className="mt-4 scroll-mt-24 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 sm:p-6 lg:mt-5 lg:p-7"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3 lg:gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 lg:h-12 lg:w-12">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 dark:bg-emerald-950/60 dark:text-emerald-400 lg:h-12 lg:w-12">
                 <Users className="h-5 w-5 lg:h-6 lg:w-6" />
               </span>
 
               <div>
-                <p className="text-xl font-bold text-slate-900 sm:text-2xl lg:text-2xl">
+                <p className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl lg:text-2xl">
                   ប្រវត្តិរូបគ្រួសារ
                 </p>
-                <p className="mt-0.5 text-sm text-slate-500 sm:text-base lg:text-lg">
+                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400 sm:text-base lg:text-lg">
                   គ្រប់គ្រងមនុស្សដែលអ្នកចង់ទទួលការណែនាំអាហារជូន
                 </p>
               </div>
@@ -772,7 +772,7 @@ export default function UserDashboard() {
             <button
               type="button"
               onClick={() => openCreateModal(false)}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary-800 px-5 py-2.5 text-base font-semibold text-white shadow-sm transition hover:bg-primary-900 active:scale-[0.98] sm:w-auto lg:min-h-12 lg:px-6 lg:text-lg"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary-800 px-5 py-2.5 text-base font-semibold text-white shadow-sm transition hover:bg-primary-900 active:scale-[0.98] dark:bg-emerald-600 dark:hover:bg-emerald-700 sm:w-auto lg:min-h-12 lg:px-6 lg:text-lg"
             >
               <UserPlus className="h-[18px] w-[18px] lg:h-5 lg:w-5" />
               បន្ថែមសមាជិក
@@ -793,15 +793,15 @@ export default function UserDashboard() {
             <button
               type="button"
               onClick={() => openCreateModal(false)}
-              className="mt-5 flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-primary-300 hover:bg-primary-50/50 lg:mt-6"
+              className="mt-5 flex w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-primary-300 hover:bg-primary-50/50 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-emerald-500/40 dark:hover:bg-slate-800 lg:mt-6"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-primary-700 shadow-sm lg:h-14 lg:w-14">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-primary-700 shadow-sm dark:bg-slate-900 dark:text-emerald-400 lg:h-14 lg:w-14">
                 <UserPlus className="h-5 w-5 lg:h-6 lg:w-6" />
               </span>
-              <p className="mt-3 text-base font-semibold text-slate-700 lg:text-lg">
+              <p className="mt-3 text-base font-semibold text-slate-700 dark:text-slate-200 lg:text-lg">
                 បន្ថែមប្រវត្តិរូបគ្រួសារដំបូង
               </p>
-              <p className="mt-1 text-sm text-slate-500 lg:text-lg">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 lg:text-lg">
                 អ្នកអាចកំណត់អាឡែស៊ី របបអាហារ
                 និងចំណូលចិត្តខុសៗគ្នាសម្រាប់មនុស្សម្នាក់ៗ។
               </p>
@@ -834,7 +834,7 @@ function ProfileCard({ profile, onRefetch }: ProfileCardProps) {
   const medicalCount = profile.medicalConditions?.length ?? 0;
 
   return (
-    <div className="group rounded-2xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)] lg:p-5">
+    <div className="group rounded-2xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-500/40 lg:p-5">
       <div className="flex items-center gap-3">
         <AvatarUpload
           profileUuid={profile.uuid}
@@ -845,10 +845,10 @@ function ProfileCard({ profile, onRefetch }: ProfileCardProps) {
         />
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-bold text-slate-900 lg:text-xl">
+          <p className="truncate text-lg font-bold text-slate-900 dark:text-white lg:text-xl">
             {profile.profileName}
           </p>
-          <p className="mt-0.5 truncate text-sm text-slate-500 lg:text-lg">
+          <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400 lg:text-lg">
             {relationshipLabels[profile.relationship as MemberRelationship] ??
               profile.relationship ??
               "មិនបានបញ្ជាក់"}
@@ -857,7 +857,7 @@ function ProfileCard({ profile, onRefetch }: ProfileCardProps) {
 
         <Link
           href={`/dashboard/family-profile/${profile.uuid}?mode=edit`}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-primary-50 hover:text-primary-700 lg:h-11 lg:w-11"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-primary-50 hover:text-primary-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-emerald-400 lg:h-11 lg:w-11"
           title="កែប្រែ"
           aria-label={`កែប្រែ ${profile.profileName}`}
         >
@@ -989,7 +989,7 @@ function AvatarUpload({
         disabled={isProcessing}
         title="ផ្លាស់ប្ដូររូបតំណាង"
         aria-label="ផ្លាស់ប្ដូររូបតំណាង"
-        className={`group relative flex shrink-0 items-center justify-center overflow-hidden border-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70 ${sizeClasses}`}
+        className={`group relative flex shrink-0 items-center justify-center overflow-hidden border-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 ${sizeClasses}`}
       >
         {/* Photo or initials background */}
         {accessUrlData?.url ? (
@@ -1030,7 +1030,7 @@ function AvatarUpload({
 
       {/* Inline upload error */}
       {uploadError && (
-        <p className="mt-1.5 max-w-[140px] text-center text-[13px] leading-5 text-red-600">
+        <p className="mt-1.5 max-w-[140px] text-center text-[13px] leading-5 text-red-600 dark:text-red-400">
           {uploadError}
         </p>
       )}
@@ -1054,16 +1054,16 @@ function SocialStat({
   return (
     <div className="flex min-w-0 flex-col items-center justify-center px-2 text-center">
       <div className="flex items-baseline gap-1">
-        <span className="text-xl font-bold text-slate-900 sm:text-2xl lg:text-3xl">
+        <span className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl lg:text-3xl">
           {value}
         </span>
         {suffix && (
-          <span className="text-xs font-medium text-slate-400 lg:text-lg">
+          <span className="text-xs font-medium text-slate-400 dark:text-slate-500 lg:text-lg">
             {suffix}
           </span>
         )}
       </div>
-      <span className="mt-0.5 truncate text-xs font-medium text-slate-500 sm:text-sm lg:text-lg">
+      <span className="mt-0.5 truncate text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm lg:text-lg">
         {label}
       </span>
     </div>
@@ -1074,7 +1074,7 @@ function ProfileAnchor({ href, label }: { href: string; label: string }) {
   return (
     <a
       href={href}
-      className="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-primary-800 lg:px-5 lg:py-2.5 lg:text-lg"
+      className="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-primary-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-emerald-400 lg:px-5 lg:py-2.5 lg:text-lg"
     >
       {label}
     </a>
@@ -1099,19 +1099,19 @@ function SectionCard({
   return (
     <section
       id={id}
-      className={`scroll-mt-24 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.045)] sm:p-5 lg:p-6 ${className}`}
+      className={`scroll-mt-24 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.045)] dark:border-slate-800 dark:bg-slate-900 ${className}`}
     >
       <div className="mb-4 flex items-start gap-3 lg:mb-5 lg:gap-4">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 lg:h-12 lg:w-12">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 dark:bg-emerald-950/60 dark:text-emerald-400 lg:h-12 lg:w-12">
           {icon}
         </span>
 
         <div className="min-w-0">
-          <p className="text-lg font-bold text-primary-800 sm:text-xl lg:text-2xl">
+          <p className="text-lg font-bold text-primary-800 dark:text-emerald-400 sm:text-xl lg:text-2xl">
             {title}
           </p>
           {description && (
-            <p className="mt-0.5 text-sm leading-6 text-slate-500 lg:text-lg lg:leading-8">
+            <p className="mt-0.5 text-sm leading-6 text-slate-500 dark:text-slate-400 lg:text-lg lg:leading-8">
               {description}
             </p>
           )}
@@ -1134,12 +1134,12 @@ function ProfileInfoRow({
 }) {
   return (
     <div className="flex items-center gap-4">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 shadow-sm">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 shadow-sm dark:bg-emerald-950/60 dark:text-emerald-400">
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-medium text-slate-500 lg:text-base">{label}</p>
-        <p className="mt-0.5 break-words text-base font-semibold text-slate-900 lg:text-lg">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 lg:text-base">{label}</p>
+        <p className="mt-0.5 break-words text-base font-semibold text-slate-900 dark:text-white lg:text-lg">
           {value}
         </p>
       </div>
@@ -1158,24 +1158,24 @@ function DetailedSafetyTag({
 }) {
   const styles = {
     red: {
-      wrapper: "border-red-100 bg-red-50 text-red-700",
+      wrapper: "border-red-100 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300",
       dot: "bg-red-500",
-      detail: "text-red-500",
+      detail: "text-red-500 dark:text-red-400",
     },
     emerald: {
-      wrapper: "border-emerald-100 bg-emerald-50 text-emerald-700",
+      wrapper: "border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",
       dot: "bg-emerald-500",
-      detail: "text-emerald-600",
+      detail: "text-emerald-600 dark:text-emerald-400",
     },
     blue: {
-      wrapper: "border-blue-100 bg-blue-50 text-blue-700",
+      wrapper: "border-blue-100 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300",
       dot: "bg-blue-500",
-      detail: "text-blue-500",
+      detail: "text-blue-500 dark:text-blue-400",
     },
     orange: {
-      wrapper: "border-orange-100 bg-orange-50 text-orange-700",
+      wrapper: "border-orange-100 bg-orange-50 text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/40 dark:text-orange-300",
       dot: "bg-orange-500",
-      detail: "text-orange-600",
+      detail: "text-orange-600 dark:text-orange-400",
     },
   };
 
@@ -1223,9 +1223,9 @@ function MiniProfileStat({
   tone: "red" | "emerald" | "blue";
 }) {
   const toneClass = {
-    red: "bg-red-50 text-red-600",
-    emerald: "bg-emerald-50 text-emerald-600",
-    blue: "bg-blue-50 text-blue-600",
+    red: "bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-300",
+    emerald: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300",
+    blue: "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300",
   }[tone];
 
   return (
@@ -1242,7 +1242,7 @@ function MiniProfileStat({
 
 function EmptyValue({ text }: { text: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-base text-slate-500 lg:px-5 lg:py-5 lg:text-lg">
+    <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-base text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400 lg:px-5 lg:py-5 lg:text-lg">
       {text}
     </p>
   );
@@ -1252,41 +1252,41 @@ function DashboardLoading() {
   return (
     <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-4 lg:px-5 lg:py-5 xl:px-6">
       {/* Profile Header Skeleton */}
-      <div className="animate-pulse rounded-3xl border border-slate-200/80 bg-white px-4 pb-0 pt-5 shadow-xs sm:px-6 sm:pt-6 lg:px-7 lg:pt-7">
+      <div className="animate-pulse rounded-3xl border border-slate-200/80 bg-white px-4 pb-0 pt-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:pt-6 lg:px-7 lg:pt-7">
         
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:gap-6">
           <div className="flex min-w-0 items-center gap-4 sm:gap-5 lg:gap-6">
-            <div className="h-20 w-20 shrink-0 rounded-full bg-slate-200 lg:h-24 lg:w-24" />
+            <div className="h-20 w-20 shrink-0 rounded-full bg-slate-200 dark:bg-slate-800 lg:h-24 lg:w-24" />
             
             <div className="space-y-3">
-              <div className="h-8 w-48 rounded-lg bg-slate-200 sm:w-64 lg:h-10 lg:w-80" />
-              <div className="h-4 w-32 rounded-md bg-slate-100 sm:w-40 lg:h-5 lg:w-56" />
+              <div className="h-8 w-48 rounded-lg bg-slate-200 dark:bg-slate-800 sm:w-64 lg:h-10 lg:w-80" />
+              <div className="h-4 w-32 rounded-md bg-slate-100 dark:bg-slate-700 sm:w-40 lg:h-5 lg:w-56" />
             </div>
           </div>
           
-          <div className="h-11 w-full rounded-full bg-slate-200 sm:w-36 lg:h-12 lg:w-44" />
+          <div className="h-11 w-full rounded-full bg-slate-200 dark:bg-slate-800 sm:w-36 lg:h-12 lg:w-44" />
         </div>
 
-        <div className="mt-6 grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-100 py-3.5 lg:mt-7 lg:py-4">
+        <div className="mt-6 grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-100 py-3.5 dark:divide-slate-800 dark:border-slate-800 lg:mt-7 lg:py-4">
           {[0, 1, 2].map((item) => (
             <div key={item} className="flex flex-col items-center justify-center space-y-2">
-              <div className="h-7 w-12 rounded-md bg-slate-200 lg:h-8 lg:w-16" />
-              <div className="h-4 w-16 rounded-md bg-slate-100 lg:w-20" />
+              <div className="h-7 w-12 rounded-md bg-slate-200 dark:bg-slate-800 lg:h-8 lg:w-16" />
+              <div className="h-4 w-16 rounded-md bg-slate-100 dark:bg-slate-700 lg:w-20" />
             </div>
           ))}
         </div>
 
         <div className="flex items-center gap-2 py-2.5 lg:py-3">
           {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-9 w-20 rounded-full bg-slate-100 lg:h-10 lg:w-24" />
+            <div key={item} className="h-9 w-20 rounded-full bg-slate-100 dark:bg-slate-800 lg:h-10 lg:w-24" />
           ))}
         </div>
       </div>
 
       {/* Sections Skeletons */}
       <div className="mt-6 flex flex-col gap-5 lg:gap-6">
-        <div className="h-64 animate-pulse rounded-3xl border border-slate-200/80 bg-white shadow-xs lg:h-72" />
-        <div className="h-96 animate-pulse rounded-3xl border border-slate-200/80 bg-white shadow-xs lg:h-[420px]" />
+        <div className="h-64 animate-pulse rounded-3xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 lg:h-72" />
+        <div className="h-96 animate-pulse rounded-3xl border border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 lg:h-[420px]" />
       </div>
     </div>
   );
@@ -1303,14 +1303,14 @@ function DashboardState({
 }) {
   return (
     <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-4 lg:px-5 xl:px-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-[20px] text-emerald-600">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-[20px] text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
           <FaRegUser />
         </div>
 
-        <p className="mt-4 text-[22px] font-bold text-slate-800">{title}</p>
+        <p className="mt-4 text-[22px] font-bold text-slate-800 dark:text-white">{title}</p>
 
-        <p className="mx-auto mt-2 max-w-lg text-[17px] leading-7 text-slate-500 lg:text-lg">
+        <p className="mx-auto mt-2 max-w-lg text-[17px] leading-7 text-slate-500 dark:text-slate-400 lg:text-lg">
           {description}
         </p>
 

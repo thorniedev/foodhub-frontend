@@ -204,21 +204,21 @@ function FilterSection({
   children,
 }: FilterSectionProps) {
   return (
-    <section className="border-t border-gray-100 py-4 first:border-t-0 first:pt-0">
+    <section className="border-t border-gray-100 dark:border-slate-800 py-4 first:border-t-0 first:pt-0">
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full cursor-pointer items-center justify-between text-left"
       >
-        <span className="flex items-center gap-2 text-lg font-bold text-primary-900">
-          <span className="text-[22px] text-primary-700">{icon}</span>
+        <span className="flex items-center gap-2 text-lg font-bold text-primary-900 dark:text-white">
+          <span className="text-[22px] text-primary-700 dark:text-emerald-400">{icon}</span>
           {title}
         </span>
 
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-gray-400"
+          className="text-gray-400 dark:text-slate-500"
         >
           <IoChevronDown className="text-[22px]" />
         </motion.span>
@@ -254,20 +254,20 @@ function CheckboxOption({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.22 }}
-      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2.5 transition hover:bg-primary-50"
+      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-2.5 transition hover:bg-primary-50 dark:hover:bg-slate-800/60"
     >
       <span className="flex min-w-0 items-center gap-3">
         <input
           type="checkbox"
           checked={checked}
           onChange={onChange}
-          className="h-4 w-4 shrink-0 accent-primary-800"
+          className="h-4 w-4 shrink-0 accent-primary-800 dark:accent-emerald-500"
         />
-        <span className="truncate text-lg text-gray-700">{label}</span>
+        <span className="truncate text-lg text-gray-700 dark:text-slate-300">{label}</span>
       </span>
 
       {typeof count === "number" && (
-        <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-base font-semibold text-gray-500">
+        <span className="shrink-0 rounded-full bg-gray-100 dark:bg-slate-800 px-2.5 py-0.5 text-base font-semibold text-gray-500 dark:text-slate-400">
           {count}
         </span>
       )}
@@ -292,8 +292,8 @@ function SingleChoice<T extends string | number>({
             onClick={() => onChange(isSelected ? null : option.value)}
             className={`rounded-full border px-4 py-2 text-lg font-semibold transition ${
               isSelected
-                ? "border-primary-800 bg-primary-800 text-white"
-                : "border-gray-200 bg-white text-gray-600 hover:border-primary-500 hover:bg-primary-50"
+                ? "border-primary-800 bg-primary-800 text-white dark:border-emerald-600 dark:bg-emerald-600"
+                : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:border-primary-500 dark:hover:border-emerald-500 hover:bg-primary-50 dark:hover:bg-slate-700"
             }`}
           >
             {option.label}
@@ -610,9 +610,9 @@ export default function LocationFilters({
       transition={{ type: "spring", stiffness: 320, damping: 34 }}
       className={isDrawer ? "h-full w-full" : "h-[calc(100vh-8rem)] shrink-0"}
     >
-      <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm">
+      <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <div
-          className={`shrink-0 border-b border-gray-100 bg-white ${
+          className={`shrink-0 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 ${
             collapsed && !isDrawer ? "p-3" : "p-5"
           }`}
         >
@@ -631,7 +631,7 @@ export default function LocationFilters({
                   transition={{ duration: 0.2 }}
                 >
                   <div className="flex items-center gap-2">
-                    <p className="text-[26px] font-semibold text-primary-900">
+                    <p className="text-[26px] font-semibold text-primary-900 dark:text-white">
                       តម្រង
                     </p>
                     {activeFilterCount > 0 && (
@@ -640,7 +640,7 @@ export default function LocationFilters({
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 text-[16px] leading-7 text-gray-400">
+                  <p className="mt-1 text-[16px] leading-7 text-gray-400 dark:text-slate-400">
                     ជ្រើសរើសមុខម្ហូបតាមចំណូលចិត្ត
                   </p>
                 </motion.div>
@@ -653,7 +653,7 @@ export default function LocationFilters({
                 onClick={onClose}
                 whileTap={{ scale: 0.9 }}
                 aria-label="Close food filters"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300 transition hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-700 dark:hover:text-emerald-400"
               >
                 <IoCloseOutline className="text-[24px]" />
               </motion.button>
@@ -666,7 +666,7 @@ export default function LocationFilters({
                 aria-label={
                   collapsed ? "Expand food filters" : "Collapse food filters"
                 }
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition hover:bg-primary-50 hover:text-primary-700"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300 transition hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-700 dark:hover:text-emerald-400"
               >
                 <motion.span animate={{ rotate: collapsed ? 180 : 0 }}>
                   <IoChevronBack className="text-[21px]" />
@@ -676,8 +676,8 @@ export default function LocationFilters({
           </div>
 
           {(!collapsed || isDrawer) && (
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2.5">
-              <p className="text-lg font-medium text-gray-500">
+            <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 dark:bg-slate-800/60 px-3 py-2.5">
+              <p className="text-lg font-medium text-gray-500 dark:text-slate-400">
                 {activeFilterCount} តម្រងបានជ្រើស
               </p>
               <button
@@ -702,18 +702,17 @@ export default function LocationFilters({
                 aria-label={item.label}
                 whileHover={{
                   scale: 1.08,
-                  backgroundColor: "rgb(240 253 244)",
                 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => openCollapsedSection(item.key)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[21px] text-primary-700"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[21px] text-primary-700 dark:text-emerald-400 hover:bg-primary-50 dark:hover:bg-slate-800 transition-colors"
               >
                 {item.icon}
               </motion.button>
             ))}
           </div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 hover:[&::-webkit-scrollbar-thumb]:bg-primary-700">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] dark:[scrollbar-color:#475569_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 hover:[&::-webkit-scrollbar-thumb]:bg-primary-700">
             <FilterSection
               title="តម្រៀបតាម"
               icon={<IoSwapVerticalOutline />}
@@ -734,8 +733,8 @@ export default function LocationFilters({
                         key={option.value}
                         className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
                           selected
-                            ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
-                            : "border-transparent text-gray-600 hover:bg-gray-50"
+                            ? "border-primary-200 dark:border-emerald-800 bg-primary-50 dark:bg-emerald-950/40 text-primary-800 dark:text-emerald-300"
+                            : "border-transparent text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800/50"
                         }`}
                       >
                         <input
@@ -743,7 +742,7 @@ export default function LocationFilters({
                           name="location-food-sort"
                           checked={selected}
                           onChange={() => update("sortBy", option.value)}
-                          className="h-4 w-4 shrink-0 accent-primary-800"
+                          className="h-4 w-4 shrink-0 accent-primary-800 dark:accent-emerald-500"
                         />
                         <span className="text-lg font-medium">{option.label}</span>
                       </motion.label>
@@ -760,14 +759,14 @@ export default function LocationFilters({
               onToggle={() => toggleSection("category")}
             >
               {/* Category Type Selector */}
-              <div className="mb-3 flex items-center rounded-xl bg-gray-100 p-1">
+              <div className="mb-3 flex items-center rounded-xl bg-gray-100 dark:bg-slate-800 p-1">
                 <button
                   type="button"
                   onClick={() => setCategoryType("ALL")}
                   className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "ALL"
-                      ? "bg-white text-primary-800 shadow-sm"
-                      : "text-gray-500 hover:text-gray-800"
+                      ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-emerald-300 shadow-sm"
+                      : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
                   }`}
                 >
                   ទាំងអស់
@@ -777,8 +776,8 @@ export default function LocationFilters({
                   onClick={() => setCategoryType("FOOD")}
                   className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "FOOD"
-                      ? "bg-white text-primary-800 shadow-sm"
-                      : "text-gray-500 hover:text-gray-800"
+                      ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-emerald-300 shadow-sm"
+                      : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
                   }`}
                 >
                   ម្ហូប
@@ -788,8 +787,8 @@ export default function LocationFilters({
                   onClick={() => setCategoryType("DRINK")}
                   className={`flex-1 rounded-lg py-2 text-lg font-bold transition ${
                     categoryType === "DRINK"
-                      ? "bg-white text-primary-800 shadow-sm"
-                      : "text-gray-500 hover:text-gray-800"
+                      ? "bg-white dark:bg-slate-700 text-primary-800 dark:text-emerald-300 shadow-sm"
+                      : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200"
                   }`}
                 >
                   ភេសជ្ជៈ
@@ -797,8 +796,8 @@ export default function LocationFilters({
               </div>
 
               {/* Keep Searchbox */}
-              <div className="mb-3 flex min-h-12 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 transition focus-within:border-primary-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-50">
-                <IoSearchOutline className="shrink-0 text-[22px] text-gray-400" />
+              <div className="mb-3 flex min-h-12 items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/70 px-3 transition focus-within:border-primary-400 dark:focus-within:border-emerald-500 focus-within:bg-white dark:focus-within:bg-slate-800 focus-within:ring-4 focus-within:ring-primary-50 dark:focus-within:ring-emerald-950/40">
+                <IoSearchOutline className="shrink-0 text-[22px] text-gray-400 dark:text-slate-400" />
                 <input
                   value={categoryQuery}
                   onChange={(event) => setCategoryQuery(event.target.value)}
@@ -809,10 +808,10 @@ export default function LocationFilters({
                         ? "ស្វែងរកប្រភេទភេសជ្ជៈ"
                         : "ស្វែងរកប្រភេទម្ហូប ឬភេសជ្ជៈ"
                   }
-                  className="w-full bg-transparent text-lg text-gray-700 outline-none placeholder:text-gray-400"
+                  className="w-full bg-transparent text-lg text-gray-700 dark:text-slate-200 outline-none placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 />
               </div>
-              <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2">
+              <div className="max-h-[230px] space-y-1 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] dark:[scrollbar-color:#475569_transparent]">
                 <AnimatePresence mode="popLayout">
                   {visibleCategoryOptions.length > 0 ? (
                     visibleCategoryOptions.map((option) => (
@@ -836,7 +835,7 @@ export default function LocationFilters({
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.97 }}
                       transition={{ duration: 0.22 }}
-                      className="py-2 text-center text-xs text-gray-400"
+                      className="py-2 text-center text-xs text-gray-400 dark:text-slate-500"
                     >
                       រកមិនឃើញប្រភេទដែលត្រូវគ្នា
                     </motion.p>
@@ -939,7 +938,7 @@ export default function LocationFilters({
               isOpen={openSections.allergens}
               onToggle={() => toggleSection("allergens")}
             >
-              <p className="mb-3 text-[16px] leading-7 text-orange-600">
+              <p className="mb-3 text-[16px] leading-7 text-orange-600 dark:text-orange-400">
                 មុខម្ហូបដែលមានអាឡែស៊ីដែលបានជ្រើសនឹងត្រូវដកចេញ។
               </p>
               {allergenOptions.map((option) => (
@@ -1055,7 +1054,7 @@ export default function LocationFilters({
               isOpen={openSections.provinces}
               onToggle={() => toggleSection("provinces")}
             >
-              <div className="max-h-[230px] overflow-y-auto pr-2">
+              <div className="max-h-[230px] overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] dark:[scrollbar-color:#475569_transparent]">
                 {provinceOptions.map((option) => (
                   <CheckboxOption
                     key={option.code}
@@ -1153,7 +1152,7 @@ export default function LocationFilters({
               isOpen={openSections.stores}
               onToggle={() => toggleSection("stores")}
             >
-              <div className="max-h-[230px] overflow-y-auto pr-2">
+              <div className="max-h-[230px] overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] dark:[scrollbar-color:#475569_transparent]">
                 {storeOptions.map((option) => (
                   <CheckboxOption
                     key={option.code}
@@ -1177,7 +1176,7 @@ export default function LocationFilters({
               isOpen={openSections.ingredients}
               onToggle={() => toggleSection("ingredients")}
             >
-              <div className="max-h-[260px] overflow-y-auto pr-2">
+              <div className="max-h-[260px] overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d1d5db_transparent] dark:[scrollbar-color:#475569_transparent]">
                 {ingredientOptions.map((option) => (
                   <CheckboxOption
                     key={option.code}
@@ -1250,8 +1249,8 @@ export default function LocationFilters({
                       }
                       className={`rounded-xl border py-2.5 text-[16px] font-semibold transition ${
                         selected
-                          ? "border-primary-800 bg-primary-800 text-white shadow-sm"
-                          : "border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:bg-primary-50"
+                          ? "border-primary-800 dark:border-emerald-600 bg-primary-800 dark:bg-emerald-600 text-white shadow-sm"
+                          : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:border-primary-300 dark:hover:border-emerald-500 hover:bg-primary-50 dark:hover:bg-slate-700"
                       }`}
                     >
                       {tier}
@@ -1260,7 +1259,7 @@ export default function LocationFilters({
                 })}
               </div>
 
-              <div className="mt-3 space-y-1 rounded-xl bg-gray-50 p-3 text-[16px] leading-7 text-gray-500">
+              <div className="mt-3 space-y-1 rounded-xl bg-gray-50 dark:bg-slate-800/60 p-3 text-[16px] leading-7 text-gray-500 dark:text-slate-400">
                 <p>$: ក្រោម $3</p>
                 <p>$$: $3 ដល់ក្រោម $6</p>
                 <p>$$$: $6 ឡើងទៅ</p>

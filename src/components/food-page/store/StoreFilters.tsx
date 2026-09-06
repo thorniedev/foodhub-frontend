@@ -138,7 +138,7 @@ function FilterSection({
   children,
 }: FilterSectionProps) {
   return (
-    <section className="border-t border-gray-100 py-4 first:border-t-0 first:pt-0">
+    <section className="border-t border-gray-100 dark:border-slate-800 py-4 first:border-t-0 first:pt-0">
       <button
         type="button"
         onClick={onToggle}
@@ -149,9 +149,9 @@ function FilterSection({
         "
       >
         <span className="flex min-w-0 items-center gap-2.5">
-          <span className="shrink-0 text-[20px] text-primary-700">{icon}</span>
+          <span className="shrink-0 text-[20px] text-primary-700 dark:text-emerald-400">{icon}</span>
 
-          <span className="truncate text-[18px] font-semibold text-primary-900">
+          <span className="truncate text-[18px] font-semibold text-primary-900 dark:text-slate-100">
             {title}
           </span>
         </span>
@@ -163,7 +163,7 @@ function FilterSection({
           transition={{
             duration: 0.2,
           }}
-          className="shrink-0 text-gray-400"
+          className="shrink-0 text-gray-400 dark:text-slate-500"
         >
           <IoChevronDown className="text-[20px]" />
         </motion.span>
@@ -224,8 +224,8 @@ function CheckboxOption({
 
         ${
           checked
-            ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
-            : "border-transparent text-gray-600 hover:bg-gray-50"
+            ? "border-primary-200 bg-primary-50 text-primary-800 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300"
+            : "border-transparent text-gray-600 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-800"
         }
       `}
     >
@@ -238,7 +238,7 @@ function CheckboxOption({
             h-[18px] w-[18px]
             shrink-0
             cursor-pointer
-            accent-primary-800
+            accent-primary-800 dark:accent-emerald-500
           "
         />
 
@@ -255,8 +255,8 @@ function CheckboxOption({
 
             ${
               checked
-                ? "bg-white text-primary-700"
-                : "bg-gray-100 text-gray-500"
+                ? "bg-white text-primary-700 dark:bg-slate-800 dark:text-emerald-300"
+                : "bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400"
             }
           `}
         >
@@ -291,8 +291,8 @@ function RadioOption({
 
         ${
           checked
-            ? "border-primary-200 bg-primary-50 text-primary-800 dark:text-primary-dark"
-            : "border-transparent text-gray-600 hover:bg-gray-50"
+            ? "border-primary-200 bg-primary-50 text-primary-800 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300"
+            : "border-transparent text-gray-600 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-800"
         }
       `}
     >
@@ -305,7 +305,7 @@ function RadioOption({
           h-[18px] w-[18px]
           shrink-0
           cursor-pointer
-          accent-primary-800
+          accent-primary-800 dark:accent-emerald-500
         "
       />
 
@@ -331,7 +331,7 @@ function OptionList({
 }) {
   if (options.length === 0) {
     return (
-      <p className="rounded-xl bg-gray-50 px-3 py-3 text-[18px] leading-7 text-gray-400">
+      <p className="rounded-xl bg-gray-50 dark:bg-slate-800 px-3 py-3 text-[18px] leading-7 text-gray-400 dark:text-slate-500">
         មិនមានទិន្នន័យសម្រាប់តម្រងនេះទេ។
       </p>
     );
@@ -460,8 +460,8 @@ export default function StoreFilters({
           min-h-0 flex-col
           overflow-hidden
           rounded-[22px]
-          border border-gray-100
-          bg-white shadow-sm
+          border border-gray-100 dark:border-slate-800
+          bg-white dark:bg-slate-900 shadow-sm
         "
       >
         {/* ------------------------------------------------------------------ */}
@@ -471,8 +471,8 @@ export default function StoreFilters({
         <div
           className={`
             shrink-0
-            border-b border-gray-100
-            bg-white
+            border-b border-gray-100 dark:border-slate-800
+            bg-white dark:bg-slate-900
 
             ${collapsed && !isDrawer ? "px-3 py-4" : "px-4 py-4 sm:px-5"}
           `}
@@ -505,8 +505,8 @@ export default function StoreFilters({
                   }}
                   className="min-w-0"
                 >
-                  <div className="fle x items-center gap-2">
-                    <p className="text-[23px] font-bold leading-tight text-primary-900">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[23px] font-bold leading-tight text-primary-900 dark:text-slate-100">
                       តម្រង
                     </p>
 
@@ -527,7 +527,7 @@ export default function StoreFilters({
                     )}
                   </div>
 
-                  <p className="mt-1 text-[18px] leading-7 text-gray-400">
+                  <p className="mt-1 text-[18px] leading-7 text-gray-400 dark:text-slate-400">
                     ស្វែងរកហាងដែលសមនឹងអ្នក
                   </p>
                 </motion.div>
@@ -546,10 +546,10 @@ export default function StoreFilters({
                   flex h-10 w-10
                   shrink-0 items-center
                   justify-center rounded-full
-                  bg-gray-50 text-gray-500
+                  bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300
                   transition-colors
-                  hover:bg-primary-50
-                  hover:text-primary-700
+                  hover:bg-primary-50 dark:hover:bg-slate-700
+                  hover:text-primary-700 dark:hover:text-emerald-400
                 "
               >
                 <IoCloseOutline className="text-[24px]" />
@@ -571,10 +571,10 @@ export default function StoreFilters({
                   flex h-10 w-10
                   shrink-0 items-center
                   justify-center rounded-full
-                  bg-gray-50 text-gray-500
+                  bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-300
                   transition-colors
-                  hover:bg-primary-50
-                  hover:text-primary-700
+                  hover:bg-primary-50 dark:hover:bg-slate-700
+                  hover:text-primary-700 dark:hover:text-emerald-400
                 "
               >
                 <motion.span
@@ -597,11 +597,11 @@ export default function StoreFilters({
                 mt-3 flex
                 items-center justify-between
                 gap-3 rounded-xl
-                bg-gray-50
+                bg-gray-50 dark:bg-slate-800/80
                 px-3 py-2.5
               "
             >
-              <p className="min-w-0 text-[18px] text-gray-500">
+              <p className="min-w-0 text-[18px] text-gray-500 dark:text-slate-400">
                 {activeFilterCount} តម្រងបានជ្រើស
               </p>
 
@@ -661,9 +661,9 @@ export default function StoreFilters({
                   shrink-0 items-center
                   justify-center rounded-full
                   text-[21px]
-                  text-primary-700
+                  text-primary-700 dark:text-emerald-400
                   transition-colors
-                  hover:bg-primary-50
+                  hover:bg-primary-50 dark:hover:bg-slate-800
                 "
               >
                 {item.icon}
@@ -694,12 +694,15 @@ export default function StoreFilters({
               [scrollbar-gutter:stable]
               [scrollbar-width:thin]
               [scrollbar-color:#cbd5e1_transparent]
+              dark:[scrollbar-color:#334155_transparent]
 
               [&::-webkit-scrollbar]:w-[6px]
               [&::-webkit-scrollbar-track]:bg-transparent
               [&::-webkit-scrollbar-thumb]:rounded-full
               [&::-webkit-scrollbar-thumb]:bg-gray-300
+              dark:[&::-webkit-scrollbar-thumb]:bg-slate-700
               [&::-webkit-scrollbar-thumb:hover]:bg-gray-400
+              dark:[&::-webkit-scrollbar-thumb:hover]:bg-slate-600
             "
           >
             {/* -------------------------------------------------------------- */}
@@ -734,8 +737,8 @@ export default function StoreFilters({
 
                         ${
                           selected
-                            ? "border-primary-800 bg-primary-800 text-white"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50"
+                            ? "border-primary-800 bg-primary-800 text-white dark:border-emerald-600 dark:bg-emerald-600"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700"
                         }
                       `}
                     >
@@ -826,8 +829,8 @@ export default function StoreFilters({
 
                             ${
                               selected
-                                ? "border-primary-800 bg-primary-800 text-white"
-                                : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50"
+                                ? "border-primary-800 bg-primary-800 text-white dark:border-emerald-600 dark:bg-emerald-600"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700"
                             }
                           `}
                       >
