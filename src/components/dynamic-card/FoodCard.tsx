@@ -301,8 +301,8 @@ const FoodCard = React.memo(function FoodCard({
     }
 
     if (computedDistanceKm !== null && Number.isFinite(computedDistanceKm)) {
-      // Assume 2 minutes per kilometer (30 km/h) plus 5 min base preparation/pickup time.
-      travelTime = Math.ceil(computedDistanceKm * 2 + 5);
+      // Assume 1.5 minutes per kilometer (40 km/h) to match real-world motorcycle travel time
+      travelTime = Math.ceil(computedDistanceKm * 1.5);
     }
 
     const formatted =

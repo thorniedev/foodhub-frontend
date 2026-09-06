@@ -1126,7 +1126,9 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                 )} */}
 
                 {food.description && (
-                  <p className={`leading-8 text-gray-500 dark:text-gray-400 ${TEXT_BODY}`}>
+                  <p
+                    className={`leading-8 text-gray-500 dark:text-gray-400 ${TEXT_BODY}`}
+                  >
                     {food.description}
                   </p>
                 )}

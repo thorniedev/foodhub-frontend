@@ -54,7 +54,12 @@ export function calculateDistanceKm(
   const angularDistance =
     2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
 
-  return EARTH_RADIUS_KM * angularDistance;
+  const straightLineDistance = EARTH_RADIUS_KM * angularDistance;
+  
+  // Multiply by a routing factor to approximate real-world driving/road distance
+  // (typically between 1.3 and 1.7 depending on the city grid)
+  const ROUTING_FACTOR = 1.6;
+  return straightLineDistance * ROUTING_FACTOR;
 }
 
 export function calculateGroupMidpoint(
