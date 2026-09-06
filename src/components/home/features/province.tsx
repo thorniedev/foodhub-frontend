@@ -152,7 +152,7 @@ export default function ProvineImageRevealSection() {
               {/* <div className="absolute -left-4 top-4 h-full w-full rotate-[-5deg] rounded-[26px] border-2 border-primary-800/70" />
               <div className="absolute -right-3 top-2 h-full w-full rotate-[4deg] rounded-[26px] bg-primary-900/60" /> */}
 
-              <div className="relative aspect-[4/5] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-200 dark:ring-primary-800 md:max-w-[340px] transition-colors duration-500">
+              <div className="relative aspect-[16/9] lg:-ml-30 lg:max-w-[550px] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-200 dark:ring-primary-800 md:max-w-[340px] transition-colors duration-500">
                 {REGIONS.map((r, i) => (
                   <RegionCard
                     key={r.en}
