@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useGetSeasonBannersQuery } from "@/app/store/bannerApi";
 import { resolveBannerImageUrl } from "@/lib/banner-media";
+import { motion, useReducedMotion } from "motion/react";
+import { VIEWPORT, group, riseScale } from "@/lib/reveal";
 
 const DEFAULT_SEASON_CARDS = [
   {
@@ -108,6 +110,7 @@ function SeasonalCard({
 
 export default function EventSection() {
   const { data: seasonBanners, isLoading } = useGetSeasonBannersQuery();
+  const reduceMotion = useReducedMotion();
 
   const items = useMemo<SeasonalItemData[]>(() => {
     if (
@@ -199,16 +202,18 @@ export default function EventSection() {
         </div>
       ) : (
         /* ============ REAL GRID ============ */
-        <div
-          data-aos="fade-up"
-          data-aos-delay="150"
+        <motion.div
+          initial={reduceMotion ? false : "hidden"}
+          whileInView="show"
+          viewport={VIEWPORT}
+          variants={group()}
           className="
             container mx-auto grid max-w-7xl
             grid-cols-2 items-center gap-4 px-4
             sm:grid-cols-2 md:grid-cols-5 lg:px-0 max-sm:pt-4
           "
         >
-          <div data-aos="fade-right" data-aos-delay="150" className="flex h-full flex-col justify-between">
+          <motion.div variants={riseScale} className="flex h-full flex-col justify-between">
             <div className="mb-6 pl-0.5">
               <p className="mb-4 text-[26px]​  max-sm:text-2xl font-bold leading-tight text-primary-800 dark:text-primary-dark md:text-[20px] lg:text-[30px]  ">
                 ចំណីអាហារស្រប
@@ -220,27 +225,27 @@ export default function EventSection() {
               </p>
             </div>
             <SeasonalCard item={items[0]} imgClassName="h-40" titleSize="text-lg" />
-          </div>
+          </motion.div>
 
-          <div data-aos="fade-up" data-aos-delay="250">
+          <motion.div variants={riseScale}>
             <div className="flex flex-col justify-between gap-4 overflow-hidden rounded-2xl">
               <SeasonalCard item={items[1]} imgClassName="h-40" titleSize="text-lg" />
               <SeasonalCard item={items[2]} imgClassName="h-[160px]" titleSize="text-lg" />
             </div>
-          </div>
+          </motion.div>
 
-          <div data-aos="zoom-in" data-aos-delay="300" className="h-full">
+          <motion.div variants={riseScale} className="h-full">
             <SeasonalCard item={items[3]} imgClassName="sm:h-[340px] max-sm:h-40" titleSize="text-xl" />
-          </div>
+          </motion.div>
 
-          <div data-aos="zoom-in" data-aos-delay="400" className="h-full">
+          <motion.div variants={riseScale} className="h-full">
             <SeasonalCard item={items[4]} imgClassName="sm:h-[340px] max-sm:h-40" titleSize="text-xl" />
-          </div>
+          </motion.div>
 
-          <div data-aos="zoom-in" data-aos-delay="400" className="md:h-[340px] max-sm:col-span-2">
+          <motion.div variants={riseScale} className="md:h-[340px] max-sm:col-span-2">
             <SeasonalCard item={items[5]} imgClassName="sm:h-[340px] max-sm:h-40" titleSize="text-xl" />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
