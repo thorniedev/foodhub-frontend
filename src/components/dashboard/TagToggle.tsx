@@ -30,7 +30,7 @@ export default function TagToggle({
         "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
         selected
           ? activeClasses
-          : "bg-white border-slate-200 text-slate-600 hover:border-slate-300",
+          : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600",
       )}
     >
       {selected && <Check className="h-3.5 w-3.5" />}

@@ -260,7 +260,7 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
   };
 
   return (
-    <section className="relative rounded-3xl border border-gray-100/50 bg-white p-2.5 shadow-sm ring-1 ring-black/5 sm:p-3">
+    <section className="relative rounded-3xl border border-gray-100/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-sm ring-1 ring-black/5 dark:ring-white/5 sm:p-3">
       {/* Cover Image & Overlay */}
       <div className="relative h-[240px] w-full overflow-hidden rounded-2xl sm:h-[280px] lg:h-[320px]">
         <StoreMediaImage
@@ -297,7 +297,7 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
         <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             {/* Logo */}
-            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-[3px] border-white/90 bg-white shadow-xl sm:h-32 sm:w-32">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-[3px] border-white/90 bg-white dark:border-slate-700 dark:bg-slate-800 shadow-xl sm:h-32 sm:w-32">
               <StoreMediaImage
                 mediaUuid={store.logoMediaUuid}
                 alt={`${store.storeName} logo`}
@@ -338,7 +338,7 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
               </h1>
 
               <div className="mt-3 flex min-w-0 items-center gap-2 text-white/90">
-                <IoLocationOutline className="shrink-0 text-xl text-primary-300" />
+                <IoLocationOutline className="shrink-0 text-xl text-primary-300 dark:text-emerald-300" />
                 <p className="truncate text-base sm:text-lg">{address}</p>
               </div>
             </div>
@@ -349,18 +349,18 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
       {/* Info Section under Hero */}
       <div className="px-3 pt-5 sm:px-4 sm:pt-6">
         {store.description && (
-          <p className="mb-6 max-w-4xl text-lg leading-relaxed text-slate-600">
+          <p className="mb-6 max-w-4xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
             {store.description}
           </p>
         )}
 
-        <div className="flex flex-wrap items-center gap-3 text-base font-medium text-slate-600">
+        <div className="flex flex-wrap items-center gap-3 text-base font-medium text-slate-600 dark:text-slate-300">
           {/* Google Maps Directions Action */}
           <a
             href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-primary-800 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-primary-700 active:scale-95"
+            className="inline-flex items-center gap-2 rounded-full bg-primary-800 dark:bg-emerald-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-primary-700 dark:hover:bg-emerald-500 active:scale-95"
           >
             <IoNavigateOutline className="text-xl" />
             ទិសដៅទៅហាង
@@ -369,34 +369,34 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
           <button
             type="button"
             onClick={handleCopyAddress}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-5 py-2.5 text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-100"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-50 dark:bg-slate-800 px-5 py-2.5 text-slate-700 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-slate-700 transition hover:bg-slate-100 dark:hover:bg-slate-700"
             title="ចម្លងអាសយដ្ឋាន"
           >
             {copied ? (
               <>
-                <IoCheckmarkOutline className="text-xl text-emerald-600" />
-                <span className="text-emerald-700 font-semibold">
+                <IoCheckmarkOutline className="text-xl text-emerald-600 dark:text-emerald-400" />
+                <span className="text-emerald-700 dark:text-emerald-300 font-semibold">
                   បានចម្លងអាសយដ្ឋាន
                 </span>
               </>
             ) : (
               <>
-                <IoCopyOutline className="text-lg text-slate-500" />
+                <IoCopyOutline className="text-lg text-slate-500 dark:text-slate-400" />
                 <span>ចម្លងអាសយដ្ឋាន</span>
               </>
             )}
           </button>
 
           {store.province && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-4 py-2.5 font-semibold text-primary-800 ring-1 ring-primary-100">
-              <IoLocationOutline className="text-lg text-primary-600" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 dark:bg-emerald-950/40 px-4 py-2.5 font-semibold text-primary-800 dark:text-emerald-300 ring-1 ring-primary-100 dark:ring-emerald-800/40">
+              <IoLocationOutline className="text-lg text-primary-600 dark:text-emerald-400" />
               {store.province}
             </span>
           )}
 
           {hygiene && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-5 py-2.5 ring-1 ring-slate-100">
-              <IoShieldCheckmarkOutline className="text-xl text-primary-600" />
+            <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 dark:bg-slate-800 px-5 py-2.5 ring-1 ring-slate-100 dark:ring-slate-700 text-slate-700 dark:text-slate-200">
+              <IoShieldCheckmarkOutline className="text-xl text-primary-600 dark:text-emerald-400" />
               អនាម័យ {hygiene}
             </span>
           )}
@@ -404,7 +404,7 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
           {store.phoneNumber && (
             <a
               href={`tel:${store.phoneNumber}`}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-5 py-2.5 ring-1 ring-slate-100 transition hover:bg-primary-50 hover:text-primary-700"
+              className="inline-flex items-center gap-2 rounded-full bg-slate-50 dark:bg-slate-800 px-5 py-2.5 ring-1 ring-slate-100 dark:ring-slate-700 text-slate-700 dark:text-slate-200 transition hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-700 dark:hover:text-emerald-400"
             >
               <IoCallOutline className="text-xl" />
               {store.phoneNumber}
@@ -414,7 +414,7 @@ function StoreHero({ store }: { store: FoodStoreDetail }) {
           {store.email && (
             <a
               href={`mailto:${store.email}`}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-5 py-2.5 ring-1 ring-slate-100 transition hover:bg-primary-50 hover:text-primary-700"
+              className="inline-flex items-center gap-2 rounded-full bg-slate-50 dark:bg-slate-800 px-5 py-2.5 ring-1 ring-slate-100 dark:ring-slate-700 text-slate-700 dark:text-slate-200 transition hover:bg-primary-50 dark:hover:bg-slate-700 hover:text-primary-700 dark:hover:text-emerald-400"
             >
               <IoMailOutline className="text-xl" />
               {store.email}
@@ -460,22 +460,22 @@ function StoreLocationMapCard({ store }: { store: FoodStoreDetail }) {
   };
 
   return (
-    <section className="rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+    <section className="rounded-3xl border border-gray-100/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-black/5 dark:ring-white/5 sm:p-6">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/40 text-primary-700 dark:text-emerald-400">
           <IoMapOutline className="text-[23px]" />
         </span>
 
         <div>
-          <p className="text-[20px] font-bold text-primary-900">
+          <p className="text-[20px] font-bold text-primary-900 dark:text-white">
             ទីតាំងនៅលើផែនទី
           </p>
-          <p className="text-[15px] text-gray-400">Google Maps</p>
+          <p className="text-[15px] text-gray-400 dark:text-slate-400">Google Maps</p>
         </div>
       </div>
 
       {/* Embedded Map */}
-      <div className="mt-5 relative h-[220px] w-full overflow-hidden rounded-[20px] border border-gray-200 shadow-inner">
+      <div className="mt-5 relative h-[220px] w-full overflow-hidden rounded-[20px] border border-gray-200 dark:border-slate-700 shadow-inner">
         <iframe
           title={`ទីតាំង ${store.storeName} នៅលើ Google Maps`}
           src={embedSrc}
@@ -487,8 +487,8 @@ function StoreLocationMapCard({ store }: { store: FoodStoreDetail }) {
 
       {/* Address & Actions */}
       <div className="mt-4 space-y-3">
-        <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-          <IoLocationOutline className="mt-0.5 shrink-0 text-lg text-primary-600" />
+        <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 p-3 text-sm text-slate-700 dark:text-slate-200">
+          <IoLocationOutline className="mt-0.5 shrink-0 text-lg text-primary-600 dark:text-emerald-400" />
           <p className="flex-1 font-medium leading-relaxed">{address}</p>
         </div>
 
@@ -497,7 +497,7 @@ function StoreLocationMapCard({ store }: { store: FoodStoreDetail }) {
             href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-xl bg-primary-800 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 active:scale-95 shadow-sm"
+            className="flex items-center justify-center gap-2 rounded-xl bg-primary-800 dark:bg-emerald-600 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 dark:hover:bg-emerald-500 active:scale-95 shadow-sm"
           >
             <FaDirections className="text-base" />
             ទិសដៅ
@@ -506,16 +506,16 @@ function StoreLocationMapCard({ store }: { store: FoodStoreDetail }) {
           <button
             type="button"
             onClick={handleCopyAddress}
-            className="flex items-center justify-center gap-2 rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95"
+            className="flex items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 transition hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95"
           >
             {copied ? (
               <>
-                <IoCheckmarkOutline className="text-lg text-emerald-600" />
-                <span className="text-emerald-700">បានចម្លង</span>
+                <IoCheckmarkOutline className="text-lg text-emerald-600 dark:text-emerald-400" />
+                <span className="text-emerald-700 dark:text-emerald-300">បានចម្លង</span>
               </>
             ) : (
               <>
-                <IoCopyOutline className="text-base text-slate-500" />
+                <IoCopyOutline className="text-base text-slate-500 dark:text-slate-400" />
                 <span>ចម្លងអាសយដ្ឋាន</span>
               </>
             )}
@@ -549,24 +549,24 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
   const hasMore = schedules.length > MAX_VISIBLE;
 
   return (
-    <section className="rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+    <section className="rounded-3xl border border-gray-100/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-black/5 dark:ring-white/5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/40 text-primary-700 dark:text-emerald-400">
             <IoTimeOutline className="text-[23px]" />
           </span>
 
           <div>
-            <p className="text-[20px] font-bold text-primary-900">ម៉ោងបើកបិទ</p>
-            <p className="text-[15px] text-gray-400">កាលវិភាគប្រចាំសប្ដាហ៍</p>
+            <p className="text-[20px] font-bold text-primary-900 dark:text-white">ម៉ោងបើកបិទ</p>
+            <p className="text-[15px] text-gray-400 dark:text-slate-400">កាលវិភាគប្រចាំសប្ដាហ៍</p>
           </div>
         </div>
 
         <span
           className={`rounded-full px-3 py-1 text-xs font-bold ${
             store.isOpenNow
-              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-              : "bg-red-50 text-red-700 ring-1 ring-red-200"
+              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800/40"
+              : "bg-red-50 text-red-700 ring-1 ring-red-200 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-800/40"
           }`}
         >
           {store.isOpenNow ? "កំពុងបើក" : "បានបិទ"}
@@ -582,14 +582,14 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
               key={`${schedule.dayOfWeek}-${schedule.intervalOrder}-${index}`}
               className={`flex items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-all ${
                 isToday
-                  ? "bg-primary-50/80 font-semibold ring-1 ring-primary-200 text-primary-900"
-                  : "bg-gray-50 text-gray-600"
+                  ? "bg-primary-50/80 dark:bg-emerald-950/40 font-semibold ring-1 ring-primary-200 dark:ring-emerald-800/40 text-primary-900 dark:text-emerald-200"
+                  : "bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300"
               }`}
             >
               <div className="flex items-center gap-2">
                 <span>{getWeekdayLabel(schedule.dayOfWeek)}</span>
                 {isToday && (
-                  <span className="rounded-full bg-primary-700 px-2 py-0.5 text-[11px] font-bold text-white">
+                  <span className="rounded-full bg-primary-700 dark:bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
                     ថ្ងៃនេះ
                   </span>
                 )}
@@ -598,10 +598,10 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
               <span
                 className={
                   schedule.isClosed
-                    ? "font-medium text-red-500"
+                    ? "font-medium text-red-500 dark:text-red-400"
                     : isToday
-                      ? "font-bold text-primary-800"
-                      : "text-gray-700"
+                      ? "font-bold text-primary-800 dark:text-emerald-300"
+                      : "text-gray-700 dark:text-slate-300"
                 }
               >
                 {schedule.isClosed
@@ -618,7 +618,7 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
       {hasMore && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 py-2.5 text-sm font-semibold text-primary-700 transition hover:bg-primary-50"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gray-50 dark:bg-slate-800 py-2.5 text-sm font-semibold text-primary-700 dark:text-emerald-400 transition hover:bg-primary-50 dark:hover:bg-slate-700"
         >
           {expanded ? (
             <>
@@ -637,11 +637,11 @@ function StoreOpeningHoursCard({ store }: { store: FoodStoreDetail }) {
 
 function LoadingPage() {
   return (
-    <main className="min-h-screen bg-slate-50 pb-14">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-14">
       <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
         {/* Back Link Skeleton */}
-        <div className="sticky top-20 z-50 mb-5 w-fit rounded-full bg-white/80 px-4 py-2 shadow-sm backdrop-blur-xl">
-          <div className="h-6 w-24 animate-pulse rounded-md bg-gray-200" />
+        <div className="sticky top-20 z-50 mb-5 w-fit rounded-full bg-white/80 dark:bg-slate-900/80 px-4 py-2 shadow-sm backdrop-blur-xl border border-gray-200/50 dark:border-slate-800">
+          <div className="h-6 w-24 animate-pulse rounded-md bg-gray-200 dark:bg-slate-700" />
         </div>
 
         {/* Main Grid: Left Content (Hero + Menu) | Right Sidebar */}
@@ -649,38 +649,38 @@ function LoadingPage() {
           {/* Left Column */}
           <div className="flex min-w-0 flex-col gap-8">
             {/* Hero Skeleton */}
-            <div className="h-[280px] animate-pulse rounded-3xl border border-gray-100 bg-white p-2.5 shadow-sm ring-1 ring-black/5 sm:h-[320px] sm:p-3 lg:h-[360px]">
-              <div className="h-full w-full rounded-2xl bg-gray-100/80"></div>
+            <div className="h-[280px] animate-pulse rounded-3xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-sm ring-1 ring-black/5 dark:ring-white/5 sm:h-[320px] sm:p-3 lg:h-[360px]">
+              <div className="h-full w-full rounded-2xl bg-gray-100/80 dark:bg-slate-800/80"></div>
             </div>
 
             {/* Mobile Sidebar Skeleton */}
             <div className="flex flex-col gap-6 lg:hidden">
-              <div className="animate-pulse rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+              <div className="animate-pulse rounded-3xl border border-gray-100/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-black/5 dark:ring-white/5 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100"></div>
+                  <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100 dark:bg-slate-800"></div>
                   <div className="space-y-2">
-                    <div className="h-5 w-24 rounded-md bg-gray-200"></div>
-                    <div className="h-4 w-32 rounded-md bg-gray-100"></div>
+                    <div className="h-5 w-24 rounded-md bg-gray-200 dark:bg-slate-700"></div>
+                    <div className="h-4 w-32 rounded-md bg-gray-100 dark:bg-slate-800"></div>
                   </div>
                 </div>
                 <div className="mt-6 flex flex-col gap-3">
-                  <div className="h-11 w-full rounded-xl bg-gray-50"></div>
-                  <div className="h-11 w-full rounded-xl bg-gray-50"></div>
+                  <div className="h-11 w-full rounded-xl bg-gray-50 dark:bg-slate-805"></div>
+                  <div className="h-11 w-full rounded-xl bg-gray-50 dark:bg-slate-805"></div>
                 </div>
               </div>
             </div>
 
             {/* Menu Section Header Skeleton */}
             <div className="space-y-6">
-              <div className="flex flex-col gap-6 border-b border-gray-100 pb-8 pt-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-col gap-6 border-b border-gray-100 dark:border-slate-800 pb-8 pt-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="space-y-3">
-                  <div className="h-8 w-48 animate-pulse rounded-md bg-gray-200"></div>
-                  <div className="h-5 w-64 animate-pulse rounded-md bg-gray-100"></div>
+                  <div className="h-8 w-48 animate-pulse rounded-md bg-gray-200 dark:bg-slate-700"></div>
+                  <div className="h-5 w-64 animate-pulse rounded-md bg-gray-100 dark:bg-slate-800"></div>
                 </div>
 
                 <div className="flex w-full items-center gap-3 sm:min-w-[400px]">
-                  <div className="h-[56px] flex-1 animate-pulse rounded-[20px] bg-gray-100/80"></div>
-                  <div className="h-[56px] w-[56px] shrink-0 animate-pulse rounded-[20px] bg-gray-100 xl:hidden"></div>
+                  <div className="h-[56px] flex-1 animate-pulse rounded-[20px] bg-gray-100/80 dark:bg-slate-800"></div>
+                  <div className="h-[56px] w-[56px] shrink-0 animate-pulse rounded-[20px] bg-gray-100 dark:bg-slate-800 xl:hidden"></div>
                 </div>
               </div>
 
@@ -688,7 +688,7 @@ function LoadingPage() {
               <div className="flex gap-7">
                 {/* Desktop Filters Skeleton */}
                 <div className="hidden w-[280px] shrink-0 xl:block">
-                  <div className="h-[600px] w-full animate-pulse rounded-[24px] border border-gray-100 bg-white shadow-sm ring-1 ring-black/5"></div>
+                  <div className="h-[600px] w-full animate-pulse rounded-[24px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm ring-1 ring-black/5 dark:ring-white/5"></div>
                 </div>
 
                 {/* Menu Items Skeleton Grid */}
@@ -696,15 +696,15 @@ function LoadingPage() {
                   {Array.from({ length: 9 }).map((_, index) => (
                     <div
                       key={index}
-                      className="overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm ring-1 ring-black/5"
+                      className="overflow-hidden rounded-[24px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm ring-1 ring-black/5 dark:ring-white/5"
                     >
-                      <div className="h-[220px] w-full animate-pulse bg-gray-100/80" />
+                      <div className="h-[220px] w-full animate-pulse bg-gray-100/80 dark:bg-slate-800" />
                       <div className="p-5">
-                        <div className="mb-3 h-6 w-3/4 animate-pulse rounded-md bg-gray-200" />
-                        <div className="mb-5 h-4 w-1/2 animate-pulse rounded-md bg-gray-100" />
+                        <div className="mb-3 h-6 w-3/4 animate-pulse rounded-md bg-gray-200 dark:bg-slate-700" />
+                        <div className="mb-5 h-4 w-1/2 animate-pulse rounded-md bg-gray-100 dark:bg-slate-800" />
                         <div className="flex items-center justify-between pt-2">
-                          <div className="h-6 w-20 animate-pulse rounded-md bg-gray-200" />
-                          <div className="h-10 w-10 animate-pulse rounded-full bg-gray-100" />
+                          <div className="h-6 w-20 animate-pulse rounded-md bg-gray-200 dark:bg-slate-700" />
+                          <div className="h-10 w-10 animate-pulse rounded-full bg-gray-100 dark:bg-slate-800" />
                         </div>
                       </div>
                     </div>
@@ -716,18 +716,18 @@ function LoadingPage() {
 
           {/* Desktop Sidebar Skeleton */}
           <div className="hidden flex-col gap-6 lg:sticky lg:top-24 lg:flex">
-            <div className="animate-pulse rounded-3xl border border-gray-100/50 bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+            <div className="animate-pulse rounded-3xl border border-gray-100/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-black/5 dark:ring-white/5 sm:p-6">
               <div className="flex items-center gap-3">
-                <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100"></div>
+                <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100 dark:bg-slate-800"></div>
                 <div className="space-y-2">
-                  <div className="h-5 w-24 rounded-md bg-gray-200"></div>
-                  <div className="h-4 w-32 rounded-md bg-gray-100"></div>
+                  <div className="h-5 w-24 rounded-md bg-gray-200 dark:bg-slate-700"></div>
+                  <div className="h-4 w-32 rounded-md bg-gray-100 dark:bg-slate-800"></div>
                 </div>
               </div>
               <div className="mt-6 flex flex-col gap-3">
-                <div className="h-11 w-full rounded-xl bg-gray-50"></div>
-                <div className="h-11 w-full rounded-xl bg-gray-50"></div>
-                <div className="h-11 w-full rounded-xl bg-gray-50"></div>
+                <div className="h-11 w-full rounded-xl bg-gray-50 dark:bg-slate-800"></div>
+                <div className="h-11 w-full rounded-xl bg-gray-50 dark:bg-slate-800"></div>
+                <div className="h-11 w-full rounded-xl bg-gray-50 dark:bg-slate-800"></div>
               </div>
             </div>
           </div>
@@ -845,17 +845,17 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
 
   if (storeError || menuError || !store) {
     return (
-      <main className="min-h-screen bg-white ">
+      <main className="min-h-screen bg-white dark:bg-slate-950">
         <div className="mx-auto flex min-h-[650px] max-w-3xl flex-col items-center justify-center px-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400">
             <FaStore className="text-[30px]" />
           </div>
 
-          <h4 className="mt-5 text-[28px] font-bold text-primary-900">
+          <h4 className="mt-5 text-[28px] font-bold text-primary-900 dark:text-white">
             មិនអាចបង្ហាញព័ត៌មានហាងបានទេ
           </h4>
 
-          <p className="mt-2 text-[18px] leading-8 text-gray-500">
+          <p className="mt-2 text-[18px] leading-8 text-gray-500 dark:text-slate-400">
             សូមព្យាយាមទាញយកព័ត៌មានហាង និងមុខម្ហូបម្តងទៀត។
           </p>
 
@@ -865,7 +865,7 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
               void refetchStore();
               void refetchMenu();
             }}
-            className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-primary-800 px-6 text-[18px] font-semibold text-white transition hover:bg-primary-700"
+            className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-primary-800 dark:bg-emerald-600 px-6 text-[18px] font-semibold text-white transition hover:bg-primary-700 dark:hover:bg-emerald-500"
           >
             <IoRefreshOutline className="text-[21px]" />
             ព្យាយាមម្តងទៀត
@@ -878,15 +878,13 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
   const busy = storeFetching || menuFetching;
 
   return (
-    <main className="min-h-screen  pb-14">
-      <div className="mx-auto w-full max-w-[1500px]  px-4 py-6 sm:px-6 lg:py-2">
-        {/* Back */}
-
+    <main className="min-h-screen pb-14">
+      <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-2">
         {/* Back Link */}
-        <div className="sticky top-20 z-50 mb-5 w-fit rounded-full bg-white/80 px-4 py-2 shadow-sm backdrop-blur-xl transition-all hover:bg-white">
+        <div className="sticky top-20 z-50 mb-5 w-fit rounded-full bg-white/80 dark:bg-slate-900/80 px-4 py-2 shadow-sm backdrop-blur-xl border border-gray-200/50 dark:border-slate-800 transition-all hover:bg-white dark:hover:bg-slate-900">
           <Link
             href="/store"
-            className="flex items-center gap-2 text-[16px] font-semibold text-primary-800 transition hover:text-primary-600"
+            className="flex items-center gap-2 text-[16px] font-semibold text-primary-800 dark:text-emerald-400 transition hover:text-primary-600 dark:hover:text-emerald-300"
           >
             <IoArrowBack className="text-[20px]" />
             ត្រឡប់ទៅរកហាង
@@ -908,19 +906,16 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
 
             {/* Menu Section */}
             <div className="space-y-4">
-              <div className="sticky px-2 top-[64px] z-40 flex flex-col gap-4 border-b border-white/20 bg-white/70 py-1 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+              <div className="sticky px-2 top-[64px] z-40 flex flex-col gap-4 border-b border-white/20 dark:border-slate-800 bg-white/70 dark:bg-slate-900/80 py-1 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  {/* <h2 className="text-2xl font-extrabold text-primary-800">
-                    មុខម្ហូបប្រចាំហាង
-                  </h2> */}
-                  <p className="mt-1 text-xl font-medium text-slate-500">
-                    មុខម្ហូប <span className="font-semibold text-primary-700">{storeMenuItems.length}</span> ជម្រើស
+                  <p className="mt-1 text-xl font-medium text-slate-500 dark:text-slate-400">
+                    មុខម្ហូប <span className="font-semibold text-primary-700 dark:text-emerald-400">{storeMenuItems.length}</span> ជម្រើស
                   </p>
                 </div>
 
                 <div className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:min-w-[320px] lg:min-w-[400px]">
-                  <div className="flex min-h-[44px] flex-1 items-center gap-3 rounded-full bg-white px-5 shadow-sm ring-1 ring-black/5 transition-all focus-within:ring-2 focus-within:ring-primary-500 hover:bg-slate-50">
-                    <IoSearchOutline className="shrink-0 text-[20px] text-slate-400" />
+                  <div className="flex min-h-[44px] flex-1 items-center gap-3 rounded-full bg-white dark:bg-slate-900 px-5 shadow-sm ring-1 ring-black/5 dark:ring-slate-700 transition-all focus-within:ring-2 focus-within:ring-primary-500 dark:focus-within:ring-emerald-500 hover:bg-slate-50 dark:hover:bg-slate-850">
+                    <IoSearchOutline className="shrink-0 text-[20px] text-slate-400 dark:text-slate-500" />
                     <input
                       type="search"
                       value={filters.query}
@@ -931,20 +926,20 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
                         })
                       }
                       placeholder="ស្វែងរកម្ហូប..."
-                      className="w-full bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
+                      className="w-full bg-transparent text-base text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                   </div>
 
                   <button
                     type="button"
                     onClick={() => setMobileFiltersOpen(true)}
-                    className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-700 transition-colors hover:bg-primary-100 xl:hidden"
+                    className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full bg-primary-50 dark:bg-slate-800 text-primary-700 dark:text-emerald-400 transition-colors hover:bg-primary-100 dark:hover:bg-slate-700 xl:hidden"
                     aria-label="Open menu filters"
                   >
                     <IoFilterOutline className="text-[20px]" />
 
                     {activeFilterCount > 0 && (
-                      <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary-500 px-1 text-xs font-bold text-white shadow-sm ring-2 ring-white">
+                      <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary-500 px-1 text-xs font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-900">
                         {activeFilterCount}
                       </span>
                     )}
@@ -963,22 +958,22 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
 
                 <section className="min-w-0 flex-1">
                   {busy && (
-                    <div className="mb-4 rounded-xl bg-primary-50 px-4 py-3 text-[18px] text-primary-700">
+                    <div className="mb-4 rounded-xl bg-primary-50 dark:bg-emerald-950/40 px-4 py-3 text-[18px] text-primary-700 dark:text-emerald-300">
                       កំពុងធ្វើបច្ចុប្បន្នភាពទិន្នន័យ...
                     </div>
                   )}
 
                   {storeMenuItems.length === 0 ? (
-                    <div className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-14 text-center shadow-sm">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+                    <div className="rounded-[24px] border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-14 text-center shadow-sm">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/40 text-primary-700 dark:text-emerald-400">
                         <FaStore className="text-[27px]" />
                       </div>
 
-                      <h3 className="mt-4 text-[22px] font-bold text-primary-900">
+                      <h3 className="mt-4 text-[22px] font-bold text-primary-900 dark:text-white">
                         ហាងនេះមិនទាន់មានមុខម្ហូប
                       </h3>
 
-                      <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500">
+                      <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500 dark:text-slate-400">
                         មិនមាន Menu Item
                         ណាមួយក្នុងទិន្នន័យដែលភ្ជាប់ជាមួយហាងនេះទេ។
                       </p>
@@ -1004,16 +999,16 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
                       </AnimatePresence>
                     </motion.div>
                   ) : (
-                    <div className="rounded-[24px] border border-dashed border-gray-200 bg-white px-5 py-14 text-center shadow-sm">
-                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+                    <div className="rounded-[24px] border border-dashed border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-14 text-center shadow-sm">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 dark:bg-emerald-950/40 text-primary-700 dark:text-emerald-400">
                         <IoSearchOutline className="text-[28px]" />
                       </div>
 
-                      <h3 className="mt-4 text-[22px] font-bold text-primary-900">
+                      <h3 className="mt-4 text-[22px] font-bold text-primary-900 dark:text-white">
                         មិនមានមុខម្ហូបត្រូវនឹងតម្រង
                       </h3>
 
-                      <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500">
+                      <p className="mx-auto mt-2 max-w-xl text-[18px] leading-8 text-gray-500 dark:text-slate-400">
                         ហាងនេះមាន {storeMenuItems.length} មុខម្ហូប
                         ប៉ុន្តែតម្រងបច្ចុប្បន្នបានដកលទ្ធផលទាំងអស់ចេញ។
                       </p>
@@ -1026,7 +1021,7 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
                             query: "",
                           })
                         }
-                        className="mt-5 rounded-full bg-primary-800 px-5 py-3 text-[18px] font-semibold text-white transition hover:bg-primary-700"
+                        className="mt-5 rounded-full bg-primary-800 dark:bg-emerald-600 px-5 py-3 text-[18px] font-semibold text-white transition hover:bg-primary-700 dark:hover:bg-emerald-500"
                       >
                         សម្អាតតម្រងទាំងអស់
                       </button>
@@ -1047,7 +1042,6 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
       </div>
 
       {/* Mobile filter drawer */}
-
       <AnimatePresence>
         {mobileFiltersOpen && (
           <motion.div
@@ -1084,7 +1078,7 @@ export default function StoreDetailPage({ storeUuid }: StoreDetailPageProps) {
                 stiffness: 320,
                 damping: 32,
               }}
-              className="absolute inset-x-0 bottom-0 h-[90dvh] overflow-hidden rounded-t-[28px] bg-white sm:left-auto sm:h-full sm:w-[390px] sm:rounded-none sm:rounded-l-[28px]"
+              className="absolute inset-x-0 bottom-0 h-[90dvh] overflow-hidden rounded-t-[28px] bg-white dark:bg-slate-900 sm:left-auto sm:h-full sm:w-[390px] sm:rounded-none sm:rounded-l-[28px]"
             >
               <StoreMenuFilterSidebar
                 mobile

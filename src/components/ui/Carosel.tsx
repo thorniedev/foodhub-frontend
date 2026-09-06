@@ -1444,8 +1444,6 @@ export default function Carousel({
 
     dragMoved.current = false;
 
-    element.setPointerCapture(event.pointerId);
-
     setIsDragging(true);
 
     pauseAutoPlay();
@@ -1483,6 +1481,13 @@ export default function Carousel({
 
     if (Math.abs(delta) > 4) {
       dragMoved.current = true;
+      try {
+        if (!trackRef.current.hasPointerCapture(event.pointerId)) {
+          trackRef.current.setPointerCapture(event.pointerId);
+        }
+      } catch {
+        /* noop */
+      }
     }
 
     pendingX.current = state.startScrollLeft - delta;
@@ -1521,7 +1526,9 @@ export default function Carousel({
     pauseAutoPlay();
 
     try {
-      element.releasePointerCapture(event.pointerId);
+      if (element.hasPointerCapture(event.pointerId)) {
+        element.releasePointerCapture(event.pointerId);
+      }
     } catch {
       /* noop */
     }

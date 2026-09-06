@@ -62,17 +62,25 @@ export default function LocationBannerRow({
 
   const carouselItems: CarouselItem[] =
     banners.length > 0
-      ? banners.map((banner) => ({
-          id: banner.id,
-          image: resolveImageUrl(banner.image),
-          alt: banner.title,
-          name: banner.title,
-          description: banner.description || "",
-          origin: banner.location || "កម្ពុជា",
-          link: banner.location
-            ? `/menu?province=${encodeURIComponent(banner.location)}`
-            : `/menu?province=${encodeURIComponent(banner.title)}`,
-        }))
+      ? banners.map((banner) => {
+          const locationTarget =
+            banner.location && banner.location.trim() !== "" && banner.location !== "កម្ពុជា"
+              ? banner.location
+              : banner.title;
+          const link = locationTarget
+            ? `/menu?province=${encodeURIComponent(locationTarget)}`
+            : "/menu";
+
+          return {
+            id: banner.id,
+            image: resolveImageUrl(banner.image),
+            alt: banner.title,
+            name: banner.title,
+            description: banner.description || "",
+            origin: banner.location || "កម្ពុជា",
+            link,
+          };
+        })
       : fallbackToDefault
         ? defaultSlides
         : [];

@@ -724,7 +724,9 @@ export default function LocationPickerMap({
           rounded-2xl
           border
           border-white/80
+          dark:border-slate-700
           bg-white/95
+          dark:bg-slate-900/95
           p-1
           shadow-lg
           backdrop-blur-md
@@ -743,8 +745,8 @@ export default function LocationPickerMap({
             transition
             ${
               mapTheme === "street"
-                ? "bg-primary-800 text-white"
-                : "text-slate-600 hover:bg-slate-100"
+                ? "bg-primary-800 dark:bg-emerald-600 text-white"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             }
           `}
         >
@@ -764,8 +766,8 @@ export default function LocationPickerMap({
             transition
             ${
               mapTheme === "satellite"
-                ? "bg-primary-800 text-white"
-                : "text-slate-600 hover:bg-slate-100"
+                ? "bg-primary-800 dark:bg-emerald-600 text-white"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             }
           `}
         >

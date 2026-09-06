@@ -11,7 +11,7 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-slate-50 relative pb-[90px] md:pb-0">
+      <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 relative pb-[90px] md:pb-0">
         {/* Sidebar includes logo at the top */}
         <Aside />
 
@@ -20,7 +20,7 @@ export default function DashboardLayout({
           {/* Header only belongs to content area */}
           <DashboardHeader />
 
-          <main className="min-w-0 flex-1 overflow-y-auto bg-slate-50">
+          <main className="min-w-0 flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
             {children}
           </main>
         </div>

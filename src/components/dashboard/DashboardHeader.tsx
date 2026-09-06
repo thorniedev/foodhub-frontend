@@ -32,7 +32,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/95 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
       {/* Main header row */}
       <div className="flex h-16 items-center gap-2 px-3 sm:gap-4 sm:px-5 lg:h-[72px] lg:gap-6 lg:px-6">
         {/* Mobile menu */}
@@ -42,9 +42,9 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
           onClick={toggle}
           className="
             flex h-10 w-10 shrink-0 items-center justify-center
-            rounded-full text-primary-700
+            rounded-full text-primary-700 dark:text-emerald-400
             transition-colors
-            hover:bg-primary-50
+            hover:bg-primary-50 dark:hover:bg-slate-800
             active:scale-95
             lg:hidden
           "
@@ -56,7 +56,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
         <div className="min-w-0 flex-1 sm:flex-none">
           <p
             className="
-              truncate text-base font-semibold text-primary-800
+              truncate text-base font-semibold text-primary-800 dark:text-white
               sm:text-lg
               lg:text-xl
             "
@@ -72,7 +72,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
               className="
                 pointer-events-none absolute left-4 top-1/2
                 h-5 w-5 -translate-y-1/2
-                text-primary-700
+                text-primary-700 dark:text-emerald-400
               "
             />
 
@@ -96,6 +96,15 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
                 focus:bg-white
                 focus:ring-2
                 focus:ring-primary-600/10
+                dark:border-slate-700
+                dark:bg-slate-800/80
+                dark:text-white
+                dark:placeholder:text-slate-400
+                dark:hover:border-slate-600
+                dark:hover:bg-slate-800
+                dark:focus:border-emerald-500
+                dark:focus:bg-slate-800
+                dark:focus:ring-emerald-500/20
               "
             />
           </div>
@@ -110,9 +119,9 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
             onClick={() => setMobileSearchOpen((prev) => !prev)}
             className="
               flex h-10 w-10 shrink-0 items-center justify-center
-              rounded-full text-primary-700
+              rounded-full text-primary-700 dark:text-emerald-400
               transition-colors
-              hover:bg-primary-50
+              hover:bg-primary-50 dark:hover:bg-slate-800
               active:scale-95
               md:hidden
             "
@@ -140,7 +149,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
       {/* Mobile search bar */}
       <div
         className={`
-          overflow-hidden border-t border-slate-100
+          overflow-hidden border-t border-slate-100 dark:border-slate-800
           transition-all duration-300
           md:hidden
           ${
@@ -156,7 +165,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
               className="
                 pointer-events-none absolute left-4 top-1/2
                 h-5 w-5 -translate-y-1/2
-                text-primary-700
+                text-primary-700 dark:text-emerald-400
               "
             />
 
@@ -184,6 +193,13 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
                 focus:bg-white
                 focus:ring-2
                 focus:ring-primary-600/10
+                dark:border-slate-700
+                dark:bg-slate-800
+                dark:text-white
+                dark:placeholder:text-slate-400
+                dark:focus:border-emerald-500
+                dark:focus:bg-slate-800
+                dark:focus:ring-emerald-500/20
               "
             />
           </div>

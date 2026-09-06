@@ -139,11 +139,12 @@ function FeaturedStoreBanner({
           overflow-hidden
           rounded-[28px] sm:rounded-[32px] md:rounded-[36px]
           p-3 sm:p-3.5 md:p-4
-          border border-gray-100/80
-          bg-white
-          shadow-xs border-gray-200
+          border border-gray-100/80 dark:border-slate-800
+          bg-white dark:bg-slate-900
+          shadow-xs
           transition-all duration-300
           hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)]
+          dark:hover:shadow-[0_12px_40px_rgb(0,0,0,0.4)]
           hover:-translate-y-0.5
         "
       >
@@ -163,8 +164,8 @@ function FeaturedStoreBanner({
               w-full
               overflow-hidden
               rounded-[16px] sm:rounded-[18px] md:rounded-[20px]
-              border border-gray-200
-              bg-primary-50
+              border border-gray-200 dark:border-slate-700
+              bg-primary-50 dark:bg-slate-800
               sm:h-[230px]
               md:h-[270px]
             "
@@ -197,9 +198,9 @@ function FeaturedStoreBanner({
                 mt-1 truncate
                 text-[24px]
                 font-bold
-                text-primary-900
+                text-primary-900 dark:text-white
                 transition-colors
-                group-hover:text-primary-700
+                group-hover:text-primary-700 dark:group-hover:text-emerald-400
 
                 sm:text-[28px]
               "
@@ -207,8 +208,8 @@ function FeaturedStoreBanner({
               {displayName}
             </h2>
 
-            <div className="mt-3 flex items-start gap-2 text-gray-500">
-              <IoLocationOutline className="mt-1 shrink-0 text-[19px] text-gray-400" />
+            <div className="mt-3 flex items-start gap-2 text-gray-500 dark:text-slate-400">
+              <IoLocationOutline className="mt-1 shrink-0 text-[19px] text-gray-400 dark:text-slate-500" />
 
               <p className="line-clamp-2 text-[18px] leading-6">
                 {addressLabel}
@@ -223,12 +224,12 @@ function FeaturedStoreBanner({
                 text-[18px]
               "
             >
-              <span className="inline-flex items-center gap-1.5 font-medium text-gray-600">
-                <IoTimeOutline className="text-[20px] text-gray-400" />
+              <span className="inline-flex items-center gap-1.5 font-medium text-gray-600 dark:text-slate-300">
+                <IoTimeOutline className="text-[20px] text-gray-400 dark:text-slate-500" />
                 {statusLabel}
               </span>
 
-              <span className="inline-flex items-center gap-1.5 font-medium text-primary-700">
+              <span className="inline-flex items-center gap-1.5 font-medium text-primary-700 dark:text-emerald-400">
                 <IoNavigateOutline className="text-[20px]" />
                 {distanceLabel}
               </span>
@@ -240,14 +241,14 @@ function FeaturedStoreBanner({
                   inline-flex min-h-11
                   items-center justify-center
                   rounded-full
-                  bg-primary-800
+                  bg-primary-800 dark:bg-emerald-600
                   px-5
                   text-[18px]
                   font-semibold
                   text-white
                   shadow-sm
                   transition
-                  group-hover:bg-primary-700
+                  group-hover:bg-primary-700 dark:group-hover:bg-emerald-500
                   active:scale-95
                 "
               >
@@ -406,8 +407,8 @@ export default function StoreGrid({
         className="
           flex min-h-[850px] lg:min-h-[900px] flex-col items-center justify-center
           rounded-[24px]
-          border border-dashed border-gray-200
-          bg-white
+          border border-dashed border-gray-200 dark:border-slate-800
+          bg-white dark:bg-slate-900
           px-5 py-16
           text-center
         "
@@ -417,8 +418,8 @@ export default function StoreGrid({
             mx-auto flex h-14 w-14
             items-center justify-center
             rounded-full
-            bg-primary-50
-            text-primary-700
+            bg-primary-50 dark:bg-emerald-950/40
+            text-primary-700 dark:text-emerald-400
           "
         >
           <IoSearchOutline className="text-[26px]" />
@@ -429,7 +430,7 @@ export default function StoreGrid({
             mt-4
             text-[21px]
             font-bold
-            text-primary-900
+            text-primary-900 dark:text-white
           "
         >
           រកមិនឃើញហាងអាហារដែលត្រូវនឹងតម្រងទេ
@@ -441,7 +442,7 @@ export default function StoreGrid({
             max-w-md
             text-[18px]
             leading-7
-            text-gray-500
+            text-gray-500 dark:text-slate-400
           "
         >
           សូមសាកល្បងផ្លាស់ប្តូរតម្រងស្វែងរក
@@ -457,13 +458,13 @@ export default function StoreGrid({
             items-center justify-center
             gap-2
             rounded-full
-            bg-primary-800
+            bg-primary-800 dark:bg-emerald-600
             px-6
             text-[18px]
             font-semibold
             text-white
             transition
-            hover:bg-primary-700
+            hover:bg-primary-700 dark:hover:bg-emerald-500
             active:scale-95
           "
         >
@@ -508,7 +509,7 @@ export default function StoreGrid({
                   mt-0.5
                   text-[22px]
                   font-bold
-                  text-primary-900
+                  text-primary-900 dark:text-white
 
                   sm:text-[24px]
                 "
@@ -534,13 +535,13 @@ export default function StoreGrid({
                     flex h-9 w-9
                     items-center justify-center
                     rounded-full
-                    border border-gray-200
-                    bg-white
-                    text-primary-800 dark:text-primary-dark
+                    border border-gray-200 dark:border-slate-700
+                    bg-white dark:bg-slate-800
+                    text-primary-800 dark:text-slate-200
                     shadow-sm
                     transition
-                    hover:border-primary-300
-                    hover:bg-primary-50
+                    hover:border-primary-300 dark:hover:border-slate-600
+                    hover:bg-primary-50 dark:hover:bg-slate-700
                     active:scale-90
                   "
                 >
@@ -555,11 +556,11 @@ export default function StoreGrid({
                     flex h-9 w-9
                     items-center justify-center
                     rounded-full
-                    bg-primary-800
+                    bg-primary-800 dark:bg-emerald-600
                     text-white
                     shadow-sm
                     transition
-                    hover:bg-primary-700
+                    hover:bg-primary-700 dark:hover:bg-emerald-500
                     active:scale-90
                   "
                 >
@@ -626,8 +627,8 @@ export default function StoreGrid({
 
                             ${
                               activeIndex === index
-                                ? "w-7 bg-primary-800"
-                                : "w-2 bg-primary-200 hover:bg-primary-400"
+                                ? "w-7 bg-primary-800 dark:bg-emerald-500"
+                                : "w-2 bg-primary-200 hover:bg-primary-400 dark:bg-slate-700 dark:hover:bg-slate-600"
                             }
                           `}
                       />
@@ -651,22 +652,12 @@ export default function StoreGrid({
           "
         >
           <div>
-            {/* <p
-              className="
-                text-[17px]
-                font-semibold
-                text-secondary-500
-              "
-            >
-              ហាងអាហារទាំងអស់
-            </p> */}
-
             <p
               className="
                 mt-0.5
                 text-[22px]
                 font-bold
-                text-primary-900
+                text-primary-900 dark:text-white
 
                 sm:text-[24px]
               "
@@ -678,12 +669,12 @@ export default function StoreGrid({
           <span
             className="
               rounded-full
-              border border-gray-200
-              bg-white
+              border border-gray-200 dark:border-slate-800
+              bg-white dark:bg-slate-900
               px-4 py-2
               text-[18px]
               font-semibold
-              text-gray-600
+              text-gray-600 dark:text-slate-300
               shadow-sm
             "
           >

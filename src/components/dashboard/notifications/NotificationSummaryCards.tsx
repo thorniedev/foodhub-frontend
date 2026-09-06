@@ -27,10 +27,10 @@ export default function NotificationSummaryCards({
             key={card.key}
             type="button"
             onClick={() => onSelect?.(card.key)}
-            className={`flex min-h-28 flex-col items-start gap-3 rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:shadow-md ${
+            className={`flex min-h-28 flex-col items-start gap-3 rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900 ${
               isActive
-                ? "border-emerald-400 ring-1 ring-emerald-400"
-                : "border-slate-100"
+                ? "border-emerald-400 ring-1 ring-emerald-400 dark:border-emerald-500 dark:ring-emerald-500"
+                : "border-slate-100 dark:border-slate-800"
             }`}
           >
             <div className="flex w-full items-center justify-between">
@@ -50,7 +50,7 @@ export default function NotificationSummaryCards({
                 </span>
               )}
             </div>
-            <span className="text-sm font-medium leading-5 text-slate-700 break-words">
+            <span className="text-sm font-medium leading-5 text-slate-700 break-words dark:text-slate-200">
               {card.label}
             </span>
           </button>

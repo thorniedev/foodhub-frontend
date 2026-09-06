@@ -331,7 +331,7 @@ export default function FriendsTabs() {
       </Suspense>
 
       {/* Header and Tabs Card Container */}
-      <div className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/70 bg-white shadow-sm p-5 sm:p-7">
+      <div className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/70 bg-white shadow-sm p-5 sm:p-7 dark:border-slate-800 dark:bg-slate-900">
         {/* Header Area */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
@@ -357,7 +357,7 @@ export default function FriendsTabs() {
             <button
               type="button"
               onClick={() => setIsQrModalOpen(true)}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-lg font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-lg font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               <QrCode className="h-5 w-5 text-primary-800 dark:text-primary-400" />
               <span>QR របស់ខ្ញុំ</span>
@@ -433,7 +433,7 @@ export default function FriendsTabs() {
               placeholder="ស្វែងរកមិត្តភក្តិតាមឈ្មោះ..."
               value={filterFriendTerm}
               onChange={(e) => setFilterFriendTerm(e.target.value)}
-              className="w-full rounded-full border border-slate-200/90 bg-slate-50/50 py-3.5 pl-12 pr-10 text-base font-medium text-slate-900 shadow-xs placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 sm:text-lg"
+              className="w-full rounded-full border border-slate-200/90 bg-slate-50/50 py-3.5 pl-12 pr-10 text-base font-medium text-slate-900 shadow-xs placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 sm:text-lg"
             />
             {filterFriendTerm && (
               <button
