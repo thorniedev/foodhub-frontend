@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import {
   motion,
   useScroll,
@@ -10,8 +10,10 @@ import {
   useMotionValueEvent,
   MotionValue,
 } from "framer-motion";
+import { useGetLocationBannersQuery } from "@/app/store/bannerApi";
+import { resolveBannerImageUrl } from "@/lib/banner-media";
 
-const REGIONS = [
+const DEFAULT_REGIONS = [
   {
     name: "ភ្នំពេញ",
     en: "ភ្នំពេញ",
@@ -49,6 +51,22 @@ export default function ProvineImageRevealSection() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
+  const { data: locationBanners } = useGetLocationBannersQuery();
+
+  const regions = useMemo(() => {
+    if (locationBanners && locationBanners.length > 0) {
+      return locationBanners.slice(0, 5).map((banner, idx) => {
+        const fallback = DEFAULT_REGIONS[idx % DEFAULT_REGIONS.length].img;
+        return {
+          name: banner.title || banner.location || DEFAULT_REGIONS[idx % DEFAULT_REGIONS.length].name,
+          en: banner.location || banner.title || DEFAULT_REGIONS[idx % DEFAULT_REGIONS.length].en,
+          img: resolveBannerImageUrl(banner, fallback),
+        };
+      });
+    }
+    return DEFAULT_REGIONS;
+  }, [locationBanners]);
+
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
@@ -61,17 +79,17 @@ export default function ProvineImageRevealSection() {
     restDelta: 0.0005,
   });
 
-  const span = 1 / (REGIONS.length + 0.6);
+  const span = 1 / (regions.length + 0.6);
 
   useMotionValueEvent(progress, "change", (v) => {
-    setActive(Math.min(REGIONS.length - 1, Math.max(0, Math.floor(v / span))));
+    setActive(Math.min(regions.length - 1, Math.max(0, Math.floor(v / span))));
   });
 
   const drift = useTransform(progress, [0, 1], ["6%", "-46%"]);
   const railX = useTransform(progress, [0, 1], ["0%", "400%"]);
 
   return (
-    <div ref={ref} style={{ height: `${(REGIONS.length + 0.6) * 100}vh` }}>
+    <div ref={ref} style={{ height: `${(regions.length + 0.6) * 100}vh` }}>
       <section className="sticky  top-0 h-screen overflow-hidden bg-slate-50 dark:bg-primary-950 transition-colors duration-500">
         {/* warm glow anchored to the card side */}
         {/* <div
@@ -85,10 +103,10 @@ export default function ProvineImageRevealSection() {
         {/* ghost wordmark */}
         <motion.span
           aria-hidden
-          className="pointer-events-none absolute top-1/2 z-0 -translate-y-1/2 whitespace-nowrap text-[20vw] font-black leading-none tracking-tighter text-primary-800/20 dark:text-primary-800/30 transition-colors duration-500"
+          className="pointer-events-none absolute top-1/2 z-0 -translate-y-1/2 whitespace-nowrap text-[20vw] font-black leading-none tracking-tighter text-primary-200/50 dark:text-primary-800/30 transition-colors duration-500"
           style={{ x: reduce ? "0%" : drift }}
         >
-          {REGIONS.map((r) => r.en).join(" · ")}
+          {regions.map((r) => r.en).join(" · ")}
         </motion.span>
 
         {/* top bar */}
@@ -106,7 +124,7 @@ export default function ProvineImageRevealSection() {
               {String(active + 1).padStart(2, "0")}
             </span>
             {" / "}
-            {String(REGIONS.length).padStart(2, "0")}
+            {String(regions.length).padStart(2, "0")}
           </span>
         </div> */}
 
@@ -120,8 +138,11 @@ export default function ProvineImageRevealSection() {
                 style={{ x: reduce ? "0%" : railX }}
               />
               <ul className="flex justify-between w-full">
-                {REGIONS.map((r, i) => (
-                  <li key={r.en} className="flex flex-col items-center gap-1.5 flex-1 text-center">
+                {regions.map((r, i) => (
+                  <li
+                    key={r.en + i}
+                    className="flex flex-col items-center gap-1.5 flex-1 text-center"
+                  >
                     <span
                       className={`font-mono text-sm transition-colors duration-500 ${
                         i === active
@@ -149,10 +170,10 @@ export default function ProvineImageRevealSection() {
           {/* card cluster */}
           <div className="w-full flex justify-center">
             <div className="relative">
-              <div className="relative aspect-[16/9] lg:max-w-[550px] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-200 dark:ring-primary-800 md:max-w-[340px] transition-colors duration-500">
-                {REGIONS.map((r, i) => (
+              <div className="group relative aspect-[16/9] lg:max-w-[550px] w-[66vw] max-w-[300px] overflow-hidden rounded-[20px] ring-1 ring-primary-200 dark:ring-primary-800 md:max-w-[340px] transition-colors duration-500 cursor-pointer">
+                {regions.map((r, i) => (
                   <RegionCard
-                    key={r.en}
+                    key={r.en + i}
                     region={r}
                     index={i}
                     span={span}
@@ -160,6 +181,9 @@ export default function ProvineImageRevealSection() {
                     reduce={!!reduce}
                   />
                 ))}
+                
+                {/* hover overlay */}
+                <div className="pointer-events-none absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-50" />
               </div>
             </div>
           </div>
@@ -171,7 +195,7 @@ export default function ProvineImageRevealSection() {
             className="flex whitespace-nowrap"
             style={{ x: reduce ? "0%" : drift }}
           >
-            {[...REGIONS, ...REGIONS].map((r, i) => (
+            {[...regions, ...regions].map((r, i) => (
               <span
                 key={i}
                 className="mx-8 text-lg font-medium tracking-[0.16em] text-primary-600 dark:text-primary-200/45 transition-colors duration-500"
@@ -301,7 +325,7 @@ function RegionCard({
   progress,
   reduce,
 }: {
-  region: (typeof REGIONS)[number];
+  region: { name: string; en: string; img: string };
   index: number;
   span: number;
   progress: MotionValue<number>;
