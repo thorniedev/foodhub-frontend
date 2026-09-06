@@ -274,6 +274,105 @@ async function fetchFromGeoapify(
   }
 }
 
+// 4. GOOGLE PLACES SEARCH (High precision for business names)
+async function fetchFromGooglePlaces(
+  query: string,
+  apiKey: string,
+  userBias: UserBias | null,
+): Promise<LocationSearchResult[]> {
+  try {
+    const body: Record<string, any> = {
+      textQuery: query,
+      regionCode: "KH",
+    };
+
+    if (userBias) {
+      body.locationBias = {
+        circle: {
+          center: { latitude: userBias.latitude, longitude: userBias.longitude },
+          radius: 50000.0,
+        },
+      };
+    }
+
+    const response = await fetch(
+      "https://places.googleapis.com/v1/places:searchText",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location",
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("[GOOGLE PLACES NEW API ERROR]", response.status, err);
+      return [];
+    }
+
+    const data = await response.json();
+    const places = Array.isArray(data?.places) ? data.places : [];
+
+    return places
+      .map((item: any, index: number) => {
+        const lat = item.location?.latitude;
+        const lng = item.location?.longitude;
+        const name = item.displayName?.text || query;
+
+        return {
+          id: item.id || `google-${index}`,
+          name: name,
+          address: item.formattedAddress || name,
+          addressLine1: name,
+          addressLine2: null,
+          city: null,
+          district: null,
+          county: null,
+          state: null,
+          postcode: null,
+          country: "Cambodia",
+          countryCode: "kh",
+          latitude: lat ? Number(lat) : 0,
+          longitude: lng ? Number(lng) : 0,
+          type: "google_place",
+        };
+      })
+      .filter((r: any) => r.latitude !== 0 && r.longitude !== 0);
+  } catch (err) {
+    console.error("[GOOGLE SEARCH ERROR]", err);
+    return [];
+  }
+}
+
+const CAMBODIA_PATTERNS = [
+  /cambodia/i,
+  /phnom\s*penh/i,
+  /ភ្នំពេញ/,
+  /កម្ពុជា/,
+  /siem\s*reap/i,
+  /battambang/i,
+  /sihanoukville/i,
+  /kampot/i,
+  /kandal/i,
+  /takeo/i,
+  /kompong/i,
+  /kampong/i,
+  /[\u1780-\u17FF]/,
+];
+
+function cambodiaScore(result: LocationSearchResult): number {
+  const text = [result.name, result.address].filter(Boolean).join(" ");
+  return CAMBODIA_PATTERNS.reduce(
+    (score, pattern) => score + (pattern.test(text) ? 1 : 0),
+    0,
+  );
+}
+
 function scoreCandidate(candidate: LocationSearchResult, query: string): number {
   const normQuery = normalizeText(query);
   const normName = normalizeText(candidate.name);
@@ -287,6 +386,13 @@ function scoreCandidate(candidate: LocationSearchResult, query: string): number 
   if (normAddress.includes(normQuery)) score += 250;
 
   if (candidate.countryCode === "kh") score += 100;
+
+  // Add Cambodia score
+  score += cambodiaScore(candidate) * 50;
+
+  // Boost Google Places results as they tend to be highly accurate for business names
+  if (candidate.type === "google_place") score += 400;
+
   return score;
 }
 
@@ -304,6 +410,7 @@ export async function GET(request: NextRequest) {
 
     const userBias = getUserBias(searchParams);
     const geoapifyKey = process.env.GEOAPIFY_API_KEY?.trim();
+    const googleKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
 
     // Query Photon + Nominatim + Geoapify (if key exists) in parallel
     const searchPromises: Promise<LocationSearchResult[]>[] = [
@@ -313,6 +420,10 @@ export async function GET(request: NextRequest) {
 
     if (geoapifyKey) {
       searchPromises.push(fetchFromGeoapify(query, geoapifyKey, userBias));
+    }
+
+    if (googleKey) {
+      searchPromises.push(fetchFromGooglePlaces(query, googleKey, userBias));
     }
 
     const searchResponses = await Promise.allSettled(searchPromises);
