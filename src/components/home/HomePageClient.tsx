@@ -40,11 +40,11 @@ export default function HomePageClient() {
           និងណែនាំមុខម្ហូបឆ្លាតវៃនៅកម្ពុជា
         </h1>
 
-        <Hero />
-        <div className="lg:py-4">
+        <div className="lg:py-">
           <MealTimeJourneySection />
         </div>
         <ProvineImageRevealSection />
+        <Hero />
         <PopularSection />
         <FilterByMealTime />
         <FilterSomeCategory />
