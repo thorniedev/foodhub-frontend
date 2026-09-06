@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Hero from "@/components/home/Hero";
 import FilterSomeCategory from "./features/FilterSomeCategory";
 import { Skiper30 } from "../ui/skiper-ui/skiper30";
+import ProvineImageRevealSection from "./features/province";
 
 const MealTimeJourneySection = dynamic(
   () => import("@/components/MealTimeJourneySection"),
@@ -43,6 +44,7 @@ export default function HomePageClient() {
         <div className="lg:py-4">
           <MealTimeJourneySection />
         </div>
+        <ProvineImageRevealSection />
         <PopularSection />
         <FilterByMealTime />
         <FilterSomeCategory />
