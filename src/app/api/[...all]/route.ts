@@ -206,11 +206,20 @@ async function forwardRequest(
     );
   }
 
-  if (!routeRule.has(request.method)) {
+  const isMethodAllowed =
+    routeRule.has(request.method) ||
+    (request.method === "HEAD" && routeRule.has("GET"));
+
+  if (!isMethodAllowed) {
     console.error("[FOODHUB PROXY] Method not allowed:", {
       method: request.method,
       path: backendPath,
     });
+
+    const allowedMethods = [...routeRule];
+    if (routeRule.has("GET") && !routeRule.has("HEAD")) {
+      allowedMethods.push("HEAD");
+    }
 
     return NextResponse.json(
       {
@@ -219,7 +228,7 @@ async function forwardRequest(
       {
         status: 405,
         headers: {
-          Allow: [...routeRule].join(", "),
+          Allow: allowedMethods.join(", "),
         },
       },
     );

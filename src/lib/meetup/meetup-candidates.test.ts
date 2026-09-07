@@ -65,6 +65,7 @@ function makeCandidate(
   return {
     foodUuid: "food-uuid",
     menuItemUuid: "menu-item-uuid",
+    storeUuid: null,
     foodName: "Kuy Teav",
     storeName: "Noodle House",
     photoUrl: null,
