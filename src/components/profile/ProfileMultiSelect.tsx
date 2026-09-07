@@ -36,6 +36,26 @@ export function ProfileAvatar({
     skip: !avatarMediaUuid,
   });
 
+  const directProxyUrl = avatarMediaUuid
+    ? `/api/media/${encodeURIComponent(avatarMediaUuid)}/file`
+    : "";
+
+  const [activeUrl, setActiveUrl] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (data?.url) {
+      setActiveUrl(data.url);
+      setHasError(false);
+    } else if (directProxyUrl) {
+      setActiveUrl(directProxyUrl);
+      setHasError(false);
+    } else {
+      setActiveUrl(null);
+      setHasError(false);
+    }
+  }, [data?.url, directProxyUrl]);
+
   const firstLetter = name.trim().charAt(0).toUpperCase() || "?";
 
   return (
@@ -43,8 +63,22 @@ export function ProfileAvatar({
       className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-800/10 text-primary-800"
       style={{ width: size, height: size }}
     >
-      {data?.url ? (
-        <Image src={data.url} alt={name} fill sizes="40px" className="h-full w-full object-cover" />
+      {activeUrl && !hasError ? (
+        <Image
+          src={activeUrl}
+          alt={name}
+          fill
+          unoptimized
+          sizes="40px"
+          className="h-full w-full object-cover"
+          onError={() => {
+            if (activeUrl !== directProxyUrl && directProxyUrl) {
+              setActiveUrl(directProxyUrl);
+            } else {
+              setHasError(true);
+            }
+          }}
+        />
       ) : (
         <span
           className="font-bold"

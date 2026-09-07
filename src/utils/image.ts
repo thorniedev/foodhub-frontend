@@ -5,7 +5,7 @@
  */
 export function resolveImageUrl(imagePath?: string | null): string {
   if (!imagePath || !imagePath.trim()) {
-    return "/images/banner-placeholder.webp";
+    return "/Image/default-food.webp";
   }
 
   const trimmed = imagePath.trim();

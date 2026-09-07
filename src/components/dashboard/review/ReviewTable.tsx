@@ -45,8 +45,15 @@ export default function ReviewTable({
                     src={item.imageUrl}
                     alt={item.name}
                     fill
+                    unoptimized
                     sizes="56px"
                     className="h-full w-full object-cover"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith("/Image/default-food.webp")) {
+                        target.src = "/Image/default-food.webp";
+                      }
+                    }}
                   />
                 </div>
                 <div>
@@ -106,8 +113,15 @@ export default function ReviewTable({
                     src={item.imageUrl}
                     alt={item.name}
                     fill
+                    unoptimized
                     sizes="64px"
                     className="h-full w-full object-cover"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith("/Image/default-food.webp")) {
+                        target.src = "/Image/default-food.webp";
+                      }
+                    }}
                   />
                 </div>
                 <div className="min-w-0 flex-1">

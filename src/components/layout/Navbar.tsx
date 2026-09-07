@@ -304,6 +304,7 @@ export default function Navbar() {
               alt="FoodHub logo"
               width={300}
               height={300}
+              unoptimized
               className="
                 block
                 h-[43px]
@@ -325,6 +326,7 @@ p-1
               alt="FoodHub logo"
               width={300}
               height={300}
+              unoptimized
               className="
                 hidden
                 h-[43px]

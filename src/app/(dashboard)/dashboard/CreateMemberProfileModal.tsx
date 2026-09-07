@@ -672,7 +672,7 @@ export default function CreateMemberProfileModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6">
-      <div className="flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-white/70 bg-slate-50 shadow-[0_30px_100px_rgba(15,23,42,0.25)]">
+      <div className="flex max-h-[90vh] sm:max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-white/70 bg-slate-50 shadow-[0_30px_100px_rgba(15,23,42,0.25)]">
         {/* Header */}
         <header className="flex shrink-0 items-start justify-between gap-5 border-b border-slate-200/80 bg-white px-5 py-5 sm:px-7 sm:py-6">
           <div className="flex min-w-0 items-start gap-4">
@@ -762,7 +762,7 @@ export default function CreateMemberProfileModal({
         {step === 1 ? (
           <form
             onSubmit={handleStepOneSubmit}
-            className="overflow-y-auto px-4 py-6 sm:px-7 sm:py-7"
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-6 sm:px-7 sm:py-7"
           >
             <div className="mx-auto max-w-3xl">
               <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
@@ -807,6 +807,7 @@ export default function CreateMemberProfileModal({
                         src={avatarPreviewUrl}
                         alt="Preview"
                         fill
+                        unoptimized
                         className="object-cover"
                         sizes="96px"
                       />
@@ -1050,7 +1051,7 @@ export default function CreateMemberProfileModal({
         ) : (
           <form
             onSubmit={handleStepTwoSubmit}
-            className="overflow-y-auto px-4 py-6 sm:px-7 sm:py-7"
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-6 sm:px-7 sm:py-7"
           >
             <div className="mx-auto max-w-4xl space-y-6">
               {isLoadingSafetyOptions ? (

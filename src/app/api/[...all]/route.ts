@@ -27,7 +27,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   catalog: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   safety: new Set(["GET"]),
   stores: new Set(["GET", "POST", "PATCH", "DELETE"]),
-  media: new Set(["GET", "POST", "DELETE"]),
+  media: new Set(["GET", "HEAD", "POST", "DELETE"]),
   banners: new Set(["GET"]),
   "menu-items": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   meetup: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
@@ -149,9 +149,9 @@ function requiresAuthentication(backendPath: string, method: string) {
     return true;
   }
 
-  // Media upload / delete requires auth, but GET (fetching store logo / photos) is public!
+  // Media upload / delete requires auth, but GET / HEAD (fetching store logo / photos) is public!
   if (backendPath === "media" || backendPath.startsWith("media/")) {
-    return method !== "GET";
+    return method !== "GET" && method !== "HEAD";
   }
 
   return false;

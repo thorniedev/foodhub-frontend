@@ -374,6 +374,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           alt={displayName}
           draggable={false}
           fill
+          unoptimized
           sizes="(max-width: 640px) 100vw, 400px"
           onError={() => {
             if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {
