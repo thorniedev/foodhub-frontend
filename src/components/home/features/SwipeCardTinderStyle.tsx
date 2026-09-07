@@ -36,24 +36,6 @@ type SwipeFoodCardProps = {
   food: EnrichedRecommendationItem;
 };
 
-const FAVORITES_STORAGE_KEY = "foodhub-favorite-menu-items";
-
-function getStoredFavoriteIds(): string[] {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const value = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
-    if (!value) return [];
-
-    const parsed: unknown = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed.filter((item): item is string => typeof item === "string");
-  } catch {
-    return [];
-  }
-}
-
 function getDietaryTypes(food: CatalogMenuItem): CatalogDietaryType[] {
   return Array.isArray(food.food?.dietaryTypes) ? food.food.dietaryTypes : [];
 }
@@ -252,28 +234,20 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
     toFrontendApiAssetUrl(effectiveThumbnail),
   );
 
+  // The server is the only source of truth for "is this saved" — see
+  // useBookmarks.ts for why the parallel localStorage id list this used to
+  // also check from was removed (it never got cleared by anything except
+  // this same toggle, so a bookmark deleted any other way kept showing as
+  // saved here indefinitely). Every consumer of useBookmarks shares one
+  // RTK Query cache entry, so a change from any of them — this card, the
+  // favorites page, another tab — reaches this state through `bookmarks`
+  // without a manual cross-component event.
   useEffect(() => {
-    const syncFavoriteState = () => {
-      const favoriteIds = getStoredFavoriteIds();
-      const serverBookmark = findBookmark({
-        menuItemUuid: food.uuid,
-        foodUuid: food.food?.uuid,
-      });
-      setIsFavorite(
-        Boolean(serverBookmark) || favoriteIds.includes(food.uuid),
-      );
-    };
-
-    syncFavoriteState();
-
-    window.addEventListener("foodhub-favorites-updated", syncFavoriteState);
-
-    return () => {
-      window.removeEventListener(
-        "foodhub-favorites-updated",
-        syncFavoriteState,
-      );
-    };
+    const serverBookmark = findBookmark({
+      menuItemUuid: food.uuid,
+      foodUuid: food.food?.uuid,
+    });
+    setIsFavorite(Boolean(serverBookmark));
   }, [food.uuid, food.food?.uuid, findBookmark]);
 
   useEffect(() => {
@@ -286,30 +260,23 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
   }, [food.thumbnail, food.gallery, food.uuid]);
 
   const toggleFavorite = async () => {
-    const currentIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: food.uuid,
       foodUuid: food.food?.uuid,
     });
-    const isAlreadyFavorite =
-      isFavorite || Boolean(serverBookmark) || currentIds.includes(food.uuid);
+    const isAlreadyFavorite = Boolean(serverBookmark);
+
+    // Optimistic UI flip; the mutation below invalidates the shared
+    // bookmarks cache, which is what actually settles this value.
+    setIsFavorite(!isAlreadyFavorite);
 
     if (isAlreadyFavorite) {
-      const nextIds = currentIds.filter((id) => id !== food.uuid);
-      try {
-        window.localStorage.setItem(
-          FAVORITES_STORAGE_KEY,
-          JSON.stringify(nextIds),
-        );
-      } catch {}
-
-      setIsFavorite(false);
-
       if (serverBookmark) {
         try {
           await removeBookmark(serverBookmark.uuid);
         } catch (err) {
           console.warn("[BOOKMARK REMOVE ERROR]", err);
+          setIsFavorite(true);
         }
       }
 
@@ -323,19 +290,6 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
         recommendationItemUuid: food.recommendation?.uuid || undefined,
       });
     } else {
-      const nextIds = [
-        ...currentIds.filter((id) => id !== food.uuid),
-        food.uuid,
-      ];
-      try {
-        window.localStorage.setItem(
-          FAVORITES_STORAGE_KEY,
-          JSON.stringify(nextIds),
-        );
-      } catch {}
-
-      setIsFavorite(true);
-
       if (activeProfileUuid) {
         try {
           await addBookmark({
@@ -348,6 +302,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           });
         } catch (err) {
           console.warn("[BOOKMARK ADD ERROR]", err);
+          setIsFavorite(false);
         }
       }
 
@@ -361,8 +316,6 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
         recommendationItemUuid: food.recommendation?.uuid || undefined,
       });
     }
-
-    window.dispatchEvent(new Event("foodhub-favorites-updated"));
   };
 
   const formattedPrice = formatPrice(food);

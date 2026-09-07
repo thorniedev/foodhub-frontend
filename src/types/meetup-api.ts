@@ -117,7 +117,8 @@ export interface UpdateMeetupParticipantLocationArgs {
 export interface SubmitMeetupVoteRequest {
   meetupUuid: string;
   participantUuid: string;
-  foodUuid?: string;
+  /** The store being voted for; dishes are shown but not voted on. */
+  storeUuid?: string;
   candidateUuid?: string;
   rankChoice?: number;
 }
@@ -152,9 +153,8 @@ export interface JoinMeetupParticipantRequest {
 
 export interface MeetupVoteTallyEntry {
   candidateUuid: string;
-  foodUuid?: string | null;
+  storeUuid?: string | null;
   candidateName?: string;
-  foodName?: string | null;
   storeName?: string | null;
   voteCount: number;
   isWinner: boolean;
@@ -162,7 +162,7 @@ export interface MeetupVoteTallyEntry {
 
 export interface MeetupVoteTallyResponse {
   meetupUuid: string | null;
-  /** Food uuid the backend currently considers the frontrunner, when it sends one. */
+  /** Store uuid the backend currently considers the frontrunner, when it sends one. */
   winnerUuid: string | null;
   totalVotes: number;
   tally: MeetupVoteTallyEntry[];
@@ -362,7 +362,7 @@ export interface MeetupVoteResponse {
   meetupUuid: string | null;
   participantUuid: string | null;
   candidateUuid: string | null;
-  foodUuid?: string | null;
+  storeUuid?: string | null;
   vote: number | null;
   rankChoice: number | null;
   createdAt: string | null;

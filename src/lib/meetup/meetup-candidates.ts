@@ -3,15 +3,16 @@ import type { MeetupParticipantResponse } from "@/types/meetup-api";
 import type { StoredMeetupSession } from "./meetup-session";
 
 /**
- * A single dish a meetup can vote on.
+ * A single dish that passed safety for the room.
  *
- * `foodUuid` is always a canonical Food uuid. The meetup vote endpoint resolves
- * the vote through the food catalog, so a menu-item uuid would be rejected as
- * "Food not found" — see {@link toMeetupCandidate}.
+ * Dishes are no longer voted on individually — they are the contents of a
+ * store card. `foodUuid` still identifies the dish so the same dish at two
+ * stores stays distinct.
  */
 export interface MeetupCandidate {
   foodUuid: string;
   menuItemUuid: string | null;
+  storeUuid: string | null;
   foodName: string;
   storeName: string;
   photoUrl: string | null;
@@ -126,12 +127,10 @@ function getItemRaw(item: RecommendationItem): UnknownRecord {
 }
 
 /**
- * Maps a recommendation item onto a votable candidate.
+ * Maps a recommendation item onto a dish the room can be shown.
  *
- * Returns `null` when the item carries no canonical food uuid: the meetup vote
- * endpoint looks the vote up in the food catalog, so an item that only has a
- * menu-item uuid can never be voted on and must stay out of the slate rather
- * than fail at vote time.
+ * Returns `null` when the item carries no canonical food uuid, which is what
+ * keeps a dish distinct from every other dish on its store's card.
  */
 export function toMeetupCandidate(
   item: RecommendationItem,
@@ -157,6 +156,10 @@ export function toMeetupCandidate(
       item.menuItemUuid ||
       getString(raw, ["menuItemUuid", "menu_item_uuid"]) ||
       getString(menuItem, ["uuid"]),
+    storeUuid:
+      item.storeUuid ||
+      getString(raw, ["storeUuid", "store_uuid"]) ||
+      getString(store, ["uuid", "storeUuid"]),
     foodName:
       item.menuItemName ||
       getString(raw, ["foodName", "menuItemName", "name"]) ||
@@ -300,4 +303,109 @@ export function buildMeetupSlate(
   }
 
   return { candidates, hiddenForAllergies };
+}
+
+/**
+ * A store the meetup can vote for, and the dishes there that are safe for it.
+ *
+ * A group decides where to go, so the store is the vote target. The dishes are
+ * shown on the card so members can see there is something each of them can
+ * eat, but they are not voted on: two dishes at one restaurant competing
+ * against each other used to split the room's vote.
+ */
+export interface MeetupStoreCandidate {
+  storeUuid: string;
+  storeName: string;
+  /** Dishes that survived safety for the room, best first. */
+  items: MeetupCandidate[];
+  photoUrl: string | null;
+  rating: number | null;
+  distanceKm: number | null;
+  /** Cheapest safe dish here, for an at-a-glance price. */
+  minPrice: number | null;
+  currencyCode: string;
+  /** Best dish score at this store; orders the slate. */
+  bestScore: number | null;
+  /** True when every dish here carries a backend safety verdict of SAFE. */
+  isVerifiedSafe: boolean;
+}
+
+function bestOf(
+  values: readonly (number | null)[],
+  pick: (a: number, b: number) => number,
+): number | null {
+  const known = values.filter((value): value is number => value !== null);
+
+  /*
+   * reduce hands the callback an index and the source array too, and
+   * Math.min/Math.max are variadic — passing them directly returns NaN.
+   */
+  return known.length > 0
+    ? known.reduce((left, right) => pick(left, right))
+    : null;
+}
+
+/**
+ * Groups dishes into the store cards the room votes on.
+ *
+ * Called with the viewer's already-filtered slate, never the raw items: a dish
+ * the backend blocked, or one hidden by the viewer's own declared allergies,
+ * must not count toward its store. A store whose every dish was filtered out
+ * therefore disappears from that viewer's slate entirely, rather than offering
+ * a restaurant with nothing they can safely eat.
+ *
+ * A dish with no store uuid falls back to grouping by store name so it is not
+ * silently dropped; only a dish with neither is discarded, since there would be
+ * nothing to send when voting.
+ */
+export function groupCandidatesByStore(
+  candidates: readonly MeetupCandidate[],
+): MeetupStoreCandidate[] {
+  const byStore = new Map<string, MeetupCandidate[]>();
+
+  for (const candidate of candidates) {
+    const key = candidate.storeUuid ?? candidate.storeName;
+
+    if (!key) {
+      continue;
+    }
+
+    const existing = byStore.get(key);
+
+    if (existing) {
+      existing.push(candidate);
+    } else {
+      byStore.set(key, [candidate]);
+    }
+  }
+
+  const stores: MeetupStoreCandidate[] = [];
+
+  for (const [key, items] of byStore) {
+    const ranked = [...items].sort(
+      (left, right) => (right.finalScore ?? 0) - (left.finalScore ?? 0),
+    );
+    const first = ranked[0];
+
+    stores.push({
+      storeUuid: first.storeUuid ?? key,
+      storeName: first.storeName,
+      items: ranked,
+      photoUrl: ranked.find((item) => item.photoUrl)?.photoUrl ?? null,
+      rating: bestOf(ranked.map((item) => item.rating), Math.max),
+      distanceKm: bestOf(ranked.map((item) => item.distanceKm), Math.min),
+      minPrice: bestOf(ranked.map((item) => item.price), Math.min),
+      currencyCode: first.currencyCode,
+      bestScore: bestOf(ranked.map((item) => item.finalScore), Math.max),
+      /*
+       * Only claimed when every dish here was checked. One unverified dish
+       * makes the store's badge a claim the backend never made.
+       */
+      isVerifiedSafe: ranked.every(
+        (item) => item.safetyStatus?.toUpperCase() === "SAFE",
+      ),
+    });
+  }
+
+  return stores.sort((left, right) => (right.bestScore ?? 0) - (left.bestScore ?? 0));
 }

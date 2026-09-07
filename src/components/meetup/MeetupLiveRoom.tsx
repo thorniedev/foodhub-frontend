@@ -48,7 +48,8 @@ import {
 import {
   buildMeetupSlate,
   collectMeetupProfileUuids,
-  type MeetupCandidate,
+  groupCandidatesByStore,
+  type MeetupStoreCandidate,
 } from "@/lib/meetup/meetup-candidates";
 import {
   getMeetupErrorMessage,
@@ -63,7 +64,7 @@ import {
 import type { RecommendationSession } from "@/types/recommendation";
 import type { MeetupWinningCardResponse } from "@/types/meetup-api";
 import GuestJoinSafetySheet from "./GuestJoinSafetySheet";
-import MeetupCandidateCard from "./MeetupCandidateCard";
+import MeetupStoreCandidateCard from "./MeetupStoreCandidateCard";
 import MeetupParticipantsPanel, {
   toDisplayName,
 } from "./MeetupParticipantsPanel";
@@ -238,7 +239,7 @@ export default function MeetupLiveRoom({
    */
   const [winningCard, setWinningCard] =
     useState<MeetupWinningCardResponse | null>(null);
-  const [votingFoodUuid, setVotingFoodUuid] = useState<string | null>(null);
+  const [votingStoreUuid, setVotingStoreUuid] = useState<string | null>(null);
   const [removingUuid, setRemovingUuid] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [copiedResult, setCopiedResult] = useState(false);
@@ -324,6 +325,17 @@ export default function MeetupLiveRoom({
     [slateItems, activeSession],
   );
 
+  /*
+   * The room votes on where to go. Grouping happens after buildMeetupSlate so
+   * a dish the backend blocked, or one hidden by this viewer's own allergies,
+   * never counts toward a store — and a store left with no safe dish for them
+   * drops off their slate entirely.
+   */
+  const storeSlate = useMemo(
+    () => groupCandidatesByStore(slate.candidates),
+    [slate.candidates],
+  );
+
   const inviteUrl =
     shareToken && typeof window !== "undefined"
       ? `${window.location.origin}/meet/${shareToken}`
@@ -365,15 +377,15 @@ export default function MeetupLiveRoom({
     );
   }, [votesResponse?.votes, myParticipantUuid]);
 
-  /* foodUuid -> voteUuid, so a second tap on a card can retract that vote. */
-  const myVoteUuidByFoodUuid = useMemo(() => {
+  /* storeUuid -> voteUuid, so a second tap on a card can retract that vote. */
+  const myVoteUuidByStoreUuid = useMemo(() => {
     const map = new Map<string, string>();
 
     for (const vote of myVotes) {
-      const foodUuid = vote.foodUuid || vote.candidateUuid;
+      const storeUuid = vote.storeUuid || vote.candidateUuid;
 
-      if (foodUuid && vote.uuid) {
-        map.set(foodUuid, vote.uuid);
+      if (storeUuid && vote.uuid) {
+        map.set(storeUuid, vote.uuid);
       }
     }
 
@@ -391,11 +403,11 @@ export default function MeetupLiveRoom({
   );
 
   /* Display-only frontrunner; the host's complete-voting call decides. */
-  const leadingFoodUuid = useMemo(() => {
+  const leadingStoreUuid = useMemo(() => {
     const leader = (tally?.tally ?? []).find((entry) => entry.isWinner);
 
     return (
-      leader?.foodUuid || leader?.candidateUuid || tally?.winnerUuid || null
+      leader?.storeUuid || leader?.candidateUuid || tally?.winnerUuid || null
     );
   }, [tally?.tally, tally?.winnerUuid]);
 
@@ -675,11 +687,11 @@ export default function MeetupLiveRoom({
   }, [recommendationSession, shareToken]);
 
   const getVoteCount = useCallback(
-    (candidate: MeetupCandidate) =>
+    (candidate: MeetupStoreCandidate) =>
       (tally?.tally ?? []).find(
         (entry) =>
-          entry.foodUuid === candidate.foodUuid ||
-          entry.candidateUuid === candidate.foodUuid,
+          entry.storeUuid === candidate.storeUuid ||
+          entry.candidateUuid === candidate.storeUuid,
       )?.voteCount ?? 0,
     [tally?.tally],
   );
@@ -705,20 +717,20 @@ export default function MeetupLiveRoom({
     }
   };
 
-  const handleVote = async (candidate: MeetupCandidate) => {
+  const handleVote = async (candidate: MeetupStoreCandidate) => {
     if (!meetupUuid || !activeSession) {
       setActionError("សូមចូលរួមការណាត់ជួបមុននឹងបោះឆ្នោត។");
       return;
     }
 
     setActionError(null);
-    setVotingFoodUuid(candidate.foodUuid);
+    setVotingStoreUuid(candidate.storeUuid);
 
-    const existingVoteUuid = myVoteUuidByFoodUuid.get(candidate.foodUuid);
+    const existingVoteUuid = myVoteUuidByStoreUuid.get(candidate.storeUuid);
 
     try {
       if (existingVoteUuid) {
-        /* Tapping a dish already backed by this participant retracts it. */
+        /* Tapping a store already backed by this participant retracts it. */
         await retractVote({ voteUuid: existingVoteUuid, meetupUuid }).unwrap();
       } else {
         if (!isApprovalVoting) {
@@ -742,8 +754,8 @@ export default function MeetupLiveRoom({
         await submitVote({
           meetupUuid,
           participantUuid: activeSession.participantUuid,
-          /* The vote endpoint resolves canonical foods only. */
-          foodUuid: candidate.foodUuid,
+          /* The room votes on where to go, so the vote names the store. */
+          storeUuid: candidate.storeUuid,
         }).unwrap();
       }
 
@@ -760,7 +772,7 @@ export default function MeetupLiveRoom({
         );
       }
     } finally {
-      setVotingFoodUuid(null);
+      setVotingStoreUuid(null);
     }
   };
 
@@ -982,10 +994,11 @@ export default function MeetupLiveRoom({
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg! font-black text-slate-900 dark:text-white">
                   <Utensils className="h-5 w-5 shrink-0 text-primary-600" />
-                  ជ្រើសរើសម្ហូប
+                  ជ្រើសរើសហាង
                 </h2>
                 <p className="mt-1 text-sm leading-5 text-slate-500">
-                  បញ្ជីតែមួយសម្រាប់អ្នកគ្រប់គ្នាក្នុងបន្ទប់នេះ។
+                  បោះឆ្នោតជ្រើសហាង។ ម្ហូបក្នុងកាតនីមួយៗ
+                  គឺជាម្ហូបដែលសមាជិកទាំងអស់អាចទទួលទានបាន។
                 </p>
               </div>
               <button
@@ -1030,7 +1043,7 @@ export default function MeetupLiveRoom({
                   ព្យាយាមម្តងទៀត
                 </button>
               </div>
-            ) : slate.candidates.length === 0 ? (
+            ) : storeSlate.length === 0 ? (
               <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
                 <ChefHat className="h-9 w-9 text-slate-300 dark:text-slate-600" />
                 <p className="max-w-md text-sm leading-6 text-slate-500">
@@ -1068,16 +1081,16 @@ export default function MeetupLiveRoom({
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {slate.candidates.map((candidate) => (
-                  <MeetupCandidateCard
-                    key={candidate.foodUuid}
+                {storeSlate.map((candidate) => (
+                  <MeetupStoreCandidateCard
+                    key={candidate.storeUuid}
                     candidate={candidate}
                     voteCount={getVoteCount(candidate)}
                     totalVotes={totalVotes}
-                    isSelected={myVoteUuidByFoodUuid.has(candidate.foodUuid)}
-                    isLeading={candidate.foodUuid === leadingFoodUuid}
-                    isBusy={votingFoodUuid === candidate.foodUuid}
-                    isLocked={isVotingClosed || votingFoodUuid !== null}
+                    isSelected={myVoteUuidByStoreUuid.has(candidate.storeUuid)}
+                    isLeading={candidate.storeUuid === leadingStoreUuid}
+                    isBusy={votingStoreUuid === candidate.storeUuid}
+                    isLocked={isVotingClosed || votingStoreUuid !== null}
                     onVote={handleVote}
                   />
                 ))}
@@ -1109,7 +1122,7 @@ export default function MeetupLiveRoom({
                   បញ្ចប់ការបោះឆ្នោត
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  ម្ហូបដែលមានសំឡេងច្រើនជាងគេនឹងក្លាយជាលទ្ធផលចុងក្រោយ។
+                  ហាងដែលមានសំឡេងច្រើនជាងគេនឹងក្លាយជាលទ្ធផលចុងក្រោយ។
                 </p>
                 <button
                   type="button"

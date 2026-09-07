@@ -7,23 +7,26 @@ import {
   MapPin,
   ShieldCheck,
   Star,
+  Store,
   Trophy,
-  UtensilsCrossed,
   Vote,
 } from "lucide-react";
 
-import type { MeetupCandidate } from "@/lib/meetup/meetup-candidates";
+import type { MeetupStoreCandidate } from "@/lib/meetup/meetup-candidates";
 
-interface MeetupCandidateCardProps {
-  candidate: MeetupCandidate;
+interface MeetupStoreCandidateCardProps {
+  candidate: MeetupStoreCandidate;
   voteCount: number;
   totalVotes: number;
   isSelected: boolean;
   isLeading: boolean;
   isBusy: boolean;
   isLocked: boolean;
-  onVote: (candidate: MeetupCandidate) => void;
+  onVote: (candidate: MeetupStoreCandidate) => void;
 }
+
+/** Dishes listed in full on the card; the rest collapse into a count. */
+const VISIBLE_ITEM_COUNT = 4;
 
 function formatPrice(price: number, currencyCode: string): string {
   return currencyCode === "USD"
@@ -31,7 +34,7 @@ function formatPrice(price: number, currencyCode: string): string {
     : `${price.toFixed(2)} ${currencyCode}`;
 }
 
-export default function MeetupCandidateCard({
+export default function MeetupStoreCandidateCard({
   candidate,
   voteCount,
   totalVotes,
@@ -40,15 +43,12 @@ export default function MeetupCandidateCard({
   isBusy,
   isLocked,
   onVote,
-}: MeetupCandidateCardProps) {
+}: MeetupStoreCandidateCardProps) {
   const sharePercent =
     totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
 
-  /*
-   * Only claim a safety check when the backend actually returned one. An
-   * unverified dish is shown without a badge rather than labelled safe.
-   */
-  const isVerifiedSafe = candidate.safetyStatus?.toUpperCase() === "SAFE";
+  const visibleItems = candidate.items.slice(0, VISIBLE_ITEM_COUNT);
+  const hiddenItemCount = candidate.items.length - visibleItems.length;
 
   return (
     <article
@@ -62,19 +62,19 @@ export default function MeetupCandidateCard({
         {candidate.photoUrl ? (
           <Image
             src={candidate.photoUrl}
-            alt={candidate.foodName}
+            alt={candidate.storeName}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-slate-300 dark:text-slate-600">
-            <UtensilsCrossed className="h-10 w-10" />
+            <Store className="h-10 w-10" />
           </div>
         )}
 
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
-          {isVerifiedSafe ? (
+          {candidate.isVerifiedSafe ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-primary-600/95 px-2.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-sm">
               <ShieldCheck className="h-3.5 w-3.5" />
               ពិនិត្យសុវត្ថិភាព
@@ -93,7 +93,7 @@ export default function MeetupCandidateCard({
 
         {isSelected && (
           <div className="absolute inset-x-0 bottom-0 bg-primary-600/95 px-3 py-1.5 text-center text-xs font-black text-white backdrop-blur-sm">
-            អ្នកបានបោះឆ្នោតឲ្យម្ហូបនេះ
+            អ្នកបានបោះឆ្នោតឲ្យហាងនេះ
           </div>
         )}
       </div>
@@ -101,17 +101,17 @@ export default function MeetupCandidateCard({
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
           <h3 className="line-clamp-2 text-base! font-black leading-snug text-slate-900 dark:text-white">
-            {candidate.foodName}
-          </h3>
-          <p className="mt-1 truncate text-sm font-semibold text-secondary-500">
             {candidate.storeName}
+          </h3>
+          <p className="mt-1 text-sm font-semibold text-secondary-500">
+            មានម្ហូប {candidate.items.length} មុខសម្រាប់ក្រុមនេះ
           </p>
         </div>
 
         <div className="flex flex-wrap gap-1.5 text-xs font-bold">
-          {candidate.price !== null && (
+          {candidate.minPrice !== null && (
             <span className="rounded-lg bg-primary-50 px-2 py-1 text-primary-700 dark:bg-primary-950/50 dark:text-primary-300">
-              {formatPrice(candidate.price, candidate.currencyCode)}
+              ចាប់ពី {formatPrice(candidate.minPrice, candidate.currencyCode)}
             </span>
           )}
           {candidate.distanceKm !== null && (
@@ -128,11 +128,33 @@ export default function MeetupCandidateCard({
           )}
         </div>
 
-        {candidate.reasonText && (
-          <p className="line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
-            {candidate.reasonText}
-          </p>
-        )}
+        {/*
+          * The dishes are why this store is on the slate: every one of them
+          * passed the room's combined allergy and diet rules.
+          */}
+        <ul className="space-y-1.5 rounded-2xl bg-slate-50 p-3 dark:bg-slate-950/60">
+          {visibleItems.map((item) => (
+            <li
+              key={item.menuItemUuid ?? item.foodUuid}
+              className="flex items-center justify-between gap-2 text-xs"
+            >
+              <span className="truncate font-semibold text-slate-700 dark:text-slate-200">
+                {item.foodName}
+              </span>
+              {item.price !== null && (
+                <span className="shrink-0 font-bold text-slate-500 dark:text-slate-400">
+                  {formatPrice(item.price, item.currencyCode)}
+                </span>
+              )}
+            </li>
+          ))}
+
+          {hiddenItemCount > 0 && (
+            <li className="pt-0.5 text-xs font-bold text-slate-400">
+              និង {hiddenItemCount} មុខទៀត
+            </li>
+          )}
+        </ul>
 
         <div className="mt-auto space-y-3 border-t border-slate-100 pt-3 dark:border-slate-800">
           <div className="space-y-1.5">
@@ -166,8 +188,8 @@ export default function MeetupCandidateCard({
             aria-pressed={isSelected}
             aria-label={
               isSelected
-                ? `ដកសំឡេងសម្រាប់ ${candidate.foodName}`
-                : `បោះឆ្នោតឲ្យ ${candidate.foodName}`
+                ? `ដកសំឡេងសម្រាប់ ${candidate.storeName}`
+                : `បោះឆ្នោតឲ្យ ${candidate.storeName}`
             }
             className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
               isSelected

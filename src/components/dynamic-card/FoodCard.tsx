@@ -44,40 +44,6 @@ type FoodCardProps = {
 };
 
 /* =========================================================
-   CONSTANTS
-========================================================= */
-
-const FAVORITES_STORAGE_KEY = "foodhub-favorite-menu-items";
-
-/* =========================================================
-   FAVORITES
-========================================================= */
-
-function getStoredFavoriteIds(): string[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const value = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
-
-    if (!value) {
-      return [];
-    }
-
-    const parsed: unknown = JSON.parse(value);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.filter((item): item is string => typeof item === "string");
-  } catch {
-    return [];
-  }
-}
-
-/* =========================================================
    COMPONENT
    ✅ PERFORMANCE FIX: React.memo to prevent unnecessary re-renders
 ========================================================= */
@@ -344,14 +310,19 @@ const FoodCard = React.memo(function FoodCard({
      BOOKMARKS & FAVORITES
   ======================================================= */
 
+  // The server is the only source of truth for "is this saved" — this used
+  // to also OR in a raw localStorage id list that toggleFavorite wrote on
+  // every click and nothing ever cleared except that same click handler. A
+  // bookmark removed any other way (another device, an admin action, a
+  // direct DB change) left its id sitting in that list forever, so the heart
+  // here kept showing "saved" long after the real bookmark was gone.
   useEffect(() => {
-    const favoriteIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: activeFood.uuid,
       foodUuid: activeFood.food?.uuid,
     });
 
-    setIsFavorite(Boolean(serverBookmark) || favoriteIds.includes(activeFood.uuid));
+    setIsFavorite(Boolean(serverBookmark));
   }, [activeFood.uuid, activeFood.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
@@ -364,33 +335,18 @@ const FoodCard = React.memo(function FoodCard({
       return;
     }
 
-    const currentIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: activeFood.uuid,
       foodUuid: activeFood.food?.uuid,
     });
 
-    const isAlreadyFavorite =
-      isFavorite || Boolean(serverBookmark) || currentIds.includes(activeFood.uuid);
+    const isAlreadyFavorite = Boolean(serverBookmark);
 
-    const nextIds = isAlreadyFavorite
-      ? currentIds.filter((id) => id !== activeFood.uuid)
-      : [...currentIds, activeFood.uuid];
-
-    try {
-      window.localStorage.setItem(
-        FAVORITES_STORAGE_KEY,
-        JSON.stringify(nextIds),
-      );
-    } catch (error) {
-      console.warn(
-        "[FOOD FAVORITE STORAGE]",
-        error instanceof Error ? error.message : String(error),
-      );
-    }
-
+    // Optimistic — flips immediately, then rolls back below on failure. The
+    // real value comes back from the server a moment later regardless (the
+    // mutation invalidates the bookmarks query), so this is purely for
+    // instant feedback, not a second source of truth.
     setIsFavorite(!isAlreadyFavorite);
-    window.dispatchEvent(new Event("foodhub-favorites-updated"));
 
     try {
       if (isAlreadyFavorite) {
@@ -406,6 +362,7 @@ const FoodCard = React.memo(function FoodCard({
       }
     } catch (err) {
       console.warn("[BOOKMARK SYNC ERROR]", err);
+      setIsFavorite(isAlreadyFavorite);
     }
   };
 

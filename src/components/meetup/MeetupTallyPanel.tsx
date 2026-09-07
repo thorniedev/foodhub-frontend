@@ -32,7 +32,7 @@ export default function MeetupTallyPanel({
           </h2>
           <p className="mt-1 text-xs font-semibold leading-5 text-slate-400">
             {isApprovalVoting
-              ? "បោះឆ្នោតបែបយល់ព្រម — អាចជ្រើសរើសម្ហូបច្រើនមុខ។"
+              ? "បោះឆ្នោតបែបយល់ព្រម — អាចជ្រើសរើសហាងច្រើន។"
               : "ម្នាក់មួយសំឡេង — បោះម្ដងទៀតនឹងផ្លាស់ប្ដូរសំឡេង។"}
           </p>
         </div>
@@ -57,7 +57,7 @@ export default function MeetupTallyPanel({
 
             return (
               <div
-                key={`${entry.foodUuid ?? entry.candidateUuid}-${index}`}
+                key={`${entry.storeUuid ?? entry.candidateUuid}-${index}`}
                 className={`rounded-2xl p-3 transition ${
                   entry.isWinner
                     ? "bg-accent-50 ring-1 ring-accent-200 dark:bg-accent-950/30 dark:ring-accent-900"
@@ -70,9 +70,9 @@ export default function MeetupTallyPanel({
                       <Trophy className="h-3.5 w-3.5 shrink-0 text-accent-500" />
                     )}
                     <span className="truncate">
-                      {entry.foodName ||
+                      {entry.storeName ||
                         entry.candidateName ||
-                        "ម្ហូបគ្មានឈ្មោះ"}
+                        "ហាងគ្មានឈ្មោះ"}
                     </span>
                   </p>
                   <span
