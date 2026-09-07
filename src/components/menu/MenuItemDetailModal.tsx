@@ -147,7 +147,6 @@ export const MenuItemDetailModal: React.FC<MenuItemDetailModalProps> = ({
             {/* Bookmark Action */}
             <BookmarkButton
               menuItemUuid={item.uuid}
-              storeUuid={item.store?.uuid}
               showText={true}
               className="flex-1 py-2.5 rounded-2xl border border-neutral-200 dark:border-neutral-700"
             />
