@@ -361,12 +361,19 @@ const FoodCard = React.memo(function FoodCard({
      BOOKMARKS & FAVORITES
   ======================================================= */
 
+  // The server is the only source of truth for "is this saved" — this used
+  // to also OR in a raw localStorage id list that toggleFavorite wrote on
+  // every click and nothing ever cleared except that same click handler. A
+  // bookmark removed any other way (another device, an admin action, a
+  // direct DB change) left its id sitting in that list forever, so the heart
+  // here kept showing "saved" long after the real bookmark was gone.
   useEffect(() => {
-    const favoriteIds = getStoredFavoriteIds();
     const serverBookmark = findBookmark({
       menuItemUuid: activeFood.uuid,
       foodUuid: activeFood.food?.uuid,
     });
+    
+    const favoriteIds = getStoredFavoriteIds();
 
     setIsFavorite(
       Boolean(serverBookmark) || favoriteIds.includes(activeFood.uuid),
@@ -384,6 +391,7 @@ const FoodCard = React.memo(function FoodCard({
     }
 
     const currentIds = getStoredFavoriteIds();
+
     const serverBookmark = findBookmark({
       menuItemUuid: activeFood.uuid,
       foodUuid: activeFood.food?.uuid,
@@ -411,7 +419,6 @@ const FoodCard = React.memo(function FoodCard({
     }
 
     setIsFavorite(!isAlreadyFavorite);
-    window.dispatchEvent(new Event("foodhub-favorites-updated"));
 
     try {
       if (isAlreadyFavorite) {
@@ -427,6 +434,7 @@ const FoodCard = React.memo(function FoodCard({
       }
     } catch (err) {
       console.warn("[BOOKMARK SYNC ERROR]", err);
+      setIsFavorite(isAlreadyFavorite);
     }
   };
 

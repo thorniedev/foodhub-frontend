@@ -46,6 +46,8 @@ import {
 import Link from "next/link";
 import { LuLayoutDashboard } from "react-icons/lu";
 
+import { logoutAndUnsubscribePush } from "@/lib/push/browser-push";
+
 interface DashboardUserProfileProps {
   avatarUrl?: string | null;
   showEmail?: boolean;
@@ -243,7 +245,7 @@ export default function DashboardUserProfile({
 
   const handleLogout = () => {
     setIsMenuOpen(false);
-    window.location.assign("/api/auth/logout");
+    void logoutAndUnsubscribePush();
   };
 
   const handleCancelEditing = () => {

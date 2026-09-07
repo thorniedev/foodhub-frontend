@@ -137,15 +137,11 @@ export default function MeetupResultClient({
                     )}
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-bold text-slate-800 dark:text-slate-200">
-                        {entry.foodName ||
+                        {entry.storeName ||
                           entry.candidateName ||
                           entry.candidateUuid}
                       </span>
-                      {entry.storeName && (
-                        <span className="block truncate text-sm text-slate-400">
-                          {entry.storeName}
-                        </span>
-                      )}
+
                     </span>
                   </span>
                   <span

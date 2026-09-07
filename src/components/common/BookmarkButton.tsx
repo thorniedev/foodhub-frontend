@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useTrackInteraction } from "@/hooks/useTrackInteraction";
+import { getApiErrorMessage } from "@/lib/api-error";
 import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 
 interface BookmarkButtonProps {
@@ -28,9 +29,10 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
   const { bookmarks, addBookmark, removeBookmark, findBookmark, activeProfileUuid } = useBookmarks();
   const { track } = useTrackInteraction();
 
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [bookmarkUuid, setBookmarkUuid] = useState<string | null>(initialBookmarkUuid);
   const [submitting, setSubmitting] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Sync state from profile's current bookmarks
   useEffect(() => {
@@ -58,6 +60,7 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
     if (submitting) return;
 
     setSubmitting(true);
+    setError(null);
     if (isBookmarked && bookmarkUuid) {
       const currentUuid = bookmarkUuid;
       // Optimistic state
@@ -74,6 +77,7 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
       } catch (err) {
         console.error("Failed to remove bookmark:", err);
         setBookmarkUuid(currentUuid); // Rollback
+        setError(getApiErrorMessage(err, "Could not remove bookmark."));
       }
     } else {
       try {
@@ -90,6 +94,7 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         }
       } catch (err) {
         console.error("Failed to add bookmark:", err);
+        setError(getApiErrorMessage(err, "Could not save bookmark."));
       }
     }
     setSubmitting(false);

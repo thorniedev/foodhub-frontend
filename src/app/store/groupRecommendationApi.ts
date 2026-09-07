@@ -333,7 +333,7 @@ export const groupRecommendationApi = baseApi.injectEndpoints({
         body: {
           meetupUuid: body.meetupUuid,
           participantUuid: body.participantUuid,
-          foodUuid: body.foodUuid || body.candidateUuid,
+          storeUuid: body.storeUuid || body.candidateUuid,
           rankChoice: body.rankChoice ?? 1,
         },
       }),

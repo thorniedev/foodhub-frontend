@@ -1241,7 +1241,6 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                       storeUuid: food?.store?.uuid,
                     });
                   }
-                  window.dispatchEvent(new Event("foodhub-favorites-updated"));
                 }}
                 className={`col-span-2 sm:col-span-1 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 font-semibold transition active:scale-95 ${TEXT_BODY} ${
                   isBookmarked

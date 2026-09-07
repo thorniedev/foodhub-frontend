@@ -450,7 +450,7 @@ export default function SharedVotingPage({ inviteCode }: SharedVotingPageProps) 
       await submitMeetupVote({
         meetupUuid: resolvedMeetupUuid,
         participantUuid,
-        foodUuid: storeUuid,
+        storeUuid,
         candidateUuid: storeUuid,
         rankChoice: 1,
       }).unwrap();

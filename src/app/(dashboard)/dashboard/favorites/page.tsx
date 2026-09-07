@@ -201,11 +201,11 @@ function StoreBookmarkCard({
                 📍 {store?.addressLine || store?.city}
               </span>
             )}
-            {store?.averageRating != null && (
+            {/* {store?.averageRating != null && (
               <span className="font-bold text-amber-600">
                 ⭐ {store.averageRating}
               </span>
-            )}
+            )} */}
           </div>
         </div>
       </div>

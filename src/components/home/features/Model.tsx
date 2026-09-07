@@ -548,7 +548,13 @@ export default function Model() {
         className="group fixed bottom-[calc(10px+env(safe-area-inset-bottom))] right-2 z-[101] cursor-pointer border-0 bg-transparent p-0 outline-none md:bottom-10 md:right-10 md:left-auto md:translate-x-0 pointer-events-auto"
       >
         <div className="origin-bottom-right scale-[0.75] transition-transform md:scale-100">
-          {/* Main AI core */}
+          {/* Main AI core — previously a stack of rotating dashed rings,
+              orbiting particles, an internal scanline, a pixel grid, and a
+              blinking robot face behind the icon. That whole assembly read as
+              generic "AI widget" boilerplate rather than a FoodHub-branded
+              button, so it's a single on-brand gradient circle with one icon
+              now — same trigger, same drag/click behavior, just not a light
+              show. */}
           <motion.div
             variants={{
               hover: {
@@ -564,267 +570,19 @@ export default function Model() {
             }}
             className="relative flex h-[92px] w-[92px] items-center justify-center"
           >
-            {/* Outer energy pulse */}
-            <motion.span
-              aria-hidden="true"
-              className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400/30 via-primary-600/25 to-secondary-500/30 blur-xl"
-              animate={{
-                scale: [0.92, 1.32, 0.92],
-                opacity: [0.7, 0.12, 0.7],
-              }}
-              transition={{
-                duration: 2.7,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-
-            {/* Large rotating ring */}
-            <motion.span
-              aria-hidden="true"
-              className="absolute inset-0 rounded-full border border-dashed border-cyan-300/70"
-              animate={{
-                rotate: 360,
-              }}
-              transition={{
-                duration: 14,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-
-            {/* Reverse rotating ring */}
-            <motion.span
-              aria-hidden="true"
-              className="absolute inset-[7px] rounded-full border border-secondary-300/50"
-              animate={{
-                rotate: -360,
-              }}
-              transition={{
-                duration: 9,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-
-            {/* Orbit particle one */}
-            <motion.span
-              aria-hidden="true"
-              className="absolute inset-[2px] rounded-full"
-              animate={{
-                rotate: 360,
-              }}
-              transition={{
-                duration: 4.5,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            >
-              <span className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(103,232,249,1)]" />
-            </motion.span>
-
-            {/* Orbit particle two */}
-            <motion.span
-              aria-hidden="true"
-              className="absolute inset-[10px] rounded-full"
-              animate={{
-                rotate: -360,
-              }}
-              transition={{
-                duration: 6.5,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            >
-              <span className="absolute bottom-0 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-yellow-300 shadow-[0_0_14px_rgba(253,224,71,1)]" />
-            </motion.span>
-
-            {/* AI shell */}
-            <div className="absolute inset-[10px] rounded-full bg-gradient-to-br from-cyan-300 via-primary-700 to-secondary-500 p-[2px] shadow-[0_20px_45px_rgba(20,90,65,0.5)]">
-              <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#062f2b] via-primary-900 to-[#1b4332]">
-                {/* Internal glow */}
-                <motion.span
-                  className="absolute -left-7 -top-8 h-20 w-20 rounded-full bg-cyan-200/25 blur-2xl"
-                  animate={{
-                    x: [0, 40, 0],
-                    y: [0, 28, 0],
-                  }}
-                  transition={{
-                    duration: 4.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-
-                {/* Grid */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 opacity-[0.08]"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.7) 1px, transparent 1px)",
-                    backgroundSize: "10px 10px",
-                  }}
-                />
-
-                {/* Scanner */}
-                <motion.span
-                  aria-hidden="true"
-                  className="absolute left-3 right-3 h-[2px] bg-gradient-to-r from-transparent via-cyan-200 to-transparent shadow-[0_0_10px_rgba(165,243,252,1)]"
-                  animate={{
-                    y: [-26, 26, -26],
-                    opacity: [0, 1, 0],
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-
-                {/* AI face */}
-                <motion.div
-                  className="relative z-10 flex flex-col items-center"
-                  animate={{
-                    y: [0, -2, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <div className="relative mb-1 h-3 w-[2px] rounded-full bg-white/80">
-                    <motion.span
-                      className="absolute -left-[4px] -top-1.5 h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,1)]"
-                      animate={{
-                        scale: [1, 0.7, 1],
-                        opacity: [1, 0.4, 1],
-                      }}
-                      transition={{
-                        duration: 1.2,
-                        repeat: Infinity,
-                      }}
-                    />
-                  </div>
-
-                  <div className="relative flex h-9 w-12 items-center justify-center gap-2.5 rounded-[13px] border border-cyan-100/20 bg-white/10 shadow-inner backdrop-blur">
-                    <motion.span
-                      className="h-3 w-2 rounded-full bg-cyan-100 shadow-[0_0_10px_rgba(207,250,254,1)]"
-                      animate={{
-                        scaleY: [1, 1, 0.15, 1],
-                      }}
-                      transition={{
-                        duration: 3.2,
-                        repeat: Infinity,
-                        times: [0, 0.45, 0.5, 1],
-                      }}
-                    />
-
-                    <motion.span
-                      className="h-3 w-2 rounded-full bg-cyan-100 shadow-[0_0_10px_rgba(207,250,254,1)]"
-                      animate={{
-                        scaleY: [1, 1, 0.15, 1],
-                      }}
-                      transition={{
-                        duration: 3.2,
-                        repeat: Infinity,
-                        times: [0, 0.45, 0.5, 1],
-                      }}
-                    />
-
-                    <motion.span
-                      className="absolute inset-x-2 bottom-1 h-[1px] rounded-full bg-cyan-200/70"
-                      animate={{
-                        scaleX: [0.5, 1, 0.5],
-                        opacity: [0.4, 1, 0.4],
-                      }}
-                      transition={{
-                        duration: 1.6,
-                        repeat: Infinity,
-                      }}
-                    />
-                  </div>
-
-                  <div className="mt-1.5 flex items-end gap-0.5">
-                    {[5, 8, 6, 10, 5].map((height, index) => (
-                      <motion.span
-                        key={index}
-                        className="w-1 rounded-full bg-cyan-200"
-                        animate={{
-                          height: [height, height + 5, height],
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          repeat: Infinity,
-                          delay: index * 0.1,
-                        }}
-                        style={{
-                          height,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Sparkles */}
-                <motion.span
-                  className="absolute right-2 top-2 text-yellow-300"
-                  animate={{
-                    rotate: 360,
-                    scale: [0.8, 1.25, 0.8],
-                  }}
-                  transition={{
-                    rotate: {
-                      duration: 6,
-                      repeat: Infinity,
-                      ease: "linear",
-                    },
-                    scale: {
-                      duration: 1.6,
-                      repeat: Infinity,
-                    },
-                  }}
-                >
-                  <HiSparkles className="text-[18px]" />
-                </motion.span>
-              </div>
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-primary-600 to-primary-900 text-white shadow-[0_16px_36px_rgba(20,90,65,0.4)]">
+              <HiSparkles className="text-[34px]" />
             </div>
 
             {/* Online status */}
-            <motion.span
-              className="absolute bottom-1 right-1 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-[0_5px_16px_rgba(0,0,0,0.2)]"
-              animate={{
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-              }}
-            >
+            <span className="absolute bottom-1 right-1 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-[0_5px_16px_rgba(0,0,0,0.2)]">
               <span className="h-3.5 w-3.5 rounded-full bg-green-400 ring-2 ring-green-100" />
-            </motion.span>
+            </span>
 
             {/* AI badge */}
-            <motion.span
-              initial={{
-                scale: 0,
-                rotate: -20,
-              }}
-              animate={{
-                scale: 1,
-                rotate: 0,
-              }}
-              transition={{
-                delay: 0.9,
-                type: "spring",
-                stiffness: 400,
-                damping: 16,
-              }}
-              className="absolute -right-3 top-1 z-30 flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-secondary-400 to-secondary-600 px-1.5 text-[16px] font-bold text-white shadow-[0_8px_20px_rgba(234,88,12,0.45)]"
-            >
+            <span className="absolute -right-3 top-1 z-30 flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-white bg-secondary-600 px-1.5 text-[16px] font-bold text-white shadow-[0_8px_20px_rgba(234,88,12,0.45)]">
               AI
-            </motion.span>
+            </span>
           </motion.div>
         </div>
       </motion.button>

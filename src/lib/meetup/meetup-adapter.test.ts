@@ -20,16 +20,16 @@ describe("normalizeMeetupVoteTallyResponse", () => {
     payload: {
       meetupUuid: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
       winnerUuid: "4c856782-b2d9-4d69-b5d1-9457c154316d",
-      foodVoteTallies: [
+      storeVoteTallies: [
         {
-          foodUuid: "4c856782-b2d9-4d69-b5d1-9457c154316d",
-          foodName: "Kuy Teav Phnom Penh",
+          storeUuid: "4c856782-b2d9-4d69-b5d1-9457c154316d",
+          storeName: "Malis Restaurant",
           voteCount: 4,
           isWinner: true,
         },
         {
-          foodUuid: "7a35f791-38e4-4fa9-b883-cf2084c898b1",
-          foodName: "Fish Amok",
+          storeUuid: "7a35f791-38e4-4fa9-b883-cf2084c898b1",
+          storeName: "Khmer Taste Restaurant",
           voteCount: 2,
           isWinner: false,
         },
@@ -37,12 +37,31 @@ describe("normalizeMeetupVoteTallyResponse", () => {
     },
   };
 
-  it("reads entries from the foodVoteTallies key", () => {
+  it("reads entries from the storeVoteTallies key", () => {
     const tally = normalizeMeetupVoteTallyResponse(tallyEnvelope);
 
     expect(tally.tally).toHaveLength(2);
-    expect(tally.tally[0].foodName).toBe("Kuy Teav Phnom Penh");
+    expect(tally.tally[0].storeName).toBe("Malis Restaurant");
     expect(tally.tally[0].voteCount).toBe(4);
+  });
+
+  /*
+   * The room can be open against a backend that has not shipped store voting
+   * yet, so the older key still has to parse rather than render an empty tally.
+   */
+  it("still reads the pre-store-voting foodVoteTallies key", () => {
+    const tally = normalizeMeetupVoteTallyResponse({
+      payload: {
+        meetupUuid: "meet-1",
+        foodVoteTallies: [
+          { foodUuid: "food-a", foodName: "Fish Amok", voteCount: 3 },
+        ],
+      },
+    });
+
+    expect(tally.tally).toHaveLength(1);
+    expect(tally.tally[0].candidateUuid).toBe("food-a");
+    expect(tally.tally[0].candidateName).toBe("Fish Amok");
   });
 
   it("keeps the meetup uuid and winner uuid", () => {
@@ -69,45 +88,45 @@ describe("normalizeMeetupVoteTallyResponse", () => {
     const tally = normalizeMeetupVoteTallyResponse({
       payload: {
         meetupUuid: "meet-1",
-        winnerUuid: "food-b",
-        foodVoteTallies: [
-          { foodUuid: "food-a", foodName: "A", voteCount: 1 },
-          { foodUuid: "food-b", foodName: "B", voteCount: 3 },
+        winnerUuid: "store-b",
+        storeVoteTallies: [
+          { storeUuid: "store-a", storeName: "A", voteCount: 1 },
+          { storeUuid: "store-b", storeName: "B", voteCount: 3 },
         ],
       },
     });
 
-    expect(tally.tally.find((entry) => entry.foodUuid === "food-b")?.isWinner).toBe(
-      true,
-    );
-    expect(tally.tally.find((entry) => entry.foodUuid === "food-a")?.isWinner).toBe(
-      false,
-    );
+    expect(
+      tally.tally.find((entry) => entry.storeUuid === "store-b")?.isWinner,
+    ).toBe(true);
+    expect(
+      tally.tally.find((entry) => entry.storeUuid === "store-a")?.isWinner,
+    ).toBe(false);
   });
 
   it("falls back to the highest vote count with no winner hint", () => {
     const tally = normalizeMeetupVoteTallyResponse({
       payload: {
         meetupUuid: "meet-1",
-        foodVoteTallies: [
-          { foodUuid: "food-a", foodName: "A", voteCount: 1 },
-          { foodUuid: "food-b", foodName: "B", voteCount: 5 },
+        storeVoteTallies: [
+          { storeUuid: "store-a", storeName: "A", voteCount: 1 },
+          { storeUuid: "store-b", storeName: "B", voteCount: 5 },
         ],
       },
     });
 
-    expect(tally.tally.find((entry) => entry.foodUuid === "food-b")?.isWinner).toBe(
-      true,
-    );
+    expect(
+      tally.tally.find((entry) => entry.storeUuid === "store-b")?.isWinner,
+    ).toBe(true);
   });
 
   it("flags nobody when no votes have been cast", () => {
     const tally = normalizeMeetupVoteTallyResponse({
       payload: {
         meetupUuid: "meet-1",
-        foodVoteTallies: [
-          { foodUuid: "food-a", foodName: "A", voteCount: 0 },
-          { foodUuid: "food-b", foodName: "B", voteCount: 0 },
+        storeVoteTallies: [
+          { storeUuid: "store-a", storeName: "A", voteCount: 0 },
+          { storeUuid: "store-b", storeName: "B", voteCount: 0 },
         ],
       },
     });
@@ -305,13 +324,13 @@ describe("normalizeMeetupVoteResponse", () => {
         uuid: "e5f6a7b8-c9d0-1234-ef56-789012345678",
         meetupUuid: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         participantUuid: "b2c3d4e5-f6a7-8901-bcde-f1234567890a",
-        foodUuid: "4c856782-b2d9-4d69-b5d1-9457c154316d",
+        storeUuid: "4c856782-b2d9-4d69-b5d1-9457c154316d",
         vote: 1,
       },
     });
 
     expect(vote.uuid).toBe("e5f6a7b8-c9d0-1234-ef56-789012345678");
-    expect(vote.foodUuid).toBe("4c856782-b2d9-4d69-b5d1-9457c154316d");
+    expect(vote.storeUuid).toBe("4c856782-b2d9-4d69-b5d1-9457c154316d");
     expect(vote.participantUuid).toBe("b2c3d4e5-f6a7-8901-bcde-f1234567890a");
     expect(vote.vote).toBe(1);
   });

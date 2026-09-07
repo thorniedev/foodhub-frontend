@@ -62,10 +62,12 @@ export default function MeetupWinnerCelebration({
     winningCard.winningCandidateName ||
     "Top Voted Restaurant";
 
-  const foodName =
-    winningCard.foodName ||
-    winningCard.winningCandidateName ||
-    "Selected Group Choice";
+  /*
+   * The room votes for a restaurant, not a dish, so the card names the winning
+   * store. foodName is only still read for a meetup decided before the switch
+   * to store voting, where a dish is all the record holds.
+   */
+  const featuredName = winningCard.foodName || restaurantName;
 
   const storeSearchUrl =
     winningCard.storeName || winningCard.storeAddress
@@ -90,7 +92,7 @@ export default function MeetupWinnerCelebration({
         : shareToken
           ? `/meetup/result/${shareToken}`
           : "";
-    const shareText = `👑 Winner Announced for "${winningCard.title}"!\nWe're dining at ${restaurantName} (${foodName}).\nDirections: ${directionsUrl}`;
+    const shareText = `👑 Winner Announced for "${winningCard.title}"!\nWe're dining at ${restaurantName}.\nDirections: ${directionsUrl}`;
 
     if (navigator.share) {
       try {
@@ -167,7 +169,7 @@ export default function MeetupWinnerCelebration({
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
               <Image
                 src={winningCard.foodPhotoUrl || "/Image/food01.png"}
-                alt={foodName}
+                alt={featuredName}
                 width={64}
                 height={64}
                 className="h-full w-full object-cover"
@@ -175,7 +177,7 @@ export default function MeetupWinnerCelebration({
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-base font-bold text-slate-900 dark:text-white">
-                {foodName}
+                {featuredName}
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
                 {winningCard.rating && (

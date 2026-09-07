@@ -4,6 +4,8 @@ import {
   LogOut,
 } from "lucide-react";
 
+import { logoutAndUnsubscribePush } from "@/lib/push/browser-push";
+
 interface LogOutButtonProps {
   className?: string;
 }
@@ -13,8 +15,7 @@ export default function LogOutButton({
 }: LogOutButtonProps) {
   const handleLogout =
     () => {
-      window.location.href =
-        "/api/auth/logout";
+      void logoutAndUnsubscribePush();
     };
 
   return (

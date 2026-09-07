@@ -57,7 +57,7 @@ export default function MeetupTallyPanel({
 
             return (
               <div
-                key={`${entry.foodUuid ?? entry.candidateUuid}-${index}`}
+                key={`${entry.storeUuid ?? entry.candidateUuid}-${index}`}
                 className={`rounded-2xl p-3 transition ${
                   entry.isWinner
                     ? "bg-accent-50 ring-1 ring-accent-200 dark:bg-accent-950/30 dark:ring-accent-900"
@@ -70,7 +70,7 @@ export default function MeetupTallyPanel({
                       <Trophy className="h-3.5 w-3.5 shrink-0 text-accent-500" />
                     )}
                     <span className="truncate">
-                      {entry.foodName ||
+                      {entry.storeName ||
                         entry.candidateName ||
                         "ហាងគ្មានឈ្មោះ"}
                     </span>

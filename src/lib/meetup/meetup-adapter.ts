@@ -427,7 +427,7 @@ export function normalizeMeetupVoteResponse(
     meetupUuid: getString(record, ["meetupUuid", "groupUuid"]),
     participantUuid: getString(record, ["participantUuid"]),
     candidateUuid: getString(record, ["candidateUuid", "storeCandidateUuid"]),
-    foodUuid: getString(record, ["foodUuid", "menuItemUuid"]),
+    storeUuid: getString(record, ["storeUuid"]),
     vote: getNumber(record, ["vote"]),
     rankChoice: getNumber(record, ["rankChoice", "rank", "vote"]),
     createdAt: getString(record, ["createdAt", "votedAt"]),
@@ -460,10 +460,12 @@ export function normalizeMeetupVotesResponse(
 }
 
 /**
- * The meetup API returns the tally under `foodVoteTallies`; older builds used
- * `tally`. Both are accepted so the room keeps working across backend versions.
+ * The meetup API returns the tally under `storeVoteTallies`. `foodVoteTallies`
+ * is the pre-store-voting key and `tally` is older still; both are accepted so
+ * the room keeps working against a backend that has not been deployed yet.
  */
 const TALLY_ARRAY_KEYS = [
+  "storeVoteTallies",
   "foodVoteTallies",
   "tally",
   "results",
@@ -475,12 +477,11 @@ function normalizeTallyEntry(response: unknown): MeetupVoteTallyEntry {
 
   return {
     candidateUuid:
-      getString(record, ["candidateUuid", "foodUuid", "menuItemUuid"]) ?? "",
-    foodUuid: getString(record, ["foodUuid", "menuItemUuid"]),
+      getString(record, ["candidateUuid", "storeUuid", "foodUuid"]) ?? "",
+    storeUuid: getString(record, ["storeUuid"]),
     candidateName:
-      getString(record, ["candidateName", "foodName", "menuItemName"]) ??
+      getString(record, ["candidateName", "storeName", "foodName"]) ??
       undefined,
-    foodName: getString(record, ["foodName", "menuItemName"]),
     storeName: getString(record, ["storeName"]),
     voteCount: getNumber(record, ["voteCount", "votes", "count"]) ?? 0,
     isWinner: getBoolean(record, ["isWinner", "winner"]) ?? false,
@@ -509,7 +510,7 @@ function withWinnerFlags(
     return entries.map((entry) => ({
       ...entry,
       isWinner:
-        entry.foodUuid === winnerUuid || entry.candidateUuid === winnerUuid,
+        entry.storeUuid === winnerUuid || entry.candidateUuid === winnerUuid,
     }));
   }
 
