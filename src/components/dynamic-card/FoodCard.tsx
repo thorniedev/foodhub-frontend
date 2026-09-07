@@ -426,10 +426,12 @@ const FoodCard = React.memo(function FoodCard({
           await removeBookmark(serverBookmark.uuid);
         }
       } else {
+        // The backend rejects a bookmark that names more than one target
+        // (food/menu item/store must be exactly one), so only the menu item
+        // this card actually displays is sent even though food/store uuids
+        // are available here too.
         await addBookmark({
           menuItemUuid: activeFood.uuid,
-          foodUuid: activeFood.food?.uuid,
-          storeUuid: activeFood.store?.uuid,
         });
       }
     } catch (err) {
@@ -558,44 +560,36 @@ const FoodCard = React.memo(function FoodCard({
         ======================================== */}
 
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-[12px] sm:rounded-[10px] max-sm:rounded-[8px] border border-gray-100 dark:border-gray-800">
-          {imgError || !rawImage ? (
-            <div className="flex h-[115px] sm:h-[180px] w-full items-center justify-center bg-gray-50 dark:bg-gray-800">
-              <div className="flex flex-col items-center gap-2 text-gray-300 dark:text-gray-600">
-                <svg
-                  className="w-8 h-8 sm:w-12 sm:h-12"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-          ) : (
-            <Image
-              src={thumbnailUrl}
-              alt={displayName}
-              width={485}
-              height={370}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              draggable={false}
-              onError={() => {
-                setImgError(true);
-              }}
-              className="
-                h-[115px]
-                sm:h-[180px]
-                w-full
-                object-cover
-                pointer-events-none
-              "
-            />
-          )}
+          {/*
+            thumbnailUrl already resolves to DEFAULT_FOOD_IMAGE whenever
+            rawImage is missing or the real photo failed to load -- this used
+            to branch away from <Image> entirely on that same condition and
+            show a bare "broken image" glyph instead, so the computed default
+            photo was never actually reachable. Every other card in the app
+            (FooodCard, SwipeCardTinderStyle, FoodDetailPage) keeps rendering
+            an <Image>/<img> and swaps its src on error instead of switching
+            UI, so this now matches that pattern.
+          */}
+          <Image
+            src={thumbnailUrl}
+            alt={displayName}
+            width={485}
+            height={370}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            draggable={false}
+            onError={() => {
+              setImgError(true);
+            }}
+            className="
+              h-[115px]
+              sm:h-[180px]
+              w-full
+              object-cover
+              pointer-events-none
+              bg-gray-50
+              dark:bg-gray-800
+            "
+          />
 
           {/* Top-Right Bookmark Button */}
           <button

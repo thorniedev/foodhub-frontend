@@ -111,7 +111,7 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         onClick={handleToggle}
         disabled={submitting}
         aria-label={isBookmarked ? "Remove bookmark" : "Bookmark this item"}
-        className={`inline-flex items-center justify-center gap-1.5 p-2 rounded-full transition-all duration-200 active:scale-95 disabled:opacity-50 ${
+        className={`relative inline-flex items-center justify-center gap-1.5 p-2 rounded-full transition-all duration-200 active:scale-95 disabled:opacity-50 ${
           isBookmarked
             ? "bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
             : "bg-black/5 hover:bg-black/10 text-neutral-600 dark:bg-white/10 dark:hover:bg-white/20 dark:text-neutral-300"
@@ -127,6 +127,14 @@ export const BookmarkButton: React.FC<BookmarkButtonProps> = ({
         {showText && (
           <span className="text-sm font-medium pr-1">
             {isBookmarked ? "Bookmarked" : "Bookmark"}
+          </span>
+        )}
+        {error && (
+          <span
+            role="alert"
+            className="absolute top-full left-1/2 z-10 mt-1.5 w-max max-w-56 -translate-x-1/2 whitespace-normal rounded-lg bg-rose-600 px-2.5 py-1.5 text-xs font-semibold normal-case text-white shadow-lg"
+          >
+            {error}
           </span>
         )}
       </button>
