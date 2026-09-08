@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  ArrowLeft,
   ArrowRight,
   ChefHat,
   Loader2,
@@ -1256,6 +1257,21 @@ export default function MeetupLiveRoom({
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-20 pt-20 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-5">
+        {/*
+         * Only the creator's own route (/meetup/[uuid]) has a place to go
+         * back to -- a guest opened this room from a share link outside the
+         * app (Telegram, a chat), so there is nothing in FoodHub "before" it.
+         */}
+        {meetupUuidProp && !shareTokenProp && (
+          <Link
+            href="/meetup"
+            className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-primary-700 dark:text-slate-400 dark:hover:text-primary-400"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            ការណាត់ជួបរបស់ខ្ញុំ
+          </Link>
+        )}
+
         <MeetupRoomHeader
           group={group}
           participantCount={participants.length}

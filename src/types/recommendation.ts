@@ -53,6 +53,7 @@ export interface RecommendationItemDto {
   storeId: number;
   storeUuid?: string | null;
   storeName: string;
+  storeLogoUrl?: string | null;
   rankPosition: number;
   finalScore: number;
   groupScore?: number;
@@ -103,6 +104,7 @@ export interface RecommendationItem {
   storeId?: number;
   storeUuid?: string | null;
   storeName: string | null;
+  storeLogoUrl?: string | null;
   rankPosition: number | null;
   finalScore: number | null;
   groupScore: number | null;

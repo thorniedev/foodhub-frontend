@@ -69,6 +69,7 @@ function makeCandidate(
     foodName: "Kuy Teav",
     storeName: "Noodle House",
     photoUrl: null,
+    storeLogoUrl: null,
     rating: null,
     price: null,
     currencyCode: "USD",
@@ -224,6 +225,7 @@ describe("groupCandidatesByStore", () => {
       foodName: "Kuy Teav",
       storeName: "Noodle House",
       photoUrl: null,
+      storeLogoUrl: null,
       rating: 4.5,
       price: 3.5,
       currencyCode: "USD",
@@ -277,6 +279,38 @@ describe("groupCandidatesByStore", () => {
     expect(stores[0].distanceKm).toBe(1.1);
     expect(stores[0].rating).toBe(4.7);
     expect(stores[0].bestScore).toBe(0.9);
+  });
+
+  /*
+   * The card represents the restaurant, so its image has to be the
+   * restaurant's own logo -- not a photo of whichever dish happened to have
+   * one, which is how a plate of food used to stand in for the whole store.
+   */
+  it("uses the store's own logo, never a dish photo, for the card image", () => {
+    const stores = groupCandidatesByStore([
+      candidate({
+        foodUuid: "food-1",
+        photoUrl: "https://example.com/kuy-teav.jpg",
+        storeLogoUrl: null,
+      }),
+      candidate({
+        foodUuid: "food-2",
+        photoUrl: "https://example.com/fish-amok.jpg",
+        storeLogoUrl: "https://example.com/noodle-house-logo.jpg",
+      }),
+    ]);
+
+    expect(stores[0].photoUrl).toBe(
+      "https://example.com/noodle-house-logo.jpg",
+    );
+  });
+
+  it("has no photo to show when no dish's store carries a logo", () => {
+    const stores = groupCandidatesByStore([
+      candidate({ photoUrl: "https://example.com/kuy-teav.jpg", storeLogoUrl: null }),
+    ]);
+
+    expect(stores[0].photoUrl).toBeNull();
   });
 
   /*
