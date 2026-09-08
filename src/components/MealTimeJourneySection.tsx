@@ -139,19 +139,15 @@ function MealDishImage({
   alt: string;
   fallbackSrc: string;
 }) {
-  const [imgSrc, setImgSrc] = useState(src);
-
-  useEffect(() => {
-    setImgSrc(src);
-  }, [src]);
+  const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
 
   return (
     <Image
       src={imgSrc}
       alt={alt}
       fill
-      unoptimized
       priority
+      fetchPriority="high"
       sizes="(max-width: 768px) 360px, 420px"
       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
       onError={() => {
@@ -180,9 +176,7 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
 
   // Current live time
   const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
-  const [active, setActive] = useState<number>(() => {
-    return getMealIndexByHour(new Date().getHours());
-  });
+  const [active, setActive] = useState<number>(0);
 
   // Keep current time updated
   useEffect(() => {
@@ -240,11 +234,6 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
 
       const dishName =
         chosenFood?.localName || chosenFood?.name || slot.defaultDish;
-      const rawImage =
-        chosenFood?.thumbnail ||
-        (Array.isArray(chosenFood?.gallery) && chosenFood.gallery[0]) ||
-        slot.fallbackImg;
-      const imageUrl = toFrontendApiAssetUrl(rawImage, slot.fallbackImg);
 
       return {
         id: slot.id,
@@ -252,7 +241,7 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
         dish: dishName,
         time: displayTime,
         note: slot.note,
-        img: imageUrl,
+        img: slot.fallbackImg,
         fallbackImg: slot.fallbackImg,
         uuid: chosenFood?.uuid ?? null,
         price: chosenFood?.price != null ? `$${chosenFood.price}` : null,
@@ -777,13 +766,13 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
             {/* photo aperture - circular container with food photo & details INSIDE */}
             <div className="group absolute inset-0 overflow-hidden rounded-full shadow-2xl shadow-primary-950/70 border-[2px] border-white/30 bg-primary-950">
               {/* Active Dish Food Photo */}
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div
-                  key={currentActiveMeal.id + currentActiveMeal.img}
-                  initial={{ opacity: 0, scale: 1.06, zIndex: 10 }}
+                  key={currentActiveMeal.id}
+                  initial={{ opacity: 0, scale: 1.04, zIndex: 10 }}
                   animate={{ opacity: 1, scale: 1, zIndex: 10 }}
                   exit={{ opacity: 0.99, scale: 1, zIndex: 0 }}
-                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
                   className="absolute inset-0 h-full w-full"
                 >
                   <MealDishImage
