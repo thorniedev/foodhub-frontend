@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { House, Info, LogIn, UtensilsCrossed, Store } from "lucide-react";
 import {
-  House,
-  Info,
-  LogIn,
-  UtensilsCrossed,
-  Store,
-} from "lucide-react";
-import { useEffect, useRef, useState, useCallback, startTransition } from "react";
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  startTransition,
+} from "react";
 
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
 import ThemeToggle from "../theme-toggle";
@@ -112,26 +112,29 @@ export default function Navbar() {
      DESKTOP TAB CHANGE - OPTIMIZED FOR SPEED
   ======================================================= */
 
-  const handleDesktopTabChange = useCallback((index: number) => {
-    const selectedLink = NAV_LINKS[index];
+  const handleDesktopTabChange = useCallback(
+    (index: number) => {
+      const selectedLink = NAV_LINKS[index];
 
-    if (!selectedLink) {
-      return;
-    }
+      if (!selectedLink) {
+        return;
+      }
 
-    // ✅ Skip if already on this page (prevents unnecessary navigation)
-    if (checkActiveRoute(pathname, selectedLink.href)) {
-      return;
-    }
+      // ✅ Skip if already on this page (prevents unnecessary navigation)
+      if (checkActiveRoute(pathname, selectedLink.href)) {
+        return;
+      }
 
-    // ✅ Use startTransition for non-blocking navigation
-    // This makes the tab click feel instant
-    startTransition(() => {
-      router.push(selectedLink.href, {
-        scroll: true,
+      // ✅ Use startTransition for non-blocking navigation
+      // This makes the tab click feel instant
+      startTransition(() => {
+        router.push(selectedLink.href, {
+          scroll: true,
+        });
       });
-    });
-  }, [pathname, router]);
+    },
+    [pathname, router],
+  );
 
   /* =======================================================
      PREFETCH NAVIGATION ROUTES FOR INSTANT TRANSITIONS
@@ -246,7 +249,7 @@ export default function Navbar() {
           border-slate-100/70
 
           bg-white/90
-
+ z-90
           shadow-sm
           backdrop-blur-xl
 
@@ -257,10 +260,10 @@ export default function Navbar() {
           dark:border-white/5
           dark:bg-gray-950/90
 
-          md:border-b-0
-          md:bg-white/90
+          md:border-b-0 
+          md:bg-white/5
           md:shadow-2xs
-          md:backdrop-blur-[4px]
+          md:backdrop-blur-[10px]
           md:dark:bg-gray-950/90
 
           ${showScrollNavigation ? "md:translate-y-0" : "md:-translate-y-full lg:translate-y-0"}
@@ -537,7 +540,6 @@ p-1
           </div>
         </div>
       </nav>
-
     </>
   );
 }

@@ -157,6 +157,7 @@ function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
           className={`
             sm:border-6
             ${card.fit}
+            z-0
             lg:w-[235px]
             lg:h-[285px]
             md:w-[170px]
@@ -303,7 +304,7 @@ export default function PopularSection() {
           whileInView="show"
           viewport={VIEWPORT}
           variants={group(0.09, 0.06)}
-          className="flex max-sm:pt-12 sm:pt-20 justify-center lg:max-w-7xl  max-sm:w-fit px-3 mx-auto"
+          className="flex max-sm:pt-12 -z-2 sm:pt-20 justify-center lg:max-w-7xl  max-sm:w-fit px-3 mx-auto"
         >
           {cards.map((card, index) => (
             <PopularCardItem
