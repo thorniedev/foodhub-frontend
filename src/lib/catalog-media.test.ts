@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toFrontendApiAssetUrl } from "./catalog-media";
+import { toFrontendApiAssetUrl, DEFAULT_FOOD_IMAGE } from "./catalog-media";
 
 describe("toFrontendApiAssetUrl (banner image resolution)", () => {
   it("rewrites a backend /api/v1/media/{uuid}/file path to the local proxy", () => {
@@ -24,8 +24,8 @@ describe("toFrontendApiAssetUrl (banner image resolution)", () => {
   });
 
   it("falls back to the default image for a null/empty value", () => {
-    expect(toFrontendApiAssetUrl(null)).toBe("/Image/default-food.png");
-    expect(toFrontendApiAssetUrl("")).toBe("/Image/default-food.png");
+    expect(toFrontendApiAssetUrl(null)).toBe(DEFAULT_FOOD_IMAGE);
+    expect(toFrontendApiAssetUrl("")).toBe(DEFAULT_FOOD_IMAGE);
   });
 
   it("resolves a raw media UUID", () => {

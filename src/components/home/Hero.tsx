@@ -548,7 +548,7 @@ export default function Hero() {
     md:w-150
     lg:-mt-6 max-sm:px-4
   "
-                src="/Image/foodhub-image-new.png"
+                src="/Image/foodhub-image-new.webp"
                 alt="FoodHub - ស្វែងរក និងណែនាំម្ហូបអាហារ (Mhoubahar)"
                 width={950}
                 height={450}

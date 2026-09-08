@@ -47,8 +47,8 @@ export const CircularBadge = () => (
   </div>
 );
 export default function LocationSection() {
-  const { data: menuItems, isLoading } = useGetMenuItemsQuery({ size: 10000 });
-  const totalFoods = menuItems?.length || 0;
+  const { data: menuItems, isLoading } = useGetMenuItemsQuery({ size: 50 });
+  const totalFoods = menuItems && menuItems.length >= 50 ? "100+" : String(menuItems?.length || 0);
 
   return (
     <section className="container px-4 md:pb-30 max-md:pb-60 flex  max-md:flex-col  max-md:gap-y-40  md:justify-between  md:items-center lg:pt-6 mx-auto max-w-7xl">

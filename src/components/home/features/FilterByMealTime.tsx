@@ -422,7 +422,7 @@ export default function FilterByMealTime({
     isFetching: isCatalogFetching,
     isError: isCatalogError,
     refetch,
-  } = useGetMenuItemsQuery({ rootCategoryCode });
+  } = useGetMenuItemsQuery({ rootCategoryCode, size: 60 });
 
   /* =========================================================
      RESET PAGE ON FILTER CHANGE

@@ -45,7 +45,7 @@ const MEAL_SLOTS: MealSlotConfig[] = [
     defaultDish: "បបរគ្រឿងឈ្ងុយឆ្ងាញ់",
     note: "ចាប់ផ្ដើមថ្ងៃថ្មីដោយភាពស្រស់ស្រាយ និងថាមពល",
     mealCodes: ["MORNING", "BREAKFAST", "ព្រឹក", "អាហារពេលព្រឹក"],
-    fallbackImg: "/Image/food/food4.png",
+    fallbackImg: "/Image/food/food4.webp",
   },
   {
     id: "LUNCH",
@@ -54,7 +54,7 @@ const MEAL_SLOTS: MealSlotConfig[] = [
     defaultDish: "សម្លម្ជូរគ្រឿងខ្មែរ",
     note: "ឆ្អែតពេញលេញ មានជីវជាតិ សម្រាប់រសៀលវែង",
     mealCodes: ["LUNCH", "MIDDAY", "ថ្ងៃ", "អាហារថ្ងៃត្រង់", "អាហារពេលថ្ងៃ"],
-    fallbackImg: "/Image/food/food5.png",
+    fallbackImg: "/Image/food/food5.webp",
   },
   {
     id: "DINNER",
@@ -63,7 +63,7 @@ const MEAL_SLOTS: MealSlotConfig[] = [
     defaultDish: "ឡុកឡាក់សាច់គោពិសេស",
     note: "ម្ហូបក្ដៅៗ ឈ្ងុយឆ្ងាញ់ ជួបជុំក្រុមគ្រួសារ",
     mealCodes: ["DINNER", "EVENING", "NIGHT", "ល្ងាច", "អាហារពេលល្ងាច"],
-    fallbackImg: "/Image/food/food7.png",
+    fallbackImg: "/Image/food/food7.webp",
   },
   {
     id: "SNACK",
@@ -79,7 +79,7 @@ const MEAL_SLOTS: MealSlotConfig[] = [
       "អាហារសម្រន់",
       "បង្អែម",
     ],
-    fallbackImg: "/Image/food/food9.png",
+    fallbackImg: "/Image/food/food9.webp",
   },
 ];
 
@@ -175,8 +175,8 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
   // Active user profile & safety preferences
   const { activeProfile } = useActiveProfile();
 
-  // Fetch real menu items from catalog API
-  const { data: menuItems = [] } = useGetMenuItemsQuery();
+  // Fetch real menu items from catalog API (limited to 24 items to avoid payload bloat)
+  const { data: menuItems = [] } = useGetMenuItemsQuery({ size: 24 });
 
   // Current live time
   const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
@@ -414,20 +414,15 @@ const MealTimeJourneySection = React.memo(function MealTimeJourneySection() {
           style={{ opacity: reduce ? 0 : starOpacity }}
         >
           {STARS.map(([l, t], i) => (
-            <motion.span
+            <span
               key={i}
-              className="absolute rounded-full bg-white"
+              className="absolute rounded-full bg-white/80 animate-pulse"
               style={{
                 left: `${l}%`,
                 top: `${t}%`,
                 width: i % 3 === 0 ? 3 : 2,
                 height: i % 3 === 0 ? 3 : 2,
-              }}
-              animate={{ opacity: [0.35, 1, 0.35] }}
-              transition={{
-                duration: 2.6 + (i % 4),
-                repeat: Infinity,
-                ease: "easeInOut",
+                animationDuration: `${2.5 + (i % 4) * 0.8}s`,
               }}
             />
           ))}

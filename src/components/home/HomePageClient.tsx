@@ -2,9 +2,21 @@
 
 import dynamic from "next/dynamic";
 import Hero from "@/components/home/Hero";
-import FilterSomeCategory from "./features/FilterSomeCategory";
-import { Skiper30 } from "../ui/skiper-ui/skiper30";
-import ProvineImageRevealSection from "./features/province";
+
+const FilterSomeCategory = dynamic(
+  () => import("./features/FilterSomeCategory"),
+);
+const Skiper30 = dynamic(
+  () => import("../ui/skiper-ui/skiper30").then((mod) => mod.Skiper30),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[250px]" />,
+  },
+);
+const ProvineImageRevealSection = dynamic(
+  () => import("./features/province"),
+  { loading: () => <div className="min-h-[200px]" /> },
+);
 
 const MealTimeJourneySection = dynamic(
   () => import("@/components/MealTimeJourneySection"),

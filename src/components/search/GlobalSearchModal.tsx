@@ -342,10 +342,11 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                     >
                       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
                         <Image
-                          src={store.logoUrl || store.bannerUrl || "/Image/foodHub-logo.png"}
+                          src={store.logoUrl || store.bannerUrl || "/Image/foodHub-logo.webp"}
                           alt={store.storeName || store.name || "Store"}
                           width={48}
                           height={48}
+                          unoptimized
                           className="h-full w-full object-cover"
                         />
                       </div>
@@ -389,10 +390,11 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
                           <Image
-                            src={item.imageUrl || "/Image/foodHub-logo.png"}
+                            src={item.imageUrl || "/Image/foodHub-logo.webp"}
                             alt={item.name}
                             width={48}
                             height={48}
+                            unoptimized
                             className="h-full w-full object-cover"
                           />
                         </div>
