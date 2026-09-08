@@ -95,7 +95,7 @@ export default function Footer() {
             {/* Middle column */}
             <div>
               <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
-                លីងភ្ជាប់
+                តំណរលីង
               </h4>
 
               <nav className="mt-6 flex flex-col gap-5">
@@ -126,7 +126,7 @@ export default function Footer() {
             {/* Right column */}
             <div>
               <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
-                ឧបត្ថម្ភដោយ
+                គាំទ្រដោយ
               </h4>
 
               <div className="mt-6 flex flex-col gap-6">
