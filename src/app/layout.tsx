@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 
 import "./globals.css";
 
@@ -14,15 +14,48 @@ import { generateWebSiteJsonLd } from "@/lib/seo";
 import { GoogleIcon } from "@/components/auth/icons";
 
 /* =========================================================
-   PRIMARY FONT (Optimized WOFF2 self-hosted via next/font)
+   PRIMARY FONT (Self-hosted Google Sans with Khmer support)
 ========================================================= */
 
-const fontSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const googleSans = localFont({
+  src: [
+    {
+      path: "./fonts/GoogleSans_17pt-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/GoogleSans_17pt-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/GoogleSans_17pt-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/GoogleSans_17pt-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/GoogleSans_17pt-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-google-sans",
   display: "swap",
-  fallback: ["Arial", "sans-serif"],
+  fallback: [
+    "Google Sans",
+    "Kantumruy Pro",
+    "Noto Sans Khmer",
+    "system-ui",
+    "-apple-system",
+    "BlinkMacSystemFont",
+    "sans-serif",
+  ],
 });
 
 /* =========================================================
@@ -201,7 +234,7 @@ export default function RootLayout({
     <html
       lang="km"
       suppressHydrationWarning
-      className={`${fontSans.variable} h-full`}
+      className={`${googleSans.variable} h-full`}
     >
       <body
         suppressHydrationWarning

@@ -93,7 +93,7 @@ export default function HeroSection() {
 
         {/* Headline + CTA */}
         <div className="pointer-events-none relative z-10 mx-auto -mt-8 sm:-mt-14 md:-mt-20 flex max-w-3xl flex-col items-center gap-3 sm:gap-4 px-2 text-center">
-          <h1 className="text-3xl font-bold leading-tight drop-shadow-sm [font-family:'Kantumruy_Pro',sans-serif] sm:text-5xl md:text-6xl">
+          <h1 className="text-3xl font-bold leading-tight drop-shadow-sm font-sans sm:text-5xl md:text-6xl">
             <span className="text-[#136c34]">ធ្វើឱ្យការស្វែងរកម្ហូប</span>
             <br />
             <span className="text-[#f97316]">លឿន និង ឆ្លាតវៃ</span>
@@ -102,7 +102,7 @@ export default function HeroSection() {
           <div className="relative mt-1 sm:mt-2">
             <Link
               href="/food"
-              className="pointer-events-auto inline-flex items-center gap-2.5 sm:gap-3 rounded-full bg-[#136c34] px-6 sm:px-9 py-2.5 sm:py-3.5 text-base sm:text-lg font-semibold text-white shadow-lg transition-colors hover:bg-[#0e5327] [font-family:'Kantumruy_Pro',sans-serif]"
+              className="pointer-events-auto inline-flex items-center gap-2.5 sm:gap-3 rounded-full bg-[#136c34] px-6 sm:px-9 py-2.5 sm:py-3.5 text-base sm:text-lg font-semibold text-white shadow-lg transition-colors hover:bg-[#0e5327] font-sans"
             >
               ណែនាំមុខម្ហូប
               <span className="flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full border-2 border-white text-[10px] sm:text-base">
