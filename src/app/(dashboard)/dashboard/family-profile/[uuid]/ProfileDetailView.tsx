@@ -462,7 +462,7 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
 
         <div className="p-5 sm:p-8">
           <div className="mb-5">
-            <h4 className="text-[24px] font-bold text-slate-900 dark:text-white">
+            <h4 className="text-[24px] font-bold text-primary-800 dark:text-emerald-400">
               ព័ត៌មានផ្ទាល់ខ្លួន
             </h4>
 
@@ -510,7 +510,7 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
       {/* General & Cuisine Preferences */}
       <section className="mt-7">
         <div className="mb-5">
-          <h4 className="text-[24px] font-bold text-slate-900 dark:text-white">
+          <h4 className="text-[24px] font-bold text-primary-800 dark:text-emerald-400">
             ចំណូលចិត្តទូទៅ និងរសជាតិ (Food Preferences)
           </h4>
           <p className="mt-2 text-[17px] text-slate-500 dark:text-slate-400">
@@ -527,7 +527,7 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
                   <Flame className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-[21px] font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-[21px] font-bold text-primary-800 dark:text-emerald-400 leading-snug">
                     កម្រិតហឹរ និងថវិកា
                   </h3>
                   <p className="text-[15px] text-slate-500 dark:text-slate-400">
@@ -652,7 +652,7 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
                   <Utensils className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-[21px] font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-[21px] font-bold text-primary-800 dark:text-emerald-400 leading-snug">
                     ចំណូលចិត្តម្ហូបជាតិសាសន៍
                   </h3>
                   <p className="text-[15px] text-slate-500 dark:text-slate-400">
@@ -704,7 +704,7 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
 
       <section className="mt-7">
         <div className="mb-5">
-          <h4 className="text-[24px] font-bold text-slate-900 dark:text-white">
+          <h4 className="text-[24px] font-bold text-primary-800 dark:text-emerald-400">
             សុវត្ថិភាពអាហារ (Food Safety)
           </h4>
 
@@ -723,11 +723,11 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
               </div>
 
               <div>
-                <h3 className="text-[21px] font-bold text-slate-900 dark:text-white">
+                <h3 className="text-[21px] font-bold text-primary-800 dark:text-emerald-400 leading-snug">
                   ប្រតិកម្មអាឡែហ្ស៊ី
                 </h3>
 
-                <p className="text-[17px] text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-[17px] text-slate-500 dark:text-slate-400">
                   {allergies.length} ជម្រើស
                 </p>
               </div>
@@ -766,11 +766,11 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
               </div>
 
               <div>
-                <h3 className="text-[21px] font-bold text-slate-900 dark:text-white">
+                <h3 className="text-[21px] font-bold text-primary-800 dark:text-emerald-400 leading-snug">
                   ប្រភេទរបបអាហារ
                 </h3>
 
-                <p className="text-[17px] text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-[17px] text-slate-500 dark:text-slate-400">
                   {dietaryTypes.length} ជម្រើស
                 </p>
               </div>
@@ -811,11 +811,11 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
               </div>
 
               <div>
-                <h3 className="text-[21px] font-bold text-slate-900 dark:text-white">
+                <h3 className="text-[21px] font-bold text-primary-800 dark:text-emerald-400 leading-snug">
                   ស្ថានភាពសុខភាព
                 </h3>
 
-                <p className="text-[17px] text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-[17px] text-slate-500 dark:text-slate-400">
                   {medicalConditions.length} ជម្រើស
                 </p>
               </div>

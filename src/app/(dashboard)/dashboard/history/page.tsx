@@ -2,15 +2,12 @@
 
 import React, { Suspense, useMemo } from "react";
 import Link from "next/link";
-import {
-  Clock,
-  Store,
-  Loader2,
-  ArrowLeft,
-  Utensils,
-} from "lucide-react";
+import { Clock, Store, Loader2, ArrowLeft, Utensils } from "lucide-react";
 import { useGetInteractionHistoryQuery } from "@/app/store/interactionApi";
-import { useGetMenuItemsQuery, useGetMenuItemByUuidQuery } from "@/app/store/menuApi";
+import {
+  useGetMenuItemsQuery,
+  useGetMenuItemByUuidQuery,
+} from "@/app/store/menuApi";
 import FoodCard from "@/components/dynamic-card/FoodCard";
 import type { InteractionEventResponse } from "@/types/interaction";
 import type { CatalogMenuItem } from "@/types/catalog-menu-item";
@@ -149,7 +146,7 @@ function HistoryContent() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+            <h1 className="truncate text-2xl  font-black tracking-tight text-primary-800 dark:text-white sm:text-3xl">
               ប្រវត្តិដែលបានមើល
             </h1>
             <p className="truncate text-sm font-medium text-slate-500 dark:text-slate-400 sm:text-base">
@@ -163,7 +160,9 @@ function HistoryContent() {
       {isLoading ? (
         <div className="flex h-56 flex-col items-center justify-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-          <p className="text-base text-slate-400 sm:text-lg">កំពុងទាញយកប្រវត្តិ...</p>
+          <p className="text-base text-slate-400 sm:text-lg">
+            កំពុងទាញយកប្រវត្តិ...
+          </p>
         </div>
       ) : history.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-8 py-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-16">
@@ -187,7 +186,7 @@ function HistoryContent() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid max-sm:px-2 grid-cols-1 max-sm:grid-cols-2 max-sm:gap-2 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {history.map((event) => (
             <HistoryItemCard
               key={event.uuid || event.clientEventId}

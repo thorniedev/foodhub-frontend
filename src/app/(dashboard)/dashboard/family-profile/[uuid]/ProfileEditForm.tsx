@@ -13,8 +13,10 @@ import {
   Check,
   ChevronDown,
   Compass,
+  Crown,
   Flame,
   HeartPulse,
+  IdCard,
   ImageIcon,
   LoaderCircle,
   Plus,
@@ -31,6 +33,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { IoCameraOutline } from "react-icons/io5";
+import { FiAlertTriangle } from "react-icons/fi";
 
 import {
   useGetAllergenOptionsQuery,
@@ -46,6 +49,7 @@ import {
   useUploadMediaMutation,
   useGetMediaAccessUrlQuery,
 } from "@/app/store/memberProfileApi";
+import { CustomSelect } from "@/components/shared/CustomSelect";
 
 import type {
   DietaryEnforcementLevel,
@@ -151,27 +155,27 @@ export const PREFERENCE_LEVELS: {
 }[] = [
   {
     value: "LOVE",
-    labelKm: "❤️ ចូលចិត្តខ្លាំង (LOVE)",
+    labelKm: " ចូលចិត្តខ្លាំង (LOVE)",
     badgeClass: "bg-red-50 text-red-700 border-red-200",
   },
   {
     value: "LIKE",
-    labelKm: "👍 ចូលចិត្ត (LIKE)",
+    labelKm: " ចូលចិត្ត (LIKE)",
     badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   {
     value: "NEUTRAL",
-    labelKm: "😐 ធម្មតា (NEUTRAL)",
+    labelKm: " ធម្មតា (NEUTRAL)",
     badgeClass: "bg-slate-50 text-slate-700 border-slate-200",
   },
   {
     value: "DISLIKE",
-    labelKm: "👎 មិនសូវចូលចិត្ត (DISLIKE)",
+    labelKm: " មិនសូវចូលចិត្ត (DISLIKE)",
     badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
   },
   {
     value: "AVOID",
-    labelKm: "🚫 ជៀសវាង (AVOID)",
+    labelKm: " ជៀសវាង (AVOID)",
     badgeClass: "bg-rose-100 text-rose-800 border-rose-300",
   },
 ];
@@ -227,6 +231,12 @@ const severityLabels: Record<ProfileSeverity, string> = {
   MILD: "កម្រិតស្រាល",
   MODERATE: "កម្រិតមធ្យម",
   SEVERE: "កម្រិតធ្ងន់",
+};
+
+const severityBadges: Record<ProfileSeverity, string> = {
+  MILD: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  MODERATE: "bg-amber-50 text-amber-700 border-amber-200",
+  SEVERE: "bg-red-50 text-red-700 border-red-200",
 };
 
 const enforcementLabels: Record<DietaryEnforcementLevel, string> = {
@@ -614,13 +624,11 @@ function parsePreferencesFromProfile(prefs: unknown): {
 
   // Cuisines
   if (Array.isArray(record.cuisines) && record.cuisines.length > 0) {
-    result.cuisinePreferences = record.cuisines.map(
-      (c: any, idx: number) => ({
-        cuisineCode: String(c.cuisineCode || c.code).toUpperCase(),
-        preferenceLevel: (c.preferenceLevel || "LOVE") as CuisinePreferenceLevel,
-        priority: c.priority || idx + 1,
-      }),
-    );
+    result.cuisinePreferences = record.cuisines.map((c: any, idx: number) => ({
+      cuisineCode: String(c.cuisineCode || c.code).toUpperCase(),
+      preferenceLevel: (c.preferenceLevel || "LOVE") as CuisinePreferenceLevel,
+      priority: c.priority || idx + 1,
+    }));
   } else if (
     Array.isArray(record.cuisineCodes) &&
     record.cuisineCodes.length > 0
@@ -635,28 +643,96 @@ function parsePreferencesFromProfile(prefs: unknown): {
   return result;
 }
 
-function PreferenceSection({
-  title,
-  description,
-  icon,
-  children,
+function calculateAge(dateOfBirth?: string | null): number {
+  if (!dateOfBirth || typeof dateOfBirth !== "string") {
+    return 0;
+  }
+  const parts = dateOfBirth.split("-").map(Number);
+  if (parts.length < 3) return 0;
+  const [year, month, day] = parts;
+  if (!year || !month || !day || Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) return 0;
+  const today = new Date();
+  let age = today.getFullYear() - year;
+  const birthdayPassed =
+    today.getMonth() + 1 > month ||
+    (today.getMonth() + 1 === month && today.getDate() >= day);
+  if (!birthdayPassed) age -= 1;
+  return Math.max(age, 0);
+}
+
+function SocialStat({
+  value,
+  label,
+  suffix,
 }: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
+  value: number | string;
+  label: string;
+  suffix?: string;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
-      <div className="mb-5 flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+    <div className="flex min-w-0 flex-col items-center justify-center px-2 text-center">
+      <div className="flex items-baseline gap-1">
+        <span className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl lg:text-4xl">
+          {value}
+        </span>
+        {suffix && (
+          <span className="text-sm font-medium text-slate-400 dark:text-slate-500 lg:text-lg">
+            {suffix}
+          </span>
+        )}
+      </div>
+      <span className="mt-1 truncate text-sm font-semibold text-slate-500 dark:text-slate-400 sm:text-base lg:text-lg">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function ProfileAnchor({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      className="shrink-0 rounded-xl px-4 py-2 text-sm sm:text-base lg:text-lg font-bold text-slate-600 transition hover:bg-slate-100 hover:text-primary-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-400 lg:px-5 lg:py-2.5"
+    >
+      {label}
+    </a>
+  );
+}
+
+function SectionCard({
+  id,
+  icon,
+  title,
+  description,
+  children,
+  className = "",
+}: {
+  id?: string;
+  icon: React.ReactNode;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      id={id}
+      className={`scroll-mt-28 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.045)] dark:border-slate-800 dark:bg-slate-900 sm:p-7 lg:p-8 ${className}`}
+    >
+      <div className="mb-5 flex items-start gap-3.5 lg:mb-6 lg:gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 dark:bg-emerald-950/60 dark:text-emerald-400 lg:h-13 lg:w-13">
           {icon}
-        </div>
+        </span>
 
-        <div>
-          <p className="text-4xl font-bold text-primary-800">{title}</p>
-
-          <p className=" text-lg pt-6  text-slate-500">{description}</p>
+        <div className="min-w-0">
+          <p className="text-xl font-bold text-primary-800 dark:text-emerald-400 sm:text-2xl lg:text-[26px]">
+            {title}
+          </p>
+          {description && (
+            <p className="mt-1 text-sm sm:text-base lg:text-[17px] leading-6 sm:leading-7 text-slate-500 dark:text-slate-400">
+              {description}
+            </p>
+          )}
         </div>
       </div>
 
@@ -1124,7 +1200,6 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
       return;
     }
 
-
     if (hasSafetyOptionError) {
       setErrorMessage("សូមទាញយកជម្រើសសុវត្ថិភាពឡើងវិញ មុនពេលរក្សាទុក។");
       return;
@@ -1317,7 +1392,10 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           })),
         }).unwrap();
       } catch (cuisineErr) {
-        console.warn("Non-fatal cuisine preferences update warning:", cuisineErr);
+        console.warn(
+          "Non-fatal cuisine preferences update warning:",
+          cuisineErr,
+        );
       }
 
       await refetchProfile();
@@ -1367,191 +1445,228 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
     );
   }
 
+  const age = calculateAge(form.dateOfBirth || profile.dateOfBirth);
+
+  const preferenceCount =
+    form.allergies.length +
+    form.dietaryTypes.length +
+    form.medicalConditions.length +
+    Object.values(form.tastePreferences).filter(Boolean).length +
+    Object.values(form.texturePreferences).filter(Boolean).length +
+    form.cuisinePreferences.length;
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Back */}
-
-      {/* Header */}
-
-      {/* Header */}
-      <div className=" fixed top-18 w-full container  max-w-6xl z-40 mb-8">
-        <div className="flex w-full p-1 items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/90  shadow-lg shadow-slate-200/40 backdrop-blur-xl sm:rounded-full">
-          {/* Back */}
-          <Link
-            href={`/dashboard/family-profile/${uuid}`}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-slate-600 transition bg-slate-100 hover:text-primary-800"
-            aria-label="ត្រឡប់ក្រោយ"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-
-          {/* Title */}
-          {/* <div className="min-w-0 flex-1 px-1">
-            <p className="truncate text-[17px] font-bold text-primary-800 sm:text-[20px]">
-              កែប្រែគណនី
-            </p>
-
-            <p className="hidden truncate text-lg  text-slate-500 sm:block">
-              កំពុងកែប្រែព័ត៌មានរបស់{" "}
-              <span className="font-semibold text-slate-700">
-                {profile.profileName}
-              </span>
-            </p>
-          </div> */}
-
-          {/* Save */}
-          <button
-            type="button"
-            onClick={() => void handleSave()}
-            disabled={
-              isSaving || isLoadingSafetyOptions || hasSafetyOptionError
-            }
-            className="inline-flex h-12 cursor-pointer   shrink-0 items-center justify-center gap-2 rounded-full bg-primary-800 px-4 text-[16px] font-semibold text-white transition hover:bg-primary-900 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-[17px]"
-          >
-            {isSaving ? (
-              <>
-                <LoaderCircle className="h-5 w-5 animate-spin" />
-
-                <span className="hidden sm:inline">កំពុងរក្សាទុក...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-5 w-5" />
-
-                <span className="hidden sm:inline">រក្សាទុក</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-      {/* Basic info */}
-
-      <section className="mt-7 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
-        {/* Header */}
-        <div className="border-b border-slate-100 pb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800">
-              <UserRound className="h-6 w-6" />
-            </div>
+    <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-4 lg:px-5 lg:py-5 xl:px-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* Sticky top action bar matching dashboard layout                    */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="sticky top-16 lg:top-[72px] z-30 mb-5 -mx-3 sm:-mx-4 lg:-mx-5 xl:-mx-6 px-3 sm:px-4 lg:px-5 xl:px-6 py-3.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            <Link
+              href={`/dashboard/family-profile/${uuid}`}
+              className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400 shadow-xs"
+              aria-label="ត្រឡប់ក្រោយ"
+            >
+              <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+            </Link>
 
             <div>
-              <h2 className="text-[24px] font-bold text-primary-800 sm:text-[28px]">
-                ព័ត៌មានគណនី
-              </h2>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-primary-800 dark:text-emerald-400">
+                កែប្រែប្រវត្តិរូប
+              </p>
+              <p className="text-sm sm:text-base font-medium text-slate-500 dark:text-slate-400 truncate max-w-[180px] sm:max-w-sm">
+                {form.profileName || profile.profileName}
+              </p>
+            </div>
+          </div>
 
-              <p className="mt-2 text-lg leading-7 text-slate-500">
-                កែប្រែព័ត៌មានមូលដ្ឋានរបស់សមាជិក។
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
+            <Link
+              href={`/dashboard/family-profile/${uuid}`}
+              className="hidden sm:inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 sm:px-6 py-2.5 text-base font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              បោះបង់
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => void handleSave()}
+              disabled={
+                isSaving || isLoadingSafetyOptions || hasSafetyOptionError
+              }
+              className="inline-flex min-h-11 sm:min-h-12 items-center justify-center gap-2 rounded-full bg-primary-800 px-6 sm:px-8 py-2.5 text-base sm:text-lg font-bold text-white shadow-sm transition hover:bg-primary-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+            >
+              {isSaving ? (
+                <>
+                  <LoaderCircle className="h-5 w-5 animate-spin" />
+                  <span>កំពុងរក្សាទុក...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-5 w-5" />
+                  <span>រក្សាទុក</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Profile hero header (matches UserDashboard)                        */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="rounded-3xl border border-slate-200/80 bg-white px-4 pb-0 pt-5 shadow-[0_8px_28px_rgba(15,23,42,0.045)] dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:pt-6 lg:px-7 lg:pt-7">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:gap-6">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-5 lg:gap-6">
+            {/* Avatar with upload */}
+            <div className="shrink-0">
+              <input
+                ref={avatarInputRef}
+                id="edit-avatar-input"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => void handleAvatarChange(e)}
+                disabled={isUploadingAvatar}
+              />
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                title="ផ្លាស់ប្ដូររូបតំណាង"
+                aria-label="ផ្លាស់ប្ដូររូបតំណាង"
+                className="group relative flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white shadow-sm ring-4 ring-primary-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:ring-emerald-950/40"
+              >
+                {avatarPreviewUrl ? (
+                  <Image
+                    src={avatarPreviewUrl}
+                    alt="Preview"
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    sizes="112px"
+                  />
+                ) : avatarAccessUrlData?.url ||
+                  (pendingAvatarUuid
+                    ? `/api/media/${encodeURIComponent(pendingAvatarUuid)}/file`
+                    : null) ? (
+                  <Image
+                    src={
+                      avatarAccessUrlData?.url ||
+                      `/api/media/${encodeURIComponent(pendingAvatarUuid!)}/file`
+                    }
+                    alt={form.profileName || profile.profileName}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    sizes="112px"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      const fallback = pendingAvatarUuid
+                        ? `/api/media/${encodeURIComponent(pendingAvatarUuid)}/file`
+                        : "";
+                      if (fallback && !target.src.includes(fallback)) {
+                        target.src = fallback;
+                      } else {
+                        target.style.display = "none";
+                      }
+                    }}
+                  />
+                ) : form.profileName.trim() ? (
+                  <span className="flex h-full w-full items-center justify-center bg-[#136C34] text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+                    {form.profileName.trim().slice(0, 2).toUpperCase()}
+                  </span>
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center bg-[#136C34] text-white">
+                    <ImageIcon className="h-8 w-8 text-white/80" />
+                  </span>
+                )}
+
+                {isUploadingAvatar && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <LoaderCircle className="h-7 w-7 animate-spin text-white" />
+                  </span>
+                )}
+
+                {!isUploadingAvatar && (
+                  <span className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <IoCameraOutline className="text-[22px] text-white" />
+                    <span className="text-[11px] font-semibold text-white">
+                      ផ្លាស់ប្ដូរ
+                    </span>
+                  </span>
+                )}
+              </button>
+              {avatarError && (
+                <p className="mt-1.5 max-w-[140px] text-center text-xs text-red-600 dark:text-red-400">
+                  {avatarError}
+                </p>
+              )}
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+                <p className="truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl">
+                  {form.profileName || profile.profileName}
+                </p>
+
+                {profile.isDefault && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-secondary-200 bg-secondary-50 px-3 py-1.5 text-sm sm:text-base font-semibold text-secondary-600 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-400">
+                    <Crown className="h-4 w-4" />
+                    លំនាំដើម
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-base sm:text-lg text-slate-500 dark:text-slate-400">
+                <span>
+                  {relationshipLabels[form.relationship] ?? form.relationship}
+                </span>
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                <span>{genderLabels[form.gender] ?? form.gender}</span>
               </p>
             </div>
           </div>
         </div>
 
-        {/* ---- Avatar upload ---- */}
-        <div className="mt-6 flex flex-col items-center gap-3 border-b border-slate-100 pb-6 sm:flex-row sm:gap-5">
-          {/* Hidden file input */}
-          <input
-            ref={avatarInputRef}
-            id="edit-avatar-input"
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={(e) => void handleAvatarChange(e)}
-            disabled={isUploadingAvatar}
-          />
-
-          {/* Avatar preview */}
-          <button
-            type="button"
-            onClick={() => avatarInputRef.current?.click()}
-            disabled={isUploadingAvatar}
-            title="ផ្លាស់ប្ដូររូបតំណាង"
-            aria-label="ផ្លាស់ប្ដូររូបតំណាង"
-            className="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[22px] ring-4 ring-primary-800/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {/* Photo, preview, or initials */}
-            {avatarPreviewUrl ? (
-              <Image
-                src={avatarPreviewUrl}
-                alt="Preview"
-                fill
-                unoptimized
-                className="object-cover"
-                sizes="96px"
-              />
-            ) : avatarAccessUrlData?.url || (pendingAvatarUuid ? `/api/media/${encodeURIComponent(pendingAvatarUuid)}/file` : null) ? (
-              <Image
-                src={avatarAccessUrlData?.url || `/api/media/${encodeURIComponent(pendingAvatarUuid!)}/file`}
-                alt={form.profileName}
-                fill
-                unoptimized
-                className="object-cover"
-                sizes="96px"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  const fallback = pendingAvatarUuid ? `/api/media/${encodeURIComponent(pendingAvatarUuid)}/file` : "";
-                  if (fallback && !target.src.includes(fallback)) {
-                    target.src = fallback;
-                  } else {
-                    target.style.display = "none";
-                  }
-                }}
-              />
-            ) : form.profileName.trim() ? (
-              <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-[34px] font-bold text-primary-800">
-                {form.profileName.trim().charAt(0).toUpperCase()}
-              </span>
-            ) : (
-              <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-primary-800">
-                <ImageIcon className="h-9 w-9 text-primary-800/60" />
-              </span>
-            )}
-
-            {/* Spinner while uploading */}
-            {isUploadingAvatar && (
-              <span className="absolute inset-0 flex items-center justify-center bg-black/50">
-                <LoaderCircle className="h-7 w-7 animate-spin text-white" />
-              </span>
-            )}
-
-            {/* Camera hover overlay */}
-            {!isUploadingAvatar && (
-              <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                <IoCameraOutline className="text-[26px] text-white" />
-                <span className="text-[11px] font-semibold text-white">
-                  ផ្លាស់ប្ដូរ
-                </span>
-              </span>
-            )}
-          </button>
-
-          <div className="text-center sm:text-left">
-            <p className="text-lg font-semibold text-slate-700">
-              រូបតំណាង
-            </p>
-            <p className="mt-1 text-[15px] leading-6 text-slate-500">
-              ចុចលើរូបភាពដើម្បីផ្ទុករូបថ្មី។
-              <br />
-              JPG, PNG ឬ WebP · អតិបរមា 5 MB
-            </p>
-            {avatarError && (
-              <p className="mt-2 text-[15px] text-red-600">{avatarError}</p>
-            )}
-          </div>
+        {/* Stats strip */}
+        <div className="mt-6 grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-100 py-4 dark:divide-slate-800 dark:border-slate-800 lg:mt-7 lg:py-5">
+          <SocialStat value={age} label="អាយុ" suffix="ឆ្នាំ" />
+          <SocialStat value={preferenceCount} label="ការកំណត់" />
+          <SocialStat value={4} label="ផ្នែកព័ត៌មាន" />
         </div>
 
-        <div className="mt-7 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
-          {/* Name */}
-          <div className="md:col-span-2">
+        {/* Anchors row */}
+        <div className="flex items-center gap-1.5 overflow-x-auto py-3 lg:gap-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ProfileAnchor href="#section-basic" label="អំពីខ្ញុំ" />
+          <ProfileAnchor href="#section-health" label="សុខភាព" />
+          <ProfileAnchor href="#section-preferences" label="ចំណូលចិត្តទូទៅ" />
+          <ProfileAnchor href="#section-cuisines" label="ប្រភេទម្ហូប" />
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. About / Basic Info section                                      */}
+      {/* ------------------------------------------------------------------ */}
+      <SectionCard
+        id="section-basic"
+        icon={<IdCard className="h-6 w-6" />}
+        title="អំពីខ្ញុំ"
+        description="ព័ត៌មានមូលដ្ឋានរបស់ប្រវត្តិរូបនេះ"
+        className="mt-4 lg:mt-5"
+      >
+        <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Profile Name */}
+          <div className="sm:col-span-2 lg:col-span-3">
             <label
               htmlFor="edit-profile-name"
-              className="mb-2.5 block text-lg font-semibold text-slate-700"
+              className="mb-2.5 block text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200"
             >
               ឈ្មោះគណនី
             </label>
-
             <div className="relative">
               <UserRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
               <input
                 id="edit-profile-name"
                 value={form.profileName}
@@ -1561,7 +1676,8 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                     profileName: event.target.value,
                   }))
                 }
-                className="min-h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-4 text-lg text-primary-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+                placeholder="បញ្ចូលឈ្មោះគណនី"
+                className="min-h-13 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 py-3 pl-12 pr-4 text-base sm:text-lg font-semibold text-slate-900 dark:text-white outline-none transition placeholder:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 focus:border-primary-800 dark:focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-800/10 dark:focus:ring-emerald-500/10"
               />
             </div>
           </div>
@@ -1570,39 +1686,34 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           <div>
             <label
               htmlFor="edit-relationship"
-              className="mb-2.5 block text-lg font-semibold text-slate-700"
+              className="mb-2.5 block text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200"
             >
               ទំនាក់ទំនង
             </label>
-
-            <div className="relative">
-              <UsersRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
-              <select
-                id="edit-relationship"
-                value={form.relationship}
-                disabled={profile.relationship === "SELF"}
-                onChange={(event) =>
-                  setForm((previous) => ({
-                    ...previous,
-                    relationship: event.target.value as MemberRelationship,
-                  }))
-                }
-                className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
-              >
-                {Object.entries(relationshipLabels).map(([value, label]) => (
-                  <option key={value} value={value} className="text-lg">
-                    {label}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-            </div>
-
+            <CustomSelect
+              id="edit-relationship"
+              value={form.relationship}
+              disabled={profile.relationship === "SELF"}
+              onChange={(val) =>
+                setForm((previous) => ({
+                  ...previous,
+                  relationship: val as MemberRelationship,
+                }))
+              }
+              leftIcon={
+                <UsersRound className="h-5 w-5 text-slate-400 shrink-0" />
+              }
+              size="lg"
+              options={Object.entries(relationshipLabels).map(
+                ([value, label]) => ({
+                  value,
+                  label,
+                }),
+              )}
+            />
             {profile.relationship === "SELF" && (
-              <p className="mt-2.5 text-lg leading-7 text-slate-500">
-                គណនីខ្លួនឯងមិនអាចប្តូរទំនាក់ទំនងទៅជាសមាជិកផ្សេងបានទេ។
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                គណនីខ្លួនឯងមិនអាចប្តូរទំនាក់ទំនងបានទេ។
               </p>
             )}
           </div>
@@ -1611,48 +1722,40 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           <div>
             <label
               htmlFor="edit-gender"
-              className="mb-2.5 block text-lg font-semibold text-slate-700"
+              className="mb-2.5 block text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200"
             >
               ភេទ
             </label>
-
-            <div className="relative">
-              <UserRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
-              <select
-                id="edit-gender"
-                value={form.gender}
-                onChange={(event) =>
-                  setForm((previous) => ({
-                    ...previous,
-                    gender: event.target.value as MemberGender,
-                  }))
-                }
-                className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
-              >
-                {Object.entries(genderLabels).map(([value, label]) => (
-                  <option key={value} value={value} className="text-lg">
-                    {label}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-            </div>
+            <CustomSelect
+              id="edit-gender"
+              value={form.gender}
+              onChange={(val) =>
+                setForm((previous) => ({
+                  ...previous,
+                  gender: val as MemberGender,
+                }))
+              }
+              leftIcon={
+                <UserRound className="h-5 w-5 text-slate-400 shrink-0" />
+              }
+              size="lg"
+              options={Object.entries(genderLabels).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+            />
           </div>
 
-          {/* Date of birth */}
+          {/* Date of Birth */}
           <div>
             <label
               htmlFor="edit-dob"
-              className="mb-2.5 block text-lg font-semibold text-slate-700"
+              className="mb-2.5 block text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200"
             >
               ថ្ងៃខែឆ្នាំកំណើត
             </label>
-
             <div className="relative">
               <CalendarDays className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
               <input
                 id="edit-dob"
                 type="date"
@@ -1664,47 +1767,277 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                     dateOfBirth: event.target.value,
                   }))
                 }
-                className="min-h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/60 py-3 pl-12 pr-4 text-lg font-medium text-primary-800 outline-none transition hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
+                className="min-h-13 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 py-3 pl-12 pr-4 text-base sm:text-lg font-semibold text-slate-900 dark:text-white outline-none transition hover:border-slate-300 dark:hover:border-slate-600 focus:border-primary-800 dark:focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-800/10 dark:focus:ring-emerald-500/10"
               />
             </div>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      {/* 2. General Food & Taste Preferences */}
-      <section className="mt-7 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
-        <div className="border-b border-slate-100 pb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
-              <Flame className="h-6 w-6" />
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. Health & Safety section (2-column layout like dashboard)       */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="mt-4 grid gap-4 lg:mt-5 lg:grid-cols-2 lg:gap-5">
+        {/* Medical Conditions */}
+        <SectionCard
+          id="section-health"
+          icon={<HeartPulse className="h-5 w-5" />}
+          title="ស្ថានភាពសុខភាព"
+          description="ជ្រើសរើសស្ថានភាពសុខភាពដែលអាចមានឥទ្ធិពលលើការណែនាំអាហារ"
+          className="lg:col-span-2"
+        >
+          {isLoadingSafetyOptions ? (
+            <div className="flex min-h-[140px] items-center justify-center">
+              <LoaderCircle className="h-7 w-7 animate-spin text-emerald-600" />
             </div>
+          ) : medicalOptions.length === 0 ? (
+            <p className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-4 text-base text-slate-500 dark:text-slate-400">
+              មិនមានជម្រើសសុខភាព។
+            </p>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                {medicalOptions.map((option) => {
+                  const isSelected = form.medicalConditions.some(
+                    (item) => item.conditionCode === option.code,
+                  );
+
+                  return (
+                    <button
+                      key={option.code}
+                      type="button"
+                      onClick={() => toggleMedicalCondition(option.code)}
+                      className={`rounded-full border px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base font-semibold transition-all duration-200 ${
+                        isSelected
+                          ? "border-primary-800 bg-primary-800 text-white shadow-xs dark:border-emerald-600 dark:bg-emerald-600"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400"
+                      }`}
+                    >
+                      {option.localName || option.name || option.code}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Selected medical conditions config list */}
+              {form.medicalConditions.length > 0 && (
+                <div className="grid gap-3 pt-2 sm:grid-cols-2">
+                  {form.medicalConditions.map((selectedItem) => {
+                    const option = medicalOptions.find(
+                      (item) => item.code === selectedItem.conditionCode,
+                    );
+
+                    if (!option) return null;
+
+                    return (
+                      <div
+                        key={selectedItem.conditionCode}
+                        className="flex flex-col gap-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 sm:p-5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-base sm:text-lg font-bold text-primary-800 dark:text-emerald-400">
+                              {option.localName || option.name || option.code}
+                            </p>
+                            {option.description && (
+                              <p className="mt-0.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 line-clamp-1">
+                                {option.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleMedicalCondition(option.code)}
+                            className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition"
+                            title="លុប"
+                          >
+                            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div>
+                            <label className="block text-xs sm:text-sm font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                              កម្រិតធ្ងន់ធ្ងរ
+                            </label>
+                            <CustomSelect
+                              value={selectedItem.severity}
+                              onChange={(val) =>
+                                updateMedicalCondition(option.code, {
+                                  severity: val as ProfileSeverity,
+                                })
+                              }
+                              options={Object.entries(severityLabels).map(
+                                ([value, label]) => ({
+                                  value,
+                                  label,
+                                  badgeClass:
+                                    severityBadges[value as ProfileSeverity],
+                                }),
+                              )}
+                              size="sm"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs sm:text-sm font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                              ចំណាំ
+                            </label>
+                            <input
+                              value={selectedItem.notes}
+                              onChange={(event) =>
+                                updateMedicalCondition(option.code, {
+                                  notes: event.target.value,
+                                })
+                              }
+                              placeholder="បញ្ចូលចំណាំ"
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 px-3.5 text-sm sm:text-base font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-primary-800 dark:focus:border-emerald-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </SectionCard>
+
+        {/* Dietary Types */}
+        <SectionCard
+          id="section-food"
+          icon={<Salad className="h-5 w-5" />}
+          title="ប្រភេទរបបអាហារ"
+          description="ជ្រើសរើសរបបអាហារ ឬច្បាប់អាហារដែលគណនីនេះត្រូវការ"
+        >
+          {isLoadingSafetyOptions ? (
+            <div className="flex min-h-[140px] items-center justify-center">
+              <LoaderCircle className="h-7 w-7 animate-spin text-emerald-600" />
+            </div>
+          ) : dietaryOptions.length === 0 ? (
+            <p className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-4 text-base text-slate-500 dark:text-slate-400">
+              មិនមានជម្រើសរបបអាហារ។
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {dietaryOptions.map((option) => {
+                const isSelected = form.dietaryTypes.some(
+                  (item) => item.dietaryTypeCode === option.code,
+                );
+
+                return (
+                  <button
+                    key={option.code}
+                    type="button"
+                    onClick={() => toggleDietaryType(option.code)}
+                    className={`rounded-full border px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base font-semibold transition-all duration-200 ${
+                      isSelected
+                        ? "border-primary-800 bg-primary-800 text-white shadow-xs dark:border-emerald-600 dark:bg-emerald-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400"
+                    }`}
+                  >
+                    {option.localName || option.name || option.code}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </SectionCard>
+
+        {/* Allergies */}
+        <SectionCard
+          icon={<FiAlertTriangle className="text-[19px]" />}
+          title="ប្រតិកម្មអាឡែហ្ស៊ី"
+          description="សារធាតុដែល FoodHub ត្រូវប្រុងប្រយ័ត្ន"
+        >
+          {isLoadingSafetyOptions ? (
+            <div className="flex min-h-[140px] items-center justify-center">
+              <LoaderCircle className="h-7 w-7 animate-spin text-emerald-600" />
+            </div>
+          ) : allergenOptions.length === 0 ? (
+            <p className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-4 text-base text-slate-500 dark:text-slate-400">
+              មិនមានជម្រើសអាឡែហ្ស៊ី។
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {allergenOptions.map((option) => {
+                const isSelected = form.allergies.some(
+                  (item) => item.allergenCode === option.code,
+                );
+
+                return (
+                  <button
+                    key={option.code}
+                    type="button"
+                    onClick={() => toggleAllergy(option.code)}
+                    className={`rounded-full border px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base font-semibold transition-all duration-200 ${
+                      isSelected
+                        ? "border-primary-800 bg-primary-800 text-white shadow-xs dark:border-emerald-600 dark:bg-emerald-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400"
+                    }`}
+                  >
+                    {option.localName || option.name || option.code}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </SectionCard>
+      </div>
+
+      {/* Safety load error */}
+      {hasSafetyOptionError && (
+        <div className="mt-4 rounded-3xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-5">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
             <div>
-              <h2 className="text-[24px] font-bold text-primary-800 sm:text-[28px]">
-                ចំណូលចិត្តទូទៅ និងរសជាតិ
-              </h2>
-              <p className="mt-2 text-lg leading-7 text-slate-500">
-                កំណត់កម្រិតហឹរ ថវិកាអាហារ ចម្ងាយរុករក និងចំណូលចិត្តរសជាតិ។
+              <p className="text-base sm:text-lg font-bold text-red-700 dark:text-red-300">
+                មិនអាចទាញយកជម្រើសសុវត្ថិភាពបានទេ។
               </p>
+              <p className="mt-1 text-sm sm:text-base text-red-600 dark:text-red-400">
+                សូមព្យាយាមទាញយកឡើងវិញ មុនពេលរក្សាទុកការផ្លាស់ប្តូរ។
+              </p>
+              <button
+                type="button"
+                onClick={retrySafetyOptions}
+                className="mt-3.5 inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 px-5 py-2.5 text-base font-bold text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800 transition hover:bg-red-50 dark:hover:bg-slate-800"
+              >
+                <RefreshCw className="h-4 w-4" />
+                ព្យាយាមម្តងទៀត
+              </button>
             </div>
           </div>
         </div>
+      )}
 
-        <div className="mt-7 space-y-8">
-          {/* Spice Tolerance Slider */}
-          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. General Preferences & Tastes                                    */}
+      {/* ------------------------------------------------------------------ */}
+      <SectionCard
+        id="section-preferences"
+        icon={<Flame className="h-5 w-5" />}
+        title="ចំណូលចិត្តទូទៅ និងរសជាតិ"
+        description="កំណត់កម្រិតហឹរ ថវិកាអាហារ ចម្ងាយរុករក និងចំណូលចិត្តរសជាតិ"
+        className="mt-4 lg:mt-5"
+      >
+        <div className="space-y-6">
+          {/* Spice Tolerance */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-4 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
               <div className="flex items-center gap-2.5">
-                <Flame className="h-5 w-5 text-orange-500" />
-                <span className="text-lg font-bold text-slate-800">
+                <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+                <span className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                   កម្រិតហឹរដែលចូលចិត្ត (Spice Tolerance)
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-primary-800 px-3.5 py-1 text-sm font-black text-white shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <span className="rounded-full bg-primary-800 dark:bg-emerald-600 px-3.5 py-1 text-xs sm:text-sm font-black text-white shadow-xs">
                   {form.spiceTolerance} / 10
                 </span>
                 <span
-                  className={`text-base font-bold ${
+                  className={`text-sm sm:text-base font-bold ${
                     getSpiceDescriptor(form.spiceTolerance).colorClass
                   }`}
                 >
@@ -1719,13 +2052,11 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
               max={10}
               step={1}
               value={form.spiceTolerance}
-              onChange={(e) =>
-                handleSpiceChange(parseInt(e.target.value, 10))
-              }
-              className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-800"
+              onChange={(e) => handleSpiceChange(parseInt(e.target.value, 10))}
+              className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary-800 dark:accent-emerald-500"
             />
 
-            <div className="mt-3 flex justify-between text-xs sm:text-sm font-medium text-slate-400">
+            <div className="mt-2.5 flex justify-between text-xs sm:text-sm font-medium text-slate-400 dark:text-slate-500">
               <span>0 (មិនហឹរ)</span>
               <span>3 (ស្រាល)</span>
               <span>5 (មធ្យម)</span>
@@ -1733,51 +2064,51 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
               <span>10 (ខ្លាំងបំផុត)</span>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2 sm:gap-2.5">
               {[0, 3, 5, 7, 10].map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => handleSpiceChange(preset)}
-                  className={`rounded-xl px-3 py-1.5 text-sm font-bold transition ${
+                  className={`rounded-xl px-3.5 py-1.5 text-xs sm:text-sm font-bold transition ${
                     form.spiceTolerance === preset
-                      ? "bg-primary-800 text-white shadow-xs"
-                      : "bg-white text-slate-700 border border-slate-200 hover:border-primary-800"
+                      ? "bg-primary-800 text-white shadow-xs dark:bg-emerald-600"
+                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-primary-800 dark:hover:border-emerald-500"
                   }`}
                 >
                   កម្រិត {preset}{" "}
                   {preset === 0
                     ? "(មិនហឹរ)"
                     : preset === 5
-                    ? "(មធ្យម)"
-                    : preset === 10
-                    ? "(ខ្លាំង)"
-                    : ""}
+                      ? "(មធ្យម)"
+                      : preset === 10
+                        ? "(ខ្លាំង)"
+                        : ""}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Budget and Discovery Radius */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* Budget */}
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-2 mb-3.5">
                 <div className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-emerald-600" />
-                  <span className="text-lg font-bold text-slate-800">
+                  <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                     ថវិកាអាហារ (Budget)
                   </span>
                 </div>
                 {/* Currency toggle */}
-                <div className="flex rounded-xl border border-slate-200 bg-white p-1">
+                <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-0.5">
                   <button
                     type="button"
                     onClick={() => handleCurrencyChange("USD")}
-                    className={`rounded-lg px-3 py-1 text-xs font-black transition ${
+                    className={`rounded-lg px-3 py-1 text-xs sm:text-sm font-bold transition ${
                       form.currencyCode === "USD"
-                        ? "bg-primary-800 text-white"
-                        : "text-slate-600 hover:text-primary-800"
+                        ? "bg-primary-800 text-white dark:bg-emerald-600"
+                        : "text-slate-600 dark:text-slate-400 hover:text-primary-800 dark:hover:text-emerald-400"
                     }`}
                   >
                     USD ($)
@@ -1785,10 +2116,10 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                   <button
                     type="button"
                     onClick={() => handleCurrencyChange("KHR")}
-                    className={`rounded-lg px-3 py-1 text-xs font-black transition ${
+                    className={`rounded-lg px-3 py-1 text-xs sm:text-sm font-bold transition ${
                       form.currencyCode === "KHR"
-                        ? "bg-primary-800 text-white"
-                        : "text-slate-600 hover:text-primary-800"
+                        ? "bg-primary-800 text-white dark:bg-emerald-600"
+                        : "text-slate-600 dark:text-slate-400 hover:text-primary-800 dark:hover:text-emerald-400"
                     }`}
                   >
                     KHR (៛)
@@ -1796,57 +2127,53 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                     តម្លៃទាបបំផុត (Min)
                   </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min={0}
-                      step={form.currencyCode === "USD" ? "0.5" : "500"}
-                      placeholder="0"
-                      value={form.minimumPrice}
-                      onChange={(e) =>
-                        handlePriceChange("minimumPrice", e.target.value)
-                      }
-                      className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-base font-bold text-slate-800 outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                    />
-                  </div>
+                  <input
+                    type="number"
+                    min={0}
+                    step={form.currencyCode === "USD" ? "0.5" : "500"}
+                    placeholder="0"
+                    value={form.minimumPrice}
+                    onChange={(e) =>
+                      handlePriceChange("minimumPrice", e.target.value)
+                    }
+                    className="min-h-12 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 text-base font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:border-primary-800 dark:focus:border-emerald-500 focus:ring-2 focus:ring-primary-800/10 dark:focus:ring-emerald-500/10"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                     តម្លៃខ្ពស់បំផុត (Max)
                   </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min={0}
-                      step={form.currencyCode === "USD" ? "0.5" : "500"}
-                      placeholder="20"
-                      value={form.maximumPrice}
-                      onChange={(e) =>
-                        handlePriceChange("maximumPrice", e.target.value)
-                      }
-                      className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-base font-bold text-slate-800 outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                    />
-                  </div>
+                  <input
+                    type="number"
+                    min={0}
+                    step={form.currencyCode === "USD" ? "0.5" : "500"}
+                    placeholder="20"
+                    value={form.maximumPrice}
+                    onChange={(e) =>
+                      handlePriceChange("maximumPrice", e.target.value)
+                    }
+                    className="min-h-12 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 text-base font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:border-primary-800 dark:focus:border-emerald-500 focus:ring-2 focus:ring-primary-800/10 dark:focus:ring-emerald-500/10"
+                  />
                 </div>
               </div>
             </div>
 
             {/* Default Search Radius */}
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-2 mb-3.5">
                 <div className="flex items-center gap-2">
-                  <Compass className="h-5 w-5 text-blue-600" />
-                  <span className="text-lg font-bold text-slate-800">
+                  <Compass className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+                  <span className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                     ចម្ងាយរុករក (Search Radius)
                   </span>
                 </div>
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-black text-blue-700">
+                <span className="rounded-full bg-blue-50 dark:bg-blue-950/50 px-3 py-1 text-xs sm:text-sm font-black text-blue-700 dark:text-blue-300">
                   {form.defaultSearchRadiusKm.toFixed(1)} km
                 </span>
               </div>
@@ -1857,22 +2184,20 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 max={20}
                 step={0.5}
                 value={form.defaultSearchRadiusKm}
-                onChange={(e) =>
-                  handleRadiusChange(parseFloat(e.target.value))
-                }
-                className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                onChange={(e) => handleRadiusChange(parseFloat(e.target.value))}
+                className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 dark:accent-blue-400"
               />
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3.5 flex flex-wrap gap-2">
                 {[1, 3, 5, 10, 15, 20].map((radius) => (
                   <button
                     key={radius}
                     type="button"
                     onClick={() => handleRadiusChange(radius)}
-                    className={`rounded-xl px-2.5 py-1 text-xs font-bold transition ${
+                    className={`rounded-xl px-3 py-1.5 text-xs sm:text-sm font-bold transition ${
                       form.defaultSearchRadiusKm === radius
                         ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-white text-slate-700 border border-slate-200 hover:border-blue-600"
+                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-blue-600"
                     }`}
                   >
                     {radius} km
@@ -1884,28 +2209,24 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
 
           {/* Taste Preferences */}
           <div>
-            <div className="mb-3">
-              <label className="block text-lg font-bold text-slate-800">
-                ចំណូលចិត្តរសជាតិ (Taste Preferences)
-              </label>
-              <p className="text-sm text-slate-500">
-                ជ្រើសរើសរសជាតិដែលអ្នកចង់ឱ្យប្រព័ន្ធណែនាំផ្តល់អាទិភាព។
-              </p>
-            </div>
+            <label className="block text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 mb-1.5">
+              ចំណូលចិត្តរសជាតិ (Taste Preferences)
+            </label>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mb-3">
+              ជ្រើសរើសរសជាតិដែលអ្នកចង់ឱ្យប្រព័ន្ធណែនាំផ្តល់អាទិភាព។
+            </p>
             <div className="flex flex-wrap gap-2.5">
               {TASTE_OPTIONS.map((taste) => {
-                const isSelected = Boolean(
-                  form.tastePreferences[taste.key],
-                );
+                const isSelected = Boolean(form.tastePreferences[taste.key]);
                 return (
                   <button
                     key={taste.key}
                     type="button"
                     onClick={() => toggleTaste(taste.key)}
-                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-base font-bold transition ${
+                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm sm:text-base font-bold transition ${
                       isSelected
-                        ? "border-primary-800 bg-primary-800 text-white shadow-sm"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50/50"
+                        ? "border-primary-800 bg-primary-800 text-white shadow-xs dark:border-emerald-600 dark:bg-emerald-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400"
                     }`}
                   >
                     <span>{taste.labelKm}</span>
@@ -1917,14 +2238,12 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
 
           {/* Texture Preferences */}
           <div>
-            <div className="mb-3">
-              <label className="block text-lg font-bold text-slate-800">
-                ទម្រង់អាហារដែលចូលចិត្ត (Texture Preferences)
-              </label>
-              <p className="text-sm text-slate-500">
-                ជ្រើសរើសប្រភេទសាច់ ឬទម្រង់អាហារដែលអ្នកចូលចិត្តញ៉ាំ។
-              </p>
-            </div>
+            <label className="block text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 mb-1.5">
+              ទម្រង់អាហារដែលចូលចិត្ត (Texture Preferences)
+            </label>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mb-3">
+              ជ្រើសរើសប្រភេទសាច់ ឬទម្រង់អាហារដែលអ្នកចូលចិត្តញ៉ាំ។
+            </p>
             <div className="flex flex-wrap gap-2.5">
               {TEXTURE_OPTIONS.map((texture) => {
                 const isSelected = Boolean(
@@ -1935,10 +2254,10 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                     key={texture.key}
                     type="button"
                     onClick={() => toggleTexture(texture.key)}
-                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-base font-bold transition ${
+                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm sm:text-base font-bold transition ${
                       isSelected
-                        ? "border-amber-600 bg-amber-600 text-white shadow-sm"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-amber-600 hover:bg-amber-50/50"
+                        ? "border-primary-800 bg-primary-800 text-white shadow-xs dark:border-emerald-600 dark:bg-emerald-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400"
                     }`}
                   >
                     <span>{texture.labelKm}</span>
@@ -1948,30 +2267,21 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             </div>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      {/* 3. Cuisine Preferences Section */}
-      <section className="mt-7 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
-        <div className="border-b border-slate-100 pb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600">
-              <Utensils className="h-6 w-6" />
-            </div>
-            <div>
-              <h2 className="text-[24px] font-bold text-primary-800 sm:text-[28px]">
-                ចំណូលចិត្តប្រភេទម្ហូប (Cuisine Preferences)
-              </h2>
-              <p className="mt-2 text-lg leading-7 text-slate-500">
-                ជ្រើសរើសម្ហូបតាមជាតិសាសន៍ និងកំណត់កម្រិតចូលចិត្ត ឬជៀសវាង។
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-7 space-y-6">
-          {/* Quick select buttons */}
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. Cuisine Preferences section                                     */}
+      {/* ------------------------------------------------------------------ */}
+      <SectionCard
+        id="section-cuisines"
+        icon={<Utensils className="h-5 w-5" />}
+        title="ចំណូលចិត្តប្រភេទម្ហូប"
+        description="ជ្រើសរើសម្ហូបតាមជាតិសាសន៍ និងកំណត់កម្រិតចូលចិត្ត"
+        className="mt-4 lg:mt-5"
+      >
+        <div className="space-y-6">
           <div>
-            <label className="block text-base font-bold text-slate-700 mb-2">
+            <label className="block text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 mb-2.5">
               បន្ថែម ឬជ្រើសរើសម្ហូបជាតិសាសន៍
             </label>
             <div className="flex flex-wrap gap-2.5">
@@ -1984,10 +2294,10 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                     key={cuisine.code}
                     type="button"
                     onClick={() => toggleCuisine(cuisine.code)}
-                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-base font-bold transition ${
+                    className={`flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm sm:text-base font-bold transition ${
                       isSelected
-                        ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-indigo-600 hover:bg-indigo-50/50"
+                        ? "border-primary-800 bg-primary-800 text-white shadow-xs dark:border-emerald-600 dark:bg-emerald-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:bg-slate-700 dark:hover:text-emerald-400"
                     }`}
                   >
                     <span>{cuisine.labelKm}</span>
@@ -1999,12 +2309,12 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
 
           {/* Configured cuisines list */}
           {form.cuisinePreferences.length > 0 && (
-            <div className="space-y-3 pt-2">
-              <label className="block text-sm font-bold text-slate-500 uppercase tracking-wider">
-                ម្ហូបដែលបានកំណត់កម្រិត ({form.cuisinePreferences.length})
+            <div className="space-y-3.5 pt-2">
+              <label className="block text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                ម្ហូបដែលបានកំណត់ ({form.cuisinePreferences.length})
               </label>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                 {form.cuisinePreferences.map((item, index) => {
                   const cuisineMeta = CUISINE_OPTIONS.find(
                     (c) => c.code === item.cuisineCode,
@@ -2012,51 +2322,46 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                   return (
                     <div
                       key={item.cuisineCode}
-                      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+                      className="flex flex-col gap-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 sm:p-5"
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl font-bold">
-                          </span>
-                          <span className="font-bold text-slate-900 text-base">
-                            {cuisineMeta?.labelKm ?? item.cuisineCode}
-                          </span>
-                        </div>
+                        <span className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
+                          {cuisineMeta?.labelKm ?? item.cuisineCode}
+                        </span>
                         <button
                           type="button"
                           onClick={() => removeCuisine(item.cuisineCode)}
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
+                          className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition"
                           title="លុប"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
-                          <label className="block text-[11px] font-bold uppercase text-slate-400 mb-1">
+                          <label className="block text-xs sm:text-sm font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
                             កម្រិតចំណូលចិត្ត
                           </label>
-                          <select
+                          <CustomSelect
                             value={item.preferenceLevel}
-                            onChange={(e) =>
+                            onChange={(val) =>
                               updateCuisineLevel(
                                 item.cuisineCode,
-                                e.target.value as CuisinePreferenceLevel,
+                                val as CuisinePreferenceLevel,
                               )
                             }
-                            className="w-full rounded-xl border border-slate-200 bg-white py-2 px-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
-                          >
-                            {PREFERENCE_LEVELS.map((level) => (
-                              <option key={level.value} value={level.value}>
-                                {level.labelKm}
-                              </option>
-                            ))}
-                          </select>
+                            size="sm"
+                            options={PREFERENCE_LEVELS.map((level) => ({
+                              value: level.value,
+                              label: level.labelKm,
+                              badgeClass: level.badgeClass,
+                            }))}
+                          />
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-bold uppercase text-slate-400 mb-1">
+                          <label className="block text-xs sm:text-sm font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
                             អាទិភាព (1-10)
                           </label>
                           <input
@@ -2068,20 +2373,18 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                               const val = parseInt(e.target.value, 10);
                               setForm((prev) => ({
                                 ...prev,
-                                cuisinePreferences:
-                                  prev.cuisinePreferences.map((c) =>
+                                cuisinePreferences: prev.cuisinePreferences.map(
+                                  (c) =>
                                     c.cuisineCode === item.cuisineCode
                                       ? {
                                           ...c,
-                                          priority: Number.isNaN(val)
-                                            ? 1
-                                            : val,
+                                          priority: Number.isNaN(val) ? 1 : val,
                                         }
                                       : c,
-                                  ),
+                                ),
                               }));
                             }}
-                            className="w-full rounded-xl border border-slate-200 bg-white py-2 px-2.5 text-xs font-bold text-slate-800 outline-none focus:border-indigo-600"
+                            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 px-3.5 text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-800 dark:focus:border-emerald-500"
                           />
                         </div>
                       </div>
@@ -2092,458 +2395,23 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
             </div>
           )}
         </div>
-      </section>
+      </SectionCard>
 
-      {/* Safety load error */}
-
-      {hasSafetyOptionError && (
-        <div className="mt-6 rounded-3xl border border-red-200 bg-red-50 p-5">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-red-600" />
-
-            <div>
-              <p className="text-[18px] font-semibold text-red-700">
-                មិនអាចទាញយកជម្រើសសុវត្ថិភាពបានទេ។
-              </p>
-
-              <p className="mt-2 text-lg leading-7 text-red-600">
-                សូមព្យាយាមទាញយកឡើងវិញ មុនពេលរក្សាទុកការផ្លាស់ប្តូរ។
-              </p>
-
-              <button
-                type="button"
-                onClick={retrySafetyOptions}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-lg font-semibold text-red-700 ring-1 ring-red-200 transition hover:bg-red-100"
-              >
-                <RefreshCw className="h-5 w-5" />
-                ព្យាយាមម្តងទៀត
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading */}
-
-      {/* Loading safety options */}
-
-      {isLoadingSafetyOptions && !hasSafetyOptionError && (
-        <div className="mt-6 flex min-h-[220px] items-center justify-center rounded-3xl border border-slate-200 bg-white">
-          <div className="text-center">
-            <LoaderCircle className="mx-auto h-8 w-8 animate-spin text-emerald-600" />
-
-            <p className="mt-3 text-lg text-slate-500">
-              កំពុងទាញយកជម្រើសចំណូលចិត្ត...
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Safety preference sections */}
-
-      {!isLoadingSafetyOptions && !hasSafetyOptionError && (
-        <div className="mt-6 space-y-6">
-          {/* Allergies */}
-
-          <PreferenceSection
-            title="ប្រតិកម្មអាឡែហ្ស៊ី"
-            description="ជ្រើសរើសអាហារ ឬសារធាតុដែលអាចបង្កអាឡែហ្ស៊ី។ អ្នកអាចជ្រើសរើសច្រើន។"
-            icon={<ShieldAlert className="h-6 w-6" />}
-          >
-            {allergenOptions.length === 0 ? (
-              <p className="rounded-xl bg-slate-50 p-4 text-lg text-slate-500">
-                មិនមានជម្រើសអាឡែហ្ស៊ី។
-              </p>
-            ) : (
-              <div className="space-y-5">
-                {/* Allergy tags */}
-                <div className="flex flex-wrap gap-3">
-                  {allergenOptions.map((option) => {
-                    const isSelected = form.allergies.some(
-                      (item) => item.allergenCode === option.code,
-                    );
-
-                    return (
-                      <button
-                        key={option.code}
-                        type="button"
-                        onClick={() => toggleAllergy(option.code)}
-                        className={`rounded-full border px-5 py-2.5 text-[17px] font-medium transition-all duration-200 ${
-                          isSelected
-                            ? "border-primary-800 bg-primary-800 text-white shadow-sm"
-                            : "border-slate-300 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50 hover:text-primary-800"
-                        }`}
-                      >
-                        {option.localName || option.name || option.code}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Selected allergies */}
-                {/* {form.allergies.map((selectedItem) => {
-                  const option = allergenOptions.find(
-                    (item) => item.code === selectedItem.allergenCode,
-                  );
-
-                  if (!option) return null;
-
-                  return (
-                    <div
-                      key={selectedItem.allergenCode}
-                      className="grid gap-4 rounded-2xl border border-primary-800/20 bg-primary-50/50 p-5 md:grid-cols-2"
-                    >
-                      <div className="flex items-start justify-between gap-4 md:col-span-2">
-                        <div>
-                          <p className="text-[18px] font-semibold text-primary-800">
-                            {option.localName || option.name || option.code}
-                          </p>
-
-                          {option.description && (
-                            <p className="mt-1 text-base leading-7 text-slate-500">
-                              {option.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => toggleAllergy(option.code)}
-                          className="shrink-0 text-sm font-medium text-red-500 transition hover:text-red-600"
-                        >
-                          លុប
-                        </button>
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-lg font-semibold text-slate-700">
-                          កម្រិតធ្ងន់ធ្ងរ
-                        </label>
-
-                        <select
-                          value={selectedItem.severity}
-                          onChange={(event) =>
-                            updateAllergy(option.code, {
-                              severity: event.target.value as ProfileSeverity,
-                            })
-                          }
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                        >
-                          {Object.entries(severityLabels).map(
-                            ([value, label]) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-lg font-semibold text-slate-700">
-                          ចំណាំអំពីប្រតិកម្ម
-                        </label>
-
-                        <input
-                          value={selectedItem.reactionNotes}
-                          onChange={(event) =>
-                            updateAllergy(option.code, {
-                              reactionNotes: event.target.value,
-                            })
-                          }
-                          placeholder="បញ្ចូលចំណាំ"
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                        />
-                      </div>
-
-                      <label className="flex cursor-pointer items-center gap-3 text-lg text-slate-700">
-                        <input
-                          type="checkbox"
-                          checked={selectedItem.avoidCrossContact}
-                          onChange={(event) =>
-                            updateAllergy(option.code, {
-                              avoidCrossContact: event.target.checked,
-                            })
-                          }
-                          className="h-5 w-5 rounded border-slate-300"
-                        />
-                        ជៀសវាងការប៉ះពាល់ឆ្លង
-                      </label>
-
-                      <label className="flex cursor-pointer items-center gap-3 text-lg text-slate-700">
-                        <input
-                          type="checkbox"
-                          checked={selectedItem.medicallyDiagnosed}
-                          onChange={(event) =>
-                            updateAllergy(option.code, {
-                              medicallyDiagnosed: event.target.checked,
-                            })
-                          }
-                          className="h-5 w-5 rounded border-slate-300"
-                        />
-                        បានវិនិច្ឆ័យដោយវេជ្ជបណ្ឌិត
-                      </label>
-                    </div>
-                  );
-                })} */}
-              </div>
-            )}
-          </PreferenceSection>
-
-          {/* Dietary */}
-
-          <PreferenceSection
-            title="ប្រភេទរបបអាហារ"
-            description="ជ្រើសរើសរបបអាហារ ឬច្បាប់អាហារដែលគណនីនេះត្រូវការ។"
-            icon={<Salad className="h-6 w-6" />}
-          >
-            {dietaryOptions.length === 0 ? (
-              <p className="rounded-xl bg-slate-50 p-4 text-lg text-slate-500">
-                មិនមានជម្រើសរបបអាហារ។
-              </p>
-            ) : (
-              <div className="space-y-5">
-                <div className="flex flex-wrap gap-3">
-                  {dietaryOptions.map((option) => {
-                    const isSelected = form.dietaryTypes.some(
-                      (item) => item.dietaryTypeCode === option.code,
-                    );
-
-                    return (
-                      <button
-                        key={option.code}
-                        type="button"
-                        onClick={() => toggleDietaryType(option.code)}
-                        className={`rounded-full border px-5 py-2.5 text-[17px] font-medium transition-all duration-200 ${
-                          isSelected
-                            ? "border-primary-800 bg-primary-800 text-white shadow-sm"
-                            : "border-slate-300 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50 hover:text-primary-800"
-                        }`}
-                      >
-                        {option.localName || option.name || option.code}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* {form.dietaryTypes.map((selectedItem) => {
-                  const option = dietaryOptions.find(
-                    (item) => item.code === selectedItem.dietaryTypeCode,
-                  );
-
-                  if (!option) return null;
-
-                  return (
-                    <div
-                      key={selectedItem.dietaryTypeCode}
-                      className="grid gap-4 rounded-2xl border border-primary-800/20 bg-primary-50/50 p-5 md:grid-cols-2"
-                    >
-                      <div className="flex items-start justify-between gap-4 md:col-span-2">
-                        <div>
-                          <p className="text-[18px] font-semibold text-primary-800">
-                            {option.localName || option.name || option.code}
-                          </p>
-
-                          {option.description && (
-                            <p className="mt-1 text-base leading-7 text-slate-500">
-                              {option.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => toggleDietaryType(option.code)}
-                          className="shrink-0 text-sm font-medium text-red-500 transition hover:text-red-600"
-                        >
-                          លុប
-                        </button>
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-lg font-semibold text-slate-700">
-                          កម្រិតតម្រូវការ
-                        </label>
-
-                        <select
-                          value={selectedItem.enforcementLevel}
-                          onChange={(event) =>
-                            updateDietaryType(option.code, {
-                              enforcementLevel: event.target
-                                .value as DietaryEnforcementLevel,
-                            })
-                          }
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                        >
-                          {Object.entries(enforcementLabels).map(
-                            ([value, label]) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-lg font-semibold text-slate-700">
-                          ចំណាំ
-                        </label>
-
-                        <input
-                          value={selectedItem.notes}
-                          onChange={(event) =>
-                            updateDietaryType(option.code, {
-                              notes: event.target.value,
-                            })
-                          }
-                          placeholder="បញ្ចូលចំណាំ"
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                        />
-                      </div>
-                    </div>
-                  );
-                })} */}
-              </div>
-            )}
-          </PreferenceSection>
-          {/* Medical */}
-
-          <PreferenceSection
-            title="ស្ថានភាពសុខភាព"
-            description="ជ្រើសរើសស្ថានភាពសុខភាពដែលអាចមានឥទ្ធិពលលើការណែនាំអាហារ។"
-            icon={<HeartPulse className="h-6 w-6" />}
-          >
-            {medicalOptions.length === 0 ? (
-              <p className="rounded-xl bg-slate-50 p-4 text-lg text-slate-500">
-                មិនមានជម្រើសសុខភាព។
-              </p>
-            ) : (
-              <div className="space-y-5">
-                {/* Medical condition tags */}
-                <div className="flex flex-wrap gap-3">
-                  {medicalOptions.map((option) => {
-                    const isSelected = form.medicalConditions.some(
-                      (item) => item.conditionCode === option.code,
-                    );
-
-                    return (
-                      <button
-                        key={option.code}
-                        type="button"
-                        onClick={() => toggleMedicalCondition(option.code)}
-                        className={`rounded-full border px-5 py-2.5 text-[17px] font-medium transition-all duration-200 ${
-                          isSelected
-                            ? "border-primary-800 bg-primary-800 text-white shadow-sm"
-                            : "border-slate-300 bg-white text-slate-700 hover:border-primary-800 hover:bg-primary-50 hover:text-primary-800"
-                        }`}
-                      >
-                        {option.localName || option.name || option.code}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Selected medical conditions */}
-                {form.medicalConditions.map((selectedItem) => {
-                  const option = medicalOptions.find(
-                    (item) => item.code === selectedItem.conditionCode,
-                  );
-
-                  if (!option) return null;
-
-                  return (
-                    <div
-                      key={selectedItem.conditionCode}
-                      className="grid gap-4 rounded-2xl border border-primary-800/20 bg-primary-50/50 p-5 md:grid-cols-2"
-                    >
-                      <div className="flex items-center justify-between md:col-span-2">
-                        <div>
-                          <p className="text-[18px] font-semibold text-primary-800">
-                            {option.localName || option.name || option.code}
-                          </p>
-
-                          {option.description && (
-                            <p className="mt-1 text-base leading-7 text-slate-500">
-                              {option.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => toggleMedicalCondition(option.code)}
-                          className="shrink-0 text-sm font-medium text-red-500 transition hover:text-red-600"
-                        >
-                          លុប
-                        </button>
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-lg font-semibold text-slate-700">
-                          កម្រិតធ្ងន់ធ្ងរ
-                        </label>
-
-                        <select
-                          value={selectedItem.severity}
-                          onChange={(event) =>
-                            updateMedicalCondition(option.code, {
-                              severity: event.target.value as ProfileSeverity,
-                            })
-                          }
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                        >
-                          {Object.entries(severityLabels).map(
-                            ([value, label]) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-lg font-semibold text-slate-700">
-                          ចំណាំ
-                        </label>
-
-                        <input
-                          value={selectedItem.notes}
-                          onChange={(event) =>
-                            updateMedicalCondition(option.code, {
-                              notes: event.target.value,
-                            })
-                          }
-                          placeholder="បញ្ចូលចំណាំ"
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-lg outline-none transition focus:border-primary-800 focus:ring-2 focus:ring-primary-800/10"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </PreferenceSection>
-        </div>
-      )}
-
-      {/* Error */}
-
+      {/* Error banner */}
       {errorMessage && (
-        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5">
-          <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-red-600" />
-
-          <p className="text-lg leading-7 text-red-700">{errorMessage}</p>
+        <div className="mt-5 flex items-start gap-3.5 rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-4 sm:p-5">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+          <p className="text-base font-medium text-red-700 dark:text-red-300">{errorMessage}</p>
         </div>
       )}
 
-      {/* Bottom actions */}
-
-      <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+      {/* ------------------------------------------------------------------ */}
+      {/* Bottom actions                                                     */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="mt-8 flex flex-col-reverse gap-3.5 border-t border-slate-200 dark:border-slate-800 pt-6 sm:flex-row sm:justify-end">
         <Link
           href={`/dashboard/family-profile/${uuid}`}
-          className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-lg font-semibold text-slate-700 transition hover:bg-slate-50"
+          className="inline-flex min-h-12 sm:min-h-13 items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-3 text-base sm:text-lg font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
           បោះបង់
         </Link>
@@ -2552,17 +2420,17 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
           type="button"
           onClick={() => void handleSave()}
           disabled={isSaving || isLoadingSafetyOptions || hasSafetyOptionError}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-12 sm:min-h-13 items-center justify-center gap-2 rounded-full bg-primary-800 px-8 py-3 text-base sm:text-lg font-bold text-white shadow-sm transition hover:bg-primary-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-700"
         >
           {isSaving ? (
             <>
               <LoaderCircle className="h-5 w-5 animate-spin" />
-              កំពុងរក្សាទុក...
+              <span>កំពុងរក្សាទុក...</span>
             </>
           ) : (
             <>
               <Check className="h-5 w-5" />
-              រក្សាទុកការផ្លាស់ប្តូរ
+              <span>រក្សាទុកការផ្លាស់ប្តូរ</span>
             </>
           )}
         </button>

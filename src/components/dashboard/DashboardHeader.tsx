@@ -12,9 +12,13 @@ import ThemeToggle from "../theme-toggle";
 
 interface DashboardHeaderProps {
   onSearch?: (value: string) => void;
+  showSearch?: boolean;
 }
 
-export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
+export default function DashboardHeader({
+  onSearch,
+  showSearch = false,
+}: DashboardHeaderProps) {
   const pathname = usePathname();
   const pageTitle = getActiveLabel(pathname);
   const { toggle } = useSidebar();
@@ -66,72 +70,76 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
         </div>
 
         {/* Desktop search */}
-        <div className="mx-auto hidden w-full max-w-2xl md:block">
-          <div className="relative">
-            <Search
-              className="
-                pointer-events-none absolute left-4 top-1/2
-                h-5 w-5 -translate-y-1/2
-                text-primary-700 dark:text-emerald-400
-              "
-            />
+        {showSearch && (
+          <div className="mx-auto hidden w-full max-w-2xl md:block">
+            <div className="relative">
+              <Search
+                className="
+                  pointer-events-none absolute left-4 top-1/2
+                  h-5 w-5 -translate-y-1/2
+                  text-primary-700 dark:text-emerald-400
+                "
+              />
 
-            <input
-              type="text"
-              value={searchValue}
-              placeholder="ស្វែងរកម្ហូបអាហារ និង ភោជនីយដ្ឋាន..."
-              onChange={(event) => handleSearchChange(event.target.value)}
-              className="
-                w-full rounded-full
-                border border-slate-200
-                bg-slate-50/70
-                py-2.5 pl-12 pr-5
-                text-base text-slate-700
-                outline-none
-                transition-all
-                placeholder:text-slate-400
-                hover:border-slate-300
-                hover:bg-white
-                focus:border-primary-600
-                focus:bg-white
-                focus:ring-2
-                focus:ring-primary-600/10
-                dark:border-slate-700
-                dark:bg-slate-800/80
-                dark:text-white
-                dark:placeholder:text-slate-400
-                dark:hover:border-slate-600
-                dark:hover:bg-slate-800
-                dark:focus:border-emerald-500
-                dark:focus:bg-slate-800
-                dark:focus:ring-emerald-500/20
-              "
-            />
+              <input
+                type="text"
+                value={searchValue}
+                placeholder="ស្វែងរកម្ហូបអាហារ និង ភោជនីយដ្ឋាន..."
+                onChange={(event) => handleSearchChange(event.target.value)}
+                className="
+                  w-full rounded-full
+                  border border-slate-200
+                  bg-slate-50/70
+                  py-2.5 pl-12 pr-5
+                  text-base text-slate-700
+                  outline-none
+                  transition-all
+                  placeholder:text-slate-400
+                  hover:border-slate-300
+                  hover:bg-white
+                  focus:border-primary-600
+                  focus:bg-white
+                  focus:ring-2
+                  focus:ring-primary-600/10
+                  dark:border-slate-700
+                  dark:bg-slate-800/80
+                  dark:text-white
+                  dark:placeholder:text-slate-400
+                  dark:hover:border-slate-600
+                  dark:hover:bg-slate-800
+                  dark:focus:border-emerald-500
+                  dark:focus:bg-slate-800
+                  dark:focus:ring-emerald-500/20
+                "
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Mobile actions */}
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-2">
+        {/* Actions */}
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-2 ml-auto">
           {/* Mobile search button */}
-          <button
-            type="button"
-            aria-label="ស្វែងរក"
-            onClick={() => setMobileSearchOpen((prev) => !prev)}
-            className="
-              flex h-10 w-10 shrink-0 items-center justify-center
-              rounded-full text-primary-700 dark:text-emerald-400
-              transition-colors
-              hover:bg-primary-50 dark:hover:bg-slate-800
-              active:scale-95
-              md:hidden
-            "
-          >
-            {mobileSearchOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Search className="h-5 w-5" />
-            )}
-          </button>
+          {showSearch && (
+            <button
+              type="button"
+              aria-label="ស្វែងរក"
+              onClick={() => setMobileSearchOpen((prev) => !prev)}
+              className="
+                flex h-10 w-10 shrink-0 items-center justify-center
+                rounded-full text-primary-700 dark:text-emerald-400
+                transition-colors
+                hover:bg-primary-50 dark:hover:bg-slate-800
+                active:scale-95
+                md:hidden
+              "
+            >
+              {mobileSearchOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Search className="h-5 w-5" />
+              )}
+            </button>
+          )}
 
           {/* Theme */}
           <div className="hidden xs:block sm:block">
@@ -147,64 +155,66 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
       </div>
 
       {/* Mobile search bar */}
-      <div
-        className={`
-          overflow-hidden border-t border-slate-100 dark:border-slate-800
-          transition-all duration-300
-          md:hidden
-          ${
-            mobileSearchOpen
-              ? "max-h-24 opacity-100"
-              : "max-h-0 border-t-0 opacity-0"
-          }
-        `}
-      >
-        <div className="px-3 pb-3 pt-2 sm:px-5">
-          <div className="relative">
-            <Search
-              className="
-                pointer-events-none absolute left-4 top-1/2
-                h-5 w-5 -translate-y-1/2
-                text-primary-700 dark:text-emerald-400
-              "
-            />
+      {showSearch && (
+        <div
+          className={`
+            overflow-hidden border-t border-slate-100 dark:border-slate-800
+            transition-all duration-300
+            md:hidden
+            ${
+              mobileSearchOpen
+                ? "max-h-24 opacity-100"
+                : "max-h-0 border-t-0 opacity-0"
+            }
+          `}
+        >
+          <div className="px-3 pb-3 pt-2 sm:px-5">
+            <div className="relative">
+              <Search
+                className="
+                  pointer-events-none absolute left-4 top-1/2
+                  h-5 w-5 -translate-y-1/2
+                  text-primary-700 dark:text-emerald-400
+                "
+              />
 
-            <input
-              type="text"
-              value={searchValue}
-              autoFocus={mobileSearchOpen}
-              placeholder="ស្វែងរកម្ហូបអាហារ..."
-              onChange={(event) => handleSearchChange(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  closeMobileSearch();
-                }
-              }}
-              className="
-                w-full rounded-full
-                border border-slate-200
-                bg-slate-50
-                py-2.5 pl-12 pr-4
-                text-base text-slate-700
-                outline-none
-                transition-all
-                placeholder:text-slate-400
-                focus:border-primary-600
-                focus:bg-white
-                focus:ring-2
-                focus:ring-primary-600/10
-                dark:border-slate-700
-                dark:bg-slate-800
-                dark:text-white
-                dark:placeholder:text-slate-400
-                dark:focus:border-emerald-500
-                dark:focus:bg-slate-800
-                dark:focus:ring-emerald-500/20
-              "
-            />
+              <input
+                type="text"
+                value={searchValue}
+                autoFocus={mobileSearchOpen}
+                placeholder="ស្វែងរកម្ហូបអាហារ..."
+                onChange={(event) => handleSearchChange(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    closeMobileSearch();
+                  }
+                }}
+                className="
+                  w-full rounded-full
+                  border border-slate-200
+                  bg-slate-50
+                  py-2.5 pl-12 pr-4
+                  text-base text-slate-700
+                  outline-none
+                  transition-all
+                  placeholder:text-slate-400
+                  focus:border-primary-600
+                  focus:bg-white
+                  focus:ring-2
+                  focus:ring-primary-600/10
+                  dark:border-slate-700
+                  dark:bg-slate-800
+                  dark:text-white
+                  dark:placeholder:text-slate-400
+                  dark:focus:border-emerald-500
+                  dark:focus:bg-slate-800
+                  dark:focus:ring-emerald-500/20
+                "
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </header>
   );
 }

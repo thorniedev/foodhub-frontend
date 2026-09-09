@@ -20,7 +20,7 @@ export default function DashboardLayout({
           {/* Header only belongs to content area */}
           <DashboardHeader />
 
-          <main className="min-w-0 flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
+          <main className="min-w-0 flex-1 bg-slate-50 dark:bg-slate-950">
             {children}
           </main>
         </div>
