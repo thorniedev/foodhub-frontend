@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { AlertTriangle, ChevronRight, Loader2, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronRight, Loader2, Trash2, Volume2, VolumeX } from "lucide-react";
 import { DEFAULT_FOOD_IMAGE, toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import { categoryStyles } from "@/lib/notifications/category-styles";
 import { formatNotificationTime } from "@/lib/formatDate";
+import { useKhmerVoiceNotification } from "@/hooks/useKhmerVoiceNotification";
 import type { AppNotification } from "@/types/notifications";
 
 interface Props {
@@ -22,6 +23,16 @@ export default function NotificationCard({
   onOpen,
   onDismiss,
 }: Props) {
+  const {
+    playNotificationSpeech,
+    stopNotificationSpeech,
+    currentlyPlayingId,
+    isLoadingId,
+  } = useKhmerVoiceNotification();
+
+  const isPlayingThis = currentlyPlayingId === notification.id;
+  const isLoadingThis = isLoadingId === notification.id;
+
   const style = categoryStyles[notification.category];
   const Icon = style.icon;
 
@@ -121,7 +132,58 @@ export default function NotificationCard({
             ))}
           </div>
 
-          <div className="flex items-center gap-3 text-base text-slate-400 dark:text-slate-500">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-base text-slate-400 dark:text-slate-500">
+            {/* Khmer Voice Read Aloud Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isPlayingThis) {
+                  stopNotificationSpeech();
+                } else {
+                  playNotificationSpeech({
+                    id: notification.id,
+                    title: notification.title,
+                    message: notification.message,
+                  });
+                }
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-medium transition ${
+                isPlayingThis
+                  ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-400 dark:bg-emerald-950 dark:text-emerald-300"
+                  : "text-slate-500 hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-emerald-300"
+              }`}
+              title={
+                isPlayingThis
+                  ? "ផ្អាកសំឡេង (Stop Voice)"
+                  : "អានជាសំឡេងខ្មែរ (Read aloud in Khmer)"
+              }
+              aria-label={
+                isPlayingThis
+                  ? "ផ្អាកសំឡេង"
+                  : "អានជាសំឡេងខ្មែរ"
+              }
+            >
+              {isLoadingThis ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" />
+                  <span className="text-xs">កំពុងរៀបចំ...</span>
+                </>
+              ) : isPlayingThis ? (
+                <>
+                  <Volume2 className="h-3.5 w-3.5 animate-bounce text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    កំពុងអាន...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="h-3.5 w-3.5" />
+                  <span className="text-xs">អាន</span>
+                </>
+              )}
+            </button>
+
             <span>{formatNotificationTime(notification.createdAt)}</span>
             <button
               type="button"

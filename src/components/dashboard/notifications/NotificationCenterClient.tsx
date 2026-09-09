@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useKhmerVoiceNotification } from "@/hooks/useKhmerVoiceNotification";
 
 import {
   useDismissNotificationMutation,
@@ -121,6 +122,35 @@ export default function NotificationCenterClient() {
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
+
+  const { playNotificationSpeech, autoVoiceAlertEnabled } =
+    useKhmerVoiceNotification();
+  const lastVoicedIdRef = useRef<string | null>(null);
+
+  // Auto Voice Alert: reads out new unread notifications automatically when enabled
+  useEffect(() => {
+    if (!autoVoiceAlertEnabled || !feed?.data || feed.data.length === 0) return;
+
+    const newestUnread = feed.data.find(
+      (n) => n.isRead === false || !n.readAt,
+    );
+    if (!newestUnread) return;
+
+    // First mount: remember newest id without shouting old notifications
+    if (lastVoicedIdRef.current === null) {
+      lastVoicedIdRef.current = newestUnread.uuid;
+      return;
+    }
+
+    if (lastVoicedIdRef.current !== newestUnread.uuid) {
+      lastVoicedIdRef.current = newestUnread.uuid;
+      playNotificationSpeech({
+        id: newestUnread.uuid,
+        title: newestUnread.title,
+        message: newestUnread.body,
+      });
+    }
+  }, [autoVoiceAlertEnabled, feed?.data, playNotificationSpeech]);
 
   const notifications = useMemo(() => {
     return (feed?.data ?? []).map(toAppNotification);

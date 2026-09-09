@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCheck, Loader2, RefreshCw } from "lucide-react";
+import VoiceAlertToggle from "@/components/notifications/VoiceAlertToggle";
 
 interface Props {
   unreadCount: number;
@@ -28,7 +29,9 @@ export default function NotificationsHeader({
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <VoiceAlertToggle />
+
         <button
           type="button"
           onClick={onMarkAllRead}
