@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FluidTabs from "../../../../../../components/animata/tabs/fluid-tabs";
 
 import Image from "next/image";
@@ -206,6 +206,71 @@ const PROFILE_TABS = [
   { id: "safety", label: "សុវត្ថិភាពអាហារ" },
 ];
 
+/* -------------------------------------------------------------------------- */
+/*                            PROFILE DETAIL AVATAR                           */
+/* -------------------------------------------------------------------------- */
+
+function ProfileDetailAvatar({
+  avatarMediaUuid,
+  profileName,
+  firstLetter,
+}: {
+  avatarMediaUuid?: string | null;
+  profileName: string;
+  firstLetter: string;
+}) {
+  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
+    avatarMediaUuid || "",
+    { skip: !avatarMediaUuid },
+  );
+
+  const directProxyUrl = avatarMediaUuid
+    ? `/api/media/${encodeURIComponent(avatarMediaUuid)}/file`
+    : "";
+
+  const [activeUrl, setActiveUrl] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (avatarAccessUrlData?.url) {
+      setActiveUrl(avatarAccessUrlData.url);
+      setHasError(false);
+    } else if (directProxyUrl) {
+      setActiveUrl(directProxyUrl);
+      setHasError(false);
+    } else {
+      setActiveUrl(null);
+      setHasError(false);
+    }
+  }, [avatarAccessUrlData?.url, directProxyUrl]);
+
+  if (!activeUrl || hasError) {
+    return (
+      <span className="flex h-full w-full items-center justify-center text-[34px] font-bold text-emerald-700 dark:text-emerald-400">
+        {firstLetter}
+      </span>
+    );
+  }
+
+  return (
+    <Image
+      src={activeUrl}
+      alt={profileName}
+      fill
+      unoptimized
+      className="object-cover"
+      sizes="96px"
+      onError={() => {
+        if (activeUrl !== directProxyUrl && directProxyUrl) {
+          setActiveUrl(directProxyUrl);
+        } else {
+          setHasError(true);
+        }
+      }}
+    />
+  );
+}
+
 export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const {
@@ -215,11 +280,6 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
     isError,
     refetch,
   } = useGetMemberProfileByIdQuery(uuid);
-
-  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
-    profile?.avatarMediaUuid ?? "",
-    { skip: !profile?.avatarMediaUuid },
-  );
 
   if (isLoading) {
     return (
@@ -358,19 +418,11 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
         <div className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50 px-5 py-7 sm:px-8 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-3xl bg-emerald-100 ring-4 ring-white shadow-sm dark:bg-emerald-950/60 dark:ring-slate-800">
-              {avatarAccessUrlData?.url ? (
-                <Image
-                  src={avatarAccessUrlData.url}
-                  alt={profile.profileName}
-                  fill
-                  className="object-cover"
-                  sizes="96px"
-                />
-              ) : (
-                <span className="flex h-full w-full items-center justify-center text-[34px] font-bold text-emerald-700 dark:text-emerald-400">
-                  {firstLetter}
-                </span>
-              )}
+              <ProfileDetailAvatar
+                avatarMediaUuid={profile.avatarMediaUuid}
+                profileName={profile.profileName}
+                firstLetter={firstLetter}
+              />
 
               {profile.isActive && (
                 <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-white bg-emerald-500 dark:border-slate-900" />

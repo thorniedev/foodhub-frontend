@@ -32,10 +32,13 @@ function HeroBannerCardImage({
       width={96}
       height={96}
       sizes="96px"
+      unoptimized
       className="h-full w-full object-cover"
       onError={() => {
         if (imgSrc !== fallbackSrc) {
           setImgSrc(fallbackSrc);
+        } else if (imgSrc !== "/Image/food-picture/food 1.jpg") {
+          setImgSrc("/Image/food-picture/food 1.jpg");
         }
       }}
     />
@@ -490,6 +493,7 @@ export default function Hero() {
                 alt="FoodHub Brand Decoration"
                 width={80}
                 height={80}
+                unoptimized
                 className="h-auto w-full"
               />
             </motion.div>
@@ -544,11 +548,12 @@ export default function Hero() {
     md:w-150
     lg:-mt-6 max-sm:px-4
   "
-                src="/Image/foodhub-image-new.png"
+                src="/Image/foodhub-image-new.webp"
                 alt="FoodHub - ស្វែងរក និងណែនាំម្ហូបអាហារ (Mhoubahar)"
                 width={950}
                 height={450}
-                priority
+                loading="lazy"
+                unoptimized
                 sizes="(max-width: 768px) 100vw, 950px"
                 onLoad={() => {
                   setHeroImageLoaded(true);
@@ -608,12 +613,12 @@ max-sm:hidden
                   className="
                 max-md:w-8
                 max-md:-rotate-90 max-sm:w-30
-              
               "
                   src="/Image/left-vector.png"
                   alt="FoodHub Visual Accent Vector"
                   width={103}
                   height={97}
+                  unoptimized
                 />
               </motion.div>
             </motion.div>
@@ -676,6 +681,7 @@ max-sm:hidden
                   alt="FoodHub Graphic Accent"
                   width={131}
                   height={114}
+                  unoptimized
                 />
               </motion.div>
             </motion.div>
@@ -717,6 +723,7 @@ max-sm:hidden
               alt="FoodHub Background Glow"
               width={577}
               height={542}
+              unoptimized
               className="max-sm:w-100"
             />
           </motion.div>
@@ -1142,6 +1149,7 @@ max-sm:hidden
             loading="lazy"
             fetchPriority="low"
             alt="background"
+            unoptimized
             onLoad={() => {
               if (showSecondSection) {
                 setBackgroundReady(true);
@@ -1278,6 +1286,7 @@ max-sm:hidden
                   className="h-[50px] w-[40px]"
                   src="/Image/decorate.png"
                   alt="FoodHub Feature Icon Decor"
+                  unoptimized
                 />
               </motion.div>
             </motion.div>
@@ -1387,6 +1396,13 @@ max-sm:hidden
                           alt="Avatar"
                           width={32}
                           height={32}
+                          unoptimized
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.src.endsWith("/Image/default-avatar.png")) {
+                              target.src = "/Image/default-avatar.png";
+                            }
+                          }}
                           className="h-full w-full object-cover"
                         />
                       </div>
@@ -1449,6 +1465,7 @@ max-sm:hidden
                 <motion.img
                   src="/Image/arr.png"
                   alt="Arrow Navigation Indicator"
+                  loading="lazy"
                   variants={reduceMotion ? undefined : arrowLoop(0)}
                   className="h-full w-full object-contain"
                 />
@@ -1616,6 +1633,7 @@ max-sm:hidden
                 <motion.img
                   src="/Image/arr.png"
                   alt="Feature Navigation Arrow"
+                  loading="lazy"
                   variants={reduceMotion ? undefined : arrowLoop(0.35)}
                   className="h-full w-full object-contain"
                 />

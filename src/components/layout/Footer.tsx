@@ -44,20 +44,22 @@ export default function Footer() {
               <div className="mt-6">
                 <div className="relative h-[80px] w-[160px] max-w-full">
                   <Image
-                    src="/Image/foodHub-logo.png"
+                    src="/Image/foodHub-logo.webp"
                     alt="FoodHub logo"
                     className="object-contain block dark:hidden
                      object-left"
                     width={160}
                     height={80}
+                    unoptimized
                     style={{ width: "auto", height: "auto" }}
                   />
                   <Image
-                    src="/Image/foodHub-logo-dark1.png"
+                    src="/Image/foodHub-logo-dark1.webp"
                     alt="FoodHub logo"
                     className="object-contain dark:block hidden  object-left"
                     width={160}
                     height={80}
+                    unoptimized
                     style={{ width: "auto", height: "auto" }}
                   />
                 </div>
@@ -134,6 +136,7 @@ export default function Footer() {
                     src="/sponsors.png"
                     alt="Ministry  of Post and Telecommunications"
                     fill
+                    unoptimized
                     className="object-contain block dark:hidden object-left"
                     sizes="(max-width: 768px) 100vw, 389px"
                   />
@@ -141,6 +144,7 @@ export default function Footer() {
                     src="/sponsors-dark.png"
                     alt="Ministry  of Post and Telecommunications"
                     fill
+                    unoptimized
                     className="object-contain hidden dark:block object-left "
                     sizes="(max-width: 768px) 100vw, 389px"
                   />
@@ -158,6 +162,7 @@ export default function Footer() {
                       src="/ISTAD-Logo.png"
                       alt="ISTAD"
                       fill
+                      unoptimized
                       className="object-contain block dark:hidden object-left"
                       sizes="193px"
                     />
@@ -165,6 +170,7 @@ export default function Footer() {
                       src="/ISTAD-Logo-dark.png"
                       alt="ISTAD"
                       fill
+                      unoptimized
                       className="object-contain hidden dark:block object-left"
                       sizes="193px"
                     />

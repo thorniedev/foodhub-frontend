@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   ArrowRight,
@@ -177,6 +177,75 @@ function DeleteProfileDialog({
 /*                                PROFILE CARD                                */
 /* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+/*                           MEMBER PROFILE AVATAR                            */
+/* -------------------------------------------------------------------------- */
+
+function MemberProfileAvatar({
+  avatarMediaUuid,
+  profileName,
+  isDefault,
+  firstLetter,
+  sizes = "72px",
+}: {
+  avatarMediaUuid?: string | null;
+  profileName: string;
+  isDefault?: boolean;
+  firstLetter: string;
+  sizes?: string;
+}) {
+  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
+    avatarMediaUuid || "",
+    { skip: !avatarMediaUuid },
+  );
+
+  const directProxyUrl = avatarMediaUuid
+    ? `/api/media/${encodeURIComponent(avatarMediaUuid)}/file`
+    : "";
+
+  const [activeUrl, setActiveUrl] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (avatarAccessUrlData?.url) {
+      setActiveUrl(avatarAccessUrlData.url);
+      setHasError(false);
+    } else if (directProxyUrl) {
+      setActiveUrl(directProxyUrl);
+      setHasError(false);
+    } else {
+      setActiveUrl(null);
+      setHasError(false);
+    }
+  }, [avatarAccessUrlData?.url, directProxyUrl]);
+
+  if (!activeUrl || hasError) {
+    return (
+      <span className="flex h-full w-full items-center justify-center text-[28px] font-bold text-primary-800">
+        {firstLetter}
+      </span>
+    );
+  }
+
+  return (
+    <Image
+      src={activeUrl}
+      alt={profileName}
+      fill
+      unoptimized
+      className="object-cover"
+      sizes={sizes}
+      onError={() => {
+        if (activeUrl !== directProxyUrl && directProxyUrl) {
+          setActiveUrl(directProxyUrl);
+        } else {
+          setHasError(true);
+        }
+      }}
+    />
+  );
+}
+
 interface ProfileCardProps {
   member: MemberProfile;
   onDelete: (member: MemberProfile) => void;
@@ -206,12 +275,6 @@ function ProfileCard({
 
   const avatarMediaUuid =
     fullMember.avatarMediaUuid ?? member.avatarMediaUuid ?? "";
-
-  /* Fetch CDN URL for the avatar */
-  const { data: avatarAccessUrlData } = useGetMediaAccessUrlQuery(
-    avatarMediaUuid,
-    { skip: !avatarMediaUuid },
-  );
 
   return (
     <article
@@ -248,19 +311,13 @@ function ProfileCard({
           }`}
           aria-label={`មើលព័ត៌មាន ${fullMember.profileName}`}
         >
-          {avatarAccessUrlData?.url ? (
-            <Image
-              src={avatarAccessUrlData.url}
-              alt={fullMember.profileName}
-              fill
-              className="object-cover"
-              sizes="72px"
-            />
-          ) : (
-            <span className="flex h-full w-full items-center justify-center text-[28px] font-bold text-primary-800">
-              {firstLetter}
-            </span>
-          )}
+          <MemberProfileAvatar
+            avatarMediaUuid={avatarMediaUuid}
+            profileName={fullMember.profileName}
+            isDefault={isDefault}
+            firstLetter={firstLetter}
+            sizes="72px"
+          />
 
           {fullMember.isActive && (
             <span

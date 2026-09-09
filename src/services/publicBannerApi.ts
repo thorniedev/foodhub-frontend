@@ -72,7 +72,7 @@ export const publicBannerApi = {
    */
   resolveImageUrl(relativeOrAbsoluteUrl?: string | null): string {
     if (!relativeOrAbsoluteUrl || !relativeOrAbsoluteUrl.trim()) {
-      return "/images/banner-placeholder.webp";
+      return "/Image/default-food.webp";
     }
     const trimmed = relativeOrAbsoluteUrl.trim();
     if (

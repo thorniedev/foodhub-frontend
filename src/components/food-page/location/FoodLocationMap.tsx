@@ -1174,6 +1174,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import "leaflet/dist/leaflet.css";
 import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import { resolveStoreMediaUrl } from "@/components/food-page/store/store-page-utils";
 

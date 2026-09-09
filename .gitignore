@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,35 +11,61 @@
 !.yarn/releases
 !.yarn/versions
 
-node_modules/
-.next/
-out/
-build/
-dist/
-*.env*
-
-# testing
+# testing & coverage
 /coverage
+*.test.ts
+*.test.tsx
+*.test.js
+*.test.jsx
+*.spec.ts
+*.spec.tsx
+*.spec.js
+*.spec.jsx
+vitest.config.ts
+vitest.setup.ts
+*.class
+__tests__/
+test/
+tests/
 
 # next.js
 /.next/
+.next/
 /out/
+out/
 
 # production
 /build
+build/
+dist/
 
 # misc
 .DS_Store
 *.pem
 
-# debug
+# debug & logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.next-build-verification.*
+.tsc-verification.*
+Git-commands.log
+Git-Session.log
 
-# env files (can opt-in for committing if needed)
+# env files
+.env
 .env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# AI & Editor files
+.claude/
+AGENTS.md
+CLAUDE.md
 
 # vercel
 .vercel
@@ -47,34 +74,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# --stop caches in lock.json
-git rm --cached package-lock.json
-echo "package-lock.json"
-package-lock.json
-
-# -- clear caches
-git reset --soft origin/longfou
-git add .
-git commit -m "fixed conflict versions and work as normal"
-git push origin longfou
-
-# ---- add speed push
-git config http.postBuffer 524288000
-git config http.lowSpeedLimit 1000
-git config http.lowSpeedTime 300
-git push origin longfoupublic/Image/food/
-
-#---- remove images push clean
-git rm --cached public/Image/food/*.png
-git rm --cached public/Image/food/image.png
-echo "public/Image/food/" >> .gitignore
-git commit -m "remove large images to fix push"
-git push origin longfoupublic/Image/food/
-
-
-# ---history commands git
-Git-Commands.md
+# unused files, performance notes & scratch
+NAVIGATION_PERFORMANCE_FIX.md
+PERFORMANCE_FIXES_APPLIED.md
+PERFORMANCE_FIXES_PHASE2.md
+restaurant-detail-structure.md
 run-git-note.md
-Git-Session.log
-Git-commands.log
-*.log
+Git-Commands.md
+structure.txt
+scratch/

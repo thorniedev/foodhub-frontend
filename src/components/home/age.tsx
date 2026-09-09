@@ -126,7 +126,7 @@ interface AgeCardDisplay {
 
 // ✅ PERFORMANCE FIX: Memoize component to prevent re-renders
 const MealsByAgeSection = React.memo(function MealsByAgeSection() {
-  const { data: menuItems = [], isLoading } = useGetMenuItemsQuery();
+  const { data: menuItems = [], isLoading } = useGetMenuItemsQuery({ size: 30 });
   const [randomSeed, setRandomSeed] = useState<number>(() => Date.now());
 
   // Randomize selected dishes on mount/update

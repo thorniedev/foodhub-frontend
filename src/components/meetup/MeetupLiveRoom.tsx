@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  ArrowLeft,
   ArrowRight,
   ChefHat,
   Loader2,
@@ -80,10 +82,28 @@ import MeetupStoreCandidateCard from "./MeetupStoreCandidateCard";
 import MeetupParticipantsPanel, {
   toDisplayName,
 } from "./MeetupParticipantsPanel";
-import MeetupMidpointMap from "./MeetupMidpointMap";
 import MeetupRoomHeader from "./MeetupRoomHeader";
 import MeetupTallyPanel from "./MeetupTallyPanel";
 import MeetupWinnerCelebration from "./MeetupWinnerCelebration";
+
+/*
+ * MeetupMidpointMap pulls in react-leaflet, which touches `window` at module
+ * scope. A static import puts that top-level code in this file's own module
+ * graph, so the server bundle evaluates it too and every /meet/[token] visit
+ * crashed SSR before ever reaching the join sheet or the vote cards -- the
+ * inner `dynamic(..., { ssr: false })` map component inside that file cannot
+ * prevent this, because it lives in the same module as the leaflet imports it
+ * is trying to defer. Only a dynamic() around the import itself creates a
+ * real chunk boundary the server never loads.
+ */
+const MeetupMidpointMap = dynamic(() => import("./MeetupMidpointMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[360px] w-full items-center justify-center rounded-3xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60 sm:h-[420px]">
+      <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
+    </div>
+  ),
+});
 
 interface MeetupLiveRoomProps {
   /** Present when the room was opened from a host/dashboard link. */
@@ -1237,6 +1257,21 @@ export default function MeetupLiveRoom({
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-20 pt-20 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-5">
+        {/*
+         * Only the creator's own route (/meetup/[uuid]) has a place to go
+         * back to -- a guest opened this room from a share link outside the
+         * app (Telegram, a chat), so there is nothing in FoodHub "before" it.
+         */}
+        {meetupUuidProp && !shareTokenProp && (
+          <Link
+            href="/meetup"
+            className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-primary-700 dark:text-slate-400 dark:hover:text-primary-400"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            ការណាត់ជួបរបស់ខ្ញុំ
+          </Link>
+        )}
+
         <MeetupRoomHeader
           group={group}
           participantCount={participants.length}

@@ -77,11 +77,12 @@ export default function Aside() {
             aria-label="FoodHub"
           >
             <Image
-              src="/Image/foodHub-logo.png"
+              src="/Image/foodHub-logo.webp"
               alt="FoodHub"
               width={145}
               height={52}
               priority
+              unoptimized
               className="h-auto max-sm:p-2 p-3 max-sm:-ml-4 w-[135px] object-contain"
             />
           </Link>

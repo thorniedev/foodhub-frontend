@@ -292,10 +292,12 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
     } else {
       if (activeProfileUuid) {
         try {
+          // The backend rejects a bookmark that names more than one target
+          // (food/menu item/store must be exactly one), so only the menu
+          // item this card shows is sent even though food/store uuids are
+          // available here too.
           await addBookmark({
             menuItemUuid: food.uuid,
-            foodUuid: food.food?.uuid,
-            storeUuid: food.store?.uuid,
             sourceRecommendationItemUuid:
               food.recommendation?.uuid || undefined,
             notes: food.recommendation?.reasonText || undefined,
@@ -372,6 +374,7 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           alt={displayName}
           draggable={false}
           fill
+          unoptimized
           sizes="(max-width: 640px) 100vw, 400px"
           onError={() => {
             if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {

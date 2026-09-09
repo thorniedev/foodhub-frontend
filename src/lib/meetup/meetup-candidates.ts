@@ -16,6 +16,8 @@ export interface MeetupCandidate {
   foodName: string;
   storeName: string;
   photoUrl: string | null;
+  /** The store's own logo, distinct from `photoUrl` (a dish photo). */
+  storeLogoUrl: string | null;
   rating: number | null;
   price: number | null;
   currencyCode: string;
@@ -174,6 +176,11 @@ export function toMeetupCandidate(
       getString(raw, ["photoUrl", "foodPhotoUrl", "imageUrl", "thumbnail"]) ||
       getString(food, ["imageUrl", "photoUrl", "thumbnail"]) ||
       getString(menuItem, ["imageUrl", "photoUrl", "thumbnail"]) ||
+      null,
+    storeLogoUrl:
+      item.storeLogoUrl ||
+      getString(raw, ["storeLogoUrl", "store_logo_url"]) ||
+      getString(store, ["logoUrl", "logoMediaUrl"]) ||
       null,
     rating:
       getNumber(raw, ["rating", "averageRating"]) ??
@@ -391,7 +398,12 @@ export function groupCandidatesByStore(
       storeUuid: first.storeUuid ?? key,
       storeName: first.storeName,
       items: ranked,
-      photoUrl: ranked.find((item) => item.photoUrl)?.photoUrl ?? null,
+      /*
+       * The store's own logo, not a dish photo — every dish here used to
+       * fall back to whichever item happened to have a photo, which is how
+       * a plate of food ended up representing the restaurant itself.
+       */
+      photoUrl: ranked.find((item) => item.storeLogoUrl)?.storeLogoUrl ?? null,
       rating: bestOf(ranked.map((item) => item.rating), Math.max),
       distanceKm: bestOf(ranked.map((item) => item.distanceKm), Math.min),
       minPrice: bestOf(ranked.map((item) => item.price), Math.min),

@@ -42,6 +42,13 @@ export default function UserProfileDropdown({
           alt={activeMember?.name || "User"}
           width={40}
           height={40}
+          unoptimized
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (!target.src.endsWith("/Image/default-avatar.png")) {
+              target.src = "/Image/default-avatar.png";
+            }
+          }}
           className="
           h-10 w-10
           rounded-full
@@ -122,6 +129,13 @@ export default function UserProfileDropdown({
                     alt={member.name}
                     width={36}
                     height={36}
+                    unoptimized
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith("/Image/default-avatar.png")) {
+                        target.src = "/Image/default-avatar.png";
+                      }
+                    }}
                     className="
   h-9 w-9
   rounded-full

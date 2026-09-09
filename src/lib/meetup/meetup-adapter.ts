@@ -591,6 +591,7 @@ export function normalizeMeetupWinningCardResponse(
     storeUuid: getString(record, ["storeUuid"]) ?? undefined,
     storeName: getString(record, ["storeName"]) ?? undefined,
     storeAddress: getString(record, ["storeAddress", "address"]) ?? undefined,
+    storeLogoUrl: getString(record, ["storeLogoUrl"]),
     storeLatitude: getNumber(record, ["storeLatitude"]) ?? undefined,
     storeLongitude: getNumber(record, ["storeLongitude"]) ?? undefined,
     foodName: getString(record, ["foodName", "menuItemName"]) ?? undefined,

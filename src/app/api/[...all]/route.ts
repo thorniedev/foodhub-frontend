@@ -27,7 +27,7 @@ const allowedRoutes: Record<string, ReadonlySet<string>> = {
   catalog: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   safety: new Set(["GET"]),
   stores: new Set(["GET", "POST", "PATCH", "DELETE"]),
-  media: new Set(["GET", "POST", "DELETE"]),
+  media: new Set(["GET", "HEAD", "POST", "DELETE"]),
   banners: new Set(["GET"]),
   "menu-items": new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   meetup: new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]),
@@ -149,9 +149,9 @@ function requiresAuthentication(backendPath: string, method: string) {
     return true;
   }
 
-  // Media upload / delete requires auth, but GET (fetching store logo / photos) is public!
+  // Media upload / delete requires auth, but GET / HEAD (fetching store logo / photos) is public!
   if (backendPath === "media" || backendPath.startsWith("media/")) {
-    return method !== "GET";
+    return method !== "GET" && method !== "HEAD";
   }
 
   return false;
@@ -206,11 +206,20 @@ async function forwardRequest(
     );
   }
 
-  if (!routeRule.has(request.method)) {
+  const isMethodAllowed =
+    routeRule.has(request.method) ||
+    (request.method === "HEAD" && routeRule.has("GET"));
+
+  if (!isMethodAllowed) {
     console.error("[FOODHUB PROXY] Method not allowed:", {
       method: request.method,
       path: backendPath,
     });
+
+    const allowedMethods = [...routeRule];
+    if (routeRule.has("GET") && !routeRule.has("HEAD")) {
+      allowedMethods.push("HEAD");
+    }
 
     return NextResponse.json(
       {
@@ -219,7 +228,7 @@ async function forwardRequest(
       {
         status: 405,
         headers: {
-          Allow: [...routeRule].join(", "),
+          Allow: allowedMethods.join(", "),
         },
       },
     );

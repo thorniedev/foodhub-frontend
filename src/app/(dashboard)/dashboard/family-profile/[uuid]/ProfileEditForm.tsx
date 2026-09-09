@@ -1474,16 +1474,27 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                 src={avatarPreviewUrl}
                 alt="Preview"
                 fill
+                unoptimized
                 className="object-cover"
                 sizes="96px"
               />
-            ) : avatarAccessUrlData?.url ? (
+            ) : avatarAccessUrlData?.url || (pendingAvatarUuid ? `/api/media/${encodeURIComponent(pendingAvatarUuid)}/file` : null) ? (
               <Image
-                src={avatarAccessUrlData.url}
+                src={avatarAccessUrlData?.url || `/api/media/${encodeURIComponent(pendingAvatarUuid!)}/file`}
                 alt={form.profileName}
                 fill
+                unoptimized
                 className="object-cover"
                 sizes="96px"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  const fallback = pendingAvatarUuid ? `/api/media/${encodeURIComponent(pendingAvatarUuid)}/file` : "";
+                  if (fallback && !target.src.includes(fallback)) {
+                    target.src = fallback;
+                  } else {
+                    target.style.display = "none";
+                  }
+                }}
               />
             ) : form.profileName.trim() ? (
               <span className="flex h-full w-full items-center justify-center bg-primary-800/10 text-[34px] font-bold text-primary-800">

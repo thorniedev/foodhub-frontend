@@ -997,8 +997,20 @@ function AvatarUpload({
             src={accessUrlData.url}
             alt={profileName}
             fill
+            unoptimized
             className="object-cover"
             sizes={size === "sm" ? "56px" : "112px"}
+            onError={(e) => {
+              const target = e.currentTarget;
+              const directUrl = avatarMediaUuid
+                ? `/api/media/${encodeURIComponent(avatarMediaUuid)}/file`
+                : "";
+              if (directUrl && !target.src.includes(directUrl)) {
+                target.src = directUrl;
+              } else {
+                target.style.display = "none";
+              }
+            }}
           />
         ) : (
           <span

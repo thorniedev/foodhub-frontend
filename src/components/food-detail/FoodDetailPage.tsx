@@ -1225,21 +1225,22 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
                     setIsBookmarked(true);
 
                     try {
+                      // The backend rejects a bookmark that names more than
+                      // one target (food/menu item/store must be exactly
+                      // one), so only the menu item this page shows is sent.
                       await addBookmark({
+                        menuItemUuid: uuid,
+                      });
+                      track({
+                        eventType: "BOOKMARK",
                         menuItemUuid: uuid,
                         foodUuid: food?.food?.uuid,
                         storeUuid: food?.store?.uuid,
                       });
                     } catch (err) {
                       console.warn("[FOOD DETAIL BOOKMARK ERROR]", err);
+                      setIsBookmarked(false);
                     }
-
-                    track({
-                      eventType: "BOOKMARK",
-                      menuItemUuid: uuid,
-                      foodUuid: food?.food?.uuid,
-                      storeUuid: food?.store?.uuid,
-                    });
                   }
                 }}
                 className={`col-span-2 sm:col-span-1 flex items-center justify-center gap-2 rounded-full px-6 py-3.5 font-semibold transition active:scale-95 ${TEXT_BODY} ${

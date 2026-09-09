@@ -1,4 +1,4 @@
-export const DEFAULT_FOOD_IMAGE = "/Image/default-food.png";
+export const DEFAULT_FOOD_IMAGE = "/Image/default-food.webp";
 
 const UUID_REGEX =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;

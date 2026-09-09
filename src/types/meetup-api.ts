@@ -309,6 +309,7 @@ export interface MeetupWinningCardResponse {
   storeUuid?: string | null;
   storeName?: string;
   storeAddress?: string;
+  storeLogoUrl?: string | null;
   storeLatitude?: number | null;
   storeLongitude?: number | null;
   foodName?: string;

@@ -842,6 +842,57 @@ type CarouselProps = {
 };
 
 /* =========================================================
+   CAROUSEL CARD IMAGE WITH FALLBACK
+========================================================= */
+
+function CarouselCardImage({
+  src,
+  alt,
+  fallback = "/Image/carousel/food1.jpeg",
+}: {
+  src: string;
+  alt: string;
+  fallback?: string;
+}) {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      unoptimized
+      draggable={false}
+      priority={false}
+      className="
+        pointer-events-none
+        object-cover
+        transition-transform
+        duration-700
+        ease-out
+        lg:group-hover:scale-[1.06]
+      "
+      sizes="
+        (max-width: 767px) 100vw,
+        (max-width: 1023px) 50vw,
+        50vw
+      "
+      onError={() => {
+        if (imgSrc !== fallback) {
+          setImgSrc(fallback);
+        } else if (imgSrc !== "/Image/carousel/food2.jpg") {
+          setImgSrc("/Image/carousel/food2.jpg");
+        }
+      }}
+    />
+  );
+}
+
+/* =========================================================
    CAROUSEL
 ========================================================= */
 
@@ -1823,28 +1874,9 @@ export default function Carousel({
                       IMAGE
                   ===================================== */}
 
-                <Image
+                <CarouselCardImage
                   src={item.image}
                   alt={item.alt}
-                  fill
-                  draggable={false}
-                  priority={false}
-                  className="
-                      pointer-events-none
-
-                      object-cover
-
-                      transition-transform
-                      duration-700
-                      ease-out
-
-                      lg:group-hover:scale-[1.06]
-                    "
-                  sizes="
-                      (max-width: 767px) 100vw,
-                      (max-width: 1023px) 50vw,
-                      50vw
-                    "
                 />
 
                 {/* =====================================
@@ -2186,7 +2218,7 @@ export const slides: CarouselItem[] = [
   {
     id: 4,
 
-    image: "/Image/carousel/food4.jpg",
+    image: "/Image/carousel/food4.webp",
 
     alt: "Family sharing platter",
 
@@ -2218,7 +2250,7 @@ export const slides: CarouselItem[] = [
   {
     id: 6,
 
-    image: "/Image/carousel/food6.jpg",
+    image: "/Image/carousel/food6.webp",
 
     alt: "Family sharing platter",
 
@@ -2234,7 +2266,7 @@ export const slides: CarouselItem[] = [
   {
     id: 7,
 
-    image: "/Image/carousel/food7.png",
+    image: "/Image/carousel/food7.webp",
 
     alt: "Family sharing platter",
 

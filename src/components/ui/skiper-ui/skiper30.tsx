@@ -10,7 +10,7 @@ const Skiper30 = () => {
   const gallery = useRef<HTMLDivElement>(null);
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
 
-  const { data: menuItems = [] } = useGetMenuItemsQuery();
+  const { data: menuItems = [] } = useGetMenuItemsQuery({ size: 12 });
   
   // Get unique images from menu items
   const dynamicImages = useMemo(() => {
@@ -51,10 +51,11 @@ const Skiper30 = () => {
 
   useEffect(() => {
     const lenis = new Lenis();
+    let rafId: number;
 
     const raf = (time: number) => {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     };
 
     const resize = () => {
@@ -62,11 +63,13 @@ const Skiper30 = () => {
     };
 
     window.addEventListener("resize", resize);
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
     resize();
 
     return () => {
       window.removeEventListener("resize", resize);
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
     };
   }, []);
 
