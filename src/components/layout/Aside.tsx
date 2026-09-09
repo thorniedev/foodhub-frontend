@@ -82,7 +82,6 @@ export default function Aside() {
               width={145}
               height={52}
               priority
-              unoptimized
               className="h-auto max-sm:p-2 p-3 max-sm:-ml-4 w-[135px] object-contain"
             />
           </Link>

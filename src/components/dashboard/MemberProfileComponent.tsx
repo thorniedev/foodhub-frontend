@@ -236,7 +236,6 @@ function MemberProfileAvatar({
       src={activeUrl}
       alt={profileName}
       fill
-      unoptimized
       className="object-cover"
       sizes={sizes}
       onError={() => {

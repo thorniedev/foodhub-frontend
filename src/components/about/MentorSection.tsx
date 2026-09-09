@@ -175,7 +175,6 @@ function MentorCard({
                 src={avatar}
                 alt={name}
                 fill
-                unoptimized
                 className="object-cover"
                 sizes="(max-width: 640px) 200px, 240px"
               />

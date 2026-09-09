@@ -44,40 +44,6 @@ type FoodCardProps = {
 };
 
 /* =========================================================
-   CONSTANTS
-========================================================= */
-
-const FAVORITES_STORAGE_KEY = "foodhub-favorite-menu-items";
-
-/* =========================================================
-   FAVORITES
-========================================================= */
-
-function getStoredFavoriteIds(): string[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const value = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
-
-    if (!value) {
-      return [];
-    }
-
-    const parsed: unknown = JSON.parse(value);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.filter((item): item is string => typeof item === "string");
-  } catch {
-    return [];
-  }
-}
-
-/* =========================================================
    HELPERS
 ========================================================= */
 
@@ -372,12 +338,8 @@ const FoodCard = React.memo(function FoodCard({
       menuItemUuid: activeFood.uuid,
       foodUuid: activeFood.food?.uuid,
     });
-    
-    const favoriteIds = getStoredFavoriteIds();
 
-    setIsFavorite(
-      Boolean(serverBookmark) || favoriteIds.includes(activeFood.uuid),
-    );
+    setIsFavorite(Boolean(serverBookmark));
   }, [activeFood.uuid, activeFood.food?.uuid, findBookmark, bookmarks]);
 
   /* =======================================================
@@ -390,33 +352,12 @@ const FoodCard = React.memo(function FoodCard({
       return;
     }
 
-    const currentIds = getStoredFavoriteIds();
-
     const serverBookmark = findBookmark({
       menuItemUuid: activeFood.uuid,
       foodUuid: activeFood.food?.uuid,
     });
 
-    const isAlreadyFavorite =
-      isFavorite ||
-      Boolean(serverBookmark) ||
-      currentIds.includes(activeFood.uuid);
-
-    const nextIds = isAlreadyFavorite
-      ? currentIds.filter((id) => id !== activeFood.uuid)
-      : [...currentIds, activeFood.uuid];
-
-    try {
-      window.localStorage.setItem(
-        FAVORITES_STORAGE_KEY,
-        JSON.stringify(nextIds),
-      );
-    } catch (error) {
-      console.warn(
-        "[FOOD FAVORITE STORAGE]",
-        error instanceof Error ? error.message : String(error),
-      );
-    }
+    const isAlreadyFavorite = Boolean(serverBookmark);
 
     setIsFavorite(!isAlreadyFavorite);
 
@@ -566,7 +507,7 @@ const FoodCard = React.memo(function FoodCard({
             to branch away from <Image> entirely on that same condition and
             show a bare "broken image" glyph instead, so the computed default
             photo was never actually reachable. Every other card in the app
-            (FooodCard, SwipeCardTinderStyle, FoodDetailPage) keeps rendering
+            (SwipeCardTinderStyle, FoodDetailPage) keeps rendering
             an <Image>/<img> and swaps its src on error instead of switching
             UI, so this now matches that pattern.
           */}
@@ -575,7 +516,6 @@ const FoodCard = React.memo(function FoodCard({
             alt={displayName}
             width={485}
             height={370}
-            unoptimized
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             draggable={false}
             onError={() => {

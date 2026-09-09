@@ -32,6 +32,7 @@ import {
   useSaveMemberMedicalConditionsMutation,
   useUploadMediaMutation,
 } from "@/app/store/memberProfileApi";
+import { CustomSelect } from "@/components/shared/CustomSelect";
 
 import type {
   CreateMemberProfileRequest,
@@ -113,6 +114,12 @@ const severityLabels: Record<ProfileSeverity, string> = {
   SEVERE: "កម្រិតធ្ងន់",
 };
 
+const severityBadges: Record<ProfileSeverity, string> = {
+  MILD: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  MODERATE: "bg-amber-50 text-amber-700 border-amber-200",
+  SEVERE: "bg-red-50 text-red-700 border-red-200",
+};
+
 const enforcementLabels: Record<DietaryEnforcementLevel, string> = {
   PREFERRED: "ចូលចិត្ត",
   REQUIRED: "តម្រូវឱ្យអនុវត្ត",
@@ -179,15 +186,15 @@ function PreferenceSection({
   children,
 }: PreferenceSectionProps) {
   return (
-    <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-      <div className="mb-6 flex items-start gap-4 border-b border-slate-100 pb-5">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-800/10 text-primary-800">
+    <section className="rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6">
+      <div className="mb-4 sm:mb-6 flex items-start gap-3 sm:gap-4 border-b border-slate-100 pb-4 sm:pb-5">
+        <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-primary-800/10 text-primary-800">
           {icon}
         </div>
 
         <div className="min-w-0">
-          <h3 className="text-2xl font-bold text-primary-800">{title}</h3>
-          <p className="mt-2 text-lg leading-7 text-slate-500">{description}</p>
+          <h3 className="text-xl sm:text-2xl font-bold text-primary-800">{title}</h3>
+          <p className="mt-1 sm:mt-2 text-xs sm:text-base leading-6 sm:leading-7 text-slate-500">{description}</p>
         </div>
       </div>
 
@@ -807,7 +814,6 @@ export default function CreateMemberProfileModal({
                         src={avatarPreviewUrl}
                         alt="Preview"
                         fill
-                        unoptimized
                         className="object-cover"
                         sizes="96px"
                       />
@@ -895,36 +901,26 @@ export default function CreateMemberProfileModal({
                       ទំនាក់ទំនង
                     </label>
 
-                    <div className="relative">
-                      <UsersRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
-                      <select
-                        id="relationship"
-                        value={form.relationship}
-                        onChange={(event) =>
-                          setForm((previous) => ({
-                            ...previous,
-                            relationship: event.target
-                              .value as MemberRelationship,
-                          }))
-                        }
-                        className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
-                      >
-                        {Object.entries(relationshipLabels).map(
-                          ([value, label]) => (
-                            <option
-                              key={value}
-                              value={value}
-                              className="bg-white text-lg text-slate-700"
-                            >
-                              {label}
-                            </option>
-                          ),
-                        )}
-                      </select>
-
-                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                    </div>
+                    <CustomSelect
+                      id="relationship"
+                      value={form.relationship}
+                      onChange={(val) =>
+                        setForm((previous) => ({
+                          ...previous,
+                          relationship: val as MemberRelationship,
+                        }))
+                      }
+                      leftIcon={
+                        <UsersRound className="h-5 w-5 text-slate-400 shrink-0" />
+                      }
+                      size="lg"
+                      options={Object.entries(relationshipLabels).map(
+                        ([value, label]) => ({
+                          value,
+                          label,
+                        }),
+                      )}
+                    />
                   </div>
 
                   {/* Gender */}
@@ -936,33 +932,26 @@ export default function CreateMemberProfileModal({
                       ភេទ
                     </label>
 
-                    <div className="relative">
-                      <UserRound className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />
-
-                      <select
-                        id="gender"
-                        value={form.gender}
-                        onChange={(event) =>
-                          setForm((previous) => ({
-                            ...previous,
-                            gender: event.target.value as MemberGender,
-                          }))
-                        }
-                        className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/70 py-3 pl-12 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 hover:bg-white focus:border-primary-800 focus:bg-white focus:ring-4 focus:ring-primary-800/10"
-                      >
-                        {Object.entries(genderLabels).map(([value, label]) => (
-                          <option
-                            key={value}
-                            value={value}
-                            className="bg-white text-lg text-slate-700"
-                          >
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-
-                      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                    </div>
+                    <CustomSelect
+                      id="gender"
+                      value={form.gender}
+                      onChange={(val) =>
+                        setForm((previous) => ({
+                          ...previous,
+                          gender: val as MemberGender,
+                        }))
+                      }
+                      leftIcon={
+                        <UserRound className="h-5 w-5 text-slate-400 shrink-0" />
+                      }
+                      size="lg"
+                      options={Object.entries(genderLabels).map(
+                        ([value, label]) => ({
+                          value,
+                          label,
+                        }),
+                      )}
+                    />
                   </div>
 
                   {/* DOB */}
@@ -1087,7 +1076,7 @@ export default function CreateMemberProfileModal({
                       </p>
                     ) : (
                       <div className="space-y-5">
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                           {allergenOptions.map((option) => {
                             const isSelected = form.allergies.some(
                               (item) => item.allergenCode === option.code,
@@ -1099,7 +1088,7 @@ export default function CreateMemberProfileModal({
                                 type="button"
                                 aria-pressed={isSelected}
                                 onClick={() => toggleAllergy(option.code)}
-                                className={`rounded-full border px-5 py-2.5 text-lg font-semibold transition-all duration-200 ${
+                                className={`rounded-full border px-3 py-1.5 text-xs sm:px-5 sm:py-2.5 sm:text-base font-semibold transition-all duration-200 ${
                                   isSelected
                                     ? "border-primary-800 bg-primary-800 text-white shadow-sm"
                                     : "border-slate-200 bg-slate-50 text-slate-700 hover:border-primary-800 hover:bg-primary-800/5 hover:text-primary-800"
@@ -1152,32 +1141,25 @@ export default function CreateMemberProfileModal({
                                     កម្រិតធ្ងន់ធ្ងរ
                                   </label>
 
-                                  <div className="relative">
-                                    <select
-                                      value={selectedItem.severity}
-                                      onChange={(event) =>
-                                        updateAllergy(option.code, {
-                                          severity: event.target
-                                            .value as ProfileSeverity,
-                                        })
-                                      }
-                                      className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
-                                    >
-                                      {Object.entries(severityLabels).map(
-                                        ([value, label]) => (
-                                          <option
-                                            key={value}
-                                            value={value}
-                                            className="text-lg"
-                                          >
-                                            {label}
-                                          </option>
-                                        ),
-                                      )}
-                                    </select>
-
-                                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                                  </div>
+                                  <CustomSelect
+                                    value={selectedItem.severity}
+                                    onChange={(val) =>
+                                      updateAllergy(option.code, {
+                                        severity: val as ProfileSeverity,
+                                      })
+                                    }
+                                    size="lg"
+                                    options={Object.entries(severityLabels).map(
+                                      ([value, label]) => ({
+                                        value,
+                                        label,
+                                        badgeClass:
+                                          severityBadges[
+                                            value as ProfileSeverity
+                                          ],
+                                      }),
+                                    )}
+                                  />
                                 </div>
 
                                 <div>
@@ -1247,7 +1229,7 @@ export default function CreateMemberProfileModal({
                       </p>
                     ) : (
                       <div className="space-y-5">
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                           {dietaryTypeOptions.map((option) => {
                             const isSelected = form.dietaryTypes.some(
                               (item) => item.dietaryTypeCode === option.code,
@@ -1259,7 +1241,7 @@ export default function CreateMemberProfileModal({
                                 type="button"
                                 aria-pressed={isSelected}
                                 onClick={() => toggleDietaryType(option.code)}
-                                className={`rounded-full border px-5 py-2.5 text-lg font-semibold transition-all duration-200 ${
+                                className={`rounded-full border px-3 py-1.5 text-xs sm:px-5 sm:py-2.5 sm:text-base font-semibold transition-all duration-200 ${
                                   isSelected
                                     ? "border-primary-800 bg-primary-800 text-white shadow-sm"
                                     : "border-slate-200 bg-slate-50 text-slate-700 hover:border-primary-800 hover:bg-primary-800/5 hover:text-primary-800"
@@ -1313,32 +1295,22 @@ export default function CreateMemberProfileModal({
                                     កម្រិតតម្រូវការ
                                   </label>
 
-                                  <div className="relative">
-                                    <select
-                                      value={selectedItem.enforcementLevel}
-                                      onChange={(event) =>
-                                        updateDietaryType(option.code, {
-                                          enforcementLevel: event.target
-                                            .value as DietaryEnforcementLevel,
-                                        })
-                                      }
-                                      className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
-                                    >
-                                      {Object.entries(enforcementLabels).map(
-                                        ([value, label]) => (
-                                          <option
-                                            key={value}
-                                            value={value}
-                                            className="text-lg"
-                                          >
-                                            {label}
-                                          </option>
-                                        ),
-                                      )}
-                                    </select>
-
-                                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                                  </div>
+                                  <CustomSelect
+                                    value={selectedItem.enforcementLevel}
+                                    onChange={(val) =>
+                                      updateDietaryType(option.code, {
+                                        enforcementLevel:
+                                          val as DietaryEnforcementLevel,
+                                      })
+                                    }
+                                    size="lg"
+                                    options={Object.entries(
+                                      enforcementLabels,
+                                    ).map(([value, label]) => ({
+                                      value,
+                                      label,
+                                    }))}
+                                  />
                                 </div>
 
                                 <div>
@@ -1377,7 +1349,7 @@ export default function CreateMemberProfileModal({
                       </p>
                     ) : (
                       <div className="space-y-5">
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                           {medicalConditionOptions.map((option) => {
                             const isSelected = form.medicalConditions.some(
                               (item) => item.conditionCode === option.code,
@@ -1391,7 +1363,7 @@ export default function CreateMemberProfileModal({
                                 onClick={() =>
                                   toggleMedicalCondition(option.code)
                                 }
-                                className={`rounded-full border px-5 py-2.5 text-lg font-semibold transition-all duration-200 ${
+                                className={`rounded-full border px-3 py-1.5 text-xs sm:px-5 sm:py-2.5 sm:text-base font-semibold transition-all duration-200 ${
                                   isSelected
                                     ? "border-primary-800 bg-primary-800 text-white shadow-sm"
                                     : "border-slate-200 bg-slate-50 text-slate-700 hover:border-primary-800 hover:bg-primary-800/5 hover:text-primary-800"
@@ -1446,32 +1418,25 @@ export default function CreateMemberProfileModal({
                                     កម្រិតធ្ងន់ធ្ងរ
                                   </label>
 
-                                  <div className="relative">
-                                    <select
-                                      value={selectedItem.severity}
-                                      onChange={(event) =>
-                                        updateMedicalCondition(option.code, {
-                                          severity: event.target
-                                            .value as ProfileSeverity,
-                                        })
-                                      }
-                                      className="min-h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-lg font-medium text-primary-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-primary-800 focus:ring-4 focus:ring-primary-800/10"
-                                    >
-                                      {Object.entries(severityLabels).map(
-                                        ([value, label]) => (
-                                          <option
-                                            key={value}
-                                            value={value}
-                                            className="text-lg"
-                                          >
-                                            {label}
-                                          </option>
-                                        ),
-                                      )}
-                                    </select>
-
-                                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                                  </div>
+                                  <CustomSelect
+                                    value={selectedItem.severity}
+                                    onChange={(val) =>
+                                      updateMedicalCondition(option.code, {
+                                        severity: val as ProfileSeverity,
+                                      })
+                                    }
+                                    size="lg"
+                                    options={Object.entries(severityLabels).map(
+                                      ([value, label]) => ({
+                                        value,
+                                        label,
+                                        badgeClass:
+                                          severityBadges[
+                                            value as ProfileSeverity
+                                          ],
+                                      }),
+                                    )}
+                                  />
                                 </div>
 
                                 <div>

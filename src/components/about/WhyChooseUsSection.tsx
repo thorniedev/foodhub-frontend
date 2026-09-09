@@ -18,14 +18,14 @@ export default function WhyChooseUsSection() {
             </div>
 
             {/* Main Headline */}
-            <h2 className="[font-family:'Kantumruy_Pro',sans-serif] text-6xl font-extrabold leading-tight tracking-wide sm:text-5xl md:text-6xl">
+            <h2 className="font-sans text-6xl font-extrabold leading-tight tracking-wide sm:text-5xl md:text-6xl">
               <span className="text-[#136c34]">ហេតុអ្វីត្រូវជ្រើសរើស</span>
               <br />
               <span className="text-[#f97316]">ហ្វូតហាប់?</span>
             </h2>
 
             {/* Description Text */}
-            <p className="mt-6 max-w-xl [font-family:'Kantumruy_Pro',sans-serif] text-base leading-relaxed text-slate-600 sm:text-lg">
+            <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-slate-600 sm:text-lg">
               ស្វែងរកម្ហូបអាហារ និងភេសជ្ជៈបានយ៉ាងរហ័ស ទាន់ចិត្តនិងត្រូវតាមចំណង់ចំណូលចិត្តរបស់អ្នកជាមួយជម្រើសដ៏សម្បូរបែបពីហាងជាច្រើនតម្រូវមុខម្ហូបពិសេសៗដែលអ្នកពេញចិត្តបំផុតដោយឥតធុញទ្រាន់ ។
             </p>
           </div>

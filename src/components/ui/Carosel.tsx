@@ -865,7 +865,6 @@ function CarouselCardImage({
       src={imgSrc}
       alt={alt}
       fill
-      unoptimized
       draggable={false}
       priority={false}
       className="

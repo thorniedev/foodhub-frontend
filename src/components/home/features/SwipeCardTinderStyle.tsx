@@ -81,8 +81,16 @@ export default function SwipeCardTinderStyle({
   const safeFoods = Array.isArray(foods) ? foods : [];
   const total = safeFoods.length;
 
-  useEffect(() => {
+  // Reset to the first card during render rather than in an effect, since
+  // this is purely derived from `foods` changing — see
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevFoods, setPrevFoods] = useState(foods);
+  if (foods !== prevFoods) {
+    setPrevFoods(foods);
     setActiveIndex(0);
+  }
+
+  useEffect(() => {
     if (swiperRef.current && !swiperRef.current.destroyed) {
       swiperRef.current.slideTo(0);
     }
@@ -219,7 +227,7 @@ export default function SwipeCardTinderStyle({
   );
 }
 
-function SwipeFoodCard({ food }: SwipeFoodCardProps) {
+export function SwipeFoodCard({ food }: SwipeFoodCardProps) {
   const { addBookmark, removeBookmark, findBookmark, activeProfileUuid } =
     useBookmarks();
   const { track } = useTrackInteraction();
@@ -374,7 +382,6 @@ function SwipeFoodCard({ food }: SwipeFoodCardProps) {
           alt={displayName}
           draggable={false}
           fill
-          unoptimized
           sizes="(max-width: 640px) 100vw, 400px"
           onError={() => {
             if (thumbnailUrl !== DEFAULT_FOOD_IMAGE) {

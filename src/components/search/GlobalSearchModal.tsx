@@ -346,7 +346,6 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                           alt={store.storeName || store.name || "Store"}
                           width={48}
                           height={48}
-                          unoptimized
                           className="h-full w-full object-cover"
                         />
                       </div>
@@ -394,7 +393,6 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
                             alt={item.name}
                             width={48}
                             height={48}
-                            unoptimized
                             className="h-full w-full object-cover"
                           />
                         </div>

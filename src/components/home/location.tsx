@@ -86,7 +86,6 @@ export default function LocationSection() {
             alt="Location"
             width={280}
             height={280}
-            unoptimized
             className="w-full h-auto"
           />
         </motion.div>
@@ -113,7 +112,6 @@ export default function LocationSection() {
                 alt="Avatar"
                 width={96}
                 height={96}
-                unoptimized
                 className="w-full h-full object-cover scale-150"
               />
             </div>

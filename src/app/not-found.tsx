@@ -11,7 +11,6 @@ export default function NotFoundPage() {
         width={350}
         height={100}
         priority
-        unoptimized
       />
       {/* <img className="w-[350px] hidden dark:block" src={LogoDark} alt="L0go" /> */}
       <div className="flex py-4 dark:bg-white px-10 rounded-full  flex-col items-center ">

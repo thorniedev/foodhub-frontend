@@ -15,7 +15,9 @@ function normalizeNotificationPath(value) {
       return null;
     }
 
-    return `${url.pathname}${url.search}${url.hash}` || DEFAULT_NOTIFICATION_URL;
+    return (
+      `${url.pathname}${url.search}${url.hash}` || DEFAULT_NOTIFICATION_URL
+    );
   } catch {
     return null;
   }
@@ -46,7 +48,10 @@ function resolveNotificationPath(data = {}) {
     return `/menu?mealType=${encodeURIComponent(data.mealTypeCode)}`;
   }
 
-  if (typeof data.notificationUuid === "string" && data.notificationUuid.trim()) {
+  if (
+    typeof data.notificationUuid === "string" &&
+    data.notificationUuid.trim()
+  ) {
     return `/notifications?notification=${encodeURIComponent(
       data.notificationUuid.trim(),
     )}`;
@@ -133,7 +138,8 @@ self.addEventListener("push", (event) => {
 
     badge: payload.badge || DEFAULT_NOTIFICATION_BADGE,
 
-    tag: payload.tag || payload.data?.notificationUuid || "foodhub-notification",
+    tag:
+      payload.tag || payload.data?.notificationUuid || "foodhub-notification",
 
     image: payload.image,
 

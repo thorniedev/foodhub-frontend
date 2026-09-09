@@ -68,7 +68,6 @@ export function ProfileAvatar({
           src={activeUrl}
           alt={name}
           fill
-          unoptimized
           sizes="40px"
           className="h-full w-full object-cover"
           onError={() => {

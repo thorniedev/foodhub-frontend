@@ -69,7 +69,6 @@ export default function FitFoodSection() {
                 src={item.image}
                 alt={item.title}
                 fill
-                unoptimized
                 className="rounded-full object-cover"
                 sizes="250px"
               />

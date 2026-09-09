@@ -207,7 +207,6 @@ function ApiImage({ src, alt, className }: ApiImageProps) {
       src={currentSrc}
       alt={alt}
       fill
-      unoptimized
       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
       draggable={false}
       onError={() => {

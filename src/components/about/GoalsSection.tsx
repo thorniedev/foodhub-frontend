@@ -208,7 +208,6 @@ export default function GoalsSection() {
                     fill
                     className="object-contain object-bottom"
                     priority
-                    unoptimized
                   />
                 </motion.div>
               </motion.div>
@@ -302,7 +301,6 @@ export default function GoalsSection() {
                 fill
                 className="object-cover"
                 priority
-                unoptimized
               />
             </motion.div>
           </motion.div>

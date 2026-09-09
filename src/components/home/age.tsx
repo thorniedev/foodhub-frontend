@@ -250,7 +250,6 @@ const MealsByAgeSection = React.memo(function MealsByAgeSection() {
                         src={group.image}
                         alt={group.dishName || group.label}
                         fill
-                        unoptimized
                         onError={(e) => {
                           const target = e.currentTarget;
                           if (

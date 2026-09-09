@@ -100,7 +100,6 @@ export const MenuItemDetailModal: React.FC<MenuItemDetailModalProps> = ({
             src={getMediaUrl(item.thumbnail)}
             alt={item.localName || item.name}
             fill
-            unoptimized
             sizes="450px"
             priority
             className="object-cover"

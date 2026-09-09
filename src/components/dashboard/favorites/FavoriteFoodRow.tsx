@@ -33,7 +33,6 @@ export default function FavoriteFoodRow({
           alt={item.dishName}
           width={100}
           height={100}
-          unoptimized
           onError={(e) => {
             const target = e.currentTarget;
             if (!target.src.endsWith("/Image/default-food.webp")) {

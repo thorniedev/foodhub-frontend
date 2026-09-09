@@ -346,7 +346,6 @@ export default function DashboardUserProfile({
                 alt={userName}
                 width={40}
                 height={40}
-                unoptimized
                 onError={() => setAvatarFailed(true)}
                 className="h-10 w-10 rounded-full border border-slate-200 object-cover"
               />
@@ -394,7 +393,6 @@ export default function DashboardUserProfile({
                 alt={userName}
                 width={48}
                 height={48}
-                unoptimized
                 onError={() => setAvatarFailed(true)}
                 className="h-12 w-12 rounded-full object-cover"
               />
@@ -501,7 +499,6 @@ export default function DashboardUserProfile({
                     src={resolvedAvatarUrl}
                     alt={userName}
                     fill
-                    unoptimized
                     onError={() => setAvatarFailed(true)}
                     className="object-cover"
                     sizes="64px"

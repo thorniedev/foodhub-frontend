@@ -11,9 +11,12 @@ const nextConfig: NextConfig = {
     "idealist-distrust-buffed.ngrok-free.dev",
   ],
   images: {
-    unoptimized: true,
     // Cache optimized images for 1 year (they are content-addressed by URL)
     minimumCacheTTL: 31536000,
+    // Serve AVIF/WebP to browsers that support them, falling back to the
+    // source format otherwise -- both are substantially smaller than PNG/JPEG
+    // at equivalent visual quality.
+    formats: ["image/avif", "image/webp"],
     // Breakpoints that match the card grid (50vw → 33vw → 25vw)
     deviceSizes: [375, 640, 768, 1024, 1280, 1536],
     imageSizes: [96, 128, 200, 256, 384, 485],

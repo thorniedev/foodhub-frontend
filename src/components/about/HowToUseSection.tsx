@@ -204,7 +204,6 @@ function Card1({ isActive, isPaused, cycle, durationMs }: CardProps) {
               alt="Search food"
               src="/about/fooooo.jpg"
               fill
-              unoptimized
               className="object-cover "
             />
           </motion.div>
@@ -265,7 +264,6 @@ function Card2({ isActive, isPaused, cycle, durationMs }: CardProps) {
               alt="Choose food"
               src="/about/third.png"
               fill
-              unoptimized
               className="object-cover"
             />
           </motion.div>
@@ -367,7 +365,6 @@ function Card3({ isActive, isPaused, cycle, durationMs }: CardProps) {
               alt="Enjoy food"
               src={"/about/second.jpg"}
               fill
-              unoptimized
               className="object-cover"
             />
           </motion.div>

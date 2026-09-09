@@ -45,7 +45,6 @@ export default function ReviewTable({
                     src={item.imageUrl}
                     alt={item.name}
                     fill
-                    unoptimized
                     sizes="56px"
                     className="h-full w-full object-cover"
                     onError={(e) => {
@@ -113,7 +112,6 @@ export default function ReviewTable({
                     src={item.imageUrl}
                     alt={item.name}
                     fill
-                    unoptimized
                     sizes="64px"
                     className="h-full w-full object-cover"
                     onError={(e) => {

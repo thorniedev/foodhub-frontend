@@ -50,7 +50,6 @@ export default function Footer() {
                      object-left"
                     width={160}
                     height={80}
-                    unoptimized
                     style={{ width: "auto", height: "auto" }}
                   />
                   <Image
@@ -59,7 +58,6 @@ export default function Footer() {
                     className="object-contain dark:block hidden  object-left"
                     width={160}
                     height={80}
-                    unoptimized
                     style={{ width: "auto", height: "auto" }}
                   />
                 </div>
@@ -95,7 +93,7 @@ export default function Footer() {
             {/* Middle column */}
             <div>
               <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
-                លីងភ្ជាប់
+                តំណរលីង
               </h4>
 
               <nav className="mt-6 flex flex-col gap-5">
@@ -126,7 +124,7 @@ export default function Footer() {
             {/* Right column */}
             <div>
               <h4 className="text-2xl font-semibold text-slate-800 dark:text-gray-200">
-                ឧបត្ថម្ភដោយ
+                គាំទ្រដោយ
               </h4>
 
               <div className="mt-6 flex flex-col gap-6">
@@ -136,7 +134,6 @@ export default function Footer() {
                     src="/sponsors.png"
                     alt="Ministry  of Post and Telecommunications"
                     fill
-                    unoptimized
                     className="object-contain block dark:hidden object-left"
                     sizes="(max-width: 768px) 100vw, 389px"
                   />
@@ -144,7 +141,6 @@ export default function Footer() {
                     src="/sponsors-dark.png"
                     alt="Ministry  of Post and Telecommunications"
                     fill
-                    unoptimized
                     className="object-contain hidden dark:block object-left "
                     sizes="(max-width: 768px) 100vw, 389px"
                   />
@@ -162,7 +158,6 @@ export default function Footer() {
                       src="/ISTAD-Logo.png"
                       alt="ISTAD"
                       fill
-                      unoptimized
                       className="object-contain block dark:hidden object-left"
                       sizes="193px"
                     />
@@ -170,7 +165,6 @@ export default function Footer() {
                       src="/ISTAD-Logo-dark.png"
                       alt="ISTAD"
                       fill
-                      unoptimized
                       className="object-contain hidden dark:block object-left"
                       sizes="193px"
                     />

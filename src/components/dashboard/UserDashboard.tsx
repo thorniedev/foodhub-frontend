@@ -997,7 +997,6 @@ function AvatarUpload({
             src={accessUrlData.url}
             alt={profileName}
             fill
-            unoptimized
             className="object-cover"
             sizes={size === "sm" ? "56px" : "112px"}
             onError={(e) => {

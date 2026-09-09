@@ -86,7 +86,6 @@ function DishBookmarkCard({
             src={thumbnail}
             alt={title}
             fill
-            unoptimized
             sizes="96px"
             className="object-cover transition duration-300 group-hover:scale-105"
           />
@@ -171,7 +170,6 @@ function StoreBookmarkCard({
               src={storeLogo}
               alt={storeName}
               fill
-              unoptimized
               sizes="96px"
               className="object-cover transition duration-300 group-hover:scale-105"
             />
