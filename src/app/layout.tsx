@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
-import localFont from "next/font/local";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 
@@ -14,80 +14,14 @@ import { generateWebSiteJsonLd } from "@/lib/seo";
 import { GoogleIcon } from "@/components/auth/icons";
 
 /* =========================================================
-   GOOGLE SANS
+   PRIMARY FONT (Optimized WOFF2 self-hosted via next/font)
 ========================================================= */
 
-const googleSans = localFont({
-  src: [
-    {
-      path: "./fonts/GoogleSans-Regular.ttf",
-
-      weight: "400",
-
-      style: "normal",
-    },
-
-    {
-      path: "./fonts/GoogleSans-Italic.ttf",
-
-      weight: "400",
-
-      style: "italic",
-    },
-
-    {
-      path: "./fonts/GoogleSans-Medium.ttf",
-
-      weight: "500",
-
-      style: "normal",
-    },
-
-    {
-      path: "./fonts/GoogleSans-MediumItalic.ttf",
-
-      weight: "500",
-
-      style: "italic",
-    },
-
-    {
-      path: "./fonts/GoogleSans-SemiBold.ttf",
-
-      weight: "600",
-
-      style: "normal",
-    },
-
-    {
-      path: "./fonts/GoogleSans-SemiBoldItalic.ttf",
-
-      weight: "600",
-
-      style: "italic",
-    },
-
-    {
-      path: "./fonts/GoogleSans-Bold.ttf",
-
-      weight: "700",
-
-      style: "normal",
-    },
-
-    {
-      path: "./fonts/GoogleSans-BoldItalic.ttf",
-
-      weight: "700",
-
-      style: "italic",
-    },
-  ],
-
+const fontSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-google-sans",
-
   display: "swap",
-
   fallback: ["Arial", "sans-serif"],
 });
 
@@ -267,7 +201,7 @@ export default function RootLayout({
     <html
       lang="km"
       suppressHydrationWarning
-      className={`${googleSans.variable} h-full`}
+      className={`${fontSans.variable} h-full`}
     >
       <body
         suppressHydrationWarning

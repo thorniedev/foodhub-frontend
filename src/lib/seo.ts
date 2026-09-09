@@ -787,13 +787,13 @@ export function generateWebSiteJsonLd(): object {
 
         logo: {
           "@type": "ImageObject",
-          url: `${SITE_URL}/Image/foodHub-logo.png`,
+          url: `${SITE_URL}/Image/foodHub-logo.webp`,
           width: 300,
           height: 300,
           caption: "Mhoubahar FoodHub Logo",
         },
 
-        image: `${SITE_URL}/Image/foodHub-logo.png`,
+        image: `${SITE_URL}/Image/foodHub-logo.webp`,
 
         description:
           "Mhoubahar FoodHub (ម្ហូបអាហារ) is Cambodia's personalized food discovery platform. Find Khmer food, restaurants, and meal recommendations tailored to your taste, dietary needs, religion, and location.",

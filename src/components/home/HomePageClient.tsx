@@ -1,15 +1,31 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Hero from "@/components/home/Hero";
-import FilterSomeCategory from "./features/FilterSomeCategory";
-import { Skiper30 } from "../ui/skiper-ui/skiper30";
-import ProvineImageRevealSection from "./features/province";
+import MealTimeJourneySection from "@/components/MealTimeJourneySection";
 
-const MealTimeJourneySection = dynamic(
-  () => import("@/components/MealTimeJourneySection"),
-  { loading: () => <div className="min-h-[150px]" /> },
+const Hero = dynamic(() => import("@/components/home/Hero"), {
+  ssr: false,
+  loading: () => <div className="min-h-[300px]" />,
+});
+
+const FilterSomeCategory = dynamic(
+  () => import("./features/FilterSomeCategory"),
 );
+const Skiper30 = dynamic(
+  () => import("../ui/skiper-ui/skiper30").then((mod) => mod.Skiper30),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[250px]" />,
+  },
+);
+const ProvineImageRevealSection = dynamic(
+  () => import("./features/province"),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[200px]" />,
+  },
+);
+
 const PopularSection = dynamic(() => import("@/components/home/popular"), {
   loading: () => (
     <div className="min-h-[300px] animate-pulse rounded-2xl bg-slate-50/50" />

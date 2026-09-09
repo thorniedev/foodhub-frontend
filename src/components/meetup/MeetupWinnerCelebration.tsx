@@ -167,9 +167,16 @@ export default function MeetupWinnerCelebration({
           {/* Food Picture & Name */}
           <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
+              {/*
+               * The room votes for a restaurant, so its own logo is what
+               * identifies the card -- winningCard.foodPhotoUrl is a plate
+               * of food and the backend never actually sends one, so it was
+               * always the same static fallback image regardless of which
+               * store won.
+               */}
               <Image
-                src={winningCard.foodPhotoUrl || "/Image/food01.png"}
-                alt={featuredName}
+                src={winningCard.storeLogoUrl || "/Image/food01.png"}
+                alt={restaurantName}
                 width={64}
                 height={64}
                 className="h-full w-full object-cover"

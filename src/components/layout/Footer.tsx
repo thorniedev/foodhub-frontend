@@ -44,7 +44,7 @@ export default function Footer() {
               <div className="mt-6">
                 <div className="relative h-[80px] w-[160px] max-w-full">
                   <Image
-                    src="/Image/foodHub-logo.png"
+                    src="/Image/foodHub-logo.webp"
                     alt="FoodHub logo"
                     className="object-contain block dark:hidden
                      object-left"
@@ -54,7 +54,7 @@ export default function Footer() {
                     style={{ width: "auto", height: "auto" }}
                   />
                   <Image
-                    src="/Image/foodHub-logo-dark1.png"
+                    src="/Image/foodHub-logo-dark1.webp"
                     alt="FoodHub logo"
                     className="object-contain dark:block hidden  object-left"
                     width={160}

@@ -2218,7 +2218,7 @@ export const slides: CarouselItem[] = [
   {
     id: 4,
 
-    image: "/Image/carousel/food4.jpg",
+    image: "/Image/carousel/food4.webp",
 
     alt: "Family sharing platter",
 
@@ -2250,7 +2250,7 @@ export const slides: CarouselItem[] = [
   {
     id: 6,
 
-    image: "/Image/carousel/food6.jpg",
+    image: "/Image/carousel/food6.webp",
 
     alt: "Family sharing platter",
 
@@ -2266,7 +2266,7 @@ export const slides: CarouselItem[] = [
   {
     id: 7,
 
-    image: "/Image/carousel/food7.png",
+    image: "/Image/carousel/food7.webp",
 
     alt: "Family sharing platter",
 

@@ -29,6 +29,7 @@ export default function ThemeToggle() {
       onThemeChange={(theme) => setTheme(theme)}
       variant="circle"
       duration={500}
+      aria-label="ប្តូររូបរាង (Toggle theme)"
       className="
         inline-flex size-10 items-center justify-center
         rounded-full border border-border

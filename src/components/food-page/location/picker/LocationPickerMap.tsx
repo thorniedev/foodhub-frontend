@@ -362,6 +362,7 @@ import {
 } from "react-leaflet";
 
 import { divIcon, type DivIcon, type Marker as LeafletMarker } from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 import type { Coordinates } from "@/types/location";
 

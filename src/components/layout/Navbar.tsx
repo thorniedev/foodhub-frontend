@@ -303,11 +303,12 @@ export default function Navbar() {
           >
             {/* Light logo */}
             <Image
-              src="/Image/foodHub-logo.png"
+              src="/Image/foodHub-logo.webp"
               alt="FoodHub logo"
               width={300}
               height={300}
               unoptimized
+              priority
               className="
                 block
                 h-[43px]
@@ -325,7 +326,7 @@ p-1
 
             {/* Dark logo */}
             <Image
-              src="/Image/foodHub-logo-dark1.png"
+              src="/Image/foodHub-logo-dark1.webp"
               alt="FoodHub logo"
               width={300}
               height={300}

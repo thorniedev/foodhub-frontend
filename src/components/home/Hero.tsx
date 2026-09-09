@@ -548,11 +548,11 @@ export default function Hero() {
     md:w-150
     lg:-mt-6 max-sm:px-4
   "
-                src="/Image/foodhub-image-new.png"
+                src="/Image/foodhub-image-new.webp"
                 alt="FoodHub - ស្វែងរក និងណែនាំម្ហូបអាហារ (Mhoubahar)"
                 width={950}
                 height={450}
-                priority
+                loading="lazy"
                 unoptimized
                 sizes="(max-width: 768px) 100vw, 950px"
                 onLoad={() => {
@@ -1465,6 +1465,7 @@ max-sm:hidden
                 <motion.img
                   src="/Image/arr.png"
                   alt="Arrow Navigation Indicator"
+                  loading="lazy"
                   variants={reduceMotion ? undefined : arrowLoop(0)}
                   className="h-full w-full object-contain"
                 />
@@ -1632,6 +1633,7 @@ max-sm:hidden
                 <motion.img
                   src="/Image/arr.png"
                   alt="Feature Navigation Arrow"
+                  loading="lazy"
                   variants={reduceMotion ? undefined : arrowLoop(0.35)}
                   className="h-full w-full object-contain"
                 />
