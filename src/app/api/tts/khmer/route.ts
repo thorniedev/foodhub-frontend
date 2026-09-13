@@ -174,6 +174,8 @@ export async function POST(request: NextRequest) {
             model: config.kiri.model,
             input: text,
             voice: kiriVoice,
+            response_format: "mp3",
+            speed: 1,
           }),
           cache: "no-store",
         });

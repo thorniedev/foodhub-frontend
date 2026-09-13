@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -197,10 +197,12 @@ function ApiImage({ src, alt, className }: ApiImageProps) {
   const normalizedSrc = useMemo(() => toFrontendApiAssetUrl(src), [src]);
 
   const [currentSrc, setCurrentSrc] = useState(normalizedSrc);
+  const [prevNormalizedSrc, setPrevNormalizedSrc] = useState(normalizedSrc);
 
-  useEffect(() => {
+  if (normalizedSrc !== prevNormalizedSrc) {
+    setPrevNormalizedSrc(normalizedSrc);
     setCurrentSrc(normalizedSrc);
-  }, [normalizedSrc]);
+  }
 
   return (
     <Image
@@ -656,13 +658,8 @@ function RecommendationScoreList({
 export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
   const router = useRouter();
 
-  const {
-    bookmarks,
-    addBookmark,
-    removeBookmark,
-    findBookmark,
-    activeProfileUuid,
-  } = useBookmarks();
+  const { addBookmark, removeBookmark, findBookmark, activeProfileUuid } =
+    useBookmarks();
   const { track } = useTrackInteraction();
   const { coordinates: userCoordinates } = useUserLocation();
 
@@ -678,13 +675,21 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     refetch,
   } = useGetMenuItemByUuidQuery(uuid);
 
-  useEffect(() => {
-    const serverBookmark = findBookmark({
-      menuItemUuid: uuid,
-      foodUuid: foodDetail?.food?.uuid,
-    });
-    setIsBookmarked(Boolean(serverBookmark));
-  }, [uuid, foodDetail?.food?.uuid, findBookmark, bookmarks]);
+  // isBookmarked stays its own state (not derived inline) so the bookmark
+  // button below can flip it optimistically before the mutation settles;
+  // it's re-synced from the server value during render instead of in an
+  // effect, per
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes,
+  // whenever that server value actually changes.
+  const serverIsBookmarked = Boolean(
+    findBookmark({ menuItemUuid: uuid, foodUuid: foodDetail?.food?.uuid }),
+  );
+  const [prevServerIsBookmarked, setPrevServerIsBookmarked] =
+    useState(serverIsBookmarked);
+  if (serverIsBookmarked !== prevServerIsBookmarked) {
+    setPrevServerIsBookmarked(serverIsBookmarked);
+    setIsBookmarked(serverIsBookmarked);
+  }
 
   const { data: allMenuItems = [] } = useGetMenuItemsQuery();
 
@@ -777,9 +782,11 @@ export default function FoodDetailPage({ uuid }: FoodDetailPageProps) {
     return uniqueImages.length > 0 ? uniqueImages : [DEFAULT_FOOD_IMAGE];
   }, [food]);
 
-  useEffect(() => {
+  const [prevUuid, setPrevUuid] = useState(uuid);
+  if (uuid !== prevUuid) {
+    setPrevUuid(uuid);
     setActiveImage(0);
-  }, [uuid]);
+  }
 
   if ((isLoading || isFetching) && !food) {
     return <LoadingPage />;

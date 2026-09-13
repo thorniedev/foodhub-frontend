@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { IconCloudDemoWithImageLogo } from "../ui/icon-cloud-demo-3";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 export default function TechnologiesSection() {
   return (
     <div>

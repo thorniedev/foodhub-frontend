@@ -1066,8 +1066,16 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
   };
 
   const handleRadiusChange = (defaultSearchRadiusKm: number) => {
-    setForm((previous) => ({ ...previous, defaultSearchRadiusKm }));
+    // Rounded to the nearest 100m: the range input's 0.1 step arithmetic
+    // produces binary floats like 0.30000000000000004, which would both
+    // mismatch the preset buttons' active-state check below and send an
+    // ugly value to the backend's BigDecimal(precision=6, scale=2) column.
+    const rounded = Math.round(defaultSearchRadiusKm * 10) / 10;
+    setForm((previous) => ({ ...previous, defaultSearchRadiusKm: rounded }));
   };
+
+  const formatRadiusLabel = (radiusKm: number): string =>
+    radiusKm < 1 ? `${Math.round(radiusKm * 1000)} m` : `${radiusKm.toFixed(1)} km`;
 
   const toggleTaste = (key: string) => {
     setForm((previous) => ({
@@ -2172,22 +2180,22 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                   </span>
                 </div>
                 <span className="rounded-full bg-blue-50 dark:bg-blue-950/50 px-3 py-1 text-xs sm:text-sm font-black text-blue-700 dark:text-blue-300">
-                  {form.defaultSearchRadiusKm.toFixed(1)} km
+                  {formatRadiusLabel(form.defaultSearchRadiusKm)}
                 </span>
               </div>
 
               <input
                 type="range"
-                min={1}
+                min={0.2}
                 max={20}
-                step={0.5}
+                step={0.1}
                 value={form.defaultSearchRadiusKm}
                 onChange={(e) => handleRadiusChange(parseFloat(e.target.value))}
                 className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 dark:accent-blue-400"
               />
 
               <div className="mt-3.5 flex flex-wrap gap-2">
-                {[1, 3, 5, 10, 15, 20].map((radius) => (
+                {[0.2, 0.3, 0.4, 0.5, 1, 3, 5, 10, 15, 20].map((radius) => (
                   <button
                     key={radius}
                     type="button"
@@ -2198,7 +2206,7 @@ export default function ProfileEditForm({ uuid }: ProfileEditFormProps) {
                         : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-blue-600"
                     }`}
                   >
-                    {radius} km
+                    {formatRadiusLabel(radius)}
                   </button>
                 ))}
               </div>

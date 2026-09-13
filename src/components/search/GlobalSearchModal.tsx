@@ -57,15 +57,23 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     }
   }, [debouncedQuery, triggerPublicSearch, executeDiscoverySearch]);
 
+  // Reset search state as soon as the modal closes
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+
+    if (!isOpen) {
+      setQuery("");
+      setDebouncedQuery("");
+    }
+  }
+
   // Focus input when opened
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
-    } else {
-      setQuery("");
-      setDebouncedQuery("");
     }
   }, [isOpen]);
 

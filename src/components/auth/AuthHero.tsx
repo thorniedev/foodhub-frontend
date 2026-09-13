@@ -42,7 +42,7 @@ export default function AuthHero() {
         </div>
         <div className="kc-salad-dish kc-dish-middle">
           <Image
-            src="/auth/hanninphotography.jpg"
+            src="/auth/hanninphotography.webp"
             alt="Healthy Green Salad"
             width={210}
             height={210}

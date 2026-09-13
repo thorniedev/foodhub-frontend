@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
   useCallback,
-  startTransition,
+  useTransition,
 } from "react";
 
 import FluidTabs from "../../../components/animata/tabs/fluid-tabs";
@@ -106,7 +106,40 @@ export default function Navbar() {
     checkActiveRoute(pathname, link.href),
   );
 
-  const activeIndex = foundActiveIndex >= 0 ? foundActiveIndex : 0;
+  const routeActiveIndex = foundActiveIndex >= 0 ? foundActiveIndex : 0;
+
+  /*
+   * The selected tab used to be derived from `pathname` alone. Because
+   * router.push runs inside startTransition, React keeps the previous page
+   * (and therefore the previous pathname) on screen until the new route is
+   * ready -- so on a heavy route like /menu the indicator sat on the old tab
+   * for seconds and the click read as "nothing happened". Tracking the
+   * clicked tab optimistically moves the indicator on the very next paint,
+   * then hands control back to the route once it lands.
+   */
+  const [, startNavigation] = useTransition();
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
+
+  const activeIndex = pendingIndex ?? routeActiveIndex;
+
+  /*
+   * Hand control back to the route the moment the pathname actually moves --
+   * including when it lands somewhere other than the tab that was clicked
+   * (a redirect, or a back/forward press mid-flight), so the optimistic value
+   * can't outlive the navigation it was predicting.
+   *
+   * Note this deliberately keys off the resolved route rather than the
+   * transition's pending flag: router.push settles well before the new
+   * pathname is committed, so resetting on "transition finished" would snap
+   * the indicator back to the old tab immediately.
+   */
+  const [prevRouteActiveIndex, setPrevRouteActiveIndex] =
+    useState(routeActiveIndex);
+
+  if (routeActiveIndex !== prevRouteActiveIndex) {
+    setPrevRouteActiveIndex(routeActiveIndex);
+    setPendingIndex(null);
+  }
 
   /* =======================================================
      DESKTOP TAB CHANGE - OPTIMIZED FOR SPEED
@@ -122,18 +155,22 @@ export default function Navbar() {
 
       // ✅ Skip if already on this page (prevents unnecessary navigation)
       if (checkActiveRoute(pathname, selectedLink.href)) {
+        setPendingIndex(null);
         return;
       }
 
+      // Move the indicator now; the route below decides when it's real.
+      setPendingIndex(index);
+
       // ✅ Use startTransition for non-blocking navigation
       // This makes the tab click feel instant
-      startTransition(() => {
+      startNavigation(() => {
         router.push(selectedLink.href, {
           scroll: true,
         });
       });
     },
-    [pathname, router],
+    [pathname, router, startNavigation],
   );
 
   /* =======================================================
@@ -141,9 +178,21 @@ export default function Navbar() {
   ======================================================= */
 
   useEffect(() => {
-    NAV_LINKS.forEach((link) => {
-      router.prefetch(link.href);
-    });
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(() => {
+          NAV_LINKS.forEach((link) => {
+            router.prefetch(link.href);
+          });
+        });
+      } else {
+        NAV_LINKS.forEach((link) => {
+          router.prefetch(link.href);
+        });
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
   }, [router]);
 
   /* =======================================================
@@ -425,7 +474,11 @@ p-1
                 <DashboardUserProfile />
               </>
             ) : (
-              <Link
+              // /api/auth/login is a Route Handler, not a page -- Link's
+              // client-side RSC navigation fails against it and falls back
+              // to a full navigation anyway, just slower.
+              // eslint-disable-next-line @next/next/no-html-link-for-pages
+              <a
                 href="/api/auth/login"
                 className="
                   inline-flex
@@ -444,7 +497,7 @@ p-1
               >
                 <LogIn className="h-4 w-4" />
                 ចូលគណនី
-              </Link>
+              </a>
             )}
           </div>
 
@@ -514,8 +567,9 @@ p-1
                 <DashboardUserProfile />
               </div>
             ) : (
-              /* Login */
-              <Link
+              /* Login. Route Handler, not a page -- see comment above. */
+              // eslint-disable-next-line @next/next/no-html-link-for-pages
+              <a
                 href="/api/auth/login"
                 aria-label="ចូលគណនី"
                 className="
@@ -534,7 +588,7 @@ p-1
                 "
               >
                 <LogIn className="h-5 w-5" />
-              </Link>
+              </a>
             )}
           </div>
         </div>

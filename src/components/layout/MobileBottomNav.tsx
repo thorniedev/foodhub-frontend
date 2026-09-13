@@ -67,15 +67,14 @@ function MobileNavItem({
           transition-all
           duration-300
 
-          ${
-            active
-              ? `
+          ${active
+            ? `
                 scale-100
                 bg-primary-800/10
                 opacity-100
                 dark:bg-primary-500/15
               `
-              : `
+            : `
                 scale-90
                 opacity-0
               `
@@ -96,13 +95,12 @@ function MobileNavItem({
 
           dark:bg-primary-400
 
-          ${
-            active
-              ? `
+          ${active
+            ? `
                 w-5
                 opacity-100
               `
-              : `
+            : `
                 w-0
                 opacity-0
               `
@@ -119,10 +117,9 @@ function MobileNavItem({
           transition-all
           duration-300
 
-          ${
-            active
-              ? "scale-110 text-primary-800 dark:text-primary-400"
-              : "text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"
+          ${active
+            ? "scale-110 text-primary-800 dark:text-primary-400"
+            : "text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"
           }
         `}
         strokeWidth={active ? 2.5 : 2}
@@ -137,10 +134,9 @@ function MobileNavItem({
           transition-all
           duration-300
 
-          ${
-            active
-              ? "text-primary-800 dark:text-primary-400"
-              : "text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"
+          ${active
+            ? "text-primary-800 dark:text-primary-400"
+            : "text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"
           }
         `}
       >
@@ -219,14 +215,13 @@ export default function MobileBottomNav() {
 
         md:hidden
 
-        ${
-          showScrollNavigation
-            ? `
+        ${showScrollNavigation
+          ? `
               translate-y-0
               scale-100
               opacity-100
             `
-            : `
+          : `
               pointer-events-none
               translate-y-[110px]
               scale-[0.96]

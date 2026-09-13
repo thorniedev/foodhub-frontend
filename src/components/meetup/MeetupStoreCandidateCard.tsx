@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import {
   Check,
@@ -12,6 +13,7 @@ import {
   Vote,
 } from "lucide-react";
 
+import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import type { MeetupStoreCandidate } from "@/lib/meetup/meetup-candidates";
 
 interface MeetupStoreCandidateCardProps {
@@ -50,6 +52,10 @@ export default function MeetupStoreCandidateCard({
   const visibleItems = candidate.items.slice(0, VISIBLE_ITEM_COUNT);
   const hiddenItemCount = candidate.items.length - visibleItems.length;
 
+  const resolvedPhotoUrl = toFrontendApiAssetUrl(candidate.photoUrl, "");
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(resolvedPhotoUrl) && !imageFailed;
+
   return (
     <article
       className={`group flex flex-col overflow-hidden rounded-3xl border bg-white transition-all dark:bg-slate-900 ${
@@ -59,13 +65,14 @@ export default function MeetupStoreCandidateCard({
       }`}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
-        {candidate.photoUrl ? (
+        {showImage ? (
           <Image
-            src={candidate.photoUrl}
+            src={resolvedPhotoUrl}
             alt={candidate.storeName}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-slate-300 dark:text-slate-600">

@@ -11,9 +11,9 @@ import {
   ChefHat,
   Loader2,
   LogOut,
+  MapPin,
   RefreshCw,
   ShieldAlert,
-  Store,
   Trophy,
   Utensils,
 } from "lucide-react";
@@ -983,7 +983,19 @@ export default function MeetupLiveRoom({
    * group's combined allergy and diet rules blocked everything, or the dishes
    * that survived carry no canonical food and so cannot be voted on.
    */
+  /*
+   * Nothing to search around yet: no member shared a location, and the host
+   * pinned neither a meeting point nor a target area. This is a distinct
+   * situation from "we searched and found nothing", and the two need
+   * different wording because they need different actions from the user.
+   */
+  const isAwaitingMemberLocations = !midpointCoords && !recommendationSession;
+
   const emptySlateReason = useMemo(() => {
+    if (isAwaitingMemberLocations) {
+      return "មិនទាន់មានសមាជិកណាចែករំលែកទីតាំងទេ។ សូមចែករំលែកទីតាំងរបស់អ្នក ឬឱ្យម្ចាស់បន្ទប់កំណត់ចំណុចជួបជុំជាមុនសិន។";
+    }
+
     if (shareToken) {
       /* The shared slate returns items only, so the cause stays general. */
       return "គ្មានហាងណាឆ្លងកាត់ច្បាប់អាឡែស៊ី និងរបបអាហាររបស់សមាជិកទាំងអស់ក្នុងបន្ទប់នេះទេ។ សូមពិនិត្យប្រវត្តិរូបសមាជិក ឬបន្ថែមហាងក្នុងបញ្ជី។";
@@ -1005,7 +1017,7 @@ export default function MeetupLiveRoom({
     }
 
     return "ហាងដែលឆ្លងកាត់សុវត្ថិភាព មិនមានព័ត៌មានគោលដើម្បីបោះឆ្នោតបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។";
-  }, [recommendationSession, shareToken]);
+  }, [recommendationSession, shareToken, isAwaitingMemberLocations]);
 
   const getVoteCount = useCallback(
     (candidate: MeetupStoreCandidate) =>
@@ -1258,19 +1270,19 @@ export default function MeetupLiveRoom({
     <main className="min-h-screen bg-slate-50 px-4 pb-20 pt-20 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-5">
         {/*
-         * Only the creator's own route (/meetup/[uuid]) has a place to go
-         * back to -- a guest opened this room from a share link outside the
-         * app (Telegram, a chat), so there is nothing in FoodHub "before" it.
+         * Always offer a way out of the room, including on the share-link
+         * route. A guest may well have opened this from outside the app, so
+         * router.back() is not safe here -- it would leave FoodHub entirely.
+         * The destination is chosen from who is actually viewing: a signed-in
+         * user goes to their own meetup list, a guest lands on the home page.
          */}
-        {meetupUuidProp && !shareTokenProp && (
-          <Link
-            href="/meetup"
-            className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-primary-700 dark:text-slate-400 dark:hover:text-primary-400"
-          >
-            <ArrowLeft className="h-4 w-4 shrink-0" />
-            ការណាត់ជួបរបស់ខ្ញុំ
-          </Link>
-        )}
+        <Link
+          href={backendUser ? "/meetup" : "/"}
+          className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-primary-700 dark:text-slate-400 dark:hover:text-primary-400"
+        >
+          <ArrowLeft className="h-4 w-4 shrink-0" />
+          {backendUser ? "ការណាត់ជួបរបស់ខ្ញុំ" : "ទំព័រដើម"}
+        </Link>
 
         <MeetupRoomHeader
           group={group}
@@ -1361,17 +1373,31 @@ export default function MeetupLiveRoom({
               </button>
             </div>
 
-            {isLoadingStores ? (
+            {/*
+              * Gated on the voting slate, never on recommendedStores.
+              *
+              * recommendedStores is midpoint-derived map data and is empty
+              * whenever no member has shared a location yet. The slate comes
+              * from the recommendation session, which is independent of that.
+              * Gating here on recommendedStores therefore hid a perfectly
+              * good set of votable stores behind a "no stores in this radius"
+              * message that had not actually been searched -- the blank card.
+              */}
+            {isSlateLoading ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <CandidateSkeleton />
                 <CandidateSkeleton />
                 <CandidateSkeleton />
               </div>
-            ) : recommendedStores.length === 0 ? (
+            ) : storeSlate.length === 0 ? (
               <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
-                <Store className="h-9 w-9 text-slate-300 dark:text-slate-600" />
+                {isAwaitingMemberLocations ? (
+                  <MapPin className="h-9 w-9 text-slate-300 dark:text-slate-600" />
+                ) : (
+                  <ChefHat className="h-9 w-9 text-slate-300 dark:text-slate-600" />
+                )}
                 <p className="max-w-md text-sm leading-6 text-slate-500">
-                  មិនទាន់រកឃើញហាងអាហារក្នុងកាំស្វែងរកនេះទេ។ សូមពង្រីករង្វង់ស្វែងរក ឬបន្ថែមទីតាំងសមាជិក។
+                  {emptySlateReason}
                 </p>
                 <button
                   type="button"
@@ -1381,13 +1407,6 @@ export default function MeetupLiveRoom({
                   <RefreshCw className="h-4 w-4 shrink-0" />
                   ស្វែងរកម្តងទៀត
                 </button>
-              </div>
-            ) : storeSlate.length === 0 ? (
-              <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
-                <ChefHat className="h-9 w-9 text-slate-300 dark:text-slate-600" />
-                <p className="max-w-md text-sm leading-6 text-slate-500">
-                  {emptySlateReason}
-                </p>
                 {/*
                   * The session reports how far the funnel got. Showing it turns
                   * a dead end into something the host can act on.

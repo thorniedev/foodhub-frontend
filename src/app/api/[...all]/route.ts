@@ -306,6 +306,12 @@ async function forwardRequest(
     requestHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
+  const isStaticAsset =
+    backendPath.startsWith("media/") ||
+    backendPath.includes("/images/") ||
+    backendPath.startsWith("banners") ||
+    request.nextUrl.pathname.includes("/images/");
+
   const isAiOrHeavyRoute =
     backendPath.startsWith("recommendations") ||
     backendPath.startsWith("discovery") ||
@@ -313,7 +319,14 @@ async function forwardRequest(
     backendPath.includes("/detail") ||
     backendPath.startsWith("catalog");
 
-  const timeoutMs = isAiOrHeavyRoute ? 90_000 : 45_000;
+  // Static assets fail fast: a slow/unreachable backend should let the
+  // frontend's onError fallback kick in quickly, not leave the user
+  // staring at a loading state for 45-90s waiting on an image.
+  const timeoutMs = isStaticAsset
+    ? 10_000
+    : isAiOrHeavyRoute
+      ? 90_000
+      : 45_000;
 
   const canHaveBody = request.method !== "GET" && request.method !== "HEAD";
   const requestBody = canHaveBody ? await request.arrayBuffer() : undefined;
@@ -322,12 +335,6 @@ async function forwardRequest(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const isStaticAsset =
-      backendPath.startsWith("media/") ||
-      backendPath.includes("/images/") ||
-      backendPath.startsWith("banners") ||
-      request.nextUrl.pathname.includes("/images/");
-
     if (!isStaticAsset) {
       console.log("[FOODHUB PROXY REQUEST]", {
         method: request.method,
@@ -364,7 +371,43 @@ async function forwardRequest(
       }
     }
 
-    let responseBody =
+    // Static assets (media/images/banners) are streamed straight through
+    // instead of buffered into memory, and skip the JSON-error-recovery
+    // logic below (none of it applies to binary asset responses).
+    if (isStaticAsset) {
+      const assetHeaders = new Headers();
+
+      const assetContentType = backendResponse.headers.get("content-type");
+      if (assetContentType) {
+        assetHeaders.set("Content-Type", assetContentType);
+      }
+
+      const assetCacheControl = backendResponse.headers.get("cache-control");
+      if (assetCacheControl) {
+        assetHeaders.set("Cache-Control", assetCacheControl);
+      } else if (backendResponse.ok) {
+        assetHeaders.set(
+          "Cache-Control",
+          "public, max-age=31536000, immutable",
+        );
+      }
+
+      const assetResponse = new NextResponse(
+        request.method === "HEAD" ? null : backendResponse.body,
+        {
+          status: backendResponse.status,
+          headers: assetHeaders,
+        },
+      );
+
+      if (refreshedTokens) {
+        setAuthCookies(assetResponse, refreshedTokens);
+      }
+
+      return assetResponse;
+    }
+
+    const responseBody =
       request.method === "HEAD" ? null : await backendResponse.arrayBuffer();
 
     const responseHeaders = new Headers();

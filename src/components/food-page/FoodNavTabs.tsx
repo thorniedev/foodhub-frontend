@@ -17,25 +17,25 @@ const TABS: {
   href: string;
   icon: React.ReactNode;
 }[] = [
-  {
-    id: "food",
-    label: "ចំណីអាហារ",
-    href: "/menu",
-    icon: <IoFastFoodOutline className="text-[20px]" />,
-  },
-  {
-    id: "location",
-    label: "ទីតាំង",
-    href: "/menu/location",
-    icon: <IoLocationOutline className="text-[20px]" />,
-  },
-  // {
-  //   id: "store",
-  //   label: "ហាងអាហារ",
-  //   href: "/menu/store",
-  //   icon: <IoStorefrontOutline className="text-[20px]" />,
-  // },
-];
+    {
+      id: "food",
+      label: "ចំណីអាហារ",
+      href: "/menu",
+      icon: <IoFastFoodOutline className="text-[20px]" />,
+    },
+    {
+      id: "location",
+      label: "ទីតាំង",
+      href: "/menu/location",
+      icon: <IoLocationOutline className="text-[20px]" />,
+    },
+    // {
+    //   id: "store",
+    //   label: "ហាងអាហារ",
+    //   href: "/menu/store",
+    //   icon: <IoStorefrontOutline className="text-[20px]" />,
+    // },
+  ];
 
 function getActiveTab(pathname: string): FoodPageTab {
   if (pathname.startsWith("/menu/location")) return "location";
@@ -46,7 +46,7 @@ function getActiveTab(pathname: string): FoodPageTab {
 export default function FoodNavTabs() {
   const pathname = usePathname();
   const activeTab = getActiveTab(pathname);
-  
+
   // For the active indicator math
   const activeIndex = Math.max(0, TABS.findIndex((t) => t.id === activeTab));
   const activeTabsCount = TABS.length;
@@ -74,11 +74,11 @@ export default function FoodNavTabs() {
           <Link
             key={tab.id}
             href={tab.href}
-            className={`relative z-10 flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2 text-[15px] font-semibold transition-colors duration-300 ${
-              isActive
+            prefetch={false}
+            className={`relative z-10 flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2 text-[15px] font-semibold transition-colors duration-300 ${isActive
                 ? "text-white"
                 : "text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-slate-200"
-            }`}
+              }`}
           >
             <span className="flex-shrink-0">{tab.icon}</span>
             <span className="mb-[1px] whitespace-nowrap">{tab.label}</span>

@@ -9,7 +9,7 @@ export const foodApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/catalog/menu-items",
         method: "GET",
-        params: { page: 0, size: 100 },
+        params: { page: 0, size: 20 }, // ✅ FIX: was 100 — recommand.tsx only shows ~8 cards
       }),
       providesTags: ["Food"],
       transformResponse: (response: unknown) => {

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogIn, X } from "lucide-react";
-import Link from "next/link";
 
 type AuthRequiredModalProps = {
   open: boolean;
@@ -73,12 +72,16 @@ export default function AuthRequiredModal({
                 >
                   មិនទាន់ពេលនេះទេ
                 </button>
-                <Link
+                {/* /api/auth/login is a Route Handler, not a page -- Link's
+                    client-side RSC navigation fails against it and falls
+                    back to a full navigation anyway, just slower. */}
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                <a
                   href="/api/auth/login"
                   className="flex-1 rounded-xl bg-primary-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-900 active:scale-95 dark:bg-primary-700 dark:hover:bg-primary-600"
                 >
                   ចូលគណនី
-                </Link>
+                </a>
               </div>
             </div>
           </motion.div>

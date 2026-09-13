@@ -81,27 +81,29 @@ export function StoreImage({ store }: { store: FoodStore }) {
   const [isResolving, setIsResolving] = useState(Boolean(store.logoMediaUuid));
   const [imageFailed, setImageFailed] = useState(false);
 
+  const [prevLogoMediaUuid, setPrevLogoMediaUuid] = useState(
+    store.logoMediaUuid,
+  );
+  if (store.logoMediaUuid !== prevLogoMediaUuid) {
+    setPrevLogoMediaUuid(store.logoMediaUuid);
+    setImageFailed(false);
+    setImageUrl(null);
+    setIsResolving(Boolean(store.logoMediaUuid));
+  }
+
   const displayName = getDisplayName(store);
 
   useEffect(() => {
-    let cancelled = false;
-    setImageFailed(false);
+    const logoMediaUuid = store.logoMediaUuid;
 
-    if (!store.logoMediaUuid) {
-      setImageUrl(null);
-      setIsResolving(false);
+    if (!logoMediaUuid) {
       return;
     }
 
-    setIsResolving(true);
+    let cancelled = false;
 
     async function loadLogo() {
-      if (!store.logoMediaUuid) {
-        setIsResolving(false);
-        return;
-      }
-
-      const resolvedUrl = await resolveStoreMediaUrl(store.logoMediaUuid);
+      const resolvedUrl = await resolveStoreMediaUrl(logoMediaUuid);
 
       if (cancelled) {
         return;

@@ -10,7 +10,7 @@ import {
   type AnimationPlaybackControls,
   type MotionValue,
   type PanInfo,
-} from "motion/react";
+} from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 

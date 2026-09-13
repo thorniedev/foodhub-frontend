@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import Carousel, { type CarouselItem, slides as defaultSlides } from "@/components/ui/Carosel";
 import type { PublicBannerResponse } from "@/types/banner";
 import { bannerApi } from "@/services/bannerApi";

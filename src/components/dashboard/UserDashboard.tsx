@@ -248,7 +248,7 @@ export default function UserDashboard() {
     refetch: refetchProfiles,
   } = useGetMemberProfilesQuery({
     page: 0,
-    size: 100,
+    size: 10, // ✅ FIX: was 100 — users have 1-5 profiles max
   });
 
   const defaultProfileSummary = useMemo(

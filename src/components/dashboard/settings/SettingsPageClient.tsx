@@ -2,6 +2,8 @@
 
 import MealReminderSettings from "@/components/dashboard/settings/MealReminderSettings";
 import PushNotificationManager from "@/components/dashboard/notifications/PushNotificationManager";
+import VoiceAlertSettings from "@/components/dashboard/settings/VoiceAlertSettings";
+import TelegramConnectBanner from "@/components/notifications/TelegramConnectBanner";
 
 export default function SettingsPageClient() {
   return (
@@ -15,8 +17,16 @@ export default function SettingsPageClient() {
         </p>
       </div>
 
+      {/* Telegram Notifications Connect Banner */}
+      <TelegramConnectBanner />
+
+      {/* Scheduled Meal Reminders */}
       <MealReminderSettings />
 
+      {/* Khmer Voice Speech Alerts */}
+      <VoiceAlertSettings />
+
+      {/* Web Push & Nearby Store Recommendations */}
       <PushNotificationManager />
     </div>
   );

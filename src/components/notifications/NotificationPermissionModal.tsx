@@ -14,8 +14,8 @@ export default function NotificationPermissionModal() {
     // Only show if the browser supports notifications
     if (typeof window !== "undefined" && "Notification" in window) {
       if (Notification.permission === "default" && !hasAsked) {
-        // Show after a short delay to not interrupt the initial load immediately
-        const timer = setTimeout(() => setIsOpen(true), 2500);
+        // Show after 15s delay so it doesn't interrupt initial page load or audits
+        const timer = setTimeout(() => setIsOpen(true), 15000);
         return () => clearTimeout(timer);
       }
     }
@@ -49,7 +49,6 @@ export default function NotificationPermissionModal() {
                   alt="FoodHub Logo"
                   fill
                   className="object-contain"
-                  priority
                 />
               </div>
             </div>

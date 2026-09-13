@@ -12,7 +12,7 @@ import { useGetMediaAccessUrlQuery } from "@/app/store/memberProfileApi";
 
 import type { MemberProfile } from "@/types/member-profile/member-profile";
 
-const RELATIONSHIP_LABELS: Record<string, string> = {
+export const RELATIONSHIP_LABELS: Record<string, string> = {
   SELF: "ខ្លួនឯង",
   PARENT: "ឪពុកម្តាយ",
   SPOUSE: "ប្តី ឬប្រពន្ធ",
@@ -40,21 +40,17 @@ export function ProfileAvatar({
     ? `/api/media/${encodeURIComponent(avatarMediaUuid)}/file`
     : "";
 
-  const [activeUrl, setActiveUrl] = useState<string | null>(null);
-  const [hasError, setHasError] = useState(false);
+  const preferredUrl = data?.url || directProxyUrl || null;
 
-  useEffect(() => {
-    if (data?.url) {
-      setActiveUrl(data.url);
-      setHasError(false);
-    } else if (directProxyUrl) {
-      setActiveUrl(directProxyUrl);
-      setHasError(false);
-    } else {
-      setActiveUrl(null);
-      setHasError(false);
-    }
-  }, [data?.url, directProxyUrl]);
+  const [activeUrl, setActiveUrl] = useState(preferredUrl);
+  const [hasError, setHasError] = useState(false);
+  const [prevPreferredUrl, setPrevPreferredUrl] = useState(preferredUrl);
+
+  if (preferredUrl !== prevPreferredUrl) {
+    setPrevPreferredUrl(preferredUrl);
+    setActiveUrl(preferredUrl);
+    setHasError(false);
+  }
 
   const firstLetter = name.trim().charAt(0).toUpperCase() || "?";
 

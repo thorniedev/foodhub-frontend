@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { useState, useMemo, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Bookmark,
   Utensils,
@@ -14,8 +15,16 @@ import {
   Calendar,
   Layers,
   ArrowLeft,
+  ChevronDown,
+  Check,
+  Users,
 } from "lucide-react";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import { useActiveProfile } from "@/hooks/useActiveProfile";
+import {
+  ProfileAvatar,
+  RELATIONSHIP_LABELS,
+} from "@/components/profile/ProfileMultiSelect";
 import {
   useGetMenuItemsQuery,
   useGetMenuItemByUuidQuery,
@@ -233,7 +242,48 @@ function StoreBookmarkCard({
 }
 
 function FavoritesContent() {
-  const { bookmarks, loading, activeProfile, removeBookmark } = useBookmarks();
+  const { profiles, activeProfile, selectAll } = useActiveProfile();
+  const [selectedProfileUuid, setSelectedProfileUuid] = useState<string | null>(
+    null,
+  );
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isProfileMenuOpen]);
+
+  const currentProfile = useMemo(() => {
+    if (selectedProfileUuid) {
+      const found = profiles.find((p) => p.uuid === selectedProfileUuid);
+      if (found) return found;
+    }
+    return activeProfile || profiles[0] || null;
+  }, [selectedProfileUuid, profiles, activeProfile]);
+
+  const currentProfileUuid = currentProfile?.uuid;
+
+  const { bookmarks, loading, removeBookmark } = useBookmarks(
+    0,
+    50,
+    currentProfileUuid,
+  );
+
+  const handleSwitchProfile = (uuid: string) => {
+    setSelectedProfileUuid(uuid);
+    selectAll([uuid]);
+    setIsProfileMenuOpen(false);
+  };
 
   const [filterTab, setFilterTab] = useState<"all" | "dishes" | "stores">(
     "all",
@@ -290,15 +340,159 @@ function FavoritesContent() {
           </div>
         </div>
 
-        {activeProfile && (
-          <div className="inline-flex items-center gap-2 self-start rounded-2xl border border-emerald-200/70 bg-emerald-50/80 px-3.5 py-2 text-sm font-semibold text-emerald-800 dark:border-emerald-800/40 dark:bg-emerald-950/60 dark:text-emerald-300 sm:self-auto sm:px-4 sm:py-2.5 sm:text-base">
-            <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>
-              ប្រវត្តិរូប៖ <strong>{activeProfile.profileName}</strong>
-            </span>
+        {/* Profile Switcher Dropdown */}
+        {currentProfile && (
+          <div ref={profileMenuRef} className="relative self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+              aria-haspopup="listbox"
+              aria-expanded={isProfileMenuOpen}
+              className="group inline-flex items-center gap-2 rounded-2xl border border-emerald-300/80 bg-emerald-50/50 px-3.5 py-2 text-sm font-semibold text-emerald-950 shadow-xs transition-all hover:border-emerald-400 hover:bg-emerald-100/60 active:scale-[0.98] dark:border-emerald-800/80 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-950/50 cursor-pointer"
+              title="ចុចដើម្បីប្តូរប្រវត្តិរូប"
+            >
+              <ProfileAvatar
+                name={currentProfile.profileName}
+                avatarMediaUuid={currentProfile.avatarMediaUuid}
+                size={26}
+              />
+              <span className="flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">
+                  ប្រវត្តិរូប៖
+                </span>
+                <strong className="font-bold text-slate-900 dark:text-white">
+                  {currentProfile.profileName}
+                </strong>
+              </span>
+              <span className="ml-1 inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white shadow-2xs transition group-hover:bg-emerald-700">
+                ប្តូរប្រវត្តិរូប
+                <ChevronDown
+                  className={`h-3.5 w-3.5 text-white transition-transform duration-200 ${
+                    isProfileMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </span>
+            </button>
+
+            {/* Dropdown Popover */}
+            <AnimatePresence>
+              {isProfileMenuOpen && profiles.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full z-40 mt-2 w-72 origin-top-right overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      ប្តូរប្រវត្តិរូប (Switch Profile)
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      មើលមុខម្ហូបចំណូលចិត្តតាមគណនីគ្រួសារ
+                    </p>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto py-1 space-y-0.5">
+                    {profiles.map((profile) => {
+                      const isSelected = profile.uuid === currentProfileUuid;
+                      const relationshipLabel =
+                        RELATIONSHIP_LABELS[profile.relationship] ??
+                        profile.relationship;
+
+                      return (
+                        <button
+                          key={profile.uuid}
+                          type="button"
+                          onClick={() => handleSwitchProfile(profile.uuid)}
+                          className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all ${
+                            isSelected
+                              ? "bg-emerald-50 font-bold text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200"
+                              : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <ProfileAvatar
+                              name={profile.profileName}
+                              avatarMediaUuid={profile.avatarMediaUuid}
+                              size={32}
+                            />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                                {profile.profileName}
+                              </p>
+                              <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                                <span>{relationshipLabel}</span>
+                                {profile.isDefault && (
+                                  <span className="rounded-full bg-slate-100 px-1.5 py-0.2 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                    មេគ្រួសារ
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          {isSelected && (
+                            <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="border-t border-slate-100 p-1.5 dark:border-slate-800">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                      className="flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                    >
+                      <Users className="h-3.5 w-3.5" />
+                      <span>គ្រប់គ្រងគណនីគ្រួសារ</span>
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>
+
+      {/* Quick Profile Chips (When more than 1 profile) */}
+      {profiles.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
+          <span className="flex shrink-0 items-center gap-1.5 pl-1 text-xs font-bold text-slate-400 dark:text-slate-500">
+            <Users className="h-3.5 w-3.5" />
+            <span>ប្រវត្តិរូប៖</span>
+          </span>
+          <div className="flex items-center gap-1.5">
+            {profiles.map((p) => {
+              const isSelected = p.uuid === currentProfileUuid;
+              return (
+                <button
+                  key={p.uuid}
+                  type="button"
+                  onClick={() => handleSwitchProfile(p.uuid)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all active:scale-[0.98] ${
+                    isSelected
+                      ? "bg-emerald-600 text-white shadow-xs shadow-emerald-600/25 ring-2 ring-emerald-600/30"
+                      : "border border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <ProfileAvatar
+                    name={p.profileName}
+                    avatarMediaUuid={p.avatarMediaUuid}
+                    size={20}
+                  />
+                  <span>{p.profileName}</span>
+                  {p.isDefault && !isSelected && (
+                    <span className="text-[10px] opacity-70">(មេ)</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs (Mobile Responsive with no line-breaking) */}
       <div className="flex border-b border-slate-200 dark:border-slate-800">
@@ -365,7 +559,9 @@ function FavoritesContent() {
             <Bookmark className="h-8 w-8 sm:h-10 sm:w-10" />
           </div>
           <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white sm:mt-5 sm:text-2xl">
-            {filterTab === "all"
+            {currentProfile
+              ? `មិនទាន់មានចំណូលចិត្តសម្រាប់ ${currentProfile.profileName}`
+              : filterTab === "all"
               ? "មិនទាន់មានចំណូលចិត្ត"
               : filterTab === "dishes"
                 ? "មិនទាន់មានមុខម្ហូបចំណូលចិត្ត"

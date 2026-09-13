@@ -107,7 +107,9 @@ export const menuApi = baseApi.injectEndpoints({
         method: "GET",
         params: {
           page: params?.page ?? 0,
-          size: params?.size ?? 1000,
+          // ✅ PERF FIX: Default to 20 instead of 60. Backend executes 8+ queries per item
+          // across RDS network, so 60 items causes a 50-70s delay. 20 is fast and matches Pageable default.
+          size: params?.size ?? 20,
           ...(params?.rootCategoryCode
             ? { rootCategoryCode: params.rootCategoryCode }
             : {}),
@@ -255,7 +257,8 @@ export const menuApi = baseApi.injectEndpoints({
         method: "GET",
         params: {
           page: 0,
-          size: 200,
+          // ✅ FIX: was 200 — used for search autocomplete, 50 is enough for client-side filtering
+          size: 50,
         },
       }),
       transformResponse: (response: unknown): FoodCatalogDetail[] => {

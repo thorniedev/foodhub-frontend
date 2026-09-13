@@ -428,7 +428,8 @@ export const locationApi = baseApi.injectEndpoints({
         method: "GET",
         params: {
           page: 0,
-          size: 100,
+          // ✅ FIX: was 100 — map/list only shows ~10-20 stores at a time
+          size: 20,
         },
       }),
       transformResponse: (response: unknown): FoodStore[] =>
@@ -444,7 +445,7 @@ export const locationApi = baseApi.injectEndpoints({
       FoodStore[],
       { latitude: number; longitude: number; page?: number; size?: number }
     >({
-      query: ({ latitude, longitude, page = 0, size = 100 }) => ({
+      query: ({ latitude, longitude, page = 0, size = 20 }) => ({  // ✅ FIX: was 100
         url: "/stores/nearby",
         method: "GET",
         params: {

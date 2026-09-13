@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
 
-import { useGetUnreadCountQuery } from "@/app/store/notificationApi";
+import {
+  UNREAD_COUNT_POLL_INTERVAL_MS,
+  useGetUnreadCountQuery,
+} from "@/app/store/notificationApi";
 import { cn } from "@/lib/utils";
 
 interface NotificationBellLinkProps {
@@ -16,7 +19,7 @@ export default function NotificationBellLink({
   className,
 }: NotificationBellLinkProps) {
   const { data: unreadCount = 0 } = useGetUnreadCountQuery(undefined, {
-    pollingInterval: 300_000, // ✅ PERFORMANCE FIX: Reduced from 60s to 5min
+    pollingInterval: UNREAD_COUNT_POLL_INTERVAL_MS,
     skipPollingIfUnfocused: true,
   });
 

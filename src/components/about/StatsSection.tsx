@@ -8,7 +8,7 @@ import {
   useInView,
   useReducedMotion,
   type Variants,
-} from "motion/react";
+} from "framer-motion";
 import { EASE_SOFT, VIEWPORT, group, rise, riseScale } from "@/lib/reveal";
 
 interface StatItem {

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { EASE_SOFT, VIEWPORT, group, riseReveal } from "@/lib/reveal";
 import { useGetPopularBannersQuery } from "@/app/store/bannerApi";
 import { normalizeArrayPayload } from "@/app/store/utils/normalize";
@@ -27,7 +27,7 @@ interface PopularCard {
 
 const DEFAULT_CARDS = [
   {
-    src: "/Image/food-picture/card 4.jpg",
+    src: "/Image/food-picture/card 4.webp",
     rotate: -10,
     fit: "object-cover",
     layout: "z-7 sm:mt-6 max-sm:mt-3",
@@ -35,7 +35,7 @@ const DEFAULT_CARDS = [
     href: "/menu",
   },
   {
-    src: "/Image/food-picture/drink 1.jpg",
+    src: "/Image/food-picture/drink 1.webp",
     rotate: -3,
     fit: "object-cover",
     layout: "z-6 sm:-mt-6 max-sm:-mt-3 -ml-10",
@@ -43,7 +43,7 @@ const DEFAULT_CARDS = [
     href: "/menu",
   },
   {
-    src: "/Image/food-picture/card 2.jpg",
+    src: "/Image/food-picture/card 2.webp",
     rotate: -1,
     fit: "object-fill",
     layout: "z-5 -ml-10",
@@ -51,7 +51,7 @@ const DEFAULT_CARDS = [
     href: "/menu",
   },
   {
-    src: "/Image/food-picture/card 3.jpg",
+    src: "/Image/food-picture/card 3.webp",
     rotate: 2,
     fit: "object-cover",
     layout: "z-4 sm:-mt-6 max-sm:-mt-3 -ml-10",
@@ -59,7 +59,7 @@ const DEFAULT_CARDS = [
     href: "/menu",
   },
   {
-    src: "/Image/food-picture/drink 2.jpg",
+    src: "/Image/food-picture/drink 2.webp",
     rotate: 5,
     fit: "object-cover",
     layout: "z-2 sm:mt-4 max-sm:mt-2 -ml-10",
@@ -67,7 +67,7 @@ const DEFAULT_CARDS = [
     href: "/menu",
   },
   {
-    src: "/Image/food-picture/card 6.jpg",
+    src: "/Image/food-picture/card 6.webp",
     rotate: 10,
     fit: "object-cover",
     layout: "z-1 -ml-10",
@@ -120,10 +120,12 @@ interface PopularCardItemProps {
 function PopularCardItem({ card, from, reduceMotion }: PopularCardItemProps) {
   const [imgSrc, setImgSrc] = useState(card.src);
   const [isHovered, setIsHovered] = useState(false);
+  const [prevCardSrc, setPrevCardSrc] = useState(card.src);
 
-  useEffect(() => {
+  if (card.src !== prevCardSrc) {
+    setPrevCardSrc(card.src);
     setImgSrc(card.src);
-  }, [card.src]);
+  }
 
   return (
     <motion.div

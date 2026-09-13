@@ -125,7 +125,8 @@ export const baseApi = createApi({
     "MealReminderSetting",
     "PushSubscription",
     "ProximityNotification",
-    "Banner"
+    "Banner",
+    "TelegramLink",
   ],
 
   endpoints: () => ({}),

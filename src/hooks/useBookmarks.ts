@@ -12,8 +12,22 @@ import type {
   CreateBookmarkRequest,
 } from "@/types/interaction";
 
-export function useBookmarks(page = 0, size = 50) {
-  const { activeProfileUuid, activeProfile } = useActiveProfile();
+export function useBookmarks(page = 0, size = 50, overrideProfileUuid?: string) {
+  const {
+    activeProfileUuid: defaultProfileUuid,
+    activeProfile: defaultProfile,
+    profiles,
+  } = useActiveProfile();
+
+  const activeProfileUuid = overrideProfileUuid || defaultProfileUuid;
+  const activeProfile = useMemo(() => {
+    if (overrideProfileUuid) {
+      return (
+        profiles.find((p) => p.uuid === overrideProfileUuid) ?? defaultProfile
+      );
+    }
+    return defaultProfile;
+  }, [overrideProfileUuid, profiles, defaultProfile]);
 
   const {
     data: pageData,
@@ -109,6 +123,7 @@ export function useBookmarks(page = 0, size = 50) {
     totalElements,
     activeProfile,
     activeProfileUuid,
+    profiles,
     loading: isLoading || isFetching || isCreating || isDeleting,
     refetch,
     isBookmarked,

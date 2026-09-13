@@ -9,6 +9,7 @@ import {
   useGetNotificationTypesQuery,
   useUpdateNotificationPreferenceMutation,
 } from "@/app/store/notificationApi";
+import TelegramConnectBanner from "@/components/notifications/TelegramConnectBanner";
 
 const IN_APP_CHANNEL = "IN_APP";
 
@@ -161,7 +162,10 @@ export default function NotificationAlertSettings() {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <div className="space-y-6">
+      <TelegramConnectBanner />
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-[#136C34] dark:bg-emerald-950/40">
           <Bell className="h-5 w-5" />
@@ -245,6 +249,7 @@ export default function NotificationAlertSettings() {
           )}
         </div>
       )}
+    </div>
     </div>
   );
 }

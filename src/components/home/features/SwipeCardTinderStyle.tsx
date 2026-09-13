@@ -231,17 +231,6 @@ export function SwipeFoodCard({ food }: SwipeFoodCardProps) {
   const { addBookmark, removeBookmark, findBookmark, activeProfileUuid } =
     useBookmarks();
   const { track } = useTrackInteraction();
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  const effectiveThumbnail =
-    food.thumbnail ||
-    (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
-    (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
-
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>(
-    toFrontendApiAssetUrl(effectiveThumbnail),
-  );
-
   // The server is the only source of truth for "is this saved" — see
   // useBookmarks.ts for why the parallel localStorage id list this used to
   // also check from was removed (it never got cleared by anything except
@@ -249,23 +238,37 @@ export function SwipeFoodCard({ food }: SwipeFoodCardProps) {
   // saved here indefinitely). Every consumer of useBookmarks shares one
   // RTK Query cache entry, so a change from any of them — this card, the
   // favorites page, another tab — reaches this state through `bookmarks`
-  // without a manual cross-component event.
-  useEffect(() => {
-    const serverBookmark = findBookmark({
-      menuItemUuid: food.uuid,
-      foodUuid: food.food?.uuid,
-    });
-    setIsFavorite(Boolean(serverBookmark));
-  }, [food.uuid, food.food?.uuid, findBookmark]);
+  // without a manual cross-component event. isFavorite still has to be its
+  // own state (not derived inline) so toggleFavorite can flip it
+  // optimistically before the mutation settles; it's re-synced from the
+  // server value during render instead of in an effect, per
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes,
+  // whenever that server value actually changes.
+  const serverIsFavorite = Boolean(
+    findBookmark({ menuItemUuid: food.uuid, foodUuid: food.food?.uuid }),
+  );
+  const [isFavorite, setIsFavorite] = useState(serverIsFavorite);
+  const [prevServerIsFavorite, setPrevServerIsFavorite] =
+    useState(serverIsFavorite);
+  if (serverIsFavorite !== prevServerIsFavorite) {
+    setPrevServerIsFavorite(serverIsFavorite);
+    setIsFavorite(serverIsFavorite);
+  }
 
-  useEffect(() => {
-    const nextThumbnail =
-      food.thumbnail ||
-      (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
-      (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
+  const effectiveThumbnail =
+    food.thumbnail ||
+    (food.gallery && food.gallery.length > 0 ? food.gallery[0] : null) ||
+    (food.uuid ? `/api/v1/catalog/menu-items/${food.uuid}/images/1` : null);
+  const resolvedThumbnailUrl = toFrontendApiAssetUrl(effectiveThumbnail);
 
-    setThumbnailUrl(toFrontendApiAssetUrl(nextThumbnail));
-  }, [food.thumbnail, food.gallery, food.uuid]);
+  const [thumbnailUrl, setThumbnailUrl] = useState(resolvedThumbnailUrl);
+  const [prevResolvedThumbnailUrl, setPrevResolvedThumbnailUrl] = useState(
+    resolvedThumbnailUrl,
+  );
+  if (resolvedThumbnailUrl !== prevResolvedThumbnailUrl) {
+    setPrevResolvedThumbnailUrl(resolvedThumbnailUrl);
+    setThumbnailUrl(resolvedThumbnailUrl);
+  }
 
   const toggleFavorite = async () => {
     const serverBookmark = findBookmark({
@@ -462,6 +465,11 @@ export function SwipeFoodCard({ food }: SwipeFoodCardProps) {
         </div>
 
         <div className="flex items-center gap-4 text-base">
+          <div className="flex items-center gap-1.5 text-amber-500">
+            <FaStar />
+            <span>{displayedRating}</span>
+          </div>
+
           <div className="flex items-center gap-1.5 text-primary-400">
             <IoMdTime />
             <span>
@@ -500,6 +508,14 @@ export function SwipeFoodCard({ food }: SwipeFoodCardProps) {
                 +{dietaryTypes.length - 2}
               </span>
             )}
+          </div>
+        )}
+
+        {dietaryTypes.length === 0 && (cuisine || category) && (
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-800 px-3 py-1 text-base text-white">
+              {cuisine ? cuisine.name : category?.name}
+            </span>
           </div>
         )}
       </div>

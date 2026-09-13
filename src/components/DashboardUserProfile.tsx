@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Camera,
   Check,
@@ -196,16 +196,17 @@ export default function DashboardUserProfile({
     }
   };
 
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
+  const [prevUser, setPrevUser] = useState(user);
+  if (user !== prevUser) {
+    setPrevUser(user);
 
-    setForm({
-      firstName: user.firstName ?? "",
-      lastName: user.lastName ?? "",
-    });
-  }, [user]);
+    if (user) {
+      setForm({
+        firstName: user.firstName ?? "",
+        lastName: user.lastName ?? "",
+      });
+    }
+  }
 
   const userName = useMemo(() => {
     if (!user) {

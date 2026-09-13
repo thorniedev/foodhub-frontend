@@ -19,6 +19,49 @@ export interface DiscoverySearchQueryParams {
   request: CustomerSearchRequest;
 }
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUuid(val: unknown): val is string {
+  return typeof val === "string" && UUID_REGEX.test(val.trim());
+}
+
+function filterValidUuids(arr: unknown): string[] | undefined {
+  if (!Array.isArray(arr)) return undefined;
+  const valid = arr.filter(isValidUuid);
+  return valid.length > 0 ? valid : undefined;
+}
+
+export function sanitizeCustomerSearchRequest(
+  request?: CustomerSearchRequest,
+): CustomerSearchRequest {
+  if (!request) return {};
+  const cleaned: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(request)) {
+    if (value === undefined || value === null) continue;
+
+    if (key.endsWith("Uuids") || key.endsWith("Uuid")) {
+      if (Array.isArray(value)) {
+        const filtered = filterValidUuids(value);
+        if (filtered) cleaned[key] = filtered;
+      } else if (isValidUuid(value)) {
+        cleaned[key] = (value as string).trim();
+      }
+      // Non-UUID strings are safely excluded so backend Jackson never throws 400
+    } else if (Array.isArray(value)) {
+      if (value.length > 0) cleaned[key] = value;
+    } else if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed.length > 0) cleaned[key] = trimmed;
+    } else {
+      cleaned[key] = value;
+    }
+  }
+
+  return cleaned as CustomerSearchRequest;
+}
+
 export const searchApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     /**
@@ -74,7 +117,7 @@ export const searchApi = baseApi.injectEndpoints({
           size,
           sort,
         },
-        body: request,
+        body: sanitizeCustomerSearchRequest(request),
       }),
       transformResponse: (res: any) => {
         return normalizePayload(res, res);

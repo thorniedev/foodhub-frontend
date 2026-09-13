@@ -6,13 +6,12 @@ import "./globals.css";
 
 import Providers from "@/app/store/Providers";
 
-import Preloader from "@/components/ui/Preloader";
 import PWARegister from "@/components/providers/PWARegister";
+import NearbyRecommendationPingTracker from "@/components/providers/NearbyRecommendationPingTracker";
 import JsonLd from "@/components/common/JsonLd";
 import PreconnectHints from "@/components/common/PreconnectHints";
 
 import { generateWebSiteJsonLd } from "@/lib/seo";
-import { GoogleIcon } from "@/components/auth/icons";
 
 /* =========================================================
    PRIMARY FONT (Self-hosted Google Sans with Khmer support)
@@ -21,33 +20,28 @@ import { GoogleIcon } from "@/components/auth/icons";
 const googleSans = localFont({
   src: [
     {
-      path: "./fonts/GoogleSans_17pt-Regular.ttf",
+      // ✅ PERF: WOFF2 uses Brotli compression — 473KB vs 1,952KB TTF (-76%)
+      path: "./fonts/GoogleSans_17pt-Regular.woff2",
       weight: "400",
       style: "normal",
     },
     {
-      path: "./fonts/GoogleSans_17pt-Italic.ttf",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "./fonts/GoogleSans_17pt-Medium.ttf",
+      // ✅ PERF: Removed Italic (mapped to regular) and SemiBold (mapped to Bold).
+      // ✅ PERF: WOFF2 — 532KB vs 1,955KB TTF (-73%)
+      path: "./fonts/GoogleSans_17pt-Medium.woff2",
       weight: "500",
       style: "normal",
     },
     {
-      path: "./fonts/GoogleSans_17pt-SemiBold.ttf",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "./fonts/GoogleSans_17pt-Bold.ttf",
+      // ✅ PERF: WOFF2 — 503KB vs 1,955KB TTF (-74%)
+      path: "./fonts/GoogleSans_17pt-Bold.woff2",
       weight: "700",
       style: "normal",
     },
   ],
   variable: "--font-google-sans",
   display: "swap",
+  preload: false,
   fallback: [
     "Google Sans",
     "Kantumruy Pro",
@@ -226,6 +220,11 @@ export const metadata: Metadata = {
 
 import { GoogleAnalytics } from "@next/third-parties/google";
 
+const isLiveProduction =
+  process.env.NODE_ENV === "production" &&
+  (process.env.NEXT_PUBLIC_SITE_URL?.includes("mhoubahar.store") ||
+    process.env.VERCEL_ENV === "production");
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -247,9 +246,11 @@ export default function RootLayout({
 
         <PWARegister />
 
+        <NearbyRecommendationPingTracker />
+
         <Providers>{children}</Providers>
       </body>
-      <GoogleAnalytics gaId="G-Y4SCK2S3P5" />
+      {isLiveProduction && <GoogleAnalytics gaId="G-Y4SCK2S3P5" />}
     </html>
   );
 }

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   ArrowRight,
@@ -203,21 +203,17 @@ function MemberProfileAvatar({
     ? `/api/media/${encodeURIComponent(avatarMediaUuid)}/file`
     : "";
 
-  const [activeUrl, setActiveUrl] = useState<string | null>(null);
-  const [hasError, setHasError] = useState(false);
+  const preferredUrl = avatarAccessUrlData?.url || directProxyUrl || null;
 
-  useEffect(() => {
-    if (avatarAccessUrlData?.url) {
-      setActiveUrl(avatarAccessUrlData.url);
-      setHasError(false);
-    } else if (directProxyUrl) {
-      setActiveUrl(directProxyUrl);
-      setHasError(false);
-    } else {
-      setActiveUrl(null);
-      setHasError(false);
-    }
-  }, [avatarAccessUrlData?.url, directProxyUrl]);
+  const [activeUrl, setActiveUrl] = useState(preferredUrl);
+  const [hasError, setHasError] = useState(false);
+  const [prevPreferredUrl, setPrevPreferredUrl] = useState(preferredUrl);
+
+  if (preferredUrl !== prevPreferredUrl) {
+    setPrevPreferredUrl(preferredUrl);
+    setActiveUrl(preferredUrl);
+    setHasError(false);
+  }
 
   if (!activeUrl || hasError) {
     return (

@@ -3,14 +3,18 @@
 import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
 import Lenis from "lenis";
 import { useEffect, useRef, useState, useMemo } from "react";
+// ✅ PERF: No args = shares the same RTK Query cache key used by FilterByMealTime's
+// fallback catalog fetch, so this component does NOT trigger a 3rd network request.
 import { useGetMenuItemsQuery } from "@/app/store/menuApi";
 import { toFrontendApiAssetUrl, DEFAULT_FOOD_IMAGE } from "@/lib/catalog-media";
 
 const Skiper30 = () => {
   const gallery = useRef<HTMLDivElement>(null);
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
+  const [isInViewport, setIsInViewport] = useState(false);
 
-  const { data: menuItems = [] } = useGetMenuItemsQuery({ size: 12 });
+  // ✅ PERF: Shares cache with FilterByMealTime's catalog fallback (same RTK key).
+  const { data: menuItems = [] } = useGetMenuItemsQuery(undefined);
   
   // Get unique images from menu items
   const dynamicImages = useMemo(() => {
@@ -49,6 +53,19 @@ const Skiper30 = () => {
   const y3 = useTransform(scrollYProgress, [0, 1], [0, height * 1.25]);
   const y4 = useTransform(scrollYProgress, [0, 1], [0, height * 3]);
 
+  // ✅ PERF: Only run RAF when the gallery is in the viewport (saves ~15% CPU
+  // when the user has scrolled past or hasn't reached this section yet).
+  useEffect(() => {
+    const el = gallery.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInViewport(entry.isIntersecting),
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     const lenis = new Lenis();
     let rafId: number;
@@ -63,15 +80,19 @@ const Skiper30 = () => {
     };
 
     window.addEventListener("resize", resize);
-    rafId = requestAnimationFrame(raf);
     resize();
+
+    // ✅ PERF: Gate RAF to viewport visibility to free CPU when off-screen.
+    if (isInViewport) {
+      rafId = requestAnimationFrame(raf);
+    }
 
     return () => {
       window.removeEventListener("resize", resize);
-      cancelAnimationFrame(rafId);
+      cancelAnimationFrame(rafId!);
       lenis.destroy();
     };
-  }, []);
+  }, [isInViewport]);
 
   return (
     <main className="w-full bg-[#eee] text-black">

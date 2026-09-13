@@ -1,11 +1,18 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useKhmerVoiceNotification } from "@/hooks/useKhmerVoiceNotification";
 
 import {
+  UNREAD_COUNT_POLL_INTERVAL_MS,
   useDismissNotificationMutation,
   useGetNotificationsQuery,
   useGetUnreadCountQuery,
@@ -18,6 +25,7 @@ import NotificationGroup from "@/components/dashboard/notifications/Notification
 import NotificationsEmptyState from "@/components/dashboard/notifications/NotificationsEmptyState";
 import NotificationsHeader from "@/components/dashboard/notifications/NotificationsHeader";
 import NotificationSummaryCards from "@/components/dashboard/notifications/NotificationSummaryCards";
+import TelegramConnectBanner from "@/components/notifications/TelegramConnectBanner";
 import {
   createFilterTabs,
   createSummaryCards,
@@ -35,6 +43,28 @@ const GROUP_ORDER: AppNotification["group"][] = [
   "yesterday",
   "earlier",
 ];
+
+// navigator.onLine has no SSR-safe value, so it's read through
+// useSyncExternalStore rather than a useState+useEffect pair: this keeps the
+// server/first-client-render snapshot (getOnlineServerSnapshot) fixed and
+// hydration-safe, while still reacting to real online/offline events.
+function subscribeToOnlineStatus(onChange: () => void) {
+  window.addEventListener("online", onChange);
+  window.addEventListener("offline", onChange);
+
+  return () => {
+    window.removeEventListener("online", onChange);
+    window.removeEventListener("offline", onChange);
+  };
+}
+
+function getOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function getOnlineServerSnapshot() {
+  return true;
+}
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error && error.message) {
@@ -82,8 +112,10 @@ export default function NotificationCenterClient() {
     string | null
   >(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState(
-    () => typeof navigator === "undefined" || navigator.onLine,
+  const isOnline = useSyncExternalStore(
+    subscribeToOnlineStatus,
+    getOnlineSnapshot,
+    getOnlineServerSnapshot,
   );
 
   const {
@@ -101,7 +133,7 @@ export default function NotificationCenterClient() {
     isFetching: isFetchingUnreadCount,
     refetch: refetchUnreadCount,
   } = useGetUnreadCountQuery(undefined, {
-    pollingInterval: 60_000,
+    pollingInterval: UNREAD_COUNT_POLL_INTERVAL_MS,
     skipPollingIfUnfocused: true,
   });
   const [getNotification] = useLazyGetNotificationQuery();
@@ -109,19 +141,6 @@ export default function NotificationCenterClient() {
   const [markAllNotificationsRead, { isLoading: isMarkingAllRead }] =
     useMarkAllNotificationsReadMutation();
   const [dismissNotification] = useDismissNotificationMutation();
-
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
 
   const { playNotificationSpeech, autoVoiceAlertEnabled } =
     useKhmerVoiceNotification();
@@ -297,6 +316,8 @@ export default function NotificationCenterClient() {
         onMarkAllRead={handleMarkAllRead}
         onRefresh={handleRefresh}
       />
+
+      <TelegramConnectBanner className="my-3" />
 
       {summaryCards.length > 0 && (
         <NotificationSummaryCards

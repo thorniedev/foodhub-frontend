@@ -1,7 +1,6 @@
 "use client";
 
 import React, { FormEvent, useState } from "react";
-import Link from "next/link";
 import AuthLayout from "@/components/auth/AuthLayout";
 import {
   EyeIcon,
@@ -142,12 +141,16 @@ export default function RegisterPage() {
           <CheckCircleIcon className="shrink-0 mt-0.5" />
           <div className="flex flex-col gap-2">
             <span>{successMessage}</span>
-            <Link
+            {/* /api/auth/login is a Route Handler, not a page -- Link's
+                client-side RSC navigation fails against it and falls back to
+                a full navigation anyway, just slower. Plain <a> is correct. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a
               href="/api/auth/login"
               className="kc-link underline font-bold"
             >
               ចូលគណនីឥឡូវនេះ &rarr;
-            </Link>
+            </a>
           </div>
         </div>
       )}
@@ -311,9 +314,10 @@ export default function RegisterPage() {
       {/* Footer */}
       <p className="kc-footer-text">
         មានគណនីរួចហើយ?{" "}
-        <Link href="/api/auth/login" className="kc-link">
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Route Handler, not a page; see comment above */}
+        <a href="/api/auth/login" className="kc-link">
           ចូលគណនី
-        </Link>
+        </a>
       </p>
     </AuthLayout>
   );

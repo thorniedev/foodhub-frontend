@@ -14,9 +14,17 @@ import type {
   NotificationTypeSummary,
   ProximityNotificationResult,
   ProximityPingRequest,
+  TelegramStatusResponse,
+  TelegramTokenResponse,
   UpdateNotificationPreferenceRequest,
   WebPushSubscriptionRecord,
 } from "@/types/notifications";
+
+// Shared by every useGetUnreadCountQuery call site (Aside, NotificationCenterClient,
+// NotificationBellLink). RTK Query pools subscribers of the same query and polls at
+// the FASTEST interval any of them requests -- so if these ever drift apart again, the
+// slowest-intended one silently loses to whichever component asks for a shorter interval.
+export const UNREAD_COUNT_POLL_INTERVAL_MS = 300_000;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -365,6 +373,52 @@ export const notificationApi = baseApi.injectEndpoints({
         ),
       invalidatesTags: [{ type: "NotificationPreference", id: "LIST" }],
     }),
+
+    // =========================================================
+    // TELEGRAM BOT NOTIFICATIONS
+    // GET /notifications/telegram/status
+    // POST /notifications/telegram/link-token
+    // DELETE /notifications/telegram/link
+    // =========================================================
+    getTelegramStatus: builder.query<TelegramStatusResponse, void>({
+      query: () => ({
+        url: "/notifications/telegram/status",
+        method: "GET",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizePayload<TelegramStatusResponse>(
+          response,
+          { linked: false, status: "NOT_LINKED" } as TelegramStatusResponse,
+        ),
+      providesTags: [{ type: "TelegramLink", id: "STATUS" }],
+    }),
+
+    createTelegramLinkToken: builder.mutation<TelegramTokenResponse, void>({
+      query: () => ({
+        url: "/notifications/telegram/link-token",
+        method: "POST",
+      }),
+      transformResponse: (response: unknown) =>
+        normalizePayload<TelegramTokenResponse>(
+          response,
+          {} as TelegramTokenResponse,
+        ),
+    }),
+
+    revokeTelegramLink: builder.mutation<void, void>({
+      query: () => ({
+        url: "/notifications/telegram/link",
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "TelegramLink", id: "STATUS" }],
+    }),
+
+    sendTelegramTestAlert: builder.mutation<void, void>({
+      query: () => ({
+        url: "/notifications/telegram/test-alert",
+        method: "POST",
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -385,4 +439,8 @@ export const {
   useGetNotificationTypesQuery,
   useGetNotificationPreferencesQuery,
   useUpdateNotificationPreferenceMutation,
+  useGetTelegramStatusQuery,
+  useCreateTelegramLinkTokenMutation,
+  useRevokeTelegramLinkMutation,
+  useSendTelegramTestAlertMutation,
 } = notificationApi;

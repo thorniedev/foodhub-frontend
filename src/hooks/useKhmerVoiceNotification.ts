@@ -54,7 +54,21 @@ function playNotificationChime(): void {
 /**
  * Fallback to device-installed Khmer speech synthesizer if available
  */
-function speakDeviceFallback(text: string): boolean {
+/**
+ * Detects if a text string contains Khmer Unicode characters (U+1780 to U+17FF)
+ */
+function containsKhmer(text: string): boolean {
+  return /[\u1780-\u17FF\u19E0-\u19FF]/.test(text);
+}
+
+/**
+ * Speaks English text using the best available native English voice
+ */
+function speakEnglishSpeech(
+  text: string,
+  onEnd?: () => void,
+  onError?: () => void,
+): boolean {
   if (
     typeof window === "undefined" ||
     !("speechSynthesis" in window) ||
@@ -67,17 +81,63 @@ function speakDeviceFallback(text: string): boolean {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
+
+    const englishVoice =
+      voices.find(
+        (v) =>
+          (v.lang === "en-US" || v.lang === "en-GB") &&
+          !v.name.toLowerCase().includes("bad"),
+      ) || voices.find((v) => v.lang.toLowerCase().startsWith("en"));
+
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+      utterance.lang = englishVoice.lang;
+    } else {
+      utterance.lang = "en-US";
+    }
+
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    utterance.onend = () => onEnd?.();
+    utterance.onerror = () => onError?.();
+
+    window.speechSynthesis.speak(utterance);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fallback to device-installed Khmer speech synthesizer if available
+ */
+function speakDeviceFallback(text: string): boolean {
+  if (
+    typeof window === "undefined" ||
+    !("speechSynthesis" in window) ||
+    !("SpeechSynthesisUtterance" in window)
+  ) {
+    return false;
+  }
+
+  try {
+    window.speechSynthesis.cancel();
+    const voices = window.speechSynthesis.getVoices();
     const khmerVoice = voices.find(
       (v) =>
         v.lang.toLowerCase().includes("km") ||
         v.name.toLowerCase().includes("khmer"),
     );
 
-    if (khmerVoice) {
-      utterance.voice = khmerVoice;
-      utterance.lang = khmerVoice.lang;
+    // Strictly require a real Khmer voice. Never let an English voice read Khmer text.
+    if (!khmerVoice) {
+      return false;
     }
 
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = khmerVoice;
+    utterance.lang = khmerVoice.lang;
     utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
     return true;
@@ -163,7 +223,26 @@ export function useKhmerVoiceNotification() {
         playNotificationChime();
       }
 
-      // 1. Check in-memory audio cache
+      // Bilingual Language Detection:
+      // If the notification text does not contain Khmer characters, speak it in English!
+      const hasKhmer = containsKhmer(cleanText);
+
+      if (!hasKhmer) {
+        setIsLoadingId(null);
+        setCurrentlyPlayingId(id);
+
+        const spoke = speakEnglishSpeech(
+          cleanText,
+          () => setCurrentlyPlayingId(null),
+          () => setCurrentlyPlayingId(null),
+        );
+
+        if (spoke) {
+          return;
+        }
+      }
+
+      // 1. For Khmer text: Check in-memory audio cache from Kiri TTS
       let audioUrl = audioBlobUrlCache.get(cleanText);
 
       if (!audioUrl) {

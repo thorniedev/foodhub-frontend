@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useGetSeasonBannersQuery } from "@/app/store/bannerApi";
 import { resolveBannerImageUrl } from "@/lib/banner-media";
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "framer-motion";
 import { VIEWPORT, group, riseScale } from "@/lib/reveal";
 
 const DEFAULT_SEASON_CARDS = [
@@ -69,12 +69,12 @@ function SeasonalCard({
 }) {
   const fallback = item?.fallbackImage || "/Image/food-picture/food-21.webp";
   const [imgSrc, setImgSrc] = useState(item?.image || fallback);
+  const [prevItemImage, setPrevItemImage] = useState(item?.image);
 
-  useEffect(() => {
-    if (item?.image) {
-      setImgSrc(item.image);
-    }
-  }, [item?.image]);
+  if (item?.image && item.image !== prevItemImage) {
+    setPrevItemImage(item.image);
+    setImgSrc(item.image);
+  }
 
   if (!item) return null;
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import confetti from "canvas-confetti";
 import { MeetupWinningCardResponse } from "@/types/meetup-api";
+import { toFrontendApiAssetUrl } from "@/lib/catalog-media";
 import {
   MapPin,
   Trophy,
@@ -175,7 +176,10 @@ export default function MeetupWinnerCelebration({
                * store won.
                */}
               <Image
-                src={winningCard.storeLogoUrl || "/Image/food01.png"}
+                src={toFrontendApiAssetUrl(
+                  winningCard.storeLogoUrl,
+                  "/Image/food01.png",
+                )}
                 alt={restaurantName}
                 width={64}
                 height={64}

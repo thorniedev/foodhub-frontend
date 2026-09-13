@@ -585,7 +585,9 @@ export default function ProfileDetailView({ uuid }: ProfileDetailViewProps) {
                     <span>ចម្ងាយរុករក</span>
                   </div>
                   <p className="text-base font-bold text-slate-900 dark:text-white">
-                    {radiusKm.toFixed(1)} km
+                    {radiusKm < 1
+                      ? `${Math.round(radiusKm * 1000)} m`
+                      : `${radiusKm.toFixed(1)} km`}
                   </p>
                 </div>
               </div>

@@ -19,31 +19,31 @@ const DEFAULT_REGIONS = [
     name: "ភ្នំពេញ",
     en: "ភ្នំពេញ",
     dish: "បាយឆា",
-    img: "/Image/food-picture/card 1.jpg",
+    img: "/Image/food-picture/card 1.webp",
   },
   {
     name: "សៀមរាប",
     en: "សៀមរាប",
     dish: "អាម៉ុក",
-    img: "/Image/food-picture/card 2.jpg",
+    img: "/Image/food-picture/card 2.webp",
   },
   {
     name: "បាត់ដំបង",
     en: "បាត់ដំបង",
     dish: "នំបញ្ចុក",
-    img: "/Image/food-picture/card 3.jpg",
+    img: "/Image/food-picture/card 3.webp",
   },
   {
     name: "កំពត",
     en: "កំពត",
     dish: "ក្ដាមម្រេច",
-    img: "/Image/food-picture/card 4.jpg",
+    img: "/Image/food-picture/card 4.webp",
   },
   {
     name: "ព្រះសីហនុ",
     en: "ព្រះសីហនុ",
     dish: "គ្រឿងសមុទ្រ",
-    img: "/Image/food-picture/card 6.jpg",
+    img: "/Image/food-picture/card 6.webp",
   },
 ];
 

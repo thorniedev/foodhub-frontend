@@ -7,7 +7,10 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { IoSettingsOutline } from "react-icons/io5";
 
-import { useGetUnreadCountQuery } from "@/app/store/notificationApi";
+import {
+  UNREAD_COUNT_POLL_INTERVAL_MS,
+  useGetUnreadCountQuery,
+} from "@/app/store/notificationApi";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +27,7 @@ export default function Aside() {
   const { data: unreadNotificationCount = 0 } = useGetUnreadCountQuery(
     undefined,
     {
-      pollingInterval: 60_000,
+      pollingInterval: UNREAD_COUNT_POLL_INTERVAL_MS,
       skipPollingIfUnfocused: true,
     },
   );

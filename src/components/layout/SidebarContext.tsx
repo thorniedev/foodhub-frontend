@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { usePathname } from "next/navigation";
 
 interface SidebarContextValue {
@@ -19,9 +19,11 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   // Auto-close the drawer whenever the route changes (mobile navigation)
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setIsOpen(false);
-  }, [pathname]);
+  }
 
   const open = () => setIsOpen(true);
   const close = () => setIsOpen(false);

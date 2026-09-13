@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import React from "react";
 import { motion } from "framer-motion";
@@ -41,6 +41,7 @@ type FoodCardProps = {
   food: CatalogMenuItem;
   onViewMap?: (storeUuid: string) => void;
   isMapSelected?: boolean;
+  priority?: boolean;
 };
 
 /* =========================================================
@@ -65,6 +66,7 @@ const FoodCard = React.memo(function FoodCard({
   food,
   onViewMap,
   isMapSelected = false,
+  priority = false,
 }: FoodCardProps) {
   const { data: user } = useGetCurrentUserQuery();
   const { bookmarks, addBookmark, removeBookmark, findBookmark } =
@@ -89,10 +91,10 @@ const FoodCard = React.memo(function FoodCard({
   const { data: detailData } = useGetMenuItemByUuidQuery(
     userCoordinates && isValidCoordinates(userCoordinates)
       ? {
-          uuid: itemUuid,
-          latitude: userCoordinates.latitude,
-          longitude: userCoordinates.longitude,
-        }
+        uuid: itemUuid,
+        latitude: userCoordinates.latitude,
+        longitude: userCoordinates.longitude,
+      }
       : itemUuid,
     {
       skip: !itemUuid || hasCompleteData,
@@ -230,7 +232,6 @@ const FoodCard = React.memo(function FoodCard({
      STATE
   ======================================================= */
 
-  const [isFavorite, setIsFavorite] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   /* =======================================================
@@ -242,8 +243,8 @@ const FoodCard = React.memo(function FoodCard({
     let travelTime: number | null = null;
     let computedDistanceKm: number | null =
       activeFood.distanceKm !== undefined &&
-      activeFood.distanceKm !== null &&
-      Number.isFinite(Number(activeFood.distanceKm))
+        activeFood.distanceKm !== null &&
+        Number.isFinite(Number(activeFood.distanceKm))
         ? Number(activeFood.distanceKm)
         : null;
 
@@ -273,8 +274,8 @@ const FoodCard = React.memo(function FoodCard({
 
     const formatted =
       computedDistanceKm !== null &&
-      Number.isFinite(computedDistanceKm) &&
-      computedDistanceKm <= 500
+        Number.isFinite(computedDistanceKm) &&
+        computedDistanceKm <= 500
         ? computedDistanceKm < 1
           ? `${Math.round(computedDistanceKm * 1000)} m`
           : `${computedDistanceKm.toFixed(1)} km`
@@ -315,32 +316,36 @@ const FoodCard = React.memo(function FoodCard({
      DIETARY TAG WIDTH
   ======================================================= */
 
-  const dietaryContainerRef = useRef<HTMLDivElement>(null);
+  /* =======================================================
+     DIETARY TAGS
+     ✅ PERFORMANCE FIX: Avoid forced synchronous layout thrashing (useLayoutEffect + offsetWidth loops).
+     Default to fitting up to 2 tags which fits mobile & desktop card widths cleanly.
+  ======================================================= */
 
-  const dietaryMeasureRefs = useRef<(HTMLSpanElement | null)[]>([]);
-
-  const [visibleDietaryCount, setVisibleDietaryCount] = useState(
-    dietaryTypes.length,
+  const [visibleDietaryCount] = useState(() =>
+    Math.min(dietaryTypes.length, 2),
   );
 
   /* =======================================================
      BOOKMARKS & FAVORITES
+     ✅ PERFORMANCE FIX: Compute directly from useBookmarks query cache.
+     Eliminates post-mount useEffect and state synchronization on every card.
   ======================================================= */
 
-  // The server is the only source of truth for "is this saved" — this used
-  // to also OR in a raw localStorage id list that toggleFavorite wrote on
-  // every click and nothing ever cleared except that same click handler. A
-  // bookmark removed any other way (another device, an admin action, a
-  // direct DB change) left its id sitting in that list forever, so the heart
-  // here kept showing "saved" long after the real bookmark was gone.
-  useEffect(() => {
-    const serverBookmark = findBookmark({
+  const [optimisticFav, setOptimisticFav] = useState<boolean | null>(null);
+
+  const serverBookmark = useMemo(() => {
+    return findBookmark({
       menuItemUuid: activeFood.uuid,
       foodUuid: activeFood.food?.uuid,
     });
-
-    setIsFavorite(Boolean(serverBookmark));
   }, [activeFood.uuid, activeFood.food?.uuid, findBookmark, bookmarks]);
+
+  const isFavorite = optimisticFav !== null ? optimisticFav : Boolean(serverBookmark);
+
+  useEffect(() => {
+    setOptimisticFav(null);
+  }, [serverBookmark]);
 
   /* =======================================================
      FAVORITE / BOOKMARK TOGGLE
@@ -352,129 +357,38 @@ const FoodCard = React.memo(function FoodCard({
       return;
     }
 
-    const serverBookmark = findBookmark({
-      menuItemUuid: activeFood.uuid,
-      foodUuid: activeFood.food?.uuid,
-    });
-
-    const isAlreadyFavorite = Boolean(serverBookmark);
-
-    setIsFavorite(!isAlreadyFavorite);
+    const previousFav = isFavorite;
+    setOptimisticFav(!previousFav);
 
     try {
-      if (isAlreadyFavorite) {
-        if (serverBookmark) {
-          await removeBookmark(serverBookmark.uuid);
-        }
+      if (serverBookmark) {
+        await removeBookmark(serverBookmark.uuid);
       } else {
-        // The backend rejects a bookmark that names more than one target
-        // (food/menu item/store must be exactly one), so only the menu item
-        // this card actually displays is sent even though food/store uuids
-        // are available here too.
         await addBookmark({
           menuItemUuid: activeFood.uuid,
         });
       }
     } catch (err) {
+      setOptimisticFav(null);
       console.warn("[BOOKMARK SYNC ERROR]", err);
-      setIsFavorite(isAlreadyFavorite);
     }
   };
 
   /* =======================================================
-     CALCULATE DIETARY TAGS THAT FIT
-  ======================================================= */
-
-  useLayoutEffect(() => {
-    const container = dietaryContainerRef.current;
-
-    if (!container || dietaryTypes.length === 0) {
-      return;
-    }
-
-    const calculateVisibleDietaryTypes = () => {
-      const containerWidth = container.clientWidth;
-
-      if (containerWidth <= 0) {
-        return;
-      }
-
-      const gap = 8; // gap-2 = 8px
-      const counterWidth = 32; // w-8 = 32px
-
-      let usedWidth = 0;
-      let visibleCount = 0;
-
-      for (let index = 0; index < dietaryTypes.length; index++) {
-        const element = dietaryMeasureRefs.current[index];
-
-        if (!element) {
-          continue;
-        }
-
-        const itemWidth = element.offsetWidth;
-
-        const widthWithTag =
-          visibleCount === 0 ? itemWidth : usedWidth + gap + itemWidth;
-
-        const hiddenCount = dietaryTypes.length - (index + 1);
-
-        /*
-         * If there are still hidden dietary types,
-         * reserve space for the +N counter.
-         */
-        const widthWithCounter =
-          hiddenCount > 0 ? widthWithTag + gap + counterWidth : widthWithTag;
-
-        if (widthWithCounter <= containerWidth) {
-          usedWidth = widthWithTag;
-          visibleCount++;
-        } else {
-          break;
-        }
-      }
-
-      setVisibleDietaryCount(visibleCount);
-    };
-
-    calculateVisibleDietaryTypes();
-
-    const resizeObserver = new ResizeObserver(calculateVisibleDietaryTypes);
-
-    resizeObserver.observe(container);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [dietaryTypes]);
-
-  /* =======================================================
      UI
+     ✅ PERFORMANCE FIX: Remove Framer Motion `layout` prop to avoid
+     expensive FLIP getBoundingClientRect reflows on mobile CPU.
   ======================================================= */
 
   return (
-    <motion.article
-      layout
-      initial={{
-        opacity: 0,
-        y: 12,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      transition={{
-        duration: 0.25,
-      }}
-      className="relative flex h-full w-full flex-col"
-    >
+    <article className="relative flex h-full w-full flex-col">
       {/* ==========================================
           CARD LINK
       ========================================== */}
 
       <Link
-        data-aos="fade-right"
         href={`/menu/${itemUuid}`}
+        prefetch={false}
         className="
           flex
           h-full
@@ -514,9 +428,12 @@ const FoodCard = React.memo(function FoodCard({
           <Image
             src={thumbnailUrl}
             alt={displayName}
-            width={485}
-            height={370}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            width={320}
+            height={220}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
+            priority={priority}
+            fetchPriority={priority ? "high" : "auto"}
+            quality={70}
             draggable={false}
             onError={() => {
               setImgError(true);
@@ -552,10 +469,9 @@ const FoodCard = React.memo(function FoodCard({
               rounded-full
               backdrop-blur-md transition-all duration-200
               shadow-sm hover:scale-110 active:scale-95
-              ${
-                isFavorite
-                  ? "bg-secondary-500 text-white shadow-secondary-500/30"
-                  : "bg-white/95 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
+              ${isFavorite
+                ? "bg-secondary-500 text-white shadow-secondary-500/30"
+                : "bg-white/95 text-gray-700 hover:bg-white hover:text-secondary-500 dark:bg-black/60 dark:text-gray-200 dark:hover:bg-black/80 dark:hover:text-secondary-400"
               }
             `}
           >
@@ -664,7 +580,6 @@ const FoodCard = React.memo(function FoodCard({
 
           {dietaryTypes.length > 0 && (
             <div
-              ref={dietaryContainerRef}
               className="
                 relative
                 flex
@@ -673,47 +588,6 @@ const FoodCard = React.memo(function FoodCard({
                 overflow-hidden
               "
             >
-              {/* ==================================
-                  HIDDEN MEASUREMENT TAGS
-              ================================== */}
-
-              <div
-                className="
-                  pointer-events-none
-                  absolute
-                  left-0
-                  top-0
-                  flex
-                  items-center
-                  gap-2
-                  opacity-0
-                "
-                aria-hidden="true"
-              >
-                {dietaryTypes.map((diet, index) => (
-                  <span
-                    key={`measure-${diet.code}`}
-                    ref={(element) => {
-                      dietaryMeasureRefs.current[index] = element;
-                    }}
-                    className="
-                        shrink-0
-                        truncate
-                        whitespace-nowrap
-                        rounded-full
-                        bg-primary-800
-                        px-2
-                        py-1
-                        text-center
-                        text-sm max-sm:text-[12px]
-                        text-gray-100
-                      "
-                  >
-                    {diet.name}
-                  </span>
-                ))}
-              </div>
-
               {/* ==================================
                   ACTUAL VISIBLE DIETARY TAGS
               ================================== */}
@@ -839,10 +713,9 @@ const FoodCard = React.memo(function FoodCard({
               font-semibold
               transition
               active:scale-[0.98]
-              ${
-                isMapSelected
-                  ? "bg-primary-800 text-white shadow-sm"
-                  : "bg-primary-50 text-primary-900 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-200"
+              ${isMapSelected
+                ? "bg-primary-800 text-white shadow-sm"
+                : "bg-primary-50 text-primary-900 hover:bg-primary-100 dark:bg-primary-950 dark:text-primary-200"
               }
             `}
             aria-pressed={isMapSelected}
@@ -861,7 +734,7 @@ const FoodCard = React.memo(function FoodCard({
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
-    </motion.article>
+    </article>
   );
 });
 

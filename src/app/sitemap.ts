@@ -126,8 +126,9 @@ async function safeFetch(url: string): Promise<unknown> {
 ========================================================= */
 
 async function fetchMenuItems(): Promise<SitemapMenuItem[]> {
+  // ✅ PERF: size=50 avoids the HTTP 400 the API returns for size=1000.
   const json = await safeFetch(
-    `${BACKEND_BASE}/catalog/menu-items?page=0&size=1000`,
+    `${BACKEND_BASE}/catalog/menu-items?page=0&size=50`,
   );
   return extractContent<SitemapMenuItem>(json);
 }
@@ -137,7 +138,8 @@ async function fetchMenuItems(): Promise<SitemapMenuItem[]> {
 ========================================================= */
 
 async function fetchStores(): Promise<SitemapStore[]> {
-  const json = await safeFetch(`${BACKEND_BASE}/stores?page=0&size=1000`);
+  // ✅ PERF: size=50 avoids the HTTP 400 the API returns for size=1000.
+  const json = await safeFetch(`${BACKEND_BASE}/stores?page=0&size=50`);
   return extractContent<SitemapStore>(json);
 }
 

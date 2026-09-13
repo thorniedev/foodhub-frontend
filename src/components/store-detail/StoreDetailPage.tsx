@@ -174,11 +174,21 @@ function StoreMediaImage({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
+  const [prevMediaKey, setPrevMediaKey] = useState({
+    mediaUuid,
+    fallbackMediaUuid,
+  });
+  if (
+    prevMediaKey.mediaUuid !== mediaUuid ||
+    prevMediaKey.fallbackMediaUuid !== fallbackMediaUuid
+  ) {
+    setPrevMediaKey({ mediaUuid, fallbackMediaUuid });
     setImageUrl(null);
     setFailed(false);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
 
     async function load() {
       let resolved = await resolveStoreMediaUrl(mediaUuid);

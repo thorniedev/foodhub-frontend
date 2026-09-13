@@ -1,5 +1,6 @@
 import { baseApi } from "@/app/store/baseApi";
 import { normalizePageResponse, normalizePayload } from "@/app/store/utils/normalize";
+import { convertToWebP } from "@/lib/image-utils";
 
 import type {
   CreateMemberProfileRequest,
@@ -220,18 +221,30 @@ export const memberProfileApi = baseApi.injectEndpoints({
     /* ---------------------------------------------------------------------- */
 
     uploadMedia: builder.mutation<MediaUploadResponse, UploadMediaRequest>({
-      query: ({ file, purpose }) => {
-        const formData = new FormData();
-        formData.append("file", file);
+      queryFn: async ({ file, purpose }, _queryApi, _extraOptions, baseQuery) => {
+        let uploadFile = file;
+        try {
+          uploadFile = await convertToWebP(file);
+        } catch (e) {
+          console.warn("Failed to convert image to WebP client-side, uploading original.", e);
+        }
 
-        return {
+        const formData = new FormData();
+        formData.append("file", uploadFile);
+
+        const result = await baseQuery({
           url: `/media?purpose=${encodeURIComponent(purpose)}`,
           method: "POST",
           body: formData,
+        });
+
+        if (result.error) {
+          return { error: result.error };
+        }
+
+        return {
+          data: normalizePayload<MediaUploadResponse>(result.data, {} as MediaUploadResponse)
         };
-      },
-      transformResponse: (response: unknown): MediaUploadResponse => {
-        return normalizePayload<MediaUploadResponse>(response, {} as MediaUploadResponse);
       },
     }),
 

@@ -192,3 +192,20 @@ export interface NotificationFilterTab {
   count?: number;
   dotColor?: string;
 }
+
+/** Telegram Notification Link Status */
+export interface TelegramStatusResponse {
+  linked: boolean;
+  linkUuid?: string | null;
+  status: "ACTIVE" | "REVOKED" | "NOT_LINKED" | string;
+  linkedAt?: string | null;
+  lastUsedAt?: string | null;
+}
+
+/** Telegram Link Token generation response */
+export interface TelegramTokenResponse {
+  linkToken: string;
+  botUrl: string;
+  expiresAt: string;
+}
+

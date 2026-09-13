@@ -2,7 +2,7 @@
 
 import Carousel, { slides, type CarouselItem } from "@/components/ui/Carosel";
 import React, { useMemo } from "react";
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { EASE_SOFT, VIEWPORT, group, riseReveal } from "@/lib/reveal";
 import { useGetLocationBannersQuery } from "@/app/store/bannerApi";
 import { resolveBannerImageUrl } from "@/lib/banner-media";

@@ -12,10 +12,5 @@ import ReactDOM from "react-dom";
  * server-rendered <head> on the very first response.
  */
 export default function PreconnectHints() {
-  const keycloakUrl =
-    process.env.NEXT_PUBLIC_KEYCLOAK_URL || "https://auth.mhoubahar.store";
-
-  ReactDOM.preconnect(keycloakUrl);
-
   return null;
 }

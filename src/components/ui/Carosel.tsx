@@ -855,10 +855,12 @@ function CarouselCardImage({
   fallback?: string;
 }) {
   const [imgSrc, setImgSrc] = useState(src);
+  const [prevSrc, setPrevSrc] = useState(src);
 
-  useEffect(() => {
+  if (src !== prevSrc) {
+    setPrevSrc(src);
     setImgSrc(src);
-  }, [src]);
+  }
 
   return (
     <Image
